@@ -162,5 +162,23 @@ class TestVerificationCandidates(unittest.TestCase):
             self.assertTrue(c["source"])
 
 
+class TestGoldenManifests(unittest.TestCase):
+    def _check(self, builder, golden_name):
+        golden_path = (Path(__file__).resolve().parent / "golden" / golden_name)
+        golden = json.loads(golden_path.read_text(encoding="utf-8"))
+        with tempfile.TemporaryDirectory() as tmp:
+            manifest = fixtures.run_discover(builder(Path(tmp) / "repo"))
+        self.assertEqual(fixtures.normalize_manifest(manifest), golden,
+                         f"Manifest drifted from tests/golden/{golden_name}. "
+                         "If the change is intentional, run "
+                         "python3 tests/regen_golden.py and review the diff.")
+
+    def test_greenfield_matches_golden(self):
+        self._check(fixtures.make_greenfield_repo, "greenfield-manifest.json")
+
+    def test_governance_matches_golden(self):
+        self._check(fixtures.make_governance_repo, "governance-manifest.json")
+
+
 if __name__ == "__main__":
     unittest.main()

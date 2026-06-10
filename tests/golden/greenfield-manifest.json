@@ -1,0 +1,62 @@
+{
+  "generatedAt": "<NORMALIZED>",
+  "validated_against": {
+    "commit": "b34dc40d90bd9077c4271ecbca193693bca96ba3",
+    "date": "<NORMALIZED>"
+  },
+  "repo": {
+    "root": "<REPO_ROOT>",
+    "scope": "."
+  },
+  "git": {
+    "isGitRepository": true,
+    "branch": "main",
+    "commit": "b34dc40d90bd9077c4271ecbca193693bca96ba3",
+    "status": []
+  },
+  "coverage": {
+    "status": "complete",
+    "candidateCount": 4,
+    "includedCount": 4,
+    "cap": 2000
+  },
+  "route": "greenfield",
+  "bootstrapRepoPath": "<BOOTSTRAP_REPO>",
+  "harvestRepoPath": "<NORMALIZED>",
+  "projectMarkers": [
+    "package.json"
+  ],
+  "ciMarkers": [],
+  "agentMarkers": [],
+  "governanceMarkers": [],
+  "verificationCandidates": [
+    {
+      "command": "npm run lint",
+      "source": "package.json scripts.lint"
+    },
+    {
+      "command": "npm run test",
+      "source": "package.json scripts.test"
+    },
+    {
+      "command": "make test",
+      "source": "Makefile target test"
+    }
+  ],
+  "likelySensitivePaths": [],
+  "suggestedReadPaths": [
+    "Makefile",
+    "README.md",
+    "package.json",
+    "src/main.py"
+  ],
+  "excludedSuggestedReadPaths": [],
+  "trackedFiles": [
+    "Makefile",
+    "README.md",
+    "package.json",
+    "src/main.py"
+  ],
+  "untrackedFiles": [],
+  "ignoredFiles": []
+}
