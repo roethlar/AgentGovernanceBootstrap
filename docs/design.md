@@ -245,6 +245,6 @@ Time alone is not a freshness source.
 
 The helper implementation language is not imposed on target repos.
 
-The current helper is PowerShell because it is available in the working environment and
-can perform the first discovery phase. Target repo artifacts should remain Markdown and
-JSON unless a repo-native wrapper is explicitly approved.
+The current helper is `tools/discover.py` (Python 3, standard library only); the
+original PowerShell helper lives in `docs/history/`. Target repo artifacts should remain
+Markdown and JSON unless a repo-native wrapper is explicitly approved.

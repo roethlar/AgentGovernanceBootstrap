@@ -34,12 +34,19 @@ Implemented:
 - drafting templates including governance inventory, harvest report, and
   harness shims
 - deterministic fixture tests with golden manifests
-- frozen legacy PowerShell helper (pre-retirement)
+- pilot-validated (2026-06-09/10): migrations run on roon-controller (Claude),
+  vela (GPT), and Blit (Claude), with pilot findings folded back into the
+  procedures and templates (safety-vs-ritual authority split, load-bearing-path
+  check, summary altitude, approval-authorizes-one-scoped-commit, push offered
+  once after commit)
+- PowerShell helper retired to `docs/history/` (2026-06-10, post-pilot)
 
-Not implemented yet:
+Open:
 
-- Blit pilot (acceptance test for the migration procedure)
-- PowerShell helper retirement (gated on the pilot)
+- harvest sweeps run on owner request as reports accumulate
+- harvest digest script deferred until report volume justifies it (see spec)
+- small/local models: best-effort only; use the fallback flow with a
+  plugin-free harness profile
 
 ## Working Rules
 
@@ -81,9 +88,9 @@ python3 -m unittest discover -s tests -v
 
 For documentation-only changes, run `git diff --check`.
 
-The legacy PowerShell helper `tools/agent-bootstrap-discover.ps1` is frozen:
-do not modify it. It is removed to `docs/history/` only after the Blit pilot
-succeeds (owner decision).
+The original PowerShell helper is retired to
+`docs/history/agent-bootstrap-discover.ps1` (2026-06-10, after the Blit
+pilot). It is a historical record; do not modify or resurrect it.
 
 ## Final Response
 

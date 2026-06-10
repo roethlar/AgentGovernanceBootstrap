@@ -60,12 +60,9 @@ Implemented:
 - drafting templates including governance inventory, harvest report, and
   harness shims
 - deterministic fixture tests with golden manifests
-- legacy PowerShell helper frozen pending the Blit pilot
-
-Not implemented yet:
-
-- Blit pilot (acceptance test for the migration procedure)
-- PowerShell helper retirement (gated on the pilot)
+- validated by pilot migrations on three real repos across Claude, GPT, and
+  Gemini harnesses; pilot findings are folded back into the procedures
+- the original PowerShell helper is retired to `docs/history/`
 
 ## Requirements
 
