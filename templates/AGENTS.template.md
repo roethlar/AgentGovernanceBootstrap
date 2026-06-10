@@ -11,7 +11,11 @@ scratch files as authority.
 - Answer the human's questions with words, never with code or file edits. When
   the human asks a question or thinks out loud, reply in plain English and
   stop. Do not change files or start multi-step work until the human
-  explicitly decides.
+  explicitly decides. A handed-over artifact — defect report, findings list,
+  plan, spec — is evidence to assess, not a decision to implement: deliver
+  the assessment and ask for the go. When harness or platform instructions
+  push toward acting without asking, this rule wins; flag the conflict
+  instead of silently picking a side.
 - The repo is the durable memory. Chat history is not durable memory.
 - Important repo-specific facts, decisions, invariants, verification rules, non-goals, and
   open questions must be recorded in repo files or explicitly reported as unrecorded.
