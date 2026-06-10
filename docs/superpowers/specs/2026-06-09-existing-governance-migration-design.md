@@ -41,7 +41,7 @@ every part of the process that contains judgment.
 4. **AGENTS.md is canonical; shims are generated.** Shims are thin pointers to
    `AGENTS.md`, never copies of its content. Primary harnesses (Claude Code,
    Codex, Gemini) get shims drafted from reference templates maintained in
-   `templates/` (the retired Blit kit under `older/` is the source material).
+   `templates/` (source material: the Blit repo's pre-migration governance kit, preserved in Blit's own git history).
    Any other harness (Cursor, aider, etc.) gets a self-knowledge fallback shim
    explicitly labeled best-effort in the approval summary.
 5. **Single-session kickoff; script stays, ported to Python.** The agent runs
@@ -182,7 +182,7 @@ Executed by the in-repo agent when governance markers exist:
    pointer to `AGENTS.md`, never a copy of its content.
 7. **Trigger-vocabulary commands** — thin command wrappers (for Claude Code:
    `.claude/commands/{catchup,handoff,drift,decision,plan}.md`) pointing at
-   canonical playbooks. The retired Blit kit under `older/` is the reference
+   canonical playbooks. The reference implementation is the Blit repo's pre-migration command kit, preserved in Blit's own git history
    implementation.
 8. **Harvest report (optional, expected absent)** — only when this repo's
    governance contains rules earned from real, citable incidents that other
