@@ -20,10 +20,24 @@ every part of the process that contains judgment.
 2. **Supersede in place.** After migration, old governance files get a short
    banner at the top pointing to their replacement. Content stays. Deletion can
    happen later, manually, once the new system has proven itself.
-3. **Harvest with a flywheel.** Generalizable ideas found in a target repo's
-   governance are (a) migrated into that repo's new files and (b) delivered to
-   this repo as a harvest report, which later becomes proposed template
-   improvements. Both ends are human-gated; no agent silently edits either repo.
+3. **Harvest: minimal, gated, dropbox-first (settled 2026-06-09 after several
+   rounds).** During migration the agent may record generalizable governance
+   rules under strict discipline designed against LLM eagerness: the expected
+   outcome is **no report**; an idea qualifies only if it is a rule about
+   agent behavior or process, earned by a real citable incident in that repo,
+   not already covered by the templates, and useful to other repos; hard cap
+   of three ideas; never a "nothing found" file. Delivery after approval: if
+   the owner configured a harvest dropbox repo (local path in the untracked
+   `harvest.config.json`, surfaced in the manifest as `harvestRepoPath`), the
+   report is written there as a NEW uniquely named file — append-only, never
+   overwriting or editing anything — then committed and pushed under standing
+   owner authorization that covers the dropbox only. Otherwise the report is
+   copied to `.agents/harvest.md` in the target repo and travels with it via
+   git. **The canonical bootstrap repo is never written by sessions running
+   elsewhere; the dropbox is the sole shared-writable location.** A sweep
+   session in this repo, run only on the owner's request, reads the dropbox
+   and any named fallback files, judges ideas skeptically (default verdict:
+   skip), and logs outcomes in `harvest/processed.md`.
 4. **AGENTS.md is canonical; shims are generated.** Shims are thin pointers to
    `AGENTS.md`, never copies of its content. Primary harnesses (Claude Code,
    Codex, Gemini) get shims drafted from reference templates maintained in
@@ -48,13 +62,20 @@ every part of the process that contains judgment.
    freshness; the evidence is never silently stale.
 7. **The plain-English contract (new invariant).** Anything presented to the
    human for review or approval — approval summaries, inventory verdicts,
-   fresh-eyes results, harvest reports — must be understandable without reading
+   fresh-eyes results — must be understandable without reading
    code, diffs, or JSON. Raw files remain available beneath the summary, but no
    decision may require them.
 8. **Approach B (smart scanner parsing prose) is rejected** in every language.
    Parsing freeform governance prose mechanically is the wrong tool. The
    accepted "B-lite" is mechanical detection of verification commands from
    structured files only.
+9. **All generated guidance inherits the answer-with-words rule (owner
+   decision, 2026-06-09).** Every generated `AGENTS.md` instructs agents:
+   answer the human's questions in plain English and stop — never respond to
+   a question or musing with code, file edits, or multi-step execution; act
+   only on an explicit decision. The owner never tolerates question-prompted
+   execution. The same rule binds agents bootstrapping a repo and is recorded
+   in this repo's own `AGENTS.md` working rules.
 
 ## New repo layout (this repo)
 
@@ -63,10 +84,11 @@ tools/discover.py            single file, Python 3 standard library only
 procedures/bootstrap.md      canonical agent procedure: kickoff + greenfield path
 procedures/migration.md      existing-governance path
 procedures/verification.md   fresh-eyes catchup test
-procedures/harvest.md        how this repo ingests harvest reports
+procedures/harvest.md        skeptical sweep folding harvested rules into templates
 templates/                   all drafting templates as plain markdown/JSON
-harvest/inbox/               harvest reports arriving from bootstrapped repos
-harvest/processed/           reports already folded into templates
+harvest/processed.md         log of harvest reports already swept
+harvest.config.json          OPTIONAL, untracked, machine-local: path to the
+                             owner's harvest dropbox repo
 docs/history/                gains the retired PowerShell script at parity
 ```
 
@@ -94,8 +116,11 @@ Additions:
 - **Self-containment copy** — `procedures/` and `templates/` are copied into
   `.bootstrap-tmp/`, so once discovery has run, the entire process exists inside
   the target repo regardless of who ran it or what the harness can reach.
-- **`bootstrapRepoPath`** — recorded in the manifest so the agent knows where to
-  deliver the harvest report.
+- **`bootstrapRepoPath`** — recorded in the manifest for provenance and so the
+  agent can locate the discovery script for re-runs.
+- **`harvestRepoPath`** — copied into the manifest from the bootstrap repo's
+  untracked `harvest.config.json` when present; `null` otherwise. Tells the
+  migration agent where the owner's harvest dropbox lives on this machine.
 - **Routing** — `START-HERE.md` points the agent at the migration procedure when
   governance markers were found, otherwise at the greenfield procedure.
 - Coverage cap default rises to 2000.
@@ -113,7 +138,7 @@ Executed by the in-repo agent when governance markers exist:
    script cannot run, stop and ask for discovery to be re-run, in plain English.
 2. **Governance inventory** — a table covering every artifact in
    `governanceMarkers` plus anything else found while reading: the artifact, its
-   role today, a verdict — **migrate / supersede / harvest / leave** — and its
+   role today, a verdict — **migrate / supersede / leave** — and its
    destination. The inventory appears in the approval summary in plain English.
 3. **Draft the standard layout** under `.bootstrap-tmp/drafts/`, mirroring final
    paths: `AGENTS.md` (now containing the bootstrap handoff rule),
@@ -134,9 +159,13 @@ Executed by the in-repo agent when governance markers exist:
    `.claude/commands/{catchup,handoff,drift,decision,plan}.md`) pointing at
    canonical playbooks. The retired Blit kit under `older/` is the reference
    implementation.
-8. **Harvest report** — drafted at `.bootstrap-tmp/drafts/harvest-report.md`.
-   Each idea carries a "why this generalizes" line and a citation of the file it
-   came from.
+8. **Harvest report (optional, expected absent)** — only when this repo's
+   governance contains rules earned from real, citable incidents that other
+   repos would benefit from: drafted at
+   `.bootstrap-tmp/drafts/harvest-report.md` under the discipline of decision
+   3 (no-report default, incident citation required, cap of three, no empty
+   reports). After approval it is delivered to the harvest dropbox as a new
+   file, or to this repo's `.agents/harvest.md` when no dropbox is reachable.
 9. **Approval summary** — verdict-first (`Approve` / `Approve after edits` /
    `Do not approve yet`), scope tier, the inventory, assumptions needing
    approval, risk-ranked limitations, and the fresh-eyes result. Honors the
@@ -157,19 +186,18 @@ the check is re-run once. The outcome is reported in the approval summary as a
 plain-English sentence, not test output. Required when existing governance was
 migrated; optional for greenfield repos.
 
-## Harvest flywheel (procedures/harvest.md)
+## Harvest sweep (procedures/harvest.md)
 
-1. Harvest report is reviewed as part of the target repo's normal approval.
-2. After approval, the agent asks the owner — as its own question — whether to
-   deliver the report now. Only on an explicit yes does it copy the report to
-   `<bootstrapRepoPath>/harvest/inbox/<repo>-<date>.md`. This verbatim copy is
-   the **only** write to the bootstrap repo permitted from a target-repo
-   session; nothing else there may be created or edited. If the owner declines,
-   the agent warns that the report lives in `.bootstrap-tmp/` and is lost when
-   the scratch directory is deleted unless copied somewhere durable first.
-3. A later session in this repo reviews the inbox, proposes concrete
-   template/procedure edits described in plain English, and on approval moves
-   the report to `harvest/processed/`.
+Run in this repo, only when the owner asks. Reads new files in the dropbox
+(path from `harvest.config.json`) and any fallback `.agents/harvest.md` files
+in repos the owner names; skips reports already logged in
+`harvest/processed.md`. Skepticism is the default: an idea earns adoption only
+if it would have prevented a specific, citable mistake and is not already
+covered — the owner relies on this filter, not on agent enthusiasm. Verdicts
+(adopt / adapt / skip, default skip) are presented in plain English; the owner
+decides; approved edits land in `templates/` or `procedures/`; handled reports
+are logged here and moved to a `processed/` subfolder inside the dropbox (the
+dropbox exception permits that write).
 
 ## Testing
 
@@ -192,6 +220,8 @@ moved to `docs/history/`.
 
 ## Out of scope
 
+- Hosted harvest collection (MCP endpoints, email, sync services) — rejected;
+  the dropbox is a plain git repo or nothing.
 - An acceptance grader beyond the fresh-eyes test.
 - An automated apply/update command (manual copy-after-approval remains).
 - Multi-agent review workflows.
@@ -206,5 +236,5 @@ agent inventories `STATE.md`, `DEVLOG.md`, `DECISIONS.md`, `REVIEW.md`,
 `.review/`, `.claude/commands/`; drafts the `.agents/` layout preserving Blit's
 git-safety rules in the new `AGENTS.md`; drafts banners; runs the fresh-eyes
 test; presents one plain-English approval summary with the inventory. On
-approval it copies drafts into place, applies banners, and delivers the harvest
-report to this repo's inbox. The owner commits when satisfied.
+approval it copies drafts into place and applies banners. The owner commits
+when satisfied.

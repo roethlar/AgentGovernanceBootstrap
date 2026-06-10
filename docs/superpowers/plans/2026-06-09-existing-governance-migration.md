@@ -2,9 +2,9 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Restructure Agent Governance Bootstrap around a single-session kickoff: one stdlib-only Python discovery script, all judgment in readable markdown `procedures/` and `templates/`, a migration workflow for repos with existing governance, and a human-gated harvest flywheel.
+**Goal:** Restructure Agent Governance Bootstrap around a single-session kickoff: one stdlib-only Python discovery script, all judgment in readable markdown `procedures/` and `templates/`, a migration workflow for repos with existing governance, and a minimal gated harvest (spec decision 3: dropbox-first with in-target fallback, no-report-expected discipline, append-only deliveries; the canonical bootstrap repo is never written by outside sessions).
 
-**Architecture:** The deterministic script (`tools/discover.py`) produces a complete evidence manifest and copies procedures/templates into the target repo's `.bootstrap-tmp/`, making the process self-contained there. All judgment (migration, verification, harvest) lives in markdown procedures the agent follows. The PowerShell script is frozen, untouched, and retires only after the Blit pilot succeeds.
+**Architecture:** The deterministic script (`tools/discover.py`) produces a complete evidence manifest and copies procedures/templates into the target repo's `.bootstrap-tmp/`, making the process self-contained there. All judgment (migration, verification) lives in markdown procedures the agent follows. The PowerShell script is frozen, untouched, and retires only after the Blit pilot succeeds.
 
 **Tech Stack:** Python 3 standard library only (no pip). Tests via `unittest`. Git fixtures made deterministic with pinned author/committer env vars.
 
@@ -23,25 +23,33 @@
 ### Task 1: Scaffold the new directory layout
 
 **Files:**
-- Create: `procedures/.gitkeep`, `templates/.gitkeep`, `templates/shims/.gitkeep`, `harvest/inbox/.gitkeep`, `harvest/processed/.gitkeep`, `tests/.gitkeep`, `tests/golden/.gitkeep`
+- Create: `procedures/.gitkeep`, `templates/.gitkeep`, `templates/shims/.gitkeep`, `harvest/processed.md`, `tests/.gitkeep`, `tests/golden/.gitkeep`
+- Modify: `.gitignore` (ignore the machine-local `harvest.config.json`)
 
-- [ ] **Step 1: Create directories**
+- [ ] **Step 1: Create directories and the harvest log**
 
 ```bash
 cd /home/michael/dev/AgentGovernanceBootstrap
-mkdir -p procedures templates/shims harvest/inbox harvest/processed tests/golden
+mkdir -p procedures templates/shims harvest tests/golden
 touch procedures/.gitkeep templates/.gitkeep templates/shims/.gitkeep \
-      harvest/inbox/.gitkeep harvest/processed/.gitkeep tests/.gitkeep tests/golden/.gitkeep
+      tests/.gitkeep tests/golden/.gitkeep
+cat > harvest/processed.md <<'EOF'
+# Processed Harvest Reports
+
+One line per report already folded into templates or procedures:
+`<repo name> - <report date> - <one-phrase outcome>`
+EOF
+grep -qx "harvest.config.json" .gitignore 2>/dev/null || echo "harvest.config.json" >> .gitignore
 ```
 
 - [ ] **Step 2: Verify and commit**
 
 Run: `git status --short`
-Expected: only the new `.gitkeep` files listed as untracked.
+Expected: the new `.gitkeep` files, `harvest/processed.md`, and `.gitignore` listed.
 
 ```bash
-git add procedures templates harvest tests
-git commit -m "Scaffold procedures/, templates/, harvest/, tests/ directories"
+git add procedures templates harvest tests .gitignore
+git commit -m "Scaffold procedures/, templates/, harvest/, tests/; ignore machine-local harvest config"
 ```
 
 ---
@@ -111,15 +119,15 @@ Every existing governance artifact gets a row. Verdicts:
 
 - **migrate** — content moves into the standard `.agents/` layout or `AGENTS.md`.
 - **supersede** — file stays, gets a banner pointing at its replacement.
-- **harvest** — contains generalizable ideas for the bootstrap harvest report.
 - **leave** — stays untouched (e.g., append-only journals: history, not state).
 
-A single artifact may be both migrate and harvest. Use plain English in every cell;
-the owner reads this table to approve the migration.
+An artifact whose content migrates usually also gets a banner (migrate +
+supersede). Use plain English in every cell; the owner reads this table to
+approve the migration.
 
 | Artifact | Role today | Verdict | Destination | Notes |
 | --- | --- | --- | --- | --- |
-| <path> | <what it does now, one phrase> | <migrate/supersede/harvest/leave> | <new path or "-"> | <anything the owner should know> |
+| <path> | <what it does now, one phrase> | <migrate/supersede/leave> | <new path or "-"> | <anything the owner should know> |
 
 ## Supersession banner
 
@@ -129,28 +137,7 @@ Applied to the top of each superseded file after approval:
 > `<new path>`. This file is retained as history and is no longer updated.
 ```
 
-- [ ] **Step 2: Write `templates/harvest-report.template.md`**
-
-```markdown
-# Harvest Report: <repo name>, <YYYY-MM-DD>
-
-Generalizable governance ideas found while bootstrapping this repo. Each idea must
-cite the file it came from and say why it applies beyond this repo. This report is
-reviewed by the owner here, then - only with the owner's explicit go-ahead for
-the delivery itself - copied VERBATIM to the bootstrap repo's `harvest/inbox/`.
-That copy is the only write to the bootstrap repo permitted from this session.
-
-## Ideas
-
-### <Short idea title>
-
-- **Source:** `<file in this repo>`
-- **What it is:** <one or two plain-English sentences>
-- **Why it generalizes:** <why other repos benefit, one sentence>
-- **Proposed home:** <which bootstrap template or procedure it would improve>
-```
-
-- [ ] **Step 3: Write `templates/shims/CLAUDE.template.md`**
+- [ ] **Step 2: Write `templates/shims/CLAUDE.template.md`**
 
 ```markdown
 # CLAUDE.md
@@ -164,7 +151,7 @@ they cannot live in AGENTS.md. Never duplicate AGENTS.md content here.
 -->
 ```
 
-- [ ] **Step 4: Write `templates/shims/GEMINI.template.md`**
+- [ ] **Step 3: Write `templates/shims/GEMINI.template.md`**
 
 ```markdown
 # GEMINI.md
@@ -177,7 +164,7 @@ below only when they cannot live in AGENTS.md. Never duplicate AGENTS.md content
 -->
 ```
 
-- [ ] **Step 5: Append to `templates/approval-summary.template.md`**
+- [ ] **Step 4: Append to `templates/approval-summary.template.md`**
 
 Append these two sections at the end of the file:
 
@@ -187,7 +174,7 @@ Append these two sections at the end of the file:
 
 <Migration runs only. Include the completed inventory table from
 `governance-inventory.template.md`: every existing governance artifact, its role,
-its verdict (migrate / supersede / harvest / leave), and its destination, in plain
+its verdict (migrate / supersede / leave), and its destination, in plain
 English. For greenfield runs write "Not applicable - no existing governance.">
 
 ## Fresh-Eyes Verification
@@ -199,11 +186,55 @@ were found and fixed, say so. Required for migration runs; if skipped on a
 greenfield run, say "Not run (greenfield).">
 ```
 
-- [ ] **Step 6: Commit**
+- [ ] **Step 5: Write `templates/harvest-report.template.md`**
+
+```markdown
+# Harvest Report: <repo name>, <YYYY-MM-DD>
+
+Governance rules from this repo that other repos would benefit from.
+
+Discipline (read before writing anything):
+
+- The expected outcome is NO report. Most repos contain nothing
+  harvest-worthy. Finding nothing is a correct, complete result - do not
+  create this file to appear thorough. An empty or padded report is a
+  defect, not a deliverable.
+- An idea qualifies only if ALL of these are true: it is a rule about agent
+  behavior or process, not generic engineering advice; it was earned by a
+  real, citable incident or failure in this repo; the bootstrap templates do
+  not already cover it; and it would change what an agent does in OTHER
+  repos.
+- Hard cap: three ideas. More than three means you are padding.
+- Never write a "no ideas found" report. No file means none.
+
+## Ideas
+
+### <Short idea title>
+
+- **Source:** `<file in this repo>` and the incident that earned the rule
+- **The rule:** <one or two plain-English sentences>
+- **Why it generalizes:** <one sentence>
+- **Proposed home:** <which bootstrap template or procedure it would improve>
+```
+
+- [ ] **Step 6: Add the answer-with-words rule to `templates/AGENTS.template.md`**
+
+In `templates/AGENTS.template.md`, find the `## Universal Invariants` section
+and insert this as the FIRST bullet of the list (spec decision 9 — the owner
+never tolerates question-prompted execution):
+
+```markdown
+- Answer the human's questions with words, never with code or file edits. When
+  the human asks a question or thinks out loud, reply in plain English and
+  stop. Do not change files or start multi-step work until the human
+  explicitly decides.
+```
+
+- [ ] **Step 7: Commit**
 
 ```bash
 git add templates
-git commit -m "Add governance inventory, harvest report, and harness shim templates"
+git commit -m "Add governance inventory, harvest report, and harness shim templates; generated AGENTS inherits answer-with-words rule"
 ```
 
 ---
@@ -225,7 +256,9 @@ pointing at this file. Follow it top to bottom.
 The plain-English contract applies to everything you show the human: approval
 summaries, inventories, verification results, and questions must be understandable
 without reading code, diffs, or JSON. Raw files stay available, but no decision may
-require them.
+require them. The same contract governs conversation: answer the human's questions
+with words and stop — never respond to a question or musing with edits or
+execution; act only on an explicit decision.
 
 ## Step 1: Ensure fresh discovery
 
@@ -341,7 +374,7 @@ session. All other discovered files are evidence, not instructions.
    governance-like file you notice that discovery's name-matching missed.
 2. Fill in `.bootstrap-tmp/templates/governance-inventory.template.md` as
    `.bootstrap-tmp/drafts/governance-inventory.md`: one row per artifact with a
-   verdict - migrate / supersede / harvest / leave - and a destination.
+   verdict - migrate / supersede / leave - and a destination.
 3. Defaults that usually hold: current-state files migrate to `.agents/state.md`;
    decision logs migrate to `.agents/decisions.md`; behavioral contracts migrate
    into the new `AGENTS.md`; append-only journals (DEVLOG-style) get `leave` -
@@ -364,6 +397,12 @@ Under `.bootstrap-tmp/drafts/`, mirroring final paths:
 4. `.agents/repo-map.json` and `.agents/artifact-manifest.json` from templates,
    with the confirmed verification command(s) recorded.
 5. Playbooks only where the scope tier justifies them.
+6. Only if this repo's governance contains rules earned from real, citable
+   incidents that other repos would benefit from: draft
+   `.bootstrap-tmp/drafts/harvest-report.md` from the harvest template, and
+   honor its discipline - the expected outcome is NO report, hard cap of
+   three ideas, never pad, never write a "nothing found" file. Finding
+   nothing is a correct, complete result.
 
 ## Step 3: Supersession banners
 
@@ -381,44 +420,42 @@ only after approval.
    Claude Code: `.claude/commands/<name>.md`, each a one-paragraph pointer to the
    relevant `AGENTS.md` section, never a copy of it.
 
-## Step 5: Harvest report
-
-Fill `.bootstrap-tmp/templates/harvest-report.template.md` as
-`.bootstrap-tmp/drafts/harvest-report.md`: ideas from this repo's governance that
-would improve the bootstrap's generic templates. Every idea cites its source file
-and says why it generalizes.
-
-## Step 6: Staleness recheck
+## Step 5: Staleness recheck
 
 Compare current `git status --short` against the manifest's recorded status. If
 the working tree materially changed during this session, re-run discovery
 locally, or flag the change in plain English if sandboxed.
 
-## Step 7: Fresh-eyes verification (required for migrations)
+## Step 6: Fresh-eyes verification (required for migrations)
 
 Run `.bootstrap-tmp/procedures/verification.md`. Fix what it finds, re-run once,
 record the plain-English result for the approval summary.
 
-## Step 8: Approval summary
+## Step 7: Approval summary
 
 Write `.bootstrap-tmp/drafts/approval-summary.md` from the template, including
 the Existing Governance Inventory and Fresh-Eyes Verification sections. Plain
 English throughout; the owner must be able to decide without opening any other
 file.
 
-## Step 9: After approval
+## Step 8: After approval
 
 1. Copy approved drafts to their final tracked paths.
 2. Apply approved supersession banners to the tops of the superseded files.
-3. Ask the owner, as its own question: "Deliver the approved harvest report to
-   the bootstrap repo's inbox now?" Only on an explicit yes, copy it VERBATIM to
-   `<bootstrapRepoPath from manifest>/harvest/inbox/<repo-name>-<YYYY-MM-DD>.md`.
-   That delivery is the only write to the bootstrap repo permitted from this
-   session. If the owner declines, warn in plain English that the report lives
-   in `.bootstrap-tmp/` and will be lost when the scratch directory is deleted
-   unless it is copied somewhere durable first.
-4. Working-tree edits only; the owner decides when and what to commit.
-5. Do not raise deleting `.bootstrap-tmp/` until approved files are copied.
+3. If an approved harvest report exists: when the manifest records a
+   `harvestRepoPath` and that repo is present and writable, write the report
+   there as a NEW file named `<repo-name>-<YYYY-MM-DD>.md` - append-only,
+   never overwrite or edit anything that already exists - then commit and
+   push in the dropbox repo only (the owner's standing authorization covers
+   the harvest dropbox alone; if the push fails, say so plainly and leave the
+   committed file in place). When no dropbox is reachable, copy the report to
+   `.agents/harvest.md` in this repo instead; it travels with the repo via
+   git.
+4. Apart from the harvest dropbox, never write outside this repo. The
+   canonical bootstrap repo is never modified from this session.
+5. Working-tree edits only in this repo; the owner decides when and what to
+   commit here.
+6. Do not raise deleting `.bootstrap-tmp/` until approved files are copied.
 ```
 
 - [ ] **Step 2: Commit**
@@ -474,35 +511,41 @@ Required for migration runs; recommended for substantial greenfield runs.
 - [ ] **Step 2: Write `procedures/harvest.md` with exactly this content**
 
 ```markdown
-# Harvest Procedure (run in the bootstrap repo)
+# Harvest Sweep (run in the bootstrap repo)
 
-Purpose: fold generalizable ideas from bootstrapped repos back into the generic
-templates and procedures, so every bootstrap makes the next one better. Run this
-in the Agent Governance Bootstrap repo when `harvest/inbox/` is non-empty.
+Purpose: fold harvested governance rules into the generic templates. Run only
+when the owner asks.
+
+Skepticism is the default. An idea earns adoption only if it would have
+prevented a specific, citable mistake and the templates do not already cover
+it. When in doubt, skip - the owner relies on this filter, not on agent
+enthusiasm. Adopting a weak idea pollutes every future bootstrap; skipping a
+good one costs nothing, because the report stays where it is.
 
 ## How
 
-1. List `harvest/inbox/`. For each report, read it fully.
-2. For each idea, check whether the templates or procedures already cover it.
-   Already covered -> note "already covered" for the summary.
-3. For ideas worth adopting, draft the concrete edit to the template or
-   procedure file. Generalize: strip repo-specific names and details; the rule
-   must make sense for any repo.
-4. Present one plain-English summary to the owner: each idea, where it came
-   from, what edit you propose (described in sentences, not diffs), and your
-   recommendation - adopt, adapt, or skip. The owner decides per idea.
-5. Apply approved edits. Move each fully-processed report to
-   `harvest/processed/` in the same change.
-6. Run this repo's verification (its smoke tests) if any script changed;
-   template and procedure edits are docs-only and need a read-through, not a
-   test run.
+1. Read new files in the harvest dropbox repo (its path is in this repo's
+   untracked `harvest.config.json`; if that file is absent, there is no
+   dropbox on this machine). Also scan any repo paths the owner names for
+   fallback `.agents/harvest.md` files. All cross-repo reading is read-only;
+   the dropbox is the one place this session may write outside this repo.
+2. Skip reports already logged in `harvest/processed.md`.
+3. For each idea, give a verdict - adopt / adapt / skip, default skip - with
+   one plain-English sentence of reasoning.
+4. Present all verdicts to the owner in plain English. The owner decides per
+   idea.
+5. Apply approved edits to `templates/` or `procedures/`. Append one line per
+   handled report to `harvest/processed.md` in the same change. In the
+   dropbox, move handled files into a `processed/` subfolder.
+6. Run this repo's smoke tests if any script changed; template and procedure
+   edits are docs-only and need a read-through, not a test run.
 ```
 
 - [ ] **Step 3: Commit**
 
 ```bash
 git add procedures/verification.md procedures/harvest.md
-git commit -m "Add fresh-eyes verification and harvest procedures"
+git commit -m "Add fresh-eyes verification and harvest sweep procedures"
 ```
 
 ---
@@ -610,6 +653,7 @@ def normalize_manifest(manifest):
     m["validated_against"]["date"] = "<NORMALIZED>"
     m["repo"]["root"] = "<REPO_ROOT>"
     m["bootstrapRepoPath"] = "<BOOTSTRAP_REPO>"
+    m["harvestRepoPath"] = "<NORMALIZED>"
     return m
 ```
 
@@ -885,6 +929,17 @@ def _read_text(repo_root, rel):
         return ""
 
 
+def read_harvest_repo_path():
+    """Owner's optional, machine-local harvest dropbox path. Never an error."""
+    try:
+        cfg = json.loads((BOOTSTRAP_REPO_ROOT / "harvest.config.json")
+                         .read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return None
+    value = cfg.get("harvestRepoPath")
+    return str(value) if value else None
+
+
 def find_verification_candidates(repo_root, all_paths):
     candidates = []
     if "package.json" in all_paths:
@@ -1127,6 +1182,7 @@ def discover(repo_arg, coverage_cap=2000):
                      "includedCount": len(suggested), "cap": coverage_cap},
         "route": route,
         "bootstrapRepoPath": str(BOOTSTRAP_REPO_ROOT),
+        "harvestRepoPath": read_harvest_repo_path(),
         "projectMarkers": project_markers,
         "ciMarkers": ci_markers,
         "agentMarkers": agent_markers,
@@ -1515,6 +1571,7 @@ Implemented:
 - self-contained `.bootstrap-tmp/` handoff (procedures, templates, and the
   script itself are copied in)
 - markdown procedures: bootstrap, migration, fresh-eyes verification, harvest
+  sweep
 - drafting templates including governance inventory, harvest report, and
   harness shims
 - deterministic fixture tests with golden manifests
@@ -1524,7 +1581,6 @@ Not implemented yet:
 
 - Blit pilot (acceptance test for the migration procedure)
 - PowerShell helper retirement (gated on the pilot)
-- first harvest-inbox processing run
 ```
 
 - [ ] **Step 4: In `README.md`, replace the `## Quick Start` section body with:**
@@ -1618,7 +1674,7 @@ Discovery computes one of three routes, shown in `START-HERE.md`:
 - **greenfield** - no governance found; standard drafting workflow.
 - **migration** - existing governance found (STATE.md, DEVLOG.md, agent
   contracts, command files...). The agent inventories every artifact with a
-  verdict - migrate / supersede / harvest / leave - and you approve the
+  verdict - migrate / supersede / leave - and you approve the
   reconciliation as a plain-English table.
 - **update** - the repo already uses the standard `.agents/` layout; the
   repo's own `AGENTS.md` handoff rule applies.
@@ -1636,13 +1692,18 @@ Approved durable guidance: `AGENTS.md`, `.agents/*`, harness shims, command
 wrappers, and supersession banners on old governance files. Never commit
 `.bootstrap-tmp/` (it self-ignores).
 
-## The harvest flywheel
+## Harvest (optional, expected to be rare)
 
-Migrations produce a harvest report of generalizable ideas. After you approve
-it, the agent copies it verbatim into this repo's `harvest/inbox/`. Later, in
-a session in this repo, say "process the harvest inbox" - the agent follows
-`procedures/harvest.md` and proposes template improvements in plain English
-for your approval.
+If a migration uncovers a governance rule earned from a real incident, the
+agent may record it - at most three ideas, never padding; producing no report
+is the normal, correct outcome. After your approval the report goes to your
+harvest dropbox repo (a plain git repo whose local path you put in this
+repo's untracked `harvest.config.json`), written append-only as a new file,
+or - when no dropbox is reachable - into that repo's own `.agents/harvest.md`,
+where it travels with the repo. When you feel like it, say "run the harvest
+sweep" in a session here: ideas are judged skeptically (default: skip), you
+decide each one in plain English, and outcomes are logged in
+`harvest/processed.md`.
 
 ## Verifying this repo
 
@@ -1665,7 +1726,7 @@ final answer, anything confusing, and whether `.bootstrap-tmp/` stayed out of
 > [docs/superpowers/specs/2026-06-09-existing-governance-migration-design.md](superpowers/specs/2026-06-09-existing-governance-migration-design.md):
 > single-session kickoff, Python discovery (`tools/discover.py`), judgment in
 > `procedures/` and `templates/` markdown, migration support for repos with
-> existing governance, and a human-gated harvest flywheel. Sections below
+> existing governance, and a minimal owner-gated harvest. Sections below
 > describe the universal invariants and remain accurate; references to the
 > PowerShell helper and the two-stage-only flow are historical.
 ```
@@ -1739,14 +1800,14 @@ executor. It is the acceptance test for the whole design.
   Blit's git rules must be respected: working-tree changes only, no commits.
 - [ ] **Step 3 (owner):** Review using the pilot checklist in `docs/usage.md`.
   Approve, or collect what confused the agent.
-- [ ] **Step 4 (owner):** After a successful pilot: ask an agent in this repo to
-  process `harvest/inbox/` per `procedures/harvest.md`, and decide whether to
-  retire `tools/agent-bootstrap-discover.ps1` to `docs/history/`.
+- [ ] **Step 4 (owner):** After a successful pilot: if the run produced a harvest
+  report, optionally say "run the harvest sweep" in a session here; and decide
+  whether to retire `tools/agent-bootstrap-discover.ps1` to `docs/history/`.
 
 ---
 
 ## Self-Review Notes (completed at write time)
 
-- **Spec coverage:** decisions 1–8 map to Tasks 3–6 (migration/supersession/harvest/shims), 8 (script, self-containment, routing, freshness self-heal in procedures), 4 (plain-English contract embedded in procedures), 13 (docs), 15 (pilot + PS retirement gate). The staleness recheck appears in both `bootstrap.md` step 6 and `migration.md` step 6.
+- **Spec coverage:** decisions 1–8 map to Tasks 3–6 (migration/supersession/harvest/shims), 8 (script, self-containment, routing, freshness self-heal in procedures), 4 (plain-English contract embedded in procedures), 13 (docs), 15 (pilot + PS retirement gate). The staleness recheck appears in both `bootstrap.md` step 6 and `migration.md` Step 5. Harvest follows spec decision 3: no-report-expected discipline (Task 3 template), drafting in `migration.md` Step 2 item 6, append-only delivery in Step 8, skeptical sweep in Task 6.
 - **Placeholder scan:** every file written in this plan carries full content; the two generated golden files are produced by a committed script with a review step.
 - **Type consistency:** `fixtures.run_discover` / `normalize_manifest` / `BOOTSTRAP_ROOT` names match across Tasks 7, 9–12; manifest keys in tests match the `discover()` dict in Task 8.
