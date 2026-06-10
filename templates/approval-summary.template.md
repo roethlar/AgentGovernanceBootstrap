@@ -47,6 +47,10 @@ a human approval question.>
 - `.agents/repo-map.json`
 - `.agents/artifact-manifest.json`
 
+<For migration runs, extend this list with the harness shim (for example
+`CLAUDE.md`), the governance inventory, supersession banners on superseded
+files, and the harvest report if one was drafted.>
+
 ## Risks, Limitations, Or Open Questions
 
 <List unresolved questions, inferred facts, stale evidence, unread areas, or decisions
@@ -69,7 +73,7 @@ English. For greenfield runs write "Not applicable - no existing governance.">
 ## Fresh-Eyes Verification
 
 <One plain-English sentence reporting the result of the fresh-eyes catchup test,
-for example: "A fresh agent given only the drafted files correctly answered what
-this project is, what is in progress, and how changes are verified." If issues
+for example: "A fresh agent given only the drafted files correctly answered all five
+questions in the verification procedure." If issues
 were found and fixed, say so. Required for migration runs; if skipped on a
 greenfield run, say "Not run (greenfield).">
