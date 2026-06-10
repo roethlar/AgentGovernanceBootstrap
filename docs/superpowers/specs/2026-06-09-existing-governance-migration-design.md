@@ -160,10 +160,13 @@ migrated; optional for greenfield repos.
 ## Harvest flywheel (procedures/harvest.md)
 
 1. Harvest report is reviewed as part of the target repo's normal approval.
-2. After approval, the agent copies it to
+2. After approval, the agent asks the owner — as its own question — whether to
+   deliver the report now. Only on an explicit yes does it copy the report to
    `<bootstrapRepoPath>/harvest/inbox/<repo>-<date>.md`. This verbatim copy is
    the **only** write to the bootstrap repo permitted from a target-repo
-   session; nothing else there may be created or edited.
+   session; nothing else there may be created or edited. If the owner declines,
+   the agent warns that the report lives in `.bootstrap-tmp/` and is lost when
+   the scratch directory is deleted unless copied somewhere durable first.
 3. A later session in this repo reviews the inbox, proposes concrete
    template/procedure edits described in plain English, and on approval moves
    the report to `harvest/processed/`.

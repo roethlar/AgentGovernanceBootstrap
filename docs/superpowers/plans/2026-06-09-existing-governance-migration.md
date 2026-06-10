@@ -13,7 +13,10 @@
 **Rules for every task:**
 - `tools/agent-bootstrap-discover.ps1` is FROZEN. Never modify it in this plan.
 - Verification for this plan's code changes: `python3 -m unittest discover -s tests -v` from repo root.
-- Commit after every task with the message given in the task.
+- Commit after every task with the message given in the task. Commit authority
+  note: these per-task commits apply to THIS repo only and are authorized by the
+  owner's approval of this plan. In target repos the generated procedures keep
+  commits owner-triggered — the two rules are different scopes, not a conflict.
 
 ---
 
@@ -133,9 +136,9 @@ Applied to the top of each superseded file after approval:
 
 Generalizable governance ideas found while bootstrapping this repo. Each idea must
 cite the file it came from and say why it applies beyond this repo. This report is
-reviewed by the owner here, then copied VERBATIM to the bootstrap repo's
-`harvest/inbox/`. That copy is the only write to the bootstrap repo permitted from
-this session.
+reviewed by the owner here, then - only with the owner's explicit go-ahead for
+the delivery itself - copied VERBATIM to the bootstrap repo's `harvest/inbox/`.
+That copy is the only write to the bootstrap repo permitted from this session.
 
 ## Ideas
 
@@ -407,9 +410,13 @@ file.
 
 1. Copy approved drafts to their final tracked paths.
 2. Apply approved supersession banners to the tops of the superseded files.
-3. Copy the approved harvest report VERBATIM to
+3. Ask the owner, as its own question: "Deliver the approved harvest report to
+   the bootstrap repo's inbox now?" Only on an explicit yes, copy it VERBATIM to
    `<bootstrapRepoPath from manifest>/harvest/inbox/<repo-name>-<YYYY-MM-DD>.md`.
-   This is the only write to the bootstrap repo permitted from this session.
+   That delivery is the only write to the bootstrap repo permitted from this
+   session. If the owner declines, warn in plain English that the report lives
+   in `.bootstrap-tmp/` and will be lost when the scratch directory is deleted
+   unless it is copied somewhere durable first.
 4. Working-tree edits only; the owner decides when and what to commit.
 5. Do not raise deleting `.bootstrap-tmp/` until approved files are copied.
 ```
@@ -1546,7 +1553,9 @@ python3 tools/discover.py <path-to-target-repo>
 Read .bootstrap-tmp/START-HERE.md and follow it.
 ```
 
-Both doors converge on the same files and the same approval gates.
+Both doors converge on the same files and the same approval gates. Use the
+one-line prompt whenever the agent can read this repo (the normal case on your
+own machine); use the fallback only when it cannot.
 ```
 
 - [ ] **Step 5: In `README.md`, replace the `## Requirements` section body with:**
