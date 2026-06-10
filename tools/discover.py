@@ -16,7 +16,25 @@ import sys
 from datetime import datetime, timezone
 from pathlib import Path
 
-BOOTSTRAP_REPO_ROOT = Path(__file__).resolve().parent.parent
+def _resolve_bootstrap_root():
+    """When running from a target repo's .bootstrap-tmp/tools/ copy, recover the
+    real bootstrap repo root recorded at copy time. If it is unreachable
+    (sandboxed case), fall back to the scratch dir itself - the templates and
+    procedures copies already sit beside us there."""
+    here = Path(__file__).resolve()
+    root = here.parent.parent
+    if root.name == ".bootstrap-tmp":
+        try:
+            recorded = json.loads((here.parent / "bootstrap-origin.json")
+                                  .read_text(encoding="utf-8")).get("bootstrapRepoPath")
+        except (OSError, json.JSONDecodeError):
+            recorded = None
+        if recorded and Path(recorded).is_dir():
+            return Path(recorded).resolve()
+    return root
+
+
+BOOTSTRAP_REPO_ROOT = _resolve_bootstrap_root()
 
 SENSITIVE_GLOBS = [
     ".env*", "*.pem", "*.key", "*.pfx", "*.p12", "id_rsa*", "id_dsa*",
@@ -389,6 +407,9 @@ def write_scratch(repo_root, route):
     own_copy = tools_dst / "discover.py"
     if Path(__file__).resolve() != own_copy.resolve():
         shutil.copyfile(Path(__file__).resolve(), own_copy)
+    (tools_dst / "bootstrap-origin.json").write_text(
+        json.dumps({"bootstrapRepoPath": str(BOOTSTRAP_REPO_ROOT)}) + "\n",
+        encoding="utf-8")
     route_block = ROUTE_BLOCKS[route]
     (scratch / "START-HERE.md").write_text(
         START_HERE_TEMPLATE.format(route=route, route_block=route_block),
