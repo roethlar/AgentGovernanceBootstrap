@@ -58,3 +58,18 @@ approving the proposed durable guidance. Use "None identified" only when that is
 
 <State whether any important repo-specific facts, decisions, invariants, verification
 rules, non-goals, or open questions remain unrecorded.>
+
+## Existing Governance Inventory
+
+<Migration runs only. Include the completed inventory table from
+`governance-inventory.template.md`: every existing governance artifact, its role,
+its verdict (migrate / supersede / leave), and its destination, in plain
+English. For greenfield runs write "Not applicable - no existing governance.">
+
+## Fresh-Eyes Verification
+
+<One plain-English sentence reporting the result of the fresh-eyes catchup test,
+for example: "A fresh agent given only the drafted files correctly answered what
+this project is, what is in progress, and how changes are verified." If issues
+were found and fixed, say so. Required for migration runs; if skipped on a
+greenfield run, say "Not run (greenfield).">

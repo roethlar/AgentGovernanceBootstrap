@@ -8,6 +8,10 @@ scratch files as authority.
 
 ## Universal Invariants
 
+- Answer the human's questions with words, never with code or file edits. When
+  the human asks a question or thinks out loud, reply in plain English and
+  stop. Do not change files or start multi-step work until the human
+  explicitly decides.
 - The repo is the durable memory. Chat history is not durable memory.
 - Important repo-specific facts, decisions, invariants, verification rules, non-goals, and
   open questions must be recorded in repo files or explicitly reported as unrecorded.
