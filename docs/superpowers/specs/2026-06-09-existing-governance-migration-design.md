@@ -80,7 +80,10 @@ every part of the process that contains judgment.
     the owner approves the summary, the agent copies the files AND makes one
     scoped commit — exact files only, message announced in the summary — with
     no further ask. The approval is the explicit authorization, satisfying
-    owner-gated git rules in target repos. Pushing remains the owner's action.
+    owner-gated git rules in target repos. Pushing remains the owner's action:
+    after committing, the agent asks once whether to push, naming the repo's
+    remotes when several exist (the owner juggles GitHub and a personal gitea
+    and does not always push to both), and pushes only what the owner names.
     Pilot evidence: requiring a separate "now commit" step left migrations
     sitting uncommitted, unsynced across the owner's machines.
 

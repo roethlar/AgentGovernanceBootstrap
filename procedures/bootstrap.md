@@ -88,8 +88,9 @@ cannot get lazy on a large repo and you can.
 10. After approval: copy drafts to their final paths, then commit them as ONE
     scoped commit - `git add` exactly the approved files (never `git add -A`),
     using the commit message the approval summary announced. The owner's
-    approval covers this single commit. Never push; pushing stays with the
-    owner.
+    approval covers this single commit. Never push unprompted: after
+    committing, ask once, in one line, whether to push - naming the repo's
+    remotes when there is more than one - and push only what the owner names.
 11. Do not raise deleting `.bootstrap-tmp/` until approved files are copied.
     Delete it only if the human explicitly asks and the resolved path is exactly
     the repo's `.bootstrap-tmp` directory. After the approved files are copied

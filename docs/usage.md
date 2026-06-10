@@ -88,7 +88,9 @@ The bootstrap commit happens automatically once you approve, and contains
 only the approved guidance: `AGENTS.md`, `.agents/*`, harness shims, command
 wrappers, and supersession banners on old governance files. Unrelated
 working-tree changes are never swept in, `.bootstrap-tmp/` never gets
-committed (it self-ignores), and pushing is yours.
+committed (it self-ignores), and pushing is yours: the agent asks once after
+committing, naming your remotes when there are several, and pushes only what
+you name.
 
 ## Harvest (optional, expected to be rare)
 

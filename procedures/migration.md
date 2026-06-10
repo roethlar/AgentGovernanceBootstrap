@@ -113,8 +113,9 @@ file.
    working-tree changes stay untouched - using the commit message the
    approval summary announced. The owner's approval of the summary IS the
    explicit authorization for this single commit, including in repos whose
-   rules gate git operations on the owner. Never push; pushing stays with
-   the owner.
+   rules gate git operations on the owner. Never push unprompted: after
+   committing, ask once, in one line, whether to push - naming the repo's
+   remotes when there is more than one - and push only what the owner names.
 6. Do not raise deleting `.bootstrap-tmp/` until approved files are copied.
    After the approved files are copied and committed, close with one line
    noting that `.bootstrap-tmp/` remains (untracked) and will be deleted only
