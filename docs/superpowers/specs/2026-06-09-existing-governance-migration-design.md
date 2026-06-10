@@ -24,10 +24,12 @@ every part of the process that contains judgment.
    governance are (a) migrated into that repo's new files and (b) delivered to
    this repo as a harvest report, which later becomes proposed template
    improvements. Both ends are human-gated; no agent silently edits either repo.
-4. **AGENTS.md is canonical; shims are generated.** The agent generates a thin
-   pointer shim for whatever harness it is running in (CLAUDE.md, GEMINI.md,
-   `.cursor/rules/`, etc.) using its own self-knowledge. Claude Code and Codex
-   are primary targets; anything else gets a best-effort light shim.
+4. **AGENTS.md is canonical; shims are generated.** Shims are thin pointers to
+   `AGENTS.md`, never copies of its content. Primary harnesses (Claude Code,
+   Codex, Gemini) get shims drafted from reference templates maintained in
+   `templates/` (the retired Blit kit under `older/` is the source material).
+   Any other harness (Cursor, aider, etc.) gets a self-knowledge fallback shim
+   explicitly labeled best-effort in the approval summary.
 5. **Single-session kickoff; script stays, ported to Python.** The agent runs
    discovery itself as step 1 of one session. The deterministic script is kept
    because discovery's required property is completeness, not intelligence: a
@@ -38,7 +40,12 @@ every part of the process that contains judgment.
    re-run discovery and continue — never to refuse. The only surviving refusal
    is the sandboxed fallback where the agent cannot run the script; there it
    asks, in plain English, for discovery to be re-run. Note: uncommitted file
-   edits never trip freshness; only commits made after discovery do.
+   edits never trip the commit check; only commits made after discovery do.
+   Additionally, before writing the approval summary the agent re-compares
+   current `git status` against the manifest: if the working tree materially
+   changed during the session, it re-runs discovery locally, or flags the
+   change in plain English when sandboxed. The human is never blocked by
+   freshness; the evidence is never silently stale.
 7. **The plain-English contract (new invariant).** Anything presented to the
    human for review or approval — approval summaries, inventory verdicts,
    fresh-eyes results, harvest reports — must be understandable without reading
@@ -119,8 +126,10 @@ Executed by the in-repo agent when governance markers exist:
 5. **Supersession banners** — one drafted banner per superseded file, applied
    only after approval. Append-only journals (e.g., `DEVLOG.md`) normally get
    the verdict *leave*: they are history, not state.
-6. **Harness shim** — generated for the harness the agent is running in;
-   a thin pointer to `AGENTS.md`, never a copy of its content.
+6. **Harness shim** — drafted for the harness the agent is running in: from the
+   reference template for primary harnesses, or as a best-effort self-knowledge
+   shim (labeled as such in the approval summary) for others. Always a thin
+   pointer to `AGENTS.md`, never a copy of its content.
 7. **Trigger-vocabulary commands** — thin command wrappers (for Claude Code:
    `.claude/commands/{catchup,handoff,drift,decision,plan}.md`) pointing at
    canonical playbooks. The retired Blit kit under `older/` is the reference
@@ -152,7 +161,9 @@ migrated; optional for greenfield repos.
 
 1. Harvest report is reviewed as part of the target repo's normal approval.
 2. After approval, the agent copies it to
-   `<bootstrapRepoPath>/harvest/inbox/<repo>-<date>.md`.
+   `<bootstrapRepoPath>/harvest/inbox/<repo>-<date>.md`. This verbatim copy is
+   the **only** write to the bootstrap repo permitted from a target-repo
+   session; nothing else there may be created or edited.
 3. A later session in this repo reviews the inbox, proposes concrete
    template/procedure edits described in plain English, and on approval moves
    the report to `harvest/processed/`.
