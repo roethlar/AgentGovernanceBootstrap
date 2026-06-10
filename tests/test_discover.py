@@ -183,5 +183,31 @@ class TestGoldenManifests(unittest.TestCase):
         self._check(fixtures.make_governance_repo, "governance-manifest.json")
 
 
+class TestUpdateRouteHeuristic(unittest.TestCase):
+    def test_agents_dir_without_standard_layout_routes_migration(self):
+        # The Blit case: a pre-existing .agents/ (e.g., workspace skills)
+        # that is NOT this process's standard layout must not route "update".
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = fixtures.make_governance_repo(Path(tmp) / "repo")
+            skills = repo / ".agents" / "skills"
+            skills.mkdir(parents=True)
+            (skills / "catchup.md").write_text("Re-ground.\n", encoding="utf-8")
+            fixtures._git(repo, "add", "-A")
+            fixtures._git(repo, "commit", "-q", "-m", "add workspace skills")
+            manifest = fixtures.run_discover(repo)
+            self.assertEqual(manifest["route"], "migration")
+
+    def test_standard_layout_routes_update(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = fixtures.make_governance_repo(Path(tmp) / "repo")
+            agents = repo / ".agents"
+            agents.mkdir()
+            (agents / "state.md").write_text("# Agent State\n", encoding="utf-8")
+            fixtures._git(repo, "add", "-A")
+            fixtures._git(repo, "commit", "-q", "-m", "adopt standard layout")
+            manifest = fixtures.run_discover(repo)
+            self.assertEqual(manifest["route"], "update")
+
+
 if __name__ == "__main__":
     unittest.main()

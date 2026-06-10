@@ -213,7 +213,11 @@ def is_useful_read(rel_path):
 
 
 def compute_route(governance_markers):
-    if any(p == ".agents" or p.startswith(".agents/") for p in governance_markers):
+    # "update" requires the standard layout specifically. A bare .agents/ dir
+    # can predate this process (e.g., Antigravity workspace skills) and must
+    # route as migration, not update.
+    standard = {".agents/state.md", ".agents/bootstrap.config.json"}
+    if any(p.lower() in standard for p in governance_markers):
         return "update"
     if governance_markers:
         return "migration"
