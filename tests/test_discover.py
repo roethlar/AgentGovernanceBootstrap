@@ -79,5 +79,52 @@ class TestManifestCore(unittest.TestCase):
                 self.assertFalse(p.startswith(".bootstrap-tmp"), p)
 
 
+class TestScratchOutput(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls._tmp = tempfile.TemporaryDirectory()
+        base = Path(cls._tmp.name)
+        cls.green = fixtures.make_greenfield_repo(base / "green")
+        cls.gov = fixtures.make_governance_repo(base / "gov")
+        fixtures.run_discover(cls.green)
+        fixtures.run_discover(cls.gov)
+
+    @classmethod
+    def tearDownClass(cls):
+        cls._tmp.cleanup()
+
+    def test_scratch_is_self_ignored(self):
+        gitignore = self.gov / ".bootstrap-tmp" / ".gitignore"
+        self.assertEqual(gitignore.read_text(encoding="utf-8"), "*\n")
+
+    def test_procedures_templates_and_script_copied(self):
+        scratch = self.gov / ".bootstrap-tmp"
+        for rel in ("procedures/bootstrap.md", "procedures/migration.md",
+                    "procedures/verification.md", "procedures/harvest.md",
+                    "templates/AGENTS.template.md",
+                    "templates/governance-inventory.template.md",
+                    "templates/harvest-report.template.md",
+                    "templates/shims/CLAUDE.template.md",
+                    "tools/discover.py"):
+            self.assertTrue((scratch / rel).is_file(), rel)
+
+    def test_start_here_routes_migration(self):
+        text = (self.gov / ".bootstrap-tmp" / "START-HERE.md").read_text(
+            encoding="utf-8")
+        self.assertIn("**migration**", text)
+        self.assertIn("procedures/migration.md", text)
+
+    def test_start_here_routes_greenfield(self):
+        text = (self.green / ".bootstrap-tmp" / "START-HERE.md").read_text(
+            encoding="utf-8")
+        self.assertIn("**greenfield**", text)
+        self.assertIn("Greenfield workflow", text)
+
+    def test_manifest_records_bootstrap_repo_path(self):
+        manifest = fixtures.run_discover(self.green)
+        self.assertEqual(manifest["bootstrapRepoPath"],
+                         str(fixtures.BOOTSTRAP_ROOT))
+
+
 if __name__ == "__main__":
     unittest.main()
