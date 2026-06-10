@@ -1643,6 +1643,28 @@ The current accepted design is
 ```markdown
 # Usage
 
+## One-time setup
+
+Globally, once: create the harvest dropbox - an empty private git repo pushed
+to your remote. (Optional. Without one, harvest reports use the in-repo
+fallback and nothing is lost.)
+
+On each machine you bootstrap from:
+
+1. Install Git and Python 3. Windows:
+   `winget install Git.Git Python.Python.3.12`. macOS and Linux usually have
+   both already.
+2. Clone this process repo.
+3. Optional: clone the harvest dropbox repo, then create an untracked
+   `harvest.config.json` in this repo's root:
+   `{"harvestRepoPath": "/path/to/harvest-repo"}`. The config file is what
+   makes the dropbox discoverable - the clone alone does nothing.
+4. Optional: allowlist the dropbox path in your harness permissions so
+   delivery does not prompt.
+
+Before each bootstrap run: `git pull` this repo first. A stale clone
+bootstraps repos with stale templates, and nothing detects that for you.
+
 ## Normal flow (local agent)
 
 Open a fresh agent session in the target repo and paste:
