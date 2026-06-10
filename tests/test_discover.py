@@ -126,5 +126,41 @@ class TestScratchOutput(unittest.TestCase):
                          str(fixtures.BOOTSTRAP_ROOT))
 
 
+class TestVerificationCandidates(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls._tmp = tempfile.TemporaryDirectory()
+        base = Path(cls._tmp.name)
+        cls.green_manifest = fixtures.run_discover(
+            fixtures.make_greenfield_repo(base / "green"))
+        cls.gov_manifest = fixtures.run_discover(
+            fixtures.make_governance_repo(base / "gov"))
+
+    @classmethod
+    def tearDownClass(cls):
+        cls._tmp.cleanup()
+
+    def _commands(self, manifest):
+        return [c["command"] for c in manifest["verificationCandidates"]]
+
+    def test_npm_scripts_detected_with_prefix_filter(self):
+        commands = self._commands(self.green_manifest)
+        self.assertIn("npm run test", commands)
+        self.assertIn("npm run lint", commands)
+        self.assertNotIn("npm run deploy", commands)  # not a verification verb
+
+    def test_makefile_targets_detected(self):
+        commands = self._commands(self.green_manifest)
+        self.assertIn("make test", commands)
+        self.assertNotIn("make clean", commands)
+
+    def test_cargo_workspace_detected(self):
+        self.assertIn("cargo test --workspace", self._commands(self.gov_manifest))
+
+    def test_sources_recorded(self):
+        for c in self.green_manifest["verificationCandidates"]:
+            self.assertTrue(c["source"])
+
+
 if __name__ == "__main__":
     unittest.main()
