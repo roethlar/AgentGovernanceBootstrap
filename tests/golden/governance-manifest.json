@@ -1,7 +1,7 @@
 {
   "generatedAt": "<NORMALIZED>",
   "validated_against": {
-    "commit": "8eddc1ce2b4bfdc01336c35d59e2792790f9ebd4",
+    "commit": "<NORMALIZED>",
     "date": "<NORMALIZED>"
   },
   "repo": {
@@ -11,7 +11,7 @@
   "git": {
     "isGitRepository": true,
     "branch": "main",
-    "commit": "8eddc1ce2b4bfdc01336c35d59e2792790f9ebd4",
+    "commit": "<NORMALIZED>",
     "status": []
   },
   "coverage": {

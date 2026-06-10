@@ -89,6 +89,8 @@ def normalize_manifest(manifest):
     m = json.loads(json.dumps(manifest))
     m["generatedAt"] = "<NORMALIZED>"
     m["validated_against"]["date"] = "<NORMALIZED>"
+    m["validated_against"]["commit"] = "<NORMALIZED>"
+    m["git"]["commit"] = "<NORMALIZED>"
     m["repo"]["root"] = "<REPO_ROOT>"
     m["bootstrapRepoPath"] = "<BOOTSTRAP_REPO>"
     m["harvestRepoPath"] = "<NORMALIZED>"

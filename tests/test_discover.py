@@ -73,10 +73,13 @@ class TestManifestCore(unittest.TestCase):
         self.assertEqual(self.gov_manifest["coverage"]["status"], "complete")
 
     def test_scratch_paths_never_in_manifest(self):
-        second = fixtures.run_discover(self.gov)  # re-run over existing scratch
-        for key in ("trackedFiles", "untrackedFiles", "ignoredFiles"):
-            for p in second[key]:
-                self.assertFalse(p.startswith(".bootstrap-tmp"), p)
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = fixtures.make_governance_repo(Path(tmp) / "repo")
+            fixtures.run_discover(repo)
+            second = fixtures.run_discover(repo)  # re-run over existing scratch
+            for key in ("trackedFiles", "untrackedFiles", "ignoredFiles"):
+                for p in second[key]:
+                    self.assertFalse(p.startswith(".bootstrap-tmp"), p)
 
 
 class TestScratchOutput(unittest.TestCase):
