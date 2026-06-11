@@ -165,11 +165,36 @@ cannot get lazy on a large repo and you can.
 10. After approval: copy drafts to their final paths, then commit them as ONE
     scoped commit - `git add` exactly the approved files (never `git add -A`),
     using the commit message the approval summary announced. The owner's
-    approval covers this single commit. Never push unprompted: after
-    committing, ask once, in one line, whether to push - naming the repo's
-    remotes when there is more than one - and push only what the owner names.
+    approval covers this single commit - with one exception: after an explicit
+    rejection ("do not approve"), a later approval re-authorizes the commit
+    only if its wording unambiguously covers committing. Wording that names
+    only part of the action ("move the files into place", "proceed") approves
+    copying alone - confirm commit scope in one line before committing. Never
+    push unprompted: after committing, ask once, in one line, whether to push
+    - naming the repo's remotes when there is more than one - and push only
+    what the owner names.
 11. Do not raise deleting `.bootstrap-tmp/` until approved files are copied.
     Delete it only if the human explicitly asks and the resolved path is exactly
     the repo's `.bootstrap-tmp` directory. After the approved files are copied
     and committed, close with one line noting that `.bootstrap-tmp/` remains
     (untracked) and will be deleted only if the owner says so.
+
+## If the target is not a git repository
+
+Discovery reports `git.isGitRepository: false` when the target has no `.git`.
+Every custody probe there - `git ls-files --error-unmatch`, `git check-ignore`,
+`git rev-parse` - exits 128. Exit 128 means git is absent and custody is
+unprovable: it is neither "ignored" nor "tracked", and nothing is committable.
+
+1. Never run `git init` unprompted. Ask the owner, as a question in the
+   approval summary, whether to initialize git and make the scoped first
+   commit part of this bootstrap.
+2. If the owner approves: run `git init`, then follow the normal
+   after-approval steps. Custody values record post-commit custody as usual,
+   proven by git query after the commit lands.
+3. If the owner declines: every `custody` value in the artifact manifest is
+   `untracked`, the approval summary's Committed list is "None" (retitle the
+   bucket "On disk only - no version control"), and the drafted guidance must
+   state the limitation plainly: no history, no rollback, and state/decision
+   files can drift silently. Record "no version control" as the top risk in
+   the approval summary and in `.agents/state.md`.

@@ -18,6 +18,12 @@
       "path": ".agents/decisions.md",
       "purpose": "Durable decisions and supersessions",
       "custody": "tracked"
+    },
+    {
+      "path": "<example: .claude/settings.local.json or other local-only file>",
+      "purpose": "<example: machine-local harness file kept out of version control>",
+      "custody": "ignored",
+      "custody_note": "Allowed custody values: tracked | untracked | ignored, proven by git query. In a non-git repo every file is untracked; say so here."
     }
   ]
 }

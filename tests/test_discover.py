@@ -256,6 +256,33 @@ class TestIgnoredMarkerAnnotation(unittest.TestCase):
             self.assertIn("(gitignored - local-only", packet)
 
 
+class TestNonGitTarget(unittest.TestCase):
+    """Finding 1 from the Send-MailMessageV2 pilot: a non-git target must
+    never list files as tracked - that is a git-custody claim git cannot
+    back - and the packet must state the non-git custody situation."""
+
+    def test_files_listed_untracked_not_tracked(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = Path(tmp) / "repo"
+            repo.mkdir(parents=True)
+            fixtures._write(repo, "ProblemStatement.txt", "replace cmdlet\n")
+            manifest = fixtures.run_discover(repo)
+            self.assertFalse(manifest["git"]["isGitRepository"])
+            self.assertEqual(manifest["trackedFiles"], [])
+            self.assertIn("ProblemStatement.txt", manifest["untrackedFiles"])
+
+    def test_packet_states_non_git_custody(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = Path(tmp) / "repo"
+            repo.mkdir(parents=True)
+            fixtures._write(repo, "README.md", "# x\n")
+            fixtures.run_discover(repo)
+            packet = (repo / ".bootstrap-tmp" / "bootstrap-review-packet.md"
+                      ).read_text(encoding="utf-8")
+            self.assertIn("Not a git repository", packet)
+            self.assertIn("git init", packet)
+
+
 class TestGoldenManifests(unittest.TestCase):
     def _check(self, builder, golden_name):
         golden_path = (Path(__file__).resolve().parent / "golden" / golden_name)

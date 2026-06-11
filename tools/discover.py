@@ -391,6 +391,11 @@ def write_review_packet(path, manifest):
     lines.append(f"- Branch (`git.branch`): {manifest['git']['branch']}")
     lines.append(f"- Commit (`git.commit`): {manifest['git']['commit']}")
     lines.append(f"- Dirty entries (`git.status` length): {len(manifest['git']['status'])}")
+    if not manifest["git"]["isGitRepository"]:
+        lines.append("- Not a git repository: custody probes (`git ls-files`,")
+        lines.append("  `git check-ignore`) exit 128 here. Every file is listed as")
+        lines.append("  untracked (on disk only); nothing is committable without")
+        lines.append("  `git init`, which is the owner's decision.")
     cov = manifest["coverage"]
     lines.append(f"- Coverage (`coverage.status`): {cov['status']} ({cov['candidateCount']} candidates, cap {cov['cap']})")
 
@@ -517,7 +522,9 @@ def discover(repo_arg, coverage_cap=2000):
         ignored = [line[3:] for line in run_git(repo_root, "status", "--ignored", "--short")
                    if line.startswith("!! ")]
     else:
-        tracked = sorted(
+        # No git: nothing is tracked. List every file as untracked so the
+        # manifest never asserts a custody claim git cannot back.
+        untracked = sorted(
             p.relative_to(repo_root).as_posix()
             for p in repo_root.rglob("*")
             if p.is_file() and "/.git/" not in f"/{p.relative_to(repo_root).as_posix()}/")

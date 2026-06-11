@@ -15,6 +15,11 @@ Start with exactly one of these:
 
 Then add one sentence explaining why.
 
+<While any open question still requires an owner decision - an unresolved
+custody conflict, an ignore-rule question, a scope choice - the recommendation
+must not be `Approve`. Use `Do not approve yet` or `Approve after edits` until
+the owner has settled it.>
+
 ## Recommended Scope
 
 <Tier 1 / Tier 2 / Tier 3, with one sentence explaining why this repo needs that much
@@ -73,6 +78,13 @@ files, and the harvest report if one was drafted.>
 authorizes copying the files above and making that ONE scoped commit
 (exactly the Committed list, never `git add -A`, never `git add -f`).
 Nothing is pushed; pushing remains the owner's action.>
+
+<Non-git targets: there is no commit to authorize yet. Ask here whether to
+`git init` and include the scoped first commit (see bootstrap.md, "If the
+target is not a git repository"). If the owner declines, replace the two
+lists above with one list titled "On disk only - no version control" and
+replace the commit paragraph with a plain statement that `git init` remains
+the owner's decision.>
 
 ## Risks, Limitations, Or Open Questions
 

@@ -11,6 +11,7 @@ short and update it when important repo facts change.
 - Governance for this repo itself is in `AGENTS.md` (rules and pointers) plus this `.agents/` layout (state and decisions).
 - No `.agents/` directory existed at root prior to the 2026-06-10 layout migration; only root `AGENTS.md` was present as the governance marker.
 - 2026-06-10: the self-migration landed (commit d260a72, run by a Grok Build agent), and the four follow-up fixes it surfaced are folded back: self-target wording in migration Step 8.4, custody redefined as intended post-approval custody proven by git query, shim rule generalized to native AGENTS.md readers, and README's Current Status deduped into a pointer at this file.
+- 2026-06-11: two pilot issue reports folded back (see `harvest/processed.md`). Non-git targets are now first-class: discover.py never lists files as tracked without git, bootstrap.md gained an "If the target is not a git repository" section with an owner-gated git-init question, and the templates model custody values beyond `tracked`. Approval semantics tightened: after an explicit rejection, commit re-authorization must be unambiguous; ignored-paths-claimed-tracked conflicts are a mandatory owner question; `Approve` recommendations require no open owner decisions.
 
 ## Next
 

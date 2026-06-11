@@ -105,7 +105,12 @@ only after approval.
    that way in the artifact manifest and in the approval summary's
    Local-only list, or (b) flag the ignore rule as a finding and ask the
    owner whether to un-ignore it. Never silently `git add -f` past an
-   ignore rule - it overrides owner intent.
+   ignore rule - it overrides owner intent. One case always requires (b):
+   when existing durable guidance or the artifact manifest claims tracked
+   custody for a path the repo ignores, that is an owner-level conflict,
+   not drift to auto-correct - present both resolutions (keep the files
+   local-only and correct the manifest, or narrow the ignore rule and track
+   them) and let the owner choose.
 
 ## Step 5: Staleness recheck
 
@@ -149,7 +154,12 @@ file.
    files in the Local-only list are copied into place but stay out of the
    commit - using the commit message the approval summary announced. The owner's approval of the summary IS the
    explicit authorization for this single commit, including in repos whose
-   rules gate git operations on the owner. Never push unprompted: after
+   rules gate git operations on the owner - with one exception: after an
+   explicit rejection ("do not approve"), a later approval re-authorizes the
+   commit only if its wording unambiguously covers committing. Wording that
+   names only part of the action ("move the files into place", "proceed")
+   approves copying alone - confirm commit scope in one line before
+   committing. Never push unprompted: after
    committing, ask once, in one line, whether to push - naming the repo's
    remotes when there is more than one - and push only what the owner names.
 6. Do not raise deleting `.bootstrap-tmp/` until approved files are copied.
