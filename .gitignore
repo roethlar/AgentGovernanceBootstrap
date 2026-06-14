@@ -3,3 +3,7 @@ out/
 harvest.config.json
 __pycache__/
 *.pyc
+.DS_Store
+Thumbs.db
+Desktop.ini
+*.tmp
