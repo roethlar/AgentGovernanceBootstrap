@@ -314,3 +314,176 @@ batch, before the command-wrapper fix. Wrapper generation must decide the
 custody of `.claude/commands/*`, which is exactly the directory-ignore custody
 ambiguity the second fix removes; doing wrappers first would keep running into
 it. (Sequencing noted 2026-06-15 per the GPT 5.5 review.)
+
+### 2026-06-15 - Harvest dropbox is read without syncing from its remote
+
+Status: Open (deferred by owner; no change made)
+
+Finding:
+The harvest consume flow reads the local working copy of the dropbox repo with no
+git sync first. `procedures/harvest.md` Step 1 says only "Read new files in the
+harvest dropbox repo" - no fetch, `ls-remote`, or `--ff-only` pull. The only
+git-sync discipline in the canon ("Cwd-independent Step 0 sync") is scoped to the
+bootstrap toolkit's own remotes and says nothing about the dropbox, and the
+`catchup` operator definition in `templates/AGENTS.template.md` does not mention
+the dropbox at all. Reading a working tree and asserting "no unprocessed reports"
+is unsound independent of how many machines exist: the dropbox's canonical
+contents are its git history, not one checkout, so a working copy behind its
+remote omits reports without any signal. This is the Evidence rule (cite the
+query proving a claim is currently active) applied to another repo's state; a
+directory listing is not that proof. Reports are delivered by push
+(`procedures/migration.md` Step 3), so a working copy missing recently pushed
+reports is the expected case, not an edge case.
+
+Evidence (2026-06-15): `procedures/harvest.md` Step 1 contains no sync step. A
+catchup reported "no unprocessed harvest reports" from a bare directory listing
+of the dropbox (path from `harvest.config.json`) with no fetch or pull. No
+existing rule required pulling the dropbox first, so this is a gap, not a rule
+violation.
+
+Options:
+- Adopt: before reading the dropbox - in `harvest.md` Step 1 and anywhere a
+  catchup or status report consumes it - require a freshness sync of the dropbox
+  from its remote, mirroring the Step 0 toolkit-sync discipline (`git -C
+  <dropbox>`, `ls-remote --exit-code` liveness, `--ff-only`); if the dropbox is
+  offline, has no remote, or has diverged, proceed but state plainly that the
+  harvest view is local-only and unverified rather than asserting completeness.
+  Keep all dropbox writes (the move-to-`processed/` step) on the post-sync tree.
+- Leave: accept that harvest state reported without a sync is local-only and rely
+  on the owner remembering to pull before a sweep.
+
+Recommendation: adopt; this is a correctness/evidence gap, not a convenience
+sync. Fix scope is the product (`procedures/harvest.md`, plus the `catchup`
+operator behavior and/or Evidence rule wording in
+`templates/AGENTS.template.md`), not this repo's own local governance. Confirm
+the dropbox's remote configuration when the fix is implemented.
+
+### 2026-06-15 - Git Safety is silent on history rewrite and commit-structure choice
+
+Status: Open (deferred by owner; no change made)
+
+Finding:
+The shipped `templates/AGENTS.template.md` "Git Safety" section says nothing about
+amend, rebase, squash, or rewriting history, and nothing about who decides commit
+structure. Its only commit-shaping rule is "address exactly one item per commit
+and commit each before starting the next." Under that, an agent can rewrite an
+existing commit or fold two items into one by amending without violating any rule.
+Choosing to amend or restructure a commit is an owner-level process decision - the
+same class as the artifact-is-evidence-not-decision and answer-with-words rules -
+and history rewrite is hard to reverse once pushed, but the git invariants name no
+such limit.
+
+Evidence (2026-06-15): `templates/AGENTS.template.md` Git Safety (lines ~137-150)
+contains only the ancestry-vs-content rule and the one-item-per-commit rule, with
+no mention of amend/rebase/squash or commit-structure authority. An agent
+instructed to remove a file amended an existing commit instead of adding a new
+one, rewriting history without being asked - the act-without-asking pattern the
+words-first rule targets, which the git section did not cover.
+
+Options:
+- Adopt: add a Git Safety invariant to the AGENTS template such as "Do not rewrite
+  history (amend, rebase, squash, force-push) or decide commit structure without
+  explicit owner approval; default to a new commit per fix," and align the
+  bootstrap/migration commit contract so the owner's approval authorizes the
+  scoped commit, not a later rewrite of it. Mirror the same line into this repo's
+  own root `AGENTS.md` for consistency.
+- Leave: rely on the words-first / artifact-is-evidence rules to cover commit
+  rewriting implicitly, accepting that the git section names no such limit.
+
+Recommendation: adopt; history rewrite is exactly the kind of hard-to-reverse,
+owner-only process choice the rest of the canon is explicit about. Fix scope is
+the product (`templates/AGENTS.template.md` Git Safety, plus the commit contract
+in `procedures/bootstrap.md` / `procedures/migration.md`), with an optional
+matching line in this repo's own `AGENTS.md`.
+
+### 2026-06-15 - Summaries restate authoritative counts and enumerations
+
+Status: Open (deferred; implement when Claude Fable is back online)
+
+Finding:
+A summary or pointer doc that restates a fact another doc owns - a count, or an
+enumeration of items maintained elsewhere - is a drift generator. The copy and
+the source diverge whenever the source changes without a lockstep edit to the
+summary, and the result is a conflict a reader cannot resolve from the docs
+alone (the count says one thing, the authoritative list says another, and no rule
+declares which wins). Current instance: `.agents/state.md` "Next" restates both
+the number and the list of open decisions, which `.agents/decisions.md` "Open
+Decisions" owns.
+
+Fix:
+A summary/pointer names where a fact lives and does not duplicate counts or
+enumerations of facts another doc owns. Concretely, `.agents/state.md` "Next"
+references the `.agents/decisions.md` "Open Decisions" section with no number and
+no per-item list. Generalize the rule into the canon so every bootstrapped repo
+inherits it: a pointer doc points; it does not maintain a second copy of an
+authoritative count or list. This is the same drift class as the `drift`
+operator's "fix the lower-authority source" - state.md is the lower-authority
+pointer, decisions.md is the source.
+
+Scope:
+This repo's local governance (`.agents/state.md` wording), plus a canon change to
+encode the principle (`templates/AGENTS.template.md`, near the Operator Requests
+or state-doc guidance). No change made now.
+
+### 2026-06-15 - Do not circumvent roadblocks without established provenance
+
+Status: Open (deferred; implement when Claude Fable is back online)
+
+Finding:
+A roadblock - a failing test, an assertion or guard, a lint or type error, a
+`.gitignore` rule or one of its exceptions, a refusal or permission denial, a
+config that forbids an action, a thrown exception, a CI gate - exists until
+proven otherwise for a reason that may not be visible at the point it is hit. The
+canon forbids specific instances of routing around one (the revert-the-fix /
+vacuous-test rule in the Verification section; the ban on silent `git add -f` in
+the gitignore commit contract) but states no general principle, so an agent that
+cannot see why a roadblock exists can remove, disable, override, or bypass it to
+make the obstruction go away without first establishing whether it is
+load-bearing.
+
+Fix:
+Add an invariant: do not circumvent a roadblock whose provenance is not
+established. Before removing, disabling, overriding, or bypassing one, inspect the
+code and docs - history, comments, related decisions, the rule's origin -
+thoroughly enough to validate that it is not load-bearing and that circumventing
+it is appropriate. If that validation cannot be reached, treat the roadblock as
+legitimate and stop or ask rather than routing around it. The default is that the
+roadblock is correct until proven otherwise; "make the error go away" is not a
+basis for removing it.
+
+Scope:
+The product (`templates/AGENTS.template.md` invariants, generalizing the existing
+point-rules), with an optional matching line in this repo's own `AGENTS.md`. No
+change made now.
+
+### 2026-06-15 - Project-specific memory must live in the repo, not in any agent-local store
+
+Status: Open (deferred; implement when Claude Fable is back online)
+
+Finding:
+Many agent harnesses provide a machine-local, per-project memory store outside the
+repo - for example Claude Code's `~/.claude/projects/<project>/memory/`, and the
+equivalent local memory or state stores in other coding agents such as Codex or
+Gemini. Project-specific durable knowledge written to any such store does not live
+in the repo: it is not versioned with the code, does not travel across machines,
+and is invisible to other agents, other tools, and the governance process that
+reads `AGENTS.md`, `.agents/state.md`, and `.agents/decisions.md`. The canon does
+not direct agents where project memory belongs, so an agent following its
+harness's default memory mechanism - whichever harness it is - parks
+project-specific facts in a location the process cannot use.
+
+Fix:
+Add a harness-agnostic invariant: project-specific durable knowledge is persisted
+into the repo's governance (`.agents/state.md`, `.agents/decisions.md`,
+`AGENTS.md`, or a dedicated repo memory doc), where it is versioned and
+discoverable by every session, agent, and machine. Any agent-local or
+harness-local memory store, regardless of which model or CLI provides it, is
+reserved for genuinely cross-project facts (owner identity, preferences) and is
+not the home for project-specific memory. Phrase the rule by behavior, not by one
+vendor's path, and encode it in the canon so every bootstrapped repo directs
+agents of any harness accordingly.
+
+Scope:
+The product (`templates/AGENTS.template.md`, and any procedure that tells agents
+where to record durable knowledge), with an optional matching line in this repo's
+own `AGENTS.md`. No change made now.
