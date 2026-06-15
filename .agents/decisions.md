@@ -532,3 +532,36 @@ Scope:
 The product (`templates/AGENTS.template.md`, and any procedure that tells agents
 where to record durable knowledge), with an optional matching line in this repo's
 own `AGENTS.md`. No change made now.
+
+### 2026-06-15 - Toolkit remote topology: GitHub is canonical, gitea is a mirror
+
+Status: Open (deferred; implement when Claude Fable is back online)
+
+Finding:
+The canon models the toolkit's two remotes as co-equal canonical sources with the
+gitea LAN remote as "primary": `procedures/bootstrap.md` Step 0 lists both URLs as
+"the canonical copies" and flags divergence when "the two remotes disagree with
+each other"; the "Single-session kickoff" decision says "two canonical remotes
+(gitea LAN primary + GitHub)"; the "Cwd-independent Step 0 sync" decision flags
+when "the two canonical remotes disagree"; and `AGENTS.md` names gitea
+`http://q:3000/michael/AgentGovernanceBootstrap.git` as "(primary)" and tells
+agents to "offer once to push, naming both." In fact GitHub
+(`https://github.com/roethlar/AgentGovernanceBootstrap.git`) is the single source
+of truth and the gitea LAN remote is a mirror of GitHub. The co-equal model is
+wrong in four ways: (a) "primary = gitea" inverts authority; (b) "two remotes
+disagree -> flag" treats an expected stale mirror as a genuine conflict; (c)
+fast-forwarding to the newest fetched head can advance to a stale gitea head when
+the mirror lags; (d) "push to both" is wrong for a mirror - the push target is the
+source (GitHub) and the mirror updates downstream.
+
+Fix:
+Reframe the topology in the canon: GitHub is canonical; the gitea LAN remote is a
+mirror used only as a fast fetch source when reachable. Authority resolves to
+GitHub on any divergence (a lagging mirror is expected, not a flag-worthy
+disagreement), freshness is judged against GitHub, and push offers target GitHub
+only. Keep gitea as an optional labeled mirror for fetch speed.
+
+Scope:
+The product (`procedures/bootstrap.md` Step 0, the "Single-session kickoff" and
+"Cwd-independent Step 0 sync" decisions, and this repo's own `AGENTS.md`
+canon-propagation note). No change made now.
