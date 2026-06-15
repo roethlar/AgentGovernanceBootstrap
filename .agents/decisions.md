@@ -198,3 +198,119 @@ All other pilot observations that did not yield a new durable rule were left as 
 
 Supersedes:
 The pre-pilot procedures and templates.
+
+## Open Decisions (deferred - not yet adopted)
+
+These are assessed findings the owner chose to record for a future decision
+rather than implement now. The process is unchanged until one is adopted. Each
+states the verified evidence, the options, and the standing recommendation.
+
+### 2026-06-15 - Command wrappers are created only on the migration route
+
+Status: Open (deferred by owner; no change made)
+
+Finding:
+The operator vocabulary (`catchup`, `handoff`, `drift`, `decision`, `plan`) is
+defined in the universal `templates/AGENTS.template.md` "Operator Requests"
+section, so every bootstrapped repo advertises these words. The harness command
+wrappers that make them work as slash commands (for Claude Code,
+`.claude/commands/<name>.md`) are created in exactly one place: `migration.md`
+Step 4.2. The greenfield workflow in `bootstrap.md` creates only the harness
+shim, not wrappers; the update route delegates to the repo's own Bootstrap
+Handoff rule (template steps 1-11), which never mentions wrappers. Result: a
+repo bootstrapped greenfield or maintained via update carries the vocabulary in
+prose but has no working commands. The operator words still function as
+plain-language requests on every route; the missing piece is the slash-command
+affordance, not process authority.
+
+Evidence (Vela update-route pilot, 2026-06-15): manifest `route: update`; Vela's
+`AGENTS.md` defines the operator words but no `.claude/commands/` directory
+exists; `/catchup` returned "Unknown command." Greenfield Step 5 confirmed to
+create only the shim.
+
+Options:
+- Adopt: frame it as "every route audits and drafts thin harness command
+  wrappers when the harness supports command files," not "always create
+  `.claude/commands/` on all routes." Each route decides each wrapper's custody
+  with an exact-path `git check-ignore` (see the ignored-directory decision
+  below). Move the canonical wrapper recipe out of `migration.md` Step 4.2 to a
+  route-neutral home both greenfield, migration, and update flows actually reach
+  (a short shared section in `bootstrap.md`, or the AGENTS template), and
+  reference it from each route. Sub-question: the update route delegates to the
+  repo's generated `AGENTS.md` Bootstrap Handoff; a `bootstrap.md` Step 3 hook
+  alone suffices for run behavior because every run re-syncs and re-reads
+  `bootstrap.md`, but adding a wrapper-audit step to the AGENTS template's
+  Bootstrap Handoff would make generated repos self-contained (at the cost of
+  more text in every target `AGENTS.md`) - decide whether that defense-in-depth
+  is worth it.
+- Leave: accept that operator words work as prose behavior even without slash
+  commands, and treat wrappers as migration-only.
+
+Recommendation: adopt the route-neutral, harness-conditional, centralized
+version; the toolkit's own migration route treats wrappers as a deliverable, and
+the inconsistency is a citable broken-promise UX failure. (Refined 2026-06-15
+per a GPT 5.5 review: conditional/centralized framing, prose-vs-affordance
+clarification, update-route template sub-question.)
+
+### 2026-06-15 - Packet over-claims custody for a directory git collapsed to ignored
+
+Status: Open (deferred by owner; no change made)
+
+Finding:
+When a directory contains only ignored files and no tracked files, `git status
+--ignored --short` collapses it to a single `!! dir/` entry. `tools/discover.py`
+records that directory in `ignoredFiles`, and the packet's `mark_ignored`
+renders it as "(gitignored - local-only; cannot be committed as-is)". That is a
+blanket custody verdict the collapse does not support: the collapsed directory
+entry alone does not prove whether a future child path is committable.
+
+Evidence (Vela pilot, 2026-06-15): manifest `ignoredFiles: ['.claude/']` and the
+packet said `.claude/` "cannot be committed as-is", yet `.gitignore` has no
+`.claude` rule; `.claude/` held only `settings.local.json`, which is ignored by
+the machine-global `~/.config/git/ignore` rule `**/.claude/settings.local.json`,
+so git collapsed the directory. `git check-ignore .claude/commands/catchup.md`
+exits 1 (committable). Note: the Vela report blamed "a false mechanical match,"
+but discovery's ignore detection is a real `git status --ignored` query, not a
+name-match - the corrected cause is the directory-collapse over-claim.
+
+Important: do not assert that new tracked files can always be added. A directory
+git reports as ignored can arise two ways that `git status --ignored` collapses
+to the identical `!! dir/`: (A) a rule directly ignores the directory (e.g.
+`.claude/` in `.gitignore`), in which case children inherit the ignore and a new
+child is NOT committable without narrowing/overriding the rule; (B) the directory
+contains only individually-ignored files but no rule matches the directory itself
+(Vela's case - `git check-ignore .claude/` exits 1), in which case a
+non-matching new child IS committable. The packet must not pick a side.
+
+Options:
+- Adopt (lighter, recommended): in `discover.py`, branch `mark_ignored` on
+  whether the entry is a directory; for a directory, use neutral wording such as
+  "a directory git reports as ignored - this describes the current entry/contents,
+  not a custody verdict for every future child path; run `git check-ignore` on
+  the exact final path before deciding custody," keeping "gitignored - local-only;
+  cannot be committed as-is" only for directly-ignored files. Add reproducing
+  tests covering BOTH case A (rule on the directory) and case B (rule on a child,
+  via repo `.gitignore` or `.git/info/exclude`) to prove the packet no longer
+  over-claims, plus a one-line evidence-rule reinforcement that a parent
+  directory shown ignored is not a custody verdict on new child paths. This is a
+  packet wording + test fix, not a manifest redesign; the schema already notes
+  `ignoredFiles` may list a directory (manifest-schema.md:53).
+- Adopt (deeper): change discovery to expand the collapsed directory into
+  per-file ignored entries (e.g. `git status --ignored=matching`); rejected as
+  primary because it churns the golden manifests for little additional benefit.
+- Leave: rely on agents always running `git check-ignore` on the exact final
+  path (already required by the custody steps) and treat the packet line as a
+  known imprecision.
+
+Recommendation: adopt the lighter fix; this is the third report to trip over
+`.claude/` custody and the wording change is low-risk. (Refined 2026-06-15 per a
+GPT 5.5 review: corrected the over-strong "new files can still be added" wording
+to neutral case-A/case-B wording; test must cover both cases.)
+
+### Adoption order for the two open decisions above
+
+Adopt the ignored-directory wording fix first, or in the same owner-approved
+batch, before the command-wrapper fix. Wrapper generation must decide the
+custody of `.claude/commands/*`, which is exactly the directory-ignore custody
+ambiguity the second fix removes; doing wrappers first would keep running into
+it. (Sequencing noted 2026-06-15 per the GPT 5.5 review.)

@@ -15,6 +15,7 @@ short and update it when important repo facts change.
 
 ## Next
 
+- Two assessed-but-deferred toolkit decisions are open (see `.agents/decisions.md` "Open Decisions"): command wrappers are created only on the migration route, and the discovery packet over-claims custody for a directory git collapsed to ignored. From the Vela update-route pilot (2026-06-15); process unchanged until the owner adopts one.
 - Run harvest sweeps in this repo only on explicit owner request as harvest reports accumulate in the dropbox (or fallback).
 - Support for small/local models remains best-effort: agents should use the fallback flow (run discovery manually then `Read .bootstrap-tmp/START-HERE.md and follow it.`) together with a plugin-free harness profile.
 - The harvest digest script is deferred until report volume justifies the work (see the 2026-06-09 spec).
