@@ -66,9 +66,18 @@ If `.bootstrap-tmp/` exists, treat it as temporary bootstrap input.
 9. Write proposed guidance changes under `.bootstrap-tmp/drafts/`, mirroring final paths
    when practical. Include draft `AGENTS.md`, state, decisions, repo map, playbooks when
    useful, and artifact manifest.
-10. Ask for approval before copying those drafts to tracked guidance paths such as
+10. Audit the operator command wrappers. The operator words below
+    (`catchup`, `handoff`, `drift`, `decision`, `plan`) should work as real
+    slash commands on a harness that supports command files, and those command
+    files must be committed, not local-only. If any are missing, draft them
+    (for Claude Code, `.claude/commands/<name>.md`, a one-paragraph pointer to
+    the matching section here). If an ignore rule keeps them out of git, propose
+    a `.gitignore` edit that makes the command files committable while keeping
+    machine-local harness state (e.g. `.claude/settings.local.json`) ignored -
+    never `git add -f`. If they already exist and are committed, change nothing.
+11. Ask for approval before copying those drafts to tracked guidance paths such as
    `AGENTS.md` or `.agents/*`.
-11. Do not ask about deleting `.bootstrap-tmp/` until after the human approves durable
+12. Do not ask about deleting `.bootstrap-tmp/` until after the human approves durable
     files and those files have been copied. Delete it yourself only if the human
     explicitly asks and the resolved path exactly matches this repo's `.bootstrap-tmp`
     directory.

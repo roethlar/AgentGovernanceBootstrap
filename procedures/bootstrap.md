@@ -109,6 +109,44 @@ cannot get lazy on a large repo and you can.
   standard repos as a small inventory).
 - `greenfield` -> continue below.
 
+Every route also runs the operator command wrapper guarantee below.
+
+## Operator command wrappers (all routes)
+
+The operator words (`catchup`, `handoff`, `drift`, `decision`, `plan`) are
+advertised in every generated `AGENTS.md`. On a harness that supports command
+files, those words should also work as real slash commands - and the command
+files must travel with the repo, not sit local-only on one machine. This is a
+standing guarantee, not a one-time setup: run it on every route (greenfield,
+migration, update). The expected steady state is "already present, nothing to
+do."
+
+1. Decide whether the harness you are running in supports command files at all.
+   Claude Code does (`.claude/commands/<name>.md`); some harnesses do not - if
+   yours has no command-file mechanism, skip this section and rely on the words
+   working as plain-language requests (they always do).
+2. For a harness that supports them, check whether a wrapper exists for each
+   operator word. Draft any that are missing under
+   `.bootstrap-tmp/drafts/` mirroring the final path (for Claude Code,
+   `.bootstrap-tmp/drafts/.claude/commands/<name>.md`). Each wrapper is a
+   one-paragraph pointer to the relevant `AGENTS.md` section - never a copy of
+   it.
+3. Make the wrappers committable. Run `git check-ignore` on each final wrapper
+   path. If an ignore rule covers it (commonly a blanket `.claude/` rule), the
+   fix is NOT a silent `git add -f`: propose editing `.gitignore` so the
+   command files become committable while genuinely machine-local harness state
+   stays ignored. For Claude Code that means removing a blanket `.claude/` rule
+   and adding a narrower `.claude/settings.local.json` rule in its place
+   (settings.local.json is per-machine and must stay out of git). List the
+   `.gitignore` edit in the approval summary as one of the proposed changes.
+4. If the repo already has working, committed wrappers, record "wrappers already
+   present" and change nothing. Never overwrite a repo's existing wrapper
+   content just to match a template.
+
+Custody and committing follow the normal contract: the drafted wrappers and the
+`.gitignore` edit go through the approval summary like any other proposed file,
+and land in the same single scoped commit.
+
 ## Greenfield workflow
 
 1. Read the suggested files listed in the review packet directly from the repo.
@@ -148,7 +186,9 @@ cannot get lazy on a large repo and you can.
    of the harness you are running in) for the harness you are running in, from
    `.bootstrap-tmp/templates/shims/` when one exists for it; otherwise write a
    minimal pointer shim from self-knowledge and label it "best-effort" in the
-   approval summary.
+   approval summary. Then run the "Operator command wrappers (all routes)"
+   section above: draft any missing wrappers and the `.gitignore` edit that
+   makes them committable.
 6. Staleness recheck: before writing the approval summary, compare current
    `git status --short` with the manifest's recorded status. If the working tree
    materially changed (files added, deleted, or heavily edited), re-run discovery

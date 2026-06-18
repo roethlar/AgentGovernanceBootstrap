@@ -94,23 +94,18 @@ only after approval.
    running in. For harnesses that do not, draft the shim from
    `.bootstrap-tmp/templates/shims/`; for harnesses without a template, write a
    minimal pointer shim from self-knowledge and label it best-effort.
-2. Draft thin command wrappers for the repo's trigger vocabulary (catchup,
-   handoff, drift, decision, plan) pointing at the canonical guidance - for
-   Claude Code: `.claude/commands/<name>.md`, each a one-paragraph pointer to the
-   relevant `AGENTS.md` section, never a copy of it.
-3. Decide custody for every drafted file before the approval summary: run
-   `git check-ignore <final-path>` on each one. Harness directories are often
-   gitignored (`.claude/` commonly holds machine-local settings). If a
-   proposed path is ignored, either (a) propose it as local-only, labeled
-   that way in the artifact manifest and in the approval summary's
-   Local-only list, or (b) flag the ignore rule as a finding and ask the
-   owner whether to un-ignore it. Never silently `git add -f` past an
-   ignore rule - it overrides owner intent. One case always requires (b):
-   when existing durable guidance or the artifact manifest claims tracked
-   custody for a path the repo ignores, that is an owner-level conflict,
-   not drift to auto-correct - present both resolutions (keep the files
-   local-only and correct the manifest, or narrow the ignore rule and track
-   them) and let the owner choose.
+2. Run the "Operator command wrappers (all routes)" section in
+   `.bootstrap-tmp/procedures/bootstrap.md`: audit the trigger vocabulary
+   (catchup, handoff, drift, decision, plan), draft any missing wrappers, and
+   propose the `.gitignore` edit that makes them committable while keeping
+   machine-local harness state (e.g. `.claude/settings.local.json`) ignored.
+   That section is the single canonical recipe; do not duplicate it here.
+3. One escalation specific to migration: when existing durable guidance or the
+   artifact manifest already claims tracked custody for a path the repo
+   ignores, that is an owner-level conflict, not drift to auto-correct -
+   present both resolutions (keep the files local-only and correct the
+   manifest, or narrow the ignore rule and track them) and let the owner
+   choose.
 
 ## Step 5: Staleness recheck
 

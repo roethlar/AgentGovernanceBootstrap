@@ -199,6 +199,45 @@ All other pilot observations that did not yield a new durable rule were left as 
 Supersedes:
 The pre-pilot procedures and templates.
 
+### 2026-06-18 - Operator command wrappers are a standing guarantee on every route
+
+Status: Active
+
+Decision:
+On every route (greenfield, migration, update), the process audits the operator
+vocabulary (`catchup`, `handoff`, `drift`, `decision`, `plan`) and, on a harness
+that supports command files, drafts any missing slash-command wrappers and the
+`.gitignore` edit that makes them committable - removing a blanket `.claude/`
+ignore rule and adding a narrower `.claude/settings.local.json` rule so
+machine-local settings stay out of git. The expected steady state is "already
+present, nothing to do"; existing committed wrappers are never overwritten. The
+canonical recipe lives in one place - `procedures/bootstrap.md` "Operator command
+wrappers (all routes)" - and is referenced from the greenfield workflow,
+`procedures/migration.md` Step 4, and the AGENTS template Bootstrap Handoff so
+generated repos self-audit on update runs. Wrappers and the `.gitignore` edit
+travel through the normal approval summary and land in the single scoped commit.
+
+Reason:
+A repo bootstrapped greenfield or maintained via update previously advertised the
+operator words in prose but had no working slash commands, and `.claude/` was
+often gitignored so even drafted wrappers never got committed - a broken-promise
+UX failure for the human the toolkit exists to serve. Making wrappers a standing,
+route-neutral guarantee (with the gitignore fix that makes them durable) closes
+that gap.
+
+Alternative considered and rejected:
+A pilot report proposed instead routing `.claude/`-only-ignored repos to
+greenfield by filtering gitignored markers out of `compute_route`. Rejected: that
+routes *around* the symptom (treats a misconfigured, local-only `.claude/` as
+"nothing to migrate") rather than fixing the cause. The adopted approach repairs
+the gitignore configuration so the commands become durable governance, which is
+the correct end state. The packet's separate custody-wording imprecision is
+tracked below and is unaffected by this decision.
+
+Supersedes:
+The deferred "Command wrappers are created only on the migration route"
+(2026-06-15), now adopted in generalized form.
+
 ## Open Decisions (deferred - not yet adopted)
 
 These are assessed findings the owner chose to record for a future decision
@@ -207,7 +246,9 @@ states the verified evidence, the options, and the standing recommendation.
 
 ### 2026-06-15 - Command wrappers are created only on the migration route
 
-Status: Open (deferred by owner; no change made)
+Status: Adopted 2026-06-18 (see "Operator command wrappers are a standing
+guarantee on every route" in Decisions above). The finding below is retained as
+the rationale that led to it.
 
 Finding:
 The operator vocabulary (`catchup`, `handoff`, `drift`, `decision`, `plan`) is
@@ -307,13 +348,17 @@ Recommendation: adopt the lighter fix; this is the third report to trip over
 GPT 5.5 review: corrected the over-strong "new files can still be added" wording
 to neutral case-A/case-B wording; test must cover both cases.)
 
-### Adoption order for the two open decisions above
+### Adoption order note (updated 2026-06-18)
 
-Adopt the ignored-directory wording fix first, or in the same owner-approved
-batch, before the command-wrapper fix. Wrapper generation must decide the
-custody of `.claude/commands/*`, which is exactly the directory-ignore custody
-ambiguity the second fix removes; doing wrappers first would keep running into
-it. (Sequencing noted 2026-06-15 per the GPT 5.5 review.)
+The command-wrapper fix was adopted 2026-06-18 ahead of the ignored-directory
+wording fix. The original sequencing assumed wrapper generation would have to
+*decide the custody* of an ignored `.claude/commands/*` and so needed the
+custody-wording fix first. The adopted wrapper approach instead *repairs the
+gitignore* so `.claude/` command files are committable, which sidesteps the
+directory-ignore custody ambiguity rather than depending on it. The
+ignored-directory packet-wording fix below remains open and worth doing on its
+own merits (the packet can still over-claim custody for other collapsed-ignored
+directories), but is no longer a prerequisite for anything.
 
 ### 2026-06-15 - Harvest dropbox is read without syncing from its remote
 
