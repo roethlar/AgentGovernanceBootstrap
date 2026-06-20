@@ -153,6 +153,12 @@ Use the repo's current automated verification entry point recorded in
   commit and commit each before starting the next. Batch sweeps spanning many
   findings happen only on the owner's explicit request. Whether work happens on a
   branch is this repo's policy, not this rule's.
+- Do not rewrite history or restructure existing commits without explicit owner
+  approval: no `git commit --amend`, `rebase`, `squash`, or force-push, and no
+  reordering or collapsing commits already made. The owner's approval authorizes
+  the scoped commit as announced — it does not authorize a later rewrite of it.
+  Default to a new commit per fix; if history genuinely needs reshaping, stop and
+  ask.
 
 ## Final Response
 

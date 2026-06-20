@@ -156,7 +156,10 @@ file.
    approves copying alone - confirm commit scope in one line before
    committing. Never push unprompted: after
    committing, ask once, in one line, whether to push - naming the repo's
-   remotes when there is more than one - and push only what the owner names.
+   remotes when there is more than one - and push only what the owner names. The
+   approval authorizes this one commit as shaped; do not amend, rebase, squash,
+   reorder, or force-push it afterward without a fresh owner go (see Git Safety in
+   the AGENTS template).
 6. Do not raise deleting `.bootstrap-tmp/` until approved files are copied.
    After the approved files are copied and committed, close with one line
    noting that `.bootstrap-tmp/` remains (untracked) and will be deleted only

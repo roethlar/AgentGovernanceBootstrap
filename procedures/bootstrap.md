@@ -212,7 +212,9 @@ and land in the same single scoped commit.
     copying alone - confirm commit scope in one line before committing. Never
     push unprompted: after committing, ask once, in one line, whether to push
     - naming the repo's remotes when there is more than one - and push only
-    what the owner names.
+    what the owner names. The approval authorizes this one commit as shaped; do
+    not amend, rebase, squash, reorder, or force-push it afterward without a
+    fresh owner go (see Git Safety in the AGENTS template).
 11. Do not raise deleting `.bootstrap-tmp/` until approved files are copied.
     Delete it only if the human explicitly asks and the resolved path is exactly
     the repo's `.bootstrap-tmp` directory. After the approved files are copied

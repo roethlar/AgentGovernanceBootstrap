@@ -85,6 +85,10 @@ The baseline of implemented capabilities and open work items at the time of the
   `https://github.com/roethlar/AgentGovernanceBootstrap.git` (public). After
   committing here, offer once to push, naming both; target-repo sessions sync
   from these remotes at kickoff (fast-forward only).
+- Do not rewrite git history or restructure existing commits without an explicit
+  owner go: no amend, rebase, squash, reorder, or force-push of work already
+  committed. Approval authorizes the scoped commit as announced, not a later
+  reshaping of it; default to a new commit per fix.
 - Prefer implementation and pilot-driven fixes over more planning.
 - Do not create a new plan revision unless the user asks for one.
 - Treat the repo as durable memory. If a repo-specific fact, decision, invariant,

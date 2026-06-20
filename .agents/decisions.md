@@ -405,7 +405,10 @@ the dropbox's remote configuration when the fix is implemented.
 
 ### 2026-06-15 - Git Safety is silent on history rewrite and commit-structure choice
 
-Status: Open (deferred by owner; no change made)
+Status: Adopted 2026-06-20. The invariant now lives in the `templates/AGENTS.template.md`
+"Git Safety" section, with aligning clauses in `procedures/bootstrap.md` (Step 10),
+`procedures/migration.md` (Step 5), and this repo's own `AGENTS.md` Working Rules.
+The finding below is retained for the rationale that led to it.
 
 Finding:
 The shipped `templates/AGENTS.template.md` "Git Safety" section says nothing about
