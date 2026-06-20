@@ -11,11 +11,20 @@ good one costs nothing, because the report stays where it is.
 
 ## How
 
-1. Read new files in the harvest dropbox repo (its path is in this repo's
-   untracked `harvest.config.json`; if that file is absent, there is no
-   dropbox on this machine). Also scan any repo paths the owner names for
-   fallback `.agents/harvest.md` files. All cross-repo reading is read-only;
-   the dropbox is the one place this session may write outside this repo.
+1. Sync the harvest dropbox before reading it. Its path is in this repo's
+   untracked `harvest.config.json`; if that file is absent, there is no dropbox
+   on this machine. When it is present, freshen the dropbox from its remote the
+   same way Step 0 syncs this toolkit — `git -C <dropbox> ls-remote --exit-code
+   <remote> HEAD` for liveness, then `git -C <dropbox> fetch` and `merge
+   --ff-only` — because the dropbox's canonical contents are its git history, not
+   one checkout; a working copy behind its remote omits pushed reports with no
+   signal. If the dropbox is offline, has no remote, or has diverged, proceed but
+   state plainly that the harvest view is local-only and unverified rather than
+   asserting "no unprocessed reports." Then read the new files in the dropbox.
+   Also scan any repo paths the owner names for fallback `.agents/harvest.md`
+   files. All cross-repo reading is read-only; the dropbox is the one place this
+   session may write outside this repo, and every dropbox write (the
+   move-to-`processed/` step) happens on the post-sync tree.
 2. Skip reports already logged in `harvest/processed.md`. Reject reports that
    do not follow the template's required headings - list each rejected file
    by name; never drop anything silently.

@@ -362,7 +362,16 @@ directories), but is no longer a prerequisite for anything.
 
 ### 2026-06-15 - Harvest dropbox is read without syncing from its remote
 
-Status: Open (deferred by owner; no change made)
+Status: Adopted 2026-06-20. `procedures/harvest.md` Step 1 now requires a
+freshness sync of the dropbox from its remote (Step-0 discipline: `git -C
+<dropbox>`, `ls-remote` liveness, `--ff-only`) before reading, and proceeds with a
+local-only/unverified flag rather than asserting "no unprocessed reports" when the
+dropbox is offline, remoteless, or diverged. The sync wording is intentionally
+generic (no hardcoded remote): `harvest.config.json` was absent on the
+implementing machine, so the dropbox's concrete remote could not be confirmed —
+to be verified the next time a dropbox is configured. The template `catchup`
+operator was left unchanged because it does not read the dropbox. The finding
+below is retained for the rationale that led to it.
 
 Finding:
 The harvest consume flow reads the local working copy of the dropbox repo with no
