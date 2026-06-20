@@ -89,6 +89,12 @@ The baseline of implemented capabilities and open work items at the time of the
   owner go: no amend, rebase, squash, reorder, or force-push of work already
   committed. Approval authorizes the scoped commit as announced, not a later
   reshaping of it; default to a new commit per fix.
+- Do not circumvent a roadblock whose provenance you have not established — a
+  failing test, a guard, a lint or type error, a `.gitignore` rule, a permission
+  denial, a CI gate. Inspect its origin enough to confirm it is not load-bearing
+  before removing, disabling, or bypassing it; if you cannot, treat it as
+  legitimate and stop or ask. Default: the roadblock is correct until proven
+  otherwise.
 - Prefer implementation and pilot-driven fixes over more planning.
 - Do not create a new plan revision unless the user asks for one.
 - Treat the repo as durable memory. If a repo-specific fact, decision, invariant,

@@ -475,7 +475,9 @@ or state-doc guidance). No change made now.
 
 ### 2026-06-15 - Do not circumvent roadblocks without established provenance
 
-Status: Open (deferred; implement when Claude Fable is back online)
+Status: Adopted 2026-06-20. The invariant now lives in the `templates/AGENTS.template.md`
+"Universal Invariants" section, with a matching bullet in this repo's own `AGENTS.md`
+Working Rules. The finding below is retained for the rationale that led to it.
 
 Finding:
 A roadblock - a failing test, an assertion or guard, a lint or type error, a

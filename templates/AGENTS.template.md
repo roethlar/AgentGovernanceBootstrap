@@ -40,6 +40,13 @@ scratch files as authority.
   commands, runtime behavior, generated files, or user-visible behavior. Behavior not
   covered by automation needs the relevant manual check, smoke test, or playtest, or a
   clear note that it was not run.
+- Do not circumvent a roadblock whose provenance you have not established — a failing
+  test, a guard or assertion, a lint or type error, a `.gitignore` rule, a refusal or
+  permission denial, a config prohibition, a CI gate. Before removing, disabling,
+  overriding, or bypassing one, inspect its origin (history, comments, related decisions)
+  thoroughly enough to confirm it is not load-bearing; if you cannot, treat it as
+  legitimate and stop or ask. A roadblock is correct until proven otherwise; making the
+  error go away is not a basis for removing it.
 
 ## Bootstrap Handoff
 
