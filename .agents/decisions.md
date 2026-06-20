@@ -565,3 +565,77 @@ Scope:
 The product (`procedures/bootstrap.md` Step 0, the "Single-session kickoff" and
 "Cwd-independent Step 0 sync" decisions, and this repo's own `AGENTS.md`
 canon-propagation note). No change made now.
+
+### 2026-06-20 - Wrapper generation is gated on the bootstrapping harness, not committed on every route
+
+Status: Open (deferred; no change made)
+
+Finding:
+The "Operator command wrappers (all routes)" guarantee gates whether the
+portable command wrappers get drafted at all on whether the harness *running the
+bootstrap right now* supports command files. A harness with no command-file
+mechanism skips the section entirely. But the wrappers
+(`.claude/commands/{catchup,handoff,drift,decision,plan}.md`) are one-paragraph
+pointers into the committed `AGENTS.md` — repo-portable artifacts, not
+harness-local state, in the same class as `AGENTS.md` itself, which is committed
+regardless of which harness wrote it. So an agent bootstrapping under a
+native-`AGENTS.md`-reader harness (Codex-family and newer tools, which are
+exactly the ones likely to have no command-file mechanism) produces no wrappers,
+and a later session under Claude Code finds no slash commands — the same
+broken-promise UX the 2026-06-18 standing-guarantee decision set out to close,
+re-triggered by which harness ran the bootstrap rather than by route.
+
+Note on the trigger: the literal skip condition in the canon is "the harness you
+are running in has no command-file mechanism," not the phrase "reads `AGENTS.md`
+natively." That phrase belongs to the *shim* steps (a separate artifact). In
+practice the two coincide — native-reader harnesses are the ones without command
+files — so the gap lands where the finding says, but the proving text is the
+command-file gate, not the shim's native-reader clause.
+
+Evidence (2026-06-20, current canon):
+- `procedures/bootstrap.md:124-127` (wrapper section, step 1): "if yours has no
+  command-file mechanism, skip this section and rely on the words working as
+  plain-language requests."
+- `procedures/bootstrap.md:184-191` (greenfield step 5): drafts the shim only for
+  non-native harnesses, then runs the wrapper section — so under a native-reader
+  harness with no command files, neither is produced.
+- `procedures/migration.md:92-101` (Step 4): same structure — shim is
+  native-conditional, wrapper section runs after.
+- `templates/AGENTS.template.md:69-77` (Bootstrap Handoff step 10): drafts
+  wrappers only "on a harness that supports command files."
+- `templates/shims/` ships `CLAUDE.template.md` and `GEMINI.template.md` shims but
+  NO command-wrapper templates; wrappers are drafted "from self-knowledge," which
+  only happens when a command-file harness runs the bootstrap.
+- This repo has no `.claude/` directory: even the canonical toolkit carries the
+  operator words in prose with no committed wrappers.
+
+Mitigation that already exists (relevant to the Leave option): the guarantee is
+standing and runs on the update route too, so the first time a command-file
+harness (Claude Code) runs any route on the repo it will draft the missing
+wrappers. The gap is therefore transient — it closes on the first
+Claude-Code-run — but the harm window (a Claude Code user hitting "Unknown
+command" before that run) is exactly the Vela-pilot failure mode, and it is
+avoidable because the Claude Code wrapper format is known and fixed, so the
+toolkit can author the files blind without running in that harness.
+
+Options:
+- Adopt (recommended): decouple wrapper drafting from the bootstrapping harness.
+  Commit the wrappers for every harness the toolkit ships a wrapper template for,
+  on every route, the same way `AGENTS.md` is committed regardless of authoring
+  harness. Concretely: add committed wrapper templates (e.g. under
+  `templates/commands/`) and draft them unconditionally; narrow the step-1 skip to
+  "skip only if the toolkit ships no wrapper template for any harness," keeping
+  the genuinely harness-local pieces (the shim, `settings.local.json`)
+  conditional.
+- Leave: accept that wrappers are created only when a command-file harness runs a
+  route, and rely on the standing update-route audit to backfill them on the
+  first Claude-Code-run, accepting the broken-promise window until then.
+
+Recommendation: adopt. Wrappers are portable repo artifacts; gating their
+existence on the bootstrapping harness reproduces the broken-promise UX the
+2026-06-18 decision was meant to eliminate, and the fix is cheap because the
+wrapper format is a known shipped template. Scope is the product
+(`procedures/bootstrap.md` wrapper section + greenfield step 5,
+`procedures/migration.md` Step 4, `templates/AGENTS.template.md` step 10, and a
+new `templates/commands/` wrapper-template set), plus committing this repo's own
+wrappers so the canonical toolkit stops modeling the gap.
