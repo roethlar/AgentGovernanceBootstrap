@@ -642,3 +642,80 @@ wrapper format is a known shipped template. Scope is the product
 `procedures/migration.md` Step 4, `templates/AGENTS.template.md` step 10, and a
 new `templates/commands/` wrapper-template set), plus committing this repo's own
 wrappers so the canonical toolkit stops modeling the gap.
+
+### 2026-06-20 - Governance payload token cost grows unboundedly; compact decisions.md structurally
+
+Status: Open (deferred; no change made)
+
+Finding:
+The governance docs the process loads — `AGENTS.md`, `.agents/state.md`,
+`.agents/decisions.md`, `.agents/repo-map.json`, `.agents/artifact-manifest.json`
+— total ~54 KB ≈ ~10-13.5k tokens as of 2026-06-20. `decisions.md` alone is
+~39 KB ≈ ~9-10k tokens (73% of the payload) and grows monotonically: every
+deferred finding and every adopted decision appends to it and nothing prunes or
+archives. The per-turn cost depends on the harness (one that auto-injects
+`AGENTS.md`/`CLAUDE.md` pays ~1.5k tokens/turn for `AGENTS.md` only), but the
+full set is paid at every kickoff and every `catchup`/`handoff` that reads the
+whole decisions file — a cost that rises with each entry. This finding is itself
+an instance of the cost it describes.
+
+Evidence (2026-06-20, `wc -c`): `decisions.md` 39,486 B, `AGENTS.md` 6,802 B,
+`state.md` 3,877 B, `repo-map.json` 2,943 B, `artifact-manifest.json` 1,165 B;
+total 54,273 B. Token estimate ≈ bytes/4 ≈ 13.5k, or words×1.3 ≈ 10k. No root
+`CLAUDE.md` exists; `.agents/` files are read on demand in at least the Claude
+Code harness.
+
+Options:
+- Adopt (structural archiving, recommended): rotate adopted/superseded decisions
+  out of the hot `decisions.md` into `docs/history/` (e.g. a dated
+  `decisions-archive.md`), leaving the hot file as Active + Open Decisions only,
+  with a one-line pointer to the archive. Preserves exact wording (no lossy
+  summarization), bounds the hot-file size, and matches the repo's existing "bank
+  predecessor material in `docs/history/`" pattern. Generalize into canon so every
+  bootstrapped repo's `decisions.md` self-rotates past a size threshold.
+- Adopt (lighter): document the budget and steer `catchup`/`handoff` to read
+  `state.md` plus only the Open Decisions section, not the full adopted history,
+  unless asked.
+- Leave: accept unbounded growth; owner prunes manually.
+- Reject (lossy compaction — rtk `read`/`summary`, LLM summarization): strips the
+  exact wording the Evidence rule and one-canonical-location principle depend on;
+  not appropriate for authoritative canon. See the rtk-wrapping item below for the
+  same lossy-filtering caution applied to command output.
+
+Recommendation: adopt structural archiving — the only compaction that respects
+"exact wording is the product." Scope: this repo's own `decisions.md` plus a canon
+rule in `templates/AGENTS.template.md` (decisions-doc guidance).
+
+### 2026-06-20 - Recommend (not require) wrapping shell commands in a token-filtering proxy when available
+
+Status: Open (deferred; no change made)
+
+Finding:
+A token-filtering command proxy (e.g. `rtk`) compacts `ls`/`tree`/`git`/`grep`/
+test/log output before it reaches the model, which can materially cut tokens spent
+on tool output. But routing every command through it risks stripping context the
+model actually needs — a condensed diff that drops the one line that mattered,
+masked env values, summarized test output hiding a stack trace. Canon currently
+says nothing about token-economical tool use.
+
+Evidence (2026-06-20): `rtk` 0.42.4 present at `/usr/bin/rtk`; subcommands include
+`ls`/`tree`/`read`/`git`/`grep`/`diff`/`test`/`log`/`json` with
+"token-optimized"/"ultra-condensed" filtering. Its own description: "filter and
+summarize system outputs before they reach your LLM context" — lossy by design.
+
+Options:
+- Adopt (recommend, conditional, recommended): add an optional efficiency line to
+  `templates/AGENTS.template.md` — when a token-filtering command proxy is
+  available, prefer it for routine, high-volume, low-stakes output (directory
+  listings, build/test runs, log tails); it is a recommendation, never a
+  requirement; and when the filtered form might drop context that matters —
+  verifying exact output, reading authoritative content, anything feeding a durable
+  claim under the Evidence rule — run the command unfiltered. Default to caution:
+  if unsure whether filtering is lossy for this use, don't filter. Name the
+  capability, not the brand (rtk as the example), per the harness-agnostic style.
+- Leave: say nothing; let each agent/harness decide.
+
+Recommendation: adopt as a soft recommendation with the err-on-caution carve-out,
+explicitly subordinate to the Evidence rule (never filter the output you will cite
+as proof). Scope: product (`templates/AGENTS.template.md`), harness-agnostic
+wording.
