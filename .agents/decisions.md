@@ -36,7 +36,7 @@ Earlier ideas of richer or automatic harvesting.
 Status: Active
 
 Decision:
-The agent runs discovery (`tools/discover.py`) as Step 1 inside the kickoff session. The script is kept because it guarantees completeness on large repos without model-dependent laziness. A stale or missing manifest causes automatic re-run (self-healing). The only refusal case is a sandboxed environment that literally cannot execute the script. Every bootstrap run begins with a cwd-independent sync of the bootstrap toolkit from its two canonical remotes (gitea LAN primary + GitHub) using `git -C`, `ls-remote` liveness, and `--ff-only` merge; offline or diverged clones proceed with a plain-English flag and never block.
+The agent runs discovery (`tools/discover.py`) as Step 1 inside the kickoff session. The script is kept because it guarantees completeness on large repos without model-dependent laziness. A stale or missing manifest causes automatic re-run (self-healing). The only refusal case is a sandboxed environment that literally cannot execute the script. Every bootstrap run begins with a cwd-independent sync of the bootstrap toolkit from GitHub (the canonical remote), using the LAN gitea mirror as a faster fetch source when reachable, via `git -C`, `ls-remote` liveness, and `--ff-only` merge to GitHub's head; offline or diverged clones proceed with a plain-English flag and never block.
 
 Reason:
 One prompt ("Read <path>/procedures/bootstrap.md and follow it.") is sufficient. Two-stage (human runs script first) remains only as documented fallback. Freshness must come from git, not time or filenames.
@@ -125,7 +125,7 @@ Windows ships App Execution Alias stubs; presence on PATH does not imply a worki
 Status: Active
 
 Decision:
-All git commands in the toolkit sync (Step 0) are run as `git -C <bootstrap-repo> ...`. Never rely on the shell's current working directory. Use `git ls-remote --exit-code <url> HEAD` to test liveness before fetch. If no remote responds, fast-forward is impossible, or the two canonical remotes disagree: proceed with the local copy and flag plainly in the approval summary. Never merge or rebase the bootstrap repo from a target session.
+All git commands in the toolkit sync (Step 0) are run as `git -C <bootstrap-repo> ...`. Never rely on the shell's current working directory. Use `git ls-remote --exit-code <url> HEAD` to test liveness before fetch. If no remote responds or fast-forward is impossible: proceed with the local copy and flag plainly in the approval summary. GitHub is authoritative; a gitea mirror that lags GitHub is expected, not a disagreement to flag. Never merge or rebase the bootstrap repo from a target session.
 
 Reason:
 Many agent harnesses reset cwd between tool calls; a bare `cd` + `git fetch` can silently operate on the wrong repo.
@@ -540,7 +540,12 @@ own `AGENTS.md`. No change made now.
 
 ### 2026-06-15 - Toolkit remote topology: GitHub is canonical, gitea is a mirror
 
-Status: Open (deferred; implement when Claude Fable is back online)
+Status: Adopted 2026-06-20. Canon now models GitHub as the canonical remote and
+the LAN gitea remote as a mirror of it — reframed in `procedures/bootstrap.md`
+Step 0, the "Single-session kickoff" and "Cwd-independent Step 0 sync" decisions
+above, and this repo's own `AGENTS.md`. The repo's own remotes were re-pointed the
+same day (origin → GitHub, gitea → secondary mirror). The finding below is
+retained for the rationale that led to it.
 
 Finding:
 The canon models the toolkit's two remotes as co-equal canonical sources with the

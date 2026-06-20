@@ -22,12 +22,13 @@ assumption or leave it out.
 
 ## Step 0: Sync this toolkit
 
-The canonical copies of this process live at:
+The canonical copy of this process lives on GitHub; the LAN gitea remote is a
+mirror of it, useful only as a faster fetch source when reachable:
 
-- `http://q:3000/michael/AgentGovernanceBootstrap.git` (LAN gitea; fastest
-  when reachable)
-- `https://github.com/roethlar/AgentGovernanceBootstrap.git` (reachable from
-  anywhere)
+- `https://github.com/roethlar/AgentGovernanceBootstrap.git` (GitHub; canonical
+  source of truth, reachable from anywhere)
+- `http://q:3000/michael/AgentGovernanceBootstrap.git` (LAN gitea; mirror of
+  GitHub, fastest when reachable)
 
 Before anything else, sync the local bootstrap repo (the directory containing
 this `procedures/` folder; normally `~/dev/AgentGovernanceBootstrap`).
@@ -42,11 +43,14 @@ target repo instead.
    Fetch prints nothing when already up to date — that is success, not a
    signal to investigate; confirm where things stand with
    `git -C <bootstrap-repo> rev-parse HEAD FETCH_HEAD`.
-2. `git -C <bootstrap-repo> merge --ff-only` the newest fetched head.
-3. If no remote responds, fast-forward is impossible (local diverged), or the
-   two remotes disagree with each other: proceed with the local copy as-is and
-   flag that, in plain English, in the approval summary. Never merge or rebase
-   this repo; never block the owner on freshness.
+2. Fast-forward to GitHub's fetched head: `git -C <bootstrap-repo> merge
+   --ff-only` GitHub's head when GitHub responded. Use gitea's head only when
+   GitHub did not respond (gitea is a mirror and may lag).
+3. If no remote responds or fast-forward is impossible (local diverged): proceed
+   with the local copy as-is and flag that, in plain English, in the approval
+   summary. A gitea head that differs from GitHub's is an expected lagging
+   mirror, not a disagreement to flag — GitHub is authoritative. Never merge or
+   rebase this repo; never block the owner on freshness.
 4. If the sync updated this file, re-read it before continuing.
 
 This sync is the ONE sanctioned write to the bootstrap repo from a session in

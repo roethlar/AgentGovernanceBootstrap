@@ -80,11 +80,13 @@ The baseline of implemented capabilities and open work items at the time of the
   authority for this rule. (Hardened 2026-06-10 after an agent read the
   softer wording and still executed an unapproved fix sweep straight from a
   handed-over defect report.)
-- This toolkit's canon propagates only when pushed. Canonical remotes: gitea
-  `http://q:3000/michael/AgentGovernanceBootstrap.git` (primary) and GitHub
-  `https://github.com/roethlar/AgentGovernanceBootstrap.git` (public). After
-  committing here, offer once to push, naming both; target-repo sessions sync
-  from these remotes at kickoff (fast-forward only).
+- This toolkit's canon propagates only when pushed. GitHub
+  `https://github.com/roethlar/AgentGovernanceBootstrap.git` is the canonical
+  remote; the LAN gitea remote `http://q:3000/michael/AgentGovernanceBootstrap.git`
+  is a mirror of it (faster fetch on the LAN). After committing here, offer once
+  to push to GitHub (the gitea mirror updates downstream); target-repo sessions
+  sync from GitHub at kickoff, using the gitea mirror as a faster fetch source
+  when reachable (fast-forward only).
 - Do not rewrite git history or restructure existing commits without an explicit
   owner go: no amend, rebase, squash, reorder, or force-push of work already
   committed. Approval authorizes the scoped commit as announced, not a later
