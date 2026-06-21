@@ -381,6 +381,10 @@ class TestHookTemplates(unittest.TestCase):
             for rel in rels[1:]:
                 self.assertIn("reground.sh",
                               (hooks / rel).read_text(encoding="utf-8"))
+            for rel in ("claude/settings.json", "codex/hooks.json", "agy/hooks.json"):
+                self.assertIn("compact", (hooks / rel).read_text(encoding="utf-8"), rel)
+            self.assertIn("PostCompact",
+                          (hooks / "grok/hooks/reground.json").read_text(encoding="utf-8"))
 
 
 if __name__ == "__main__":

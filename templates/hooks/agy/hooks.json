@@ -1,7 +1,8 @@
 {
   "hooks": {
     "SessionStart": [
-      { "hooks": [ { "type": "command", "command": "sh \"__REPO_ROOT__/.agents/hooks/reground.sh\"" } ] }
+      { "matcher": "compact",
+        "hooks": [ { "type": "command", "command": "sh \"__REPO_ROOT__/.agents/hooks/reground.sh\"" } ] }
     ]
   }
 }

@@ -165,7 +165,7 @@ its own — no per-harness reruns):
 |---|---|---|---|
 | Claude Code | `.claude/settings.json` | `SessionStart`(+`compact`) | strong (structured) |
 | Codex | `.codex/hooks.json` | `SessionStart` src `compact` | strong (structured) |
-| Grok | `.grok/hooks/*.json` | `PreCompact`/`PostCompact` | soft (annotation) |
+| Grok | `.grok/hooks/*.json` | `PostCompact` (after compaction; PreCompact would fire before the loss) | soft (annotation) |
 | agy | `.agents/hooks.json` | `SessionStart` (post-compaction re-fire TBD) | inject confirmed; verify post-compaction |
 
 Use git-root path resolution and a Windows command variant. New product
