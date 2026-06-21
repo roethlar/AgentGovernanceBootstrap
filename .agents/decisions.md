@@ -742,3 +742,57 @@ Recommendation: adopt as a soft recommendation with the err-on-caution carve-out
 explicitly subordinate to the Evidence rule (never filter the output you will cite
 as proof). Scope: product (`templates/AGENTS.template.md`), harness-agnostic
 wording.
+
+### 2026-06-20 - Resolve git presence as the earliest bootstrap step, before discovery
+
+Status: Open (deferred; approach chosen by owner 2026-06-20 — ask-early, owner-gate
+preserved; not yet implemented)
+
+Finding:
+git is a hard requirement for the toolkit — custody probes, the commit contract,
+and the whole governance flow assume a repo. Today a non-git target is detected
+late: `discover.py` runs to completion on the non-git tree, lists every file as
+untracked, and the owner first sees "Not a git repository" plus the owner-gated
+`git init` question only at the approval stage. The agent goes through discovery
+and drafting before the missing-git fact surfaces — wasted motion for a hard
+prerequisite, and the failure mode that prompted this item ("go through the
+motions, then mention it wasn't a git repo at the end").
+
+Evidence (2026-06-20):
+- `procedures/bootstrap.md:228-238` — the "If the target is not a git repository"
+  handling is a standalone section near the end of the file, carrying the
+  owner-gate (line 235: "Never run `git init` unprompted. Ask the owner"; line
+  238: init only on approval). It is not positioned as an early step in the
+  kickoff flow.
+- `tools/discover.py:395-398` — on a non-git target the script runs anyway, lists
+  everything as untracked, and the packet notes `git init` "is the owner's
+  decision."
+
+Chosen approach (owner, 2026-06-20): keep the existing owner-gate — do NOT
+auto-init (the gate guards against the tool being pointed at the wrong directory
+or a subfolder inside an existing repo) — but move the check to the earliest point
+in the bootstrap, before `discover.py` runs. As soon as the agent observes no
+`.git/` in the target, it asks the owner-gated init question there; on approval it
+runs `git init` and proceeds to discovery; on refusal it stops rather than running
+discovery on a non-git tree. This preserves the wrong-directory safety the gate
+provides while removing the run-discovery-then-surface-it-late waste.
+
+Options:
+- Adopt (recommended, ask-early): add an early git-presence step to the bootstrap
+  flow (before discovery) that detects a missing `.git/`, asks the owner-gated
+  init question at that point, and only runs `discover.py` once git presence is
+  resolved. Reposition the existing "If the target is not a git repository"
+  content as that early gate. Mirror into `migration.md` if its flow has the same
+  ordering. Keep `discover.py`'s non-git packet text as a safety net for the rare
+  case discovery is run anyway.
+- Rejected (auto-init): create `.git` without asking — reverses the owner-gate;
+  declined by the owner on 2026-06-20 because the wrong-directory / nested-repo
+  risk outweighs the convenience.
+- Leave: accept that non-git is surfaced only at the approval stage.
+
+Recommendation: adopt the ask-early option (owner-chosen). Scope: product
+(`procedures/bootstrap.md` step ordering plus its existing non-git section,
+`procedures/migration.md` if its ordering matches, and the
+`templates/AGENTS.template.md` Session Startup / Bootstrap Handoff if agents should
+be told to confirm git presence first). This is a procedure/ordering change;
+`discover.py`'s non-git fallback stays as-is.
