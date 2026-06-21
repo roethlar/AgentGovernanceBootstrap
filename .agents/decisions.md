@@ -741,7 +741,12 @@ rule in `templates/AGENTS.template.md` (decisions-doc guidance).
 
 ### 2026-06-20 - Recommend (not require) wrapping shell commands in a token-filtering proxy when available
 
-Status: Open (deferred; no change made)
+Status: Adopted 2026-06-20. `templates/AGENTS.template.md` Universal Invariants
+gained a soft, Evidence-rule-subordinate recommendation: prefer a token-filtering
+command proxy (e.g. `rtk`) for routine, high-volume, low-stakes output, but run
+unfiltered whenever the filtered form might drop context that matters or that will
+be cited as evidence; if unsure, do not filter. Named by capability, not brand. The
+finding below is retained for the rationale that led to it.
 
 Finding:
 A token-filtering command proxy (e.g. `rtk`) compacts `ls`/`tree`/`git`/`grep`/

@@ -62,6 +62,13 @@ scratch files as authority.
   thoroughly enough to confirm it is not load-bearing; if you cannot, treat it as
   legitimate and stop or ask. A roadblock is correct until proven otherwise; making the
   error go away is not a basis for removing it.
+- Recommended, not required: when a token-filtering command proxy is available (e.g.
+  `rtk`), prefer it for routine, high-volume, low-stakes command output - directory
+  listings, build and test runs, log tails - to save context. But it is lossy by design:
+  when the filtered form might drop something that matters - verifying exact output,
+  reading authoritative content, or anything you will cite as evidence for a durable claim
+  - run the command unfiltered. If unsure whether filtering is lossy for a given use, do
+  not filter. (Name the capability, not the brand; `rtk` is only an example.)
 
 ## Bootstrap Handoff
 
