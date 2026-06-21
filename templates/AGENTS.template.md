@@ -35,6 +35,12 @@ scratch files as authority.
   tie it to repo evidence, approved decisions, or explicit human intent.
 - Keep one canonical location for each durable project truth when practical. Prefer
   pointers over duplicating competing versions of the same rule.
+- A summary or pointer names where a fact lives; it does not keep a second copy of
+  a count or enumeration another doc owns. Duplicating an authoritative count or
+  list (e.g. a state doc echoing the number and names of open decisions that the
+  decisions doc owns) drifts the moment the source changes without a lockstep
+  edit - point to the source instead, the same lower-authority-yields-to-source
+  rule the `drift` operator applies.
 - Establish one immediately discoverable current-state entry point. Do not reconstruct
   current state from chat, long journals, or tool-local memory.
 - When repo documents disagree, flag the conflict instead of silently choosing whichever

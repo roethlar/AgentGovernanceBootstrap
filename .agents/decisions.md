@@ -462,7 +462,13 @@ matching line in this repo's own `AGENTS.md`.
 
 ### 2026-06-15 - Summaries restate authoritative counts and enumerations
 
-Status: Open (deferred; implement when Claude Fable is back online)
+Status: Adopted 2026-06-20 (product only). `templates/AGENTS.template.md` gained a
+Universal Invariant: a summary/pointer names where a fact lives and does not keep a
+second copy of a count or enumeration another doc owns, pointing to the source
+instead. The `state.md` "Next" instance the finding cited is already resolved -
+this repo's `.agents/state.md` already points to the decisions doc without
+restating a number or per-item list - so no self-application change was needed. The
+finding below is retained for the rationale that led to it.
 
 Finding:
 A summary or pointer doc that restates a fact another doc owns - a count, or an
