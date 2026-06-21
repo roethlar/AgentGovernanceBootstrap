@@ -958,3 +958,49 @@ missing, and it is the same shape as the existing operator words. The
 reviewloop-revision item. Scope: product (`templates/AGENTS.template.md` Operator
 Requests + Source of Truth note, `templates/commands/claude/playbook.md`, and
 optionally a `templates/playbooks/` set).
+
+### 2026-06-20 - Load-bearing invariants need forceful enforcement, not just statement
+
+Status: Open (deferred; direction recorded, specific mechanism to be decided later)
+
+Finding:
+The canon's most load-bearing invariants - answer-with-words, words-first, and the
+owner-gate on commits/pushes/merges/history-rewrite - are stated once, in prose, in
+a long `AGENTS.md`/template, and rely entirely on the agent holding them in working
+memory. That memory degrades as a session runs long and context compacts, so the
+invariants fail precisely when the session is most complex - when they matter most.
+There is no enforcement surface: nothing re-asserts the critical rules and nothing
+gates the actions they govern. The canon leans entirely on "the agent will
+remember," with no repetition and no structural gate. A rule that can be silently
+skipped under load is a governance weakness, not only an agent error.
+
+Evidence (2026-06-20): in this long, context-heavy session the agent skipped the
+answer-with-words invariant twice - responding to owner questions with file edits,
+commits, and pushes instead of words. The rule was present and binding the whole
+time; it was dropped under context pressure, not unknown.
+
+Options (specifics to be decided later):
+- A tiny "prime invariants" subset: extract the 3-5 hardest-to-reverse rules
+  (answer questions with words; no file change / commit / push / merge /
+  history-rewrite without an explicit go) into a short, separable block kept brief
+  enough to survive compaction, and re-asserted at checkpoints - after a context
+  compaction, at each operator invocation, and immediately before any commit.
+  Brevity plus repetition is what makes a rule stick when a long doc does not.
+- A behavioral pre-action gate: before editing in response to a message, classify
+  it - a question or anything ambiguous means answer in words first; only an
+  explicit change-instruction authorizes acting - run as a checklist, not a buried
+  sentence.
+- Harness-level enforcement where available: a hook on Edit/Write/commit that warns
+  or blocks when the triggering turn was a question. Strongest, but harness-specific,
+  so the harness-agnostic canon would phrase it as a "where supported" recommendation.
+- Some combination of the above.
+
+Related: keeping the hot governance lean (the status-based decisions-archiving rule
+adopted 2026-06-20) reduces the context pressure that drops invariants - a
+complementary mitigation, not a substitute.
+
+Recommendation: adopt some forceful-enforcement mechanism; the specific design is
+deferred to a later decision. Scope: product (`templates/AGENTS.template.md`
+invariants structure, plus optionally a harness-hook recommendation and/or
+operator-checkpoint behavior). Surfaced 2026-06-20 by an in-session failure of the
+answer-with-words rule.
