@@ -865,3 +865,49 @@ Recommendation: adopt - the queue/Adopted lifecycle is load-bearing in practice 
 pairs directly with the archiving rule. Scope: product
 (`templates/decisions.template.md`), harness-agnostic. Surfaced 2026-06-20 while
 adopting the token-cost archiving rule.
+
+### 2026-06-20 - Revise the two-agent review-loop doc into a governance-compatible playbook (reviewloop.md)
+
+Status: Open (deferred; no change made)
+
+Finding:
+An external doc (the owner's `/tmp/SETUP.md`, a ~390-line portable two-agent
+coder/reviewer review-loop runbook) predates this repo and conflicts with current
+governance in several places. It fits the playbook concept the canon already
+defines (`.agents/playbooks/*`), but cannot be filed as-is: it must be revised to
+reconcile the conflicts and genericized, then placed per the playbook convention
+and renamed `reviewloop.md` ("two-agent-review" is too verbose).
+
+Conflicts to reconcile (evidence, against current canon):
+- Autonomous merge to master. The doc has the reviewer fast-forward-merge accepted
+  branches into master (lines ~132, ~365: "Auto-merge ... reviewer can
+  fast-forward merge on accept"). Conflicts with the one-scoped-commit /
+  push-offer-once / owner-gated discipline and the Git Safety invariant - an agent
+  should not merge to master without owner approval. Revise to owner-gated merge
+  (or a handed-off `merge-<id>` branch) as the default.
+- Parallel status canon. The doc adds a root `REVIEW.md` status index and a
+  `.review/` channel, overlapping `.agents/state.md` as the single discoverable
+  current-state entry point and the "no parallel canon" rule (decisions.md
+  2026-06-09). Revise so the loop's status nests under or references the
+  `.agents/` layout instead of competing with it.
+- Hardcoded verification. The doc prescribes fixed validation suites (cargo/npm,
+  lines ~89-95); canon says run the repo's observed automated verification. Revise
+  to defer to the verification rule, suites as examples only.
+- Harness-specific assumptions. Named subagents (security-engineer, etc.) and a
+  specific Monitor tool (lines ~261-264, Step 5). Revise to harness-agnostic,
+  name-by-capability wording with best-effort fallbacks.
+- Aligned, keep: one-branch-per-finding plus `Fix <id>` commits already match the
+  one-item-per-commit discipline; worktree use is fine.
+
+Options:
+- Adopt: revise the doc to reconcile the conflicts, genericize repo-specific bits
+  to placeholders, rename to `reviewloop.md`, and place it per the playbook
+  convention (`.agents/playbooks/reviewloop.md`; or `templates/playbooks/` if the
+  toolkit ships it as a reusable playbook - see the playbook-mechanism items).
+  Source is the owner's `/tmp/SETUP.md`.
+- Leave: keep the doc external and out of the repo.
+
+Recommendation: adopt the revision. Scope: a new playbook doc plus the conflict
+reconciliations; the playbook home is already defined in the Source of Truth
+(`.agents/playbooks/*`), and it pairs with the playbook-invocation operator if that
+is adopted. Surfaced 2026-06-20.
