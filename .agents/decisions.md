@@ -594,7 +594,17 @@ canon-propagation note). No change made now.
 
 ### 2026-06-20 - Wrapper generation is gated on the bootstrapping harness, not committed on every route
 
-Status: Open (deferred; no change made)
+Status: Adopted 2026-06-20 (product only). Wrapper drafting is decoupled from the
+bootstrapping harness: a new `templates/commands/claude/` set holds the five
+pointer wrappers, `procedures/bootstrap.md`'s "Operator command wrappers" section
+now drafts them from that template set for every shipped harness regardless of
+which harness runs the bootstrap (skipping only if no template exists for any
+harness), and `templates/AGENTS.template.md` step 10 reframes the wrappers as
+committed repo artifacts. This repo's own wrappers and an Operator Requests
+section in its `AGENTS.md` are intentionally NOT added here - this repo carries a
+stale older bootstrap application, to be brought current by re-running the
+bootstrap, per the owner (2026-06-20). The finding below is retained for the
+rationale that led to it.
 
 Finding:
 The "Operator command wrappers (all routes)" guarantee gates whether the

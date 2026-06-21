@@ -118,23 +118,26 @@ Every route also runs the operator command wrapper guarantee below.
 ## Operator command wrappers (all routes)
 
 The operator words (`catchup`, `handoff`, `drift`, `decision`, `plan`) are
-advertised in every generated `AGENTS.md`. On a harness that supports command
-files, those words should also work as real slash commands - and the command
-files must travel with the repo, not sit local-only on one machine. This is a
-standing guarantee, not a one-time setup: run it on every route (greenfield,
-migration, update). The expected steady state is "already present, nothing to
-do."
+advertised in every generated `AGENTS.md`. Their command-file wrappers are
+portable repo artifacts in the same class as `AGENTS.md` itself - they travel
+with the repo and serve whichever harness a future session runs, not just the one
+that bootstrapped it. So draft them regardless of which harness you are running
+in; never gate their existence on the bootstrapping harness's own command-file
+support. This is a standing guarantee, not a one-time setup: run it on every
+route (greenfield, migration, update). The expected steady state is "already
+present, nothing to do."
 
-1. Decide whether the harness you are running in supports command files at all.
-   Claude Code does (`.claude/commands/<name>.md`); some harnesses do not - if
-   yours has no command-file mechanism, skip this section and rely on the words
-   working as plain-language requests (they always do).
-2. For a harness that supports them, check whether a wrapper exists for each
-   operator word. Draft any that are missing under
-   `.bootstrap-tmp/drafts/` mirroring the final path (for Claude Code,
-   `.bootstrap-tmp/drafts/.claude/commands/<name>.md`). Each wrapper is a
-   one-paragraph pointer to the relevant `AGENTS.md` section - never a copy of
-   it.
+1. Draft the wrapper set for every harness the toolkit ships a wrapper template
+   for, found under `.bootstrap-tmp/templates/commands/<harness>/`. Currently that
+   is Claude Code (`templates/commands/claude/` -> `.claude/commands/<name>.md`).
+   Do this even when the harness you are running in has no command-file mechanism
+   of its own - the wrappers are for the repo, not for your current session. Skip
+   this section only if the toolkit ships no wrapper template for any harness.
+2. For each shipped harness, check whether a wrapper exists for each operator
+   word. Draft any that are missing under `.bootstrap-tmp/drafts/` mirroring the
+   final path (for Claude Code, `.bootstrap-tmp/drafts/.claude/commands/<name>.md`),
+   copied from the template set. Each wrapper is a one-paragraph pointer to the
+   relevant `AGENTS.md` section - never a copy of it.
 3. Make the wrappers committable. Run `git check-ignore` on each final wrapper
    path. If an ignore rule covers it (commonly a blanket `.claude/` rule), the
    fix is NOT a silent `git add -f`: propose editing `.gitignore` so the
