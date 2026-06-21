@@ -920,3 +920,41 @@ Recommendation: adopt the revision. Scope: a new playbook doc plus the conflict
 reconciliations; the playbook home is already defined in the Source of Truth
 (`.agents/playbooks/*`), and it pairs with the playbook-invocation operator if that
 is adopted. Surfaced 2026-06-20.
+
+### 2026-06-20 - Add a playbook invocation operator (and optionally ship reusable playbook templates)
+
+Status: Open (deferred; no change made)
+
+Finding:
+Playbooks are a first-class concept in the canon - the Source of Truth lists
+`.agents/playbooks/*` as approved durable guidance, and `docs/design.md` names
+"area-specific playbooks, or review workflow files" as the use case - but there is
+no invocation mechanism. Nothing tells an agent to load and follow a named
+playbook: the operator vocabulary (`catchup`, `handoff`, `drift`, `decision`,
+`plan`) has no `playbook` member, so a repo can carry playbooks with no standard
+way to trigger them. Playbooks have a home but no door.
+
+Evidence (2026-06-20):
+- `templates/AGENTS.template.md` - Source of Truth lists `.agents/playbooks/*` as
+  approved guidance; Operator Requests defines the five operator words but no
+  playbook trigger.
+- `docs/design.md:175` - names "area-specific playbooks, or review workflow files"
+  as a canonical playbook use.
+- No `.agents/playbooks/` invocation convention exists anywhere in the canon.
+
+Options:
+- Adopt: add a `playbook` operator to Operator Requests - "`playbook <name>`: read
+  `.agents/playbooks/<name>.md` and follow it" - plus a
+  `templates/commands/claude/playbook.md` wrapper, reusing the harness-independent
+  wrapper machinery adopted 2026-06-20. Optionally extend to shipping reusable
+  playbook templates under `templates/playbooks/` so the toolkit can offer canned
+  playbooks (the reviewloop doc would be the first), instead of every repo drafting
+  playbooks from scratch.
+- Leave: keep playbooks as passively-listed guidance with no standard trigger.
+
+Recommendation: adopt the operator - the home already exists; only the trigger is
+missing, and it is the same shape as the existing operator words. The
+`templates/playbooks/` shipping is a smaller optional extension that pairs with the
+reviewloop-revision item. Scope: product (`templates/AGENTS.template.md` Operator
+Requests + Source of Truth note, `templates/commands/claude/playbook.md`, and
+optionally a `templates/playbooks/` set).
