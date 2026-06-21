@@ -1,5 +1,7 @@
 # Invariant Re-grounding & Re-injection Implementation Plan
 
+> **Superseded in part (2026-06-21, commit `548e03d`):** the hook mechanism below — a shared `templates/hooks/reground.sh` invoked as `sh "__REPO_ROOT__/.agents/hooks/reground.sh"` — shipped two portability bugs: it baked an **absolute path** at install (broke on clone/move) and required a **POSIX shell** (broke on native Windows). The script was deleted and its fixed pointer **inlined into each config as an `echo` command** (no path to substitute, no shell script). Wherever this plan says `reground.sh`, `__REPO_ROOT__`, or `sh "…"`, read the inline-`echo` form instead. See spec §4.3 and §5b for the fix and the test-instrument lesson. The rest of the plan (Prime Invariants block, trust step, all-routes install) stands as built.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Add harness-portable re-grounding of governance invariants — a canonical Prime Invariants block in `AGENTS.template.md` plus per-harness hooks that re-trigger a re-read after context compaction — to the AgentGovernanceBootstrap product.
