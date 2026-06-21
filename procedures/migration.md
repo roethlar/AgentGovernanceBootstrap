@@ -101,7 +101,11 @@ only after approval.
    propose the `.gitignore` edit that makes them committable while keeping
    machine-local harness state (e.g. `.claude/settings.local.json`) ignored.
    That section is the single canonical recipe; do not duplicate it here.
-3. One escalation specific to migration: when existing durable guidance or the
+3. Also run the "Hook install & trust (all routes)" guarantee from
+   `.bootstrap-tmp/procedures/bootstrap.md`: draft any missing hook files and
+   surface the trust step. That section is the canonical recipe; do not
+   duplicate it here.
+4. One escalation specific to migration: when existing durable guidance or the
    artifact manifest already claims tracked custody for a path the repo
    ignores, that is an owner-level conflict, not drift to auto-correct -
    present both resolutions (keep the files local-only and correct the

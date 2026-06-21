@@ -163,6 +163,41 @@ Custody and committing follow the normal contract: the drafted wrappers and the
 `.gitignore` edit go through the approval summary like any other proposed file,
 and land in the same single scoped commit.
 
+## Hook install & trust (all routes)
+
+The toolkit ships a re-grounding hook (`templates/hooks/reground.sh`) and
+per-harness configs that invoke it on context compaction. Like operator command
+wrappers, these are portable repo artifacts: draft them on every route regardless
+of which harness you are running in. The expected steady state is "already
+present, nothing to do."
+
+1. For each harness the toolkit ships a `templates/hooks/<harness>/` set for,
+   draft target-repo files under `.bootstrap-tmp/drafts/` mirroring final paths:
+   `.agents/hooks/reground.sh` (from `templates/hooks/reground.sh`) and each
+   harness config at its canonical path (`.claude/settings.json`,
+   `.codex/hooks.json`, `.grok/hooks/reground.json`, `.agents/hooks.json`).
+   Substitute every occurrence of the literal token `__REPO_ROOT__` with the
+   target repo's absolute root path.
+2. Make them committable. Run `git check-ignore` on each final path. If an
+   ignore rule covers it, propose a narrowed `.gitignore` edit that admits the
+   hook file while keeping genuinely machine-local state ignored — never
+   `git add -f`. List any `.gitignore` edit in the approval summary.
+3. Record post-commit custody in the artifact manifest, proven by
+   `git check-ignore` (non-zero exit confirms committable) and
+   `git ls-files --error-unmatch` (exits 0 after the commit lands).
+4. Surface trust, never grant it. Committed hooks stay inert until the
+   workspace is trusted on this machine — trust is machine-local and
+   uncommittable. If the harness gates hooks on trust, tell the human what the
+   hook does and wait for an explicit go before running the trust step; run it
+   only for the harness you are actually in. Never write to any `~/`-level
+   trust store automatically. Never run another harness's trust command.
+5. If correct hook files already exist and are committed, record "hooks already
+   present" and change nothing. Never overwrite existing hook content.
+
+Custody and committing follow the same contract as operator wrappers: these
+drafts and any `.gitignore` edit go through the approval summary and land in
+the same single scoped commit.
+
 ## Greenfield workflow
 
 1. Read the suggested files listed in the review packet directly from the repo.

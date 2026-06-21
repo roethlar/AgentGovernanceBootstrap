@@ -116,9 +116,14 @@ If `.bootstrap-tmp/` exists, treat it as temporary bootstrap input.
     that makes the command files committable while keeping machine-local harness
     state (e.g. `.claude/settings.local.json`) ignored - never `git add -f`. If
     they already exist and are committed, change nothing.
-11. Ask for approval before copying those drafts to tracked guidance paths such as
+11. Audit re-ground hooks: if the toolkit ships `templates/hooks/<harness>/` sets
+    but the target repo lacks the corresponding committed hook files
+    (`.agents/hooks/reground.sh` plus the per-harness config), draft them as
+    above. Surface the one-time, machine-local trust step; never grant trust
+    automatically.
+12. Ask for approval before copying those drafts to tracked guidance paths such as
    `AGENTS.md` or `.agents/*`.
-12. Do not ask about deleting `.bootstrap-tmp/` until after the human approves durable
+13. Do not ask about deleting `.bootstrap-tmp/` until after the human approves durable
     files and those files have been copied. Delete it yourself only if the human
     explicitly asks and the resolved path exactly matches this repo's `.bootstrap-tmp`
     directory.
