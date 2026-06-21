@@ -691,7 +691,14 @@ wrappers so the canonical toolkit stops modeling the gap.
 
 ### 2026-06-20 - Governance payload token cost grows unboundedly; compact decisions.md structurally
 
-Status: Open (deferred; no change made)
+Status: Adopted 2026-06-20 (product only). `templates/decisions.template.md` now
+directs the decisions doc to keep only what is in force or still open and to move
+closed entries (superseded, or settled-and-kept-only-for-rationale) verbatim into a
+`docs/history/` archive in the same change, with one pointer at the top - no
+per-entry stubs. The trigger is status-based (a decision settling), replacing the
+vague size-threshold idea. This repo's own `decisions.md` archiving (this session's
+Adopted entries) happens when the bootstrap is re-run under the new rule, per the
+owner (2026-06-20). The finding below is retained for the rationale that led to it.
 
 Finding:
 The governance docs the process loads — `AGENTS.md`, `.agents/state.md`,
