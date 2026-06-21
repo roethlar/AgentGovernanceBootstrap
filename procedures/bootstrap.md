@@ -126,8 +126,8 @@ Every route also runs the operator command wrapper guarantee below.
 
 ## Operator command wrappers (all routes)
 
-The operator words (`catchup`, `handoff`, `drift`, `decision`, `plan`) are
-advertised in every generated `AGENTS.md`. Their command-file wrappers are
+The operator words (`catchup`, `handoff`, `drift`, `decision`, `plan`,
+`playbook`) are advertised in every generated `AGENTS.md`. Their command-file wrappers are
 portable repo artifacts in the same class as `AGENTS.md` itself - they travel
 with the repo and serve whichever harness a future session runs, not just the one
 that bootstrapped it. So draft them regardless of which harness you are running

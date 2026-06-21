@@ -212,6 +212,8 @@ Generated guidance should define a small trigger vocabulary in plain language:
 - `decision`: record a settled durable decision in `.agents/decisions.md` and update
   affected guidance.
 - `plan`: draft or update a durable plan before broad implementation work.
+- `playbook <name>`: read `.agents/playbooks/<name>.md` and follow it — the invocation
+  door for the area-specific playbooks the layout already allows under `.agents/playbooks/*`.
 
 Harness-specific command files may wrap these procedures, but they should point back to
 canonical repo guidance instead of duplicating it.

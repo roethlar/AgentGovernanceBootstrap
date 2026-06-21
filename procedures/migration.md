@@ -96,7 +96,8 @@ only after approval.
    minimal pointer shim from self-knowledge and label it best-effort.
 2. Run the "Operator command wrappers (all routes)" section in
    `.bootstrap-tmp/procedures/bootstrap.md`: audit the trigger vocabulary
-   (catchup, handoff, drift, decision, plan), draft any missing wrappers, and
+   (catchup, handoff, drift, decision, plan, playbook), draft any missing
+   wrappers, and
    propose the `.gitignore` edit that makes them committable while keeping
    machine-local harness state (e.g. `.claude/settings.local.json`) ignored.
    That section is the single canonical recipe; do not duplicate it here.

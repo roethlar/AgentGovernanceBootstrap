@@ -96,7 +96,7 @@ If `.bootstrap-tmp/` exists, treat it as temporary bootstrap input.
    when practical. Include draft `AGENTS.md`, state, decisions, repo map, playbooks when
    useful, and artifact manifest.
 10. Audit the operator command wrappers. The operator words below
-    (`catchup`, `handoff`, `drift`, `decision`, `plan`) have command-file
+    (`catchup`, `handoff`, `drift`, `decision`, `plan`, `playbook`) have command-file
     wrappers that are committed repo artifacts, drafted on every route for every
     harness the toolkit ships a wrapper template for - regardless of which
     harness ran the bootstrap, since the wrappers serve whichever harness a
@@ -154,6 +154,10 @@ Treat these owner words as process requests:
 - `decision`: record a settled durable decision in `.agents/decisions.md` and update
   affected guidance.
 - `plan`: draft or update a durable plan before broad implementation work.
+- `playbook <name>`: read `.agents/playbooks/<name>.md` and follow it. Playbooks are
+  approved durable workflows (see Source Of Truth); this operator is how a session
+  invokes one by name. If the named playbook does not exist, say so rather than
+  guessing.
 
 ## Verification
 

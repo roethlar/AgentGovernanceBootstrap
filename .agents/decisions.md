@@ -929,7 +929,17 @@ is adopted. Surfaced 2026-06-20.
 
 ### 2026-06-20 - Add a playbook invocation operator (and optionally ship reusable playbook templates)
 
-Status: Open (deferred; no change made)
+Status: Adopted 2026-06-20. A `playbook <name>` operator now lives in
+`templates/AGENTS.template.md` Operator Requests ("read `.agents/playbooks/<name>.md`
+and follow it"), with a `templates/commands/claude/playbook.md` pointer wrapper reusing
+the harness-independent wrapper machinery. The operator word is wired into every
+wrapper-audit enumeration so the wrapper is drafted on all routes:
+`templates/AGENTS.template.md` Bootstrap Handoff step 10, `procedures/bootstrap.md`
+"Operator command wrappers", `procedures/migration.md` Step 4, and the trigger
+vocabulary in `docs/design.md`. The optional shipping of reusable playbook templates
+under `templates/playbooks/` is handled with the review-loop playbook (its own queue
+entry), which establishes that directory. The finding below is retained for the
+rationale that led to it.
 
 Finding:
 Playbooks are a first-class concept in the canon - the Source of Truth lists
