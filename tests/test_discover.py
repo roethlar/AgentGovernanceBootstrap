@@ -369,18 +369,29 @@ class TestUpdateRouteHeuristic(unittest.TestCase):
 
 
 class TestHookTemplates(unittest.TestCase):
-    def test_hook_templates_present_and_copied(self):
+    def test_hook_configs_present_copied_and_portable(self):
         with tempfile.TemporaryDirectory() as tmp:
             repo = fixtures.make_greenfield_repo(Path(tmp) / "repo")
             fixtures.run_discover(repo)
             hooks = repo / ".bootstrap-tmp" / "templates" / "hooks"
-            rels = ("reground.sh", "claude/settings.json", "codex/hooks.json",
+            cfgs = ("claude/settings.json", "codex/hooks.json",
                     "grok/hooks/reground.json", "agy/hooks.json")
-            for rel in rels:
+            for rel in cfgs:
                 self.assertTrue((hooks / rel).is_file(), rel)
-            for rel in rels[1:]:
-                self.assertIn("reground.sh",
-                              (hooks / rel).read_text(encoding="utf-8"))
+            # The re-ground trigger is inlined into each config; there is no
+            # shared shell script to install.
+            self.assertFalse((hooks / "reground.sh").exists())
+            # Each config must be portable: inline pointer back to AGENTS.md,
+            # with no baked path, no token to substitute, and no script/shell
+            # dependency that would break on clone, move, or Windows.
+            for rel in cfgs:
+                txt = (hooks / rel).read_text(encoding="utf-8")
+                self.assertIn("re-read AGENTS.md", txt, rel)
+                self.assertNotIn("__REPO_ROOT__", txt, rel)
+                self.assertNotIn("reground.sh", txt, rel)
+                self.assertNotIn(".sh", txt, rel)
+                self.assertNotIn("/Users/", txt, rel)
+                self.assertNotIn("git rev-parse", txt, rel)
             for rel in ("claude/settings.json", "codex/hooks.json", "agy/hooks.json"):
                 self.assertIn("compact", (hooks / rel).read_text(encoding="utf-8"), rel)
             self.assertIn("PostCompact",

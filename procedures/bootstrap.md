@@ -165,25 +165,25 @@ and land in the same single scoped commit.
 
 ## Hook install & trust (all routes)
 
-The toolkit ships a re-grounding hook (`templates/hooks/reground.sh`) and
-per-harness configs that invoke it on context compaction. Like operator command
-wrappers, these are portable repo artifacts: draft them on every route regardless
-of which harness you are running in. The expected steady state is "already
-present, nothing to do."
+The toolkit ships per-harness re-grounding hook configs that fire on context
+compaction. Each config's command is a self-contained inline `echo` that prints a
+short pointer back to AGENTS.md — no external script, no baked path. Like operator
+command wrappers, these are portable repo artifacts: draft them on every route
+regardless of which harness you are running in. The expected steady state is
+"already present, nothing to do."
 
-1. For each harness the toolkit ships a `templates/hooks/<harness>/` set for,
-   draft target-repo files under `.bootstrap-tmp/drafts/` mirroring final paths:
-   `.agents/hooks/reground.sh` (from `templates/hooks/reground.sh`) and each
-   harness config at its canonical path (`.claude/settings.json`,
-   `.codex/hooks.json`, `.grok/hooks/reground.json`, `.agents/hooks.json`).
-   Substitute every occurrence of the literal token `__REPO_ROOT__` with the
-   target repo's absolute root path. On a Windows target, write an
-   OS-appropriate invocation of `reground.sh` (the platform is known at install
-   time) instead of a bare `sh` command. If a hook config already exists at a
-   target path, merge the re-ground hook into it rather than replacing the file
-   — a repo may already have other hooks, and `.claude/settings.json` also holds
-   permissions, env, and model settings. If a safe merge is not possible, stop
-   and ask. Only write a config file whole when none exists at that path.
+1. For each harness the toolkit ships a `templates/hooks/<harness>/` config for,
+   draft the target-repo file under `.bootstrap-tmp/drafts/` mirroring its
+   canonical path (`.claude/settings.json`, `.codex/hooks.json`,
+   `.grok/hooks/reground.json`, `.agents/hooks.json`). Copy the config verbatim:
+   the hook command is an inline `echo` with no path to substitute and no shell
+   script to install, so the same file is correct on every machine and OS (`echo`
+   exists in `sh`, `cmd`, and PowerShell; verified on macOS, treat Windows as
+   best-effort until tested). If a hook config already exists at a target path,
+   merge the re-ground hook into it rather than replacing the file — a repo may
+   already have other hooks, and `.claude/settings.json` also holds permissions,
+   env, and model settings. If a safe merge is not possible, stop and ask. Only
+   write a config file whole when none exists at that path.
 2. Make them committable. Run `git check-ignore` on each final path. If an
    ignore rule covers it, propose a narrowed `.gitignore` edit that admits the
    hook file while keeping genuinely machine-local state ignored — never

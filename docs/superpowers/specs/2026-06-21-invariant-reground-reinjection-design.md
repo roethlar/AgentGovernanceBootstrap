@@ -168,10 +168,19 @@ its own — no per-harness reruns):
 | Grok | `.grok/hooks/*.json` | `PostCompact` (after compaction; PreCompact would fire before the loss) | soft (annotation) |
 | agy | `.agents/hooks.json` | `SessionStart` (post-compaction re-fire TBD) | inject confirmed; verify post-compaction |
 
-Use git-root path resolution and a Windows command variant. New product
-scaffolding: `templates/hooks/<harness>/` + a bootstrap install/register step
-modeled on the all-routes operator-wrapper guarantee (incl. `.gitignore` handling
-that keeps machine-local state like `.claude/settings.local.json` ignored).
+The trigger is inlined directly into each config as an `echo` command (the fixed
+pointer string is the command's argument) — there is **no shared `.sh` script**.
+This was a correction: the first build shipped a `sh "__REPO_ROOT__/.agents/hooks/reground.sh"`
+command, which baked an **absolute path** at install (broke on clone/move) and
+silently required a **POSIX shell** (broke on native Windows). Inlining kills both:
+nothing to substitute, and `echo` exists in `sh`, `cmd`, and PowerShell. The one
+residual is that the harness must run the hook command through a shell with `echo`
+— verified on macOS; Windows is best-effort until tested. Keep the string
+single-quoted and ASCII (no apostrophes) so the same JSON is valid on every shell.
+
+New product scaffolding: `templates/hooks/<harness>/` + a bootstrap install/register
+step modeled on the all-routes operator-wrapper guarantee (incl. `.gitignore`
+handling that keeps machine-local state like `.claude/settings.local.json` ignored).
 
 ## 4.4 Hook trust (cross-harness, machine-local)
 
@@ -223,7 +232,7 @@ Manual `/compact` verification per harness:
 - **Codex: hook did not fire on manual `/compact`** — but Codex confirmed it **re-injects `AGENTS.md` after compaction natively** ("AGENTS restored by the environment"); the floor covers it, and `/compact` is likely not the hook's trigger (auto-compaction only). Redundant-but-harmless on Codex.
 - **Grok, agy: left inert** (workspace not trusted) as best-effort insurance for a possible workflow shift; the floor covers them meanwhile. agy has no manual `/compact`; agy also over-applied words-first (asked for a go on direct *read* instructions) — a wording-precision observation, not a blocker.
 
-**Key finding:** `AGENTS.md` is **standing context that survives compaction natively** (re-sent as project instructions each turn), confirmed on Codex and consistent with how Claude/Grok/agy load it. So the 2026-06-20 failure was attention degradation, not invariant *removal* — the **floor is the real guarantee**; the re-ground teeth are reinforcement/insurance, redundant where the harness already re-injects. **Decision (owner, 2026-06-21):** keep the teeth as-is — Claude benefits (proven), Codex is covered by native reload, Grok/agy stay inert-until-trusted insurance. **Security:** no concern — `reground.sh` is a benign fixed-string `printf`; untrusted hooks don't run; once trusted (and on Claude, with no prompt) it runs with shell privileges, so changes to that file are review-sensitive like any executable.
+**Key finding:** `AGENTS.md` is **standing context that survives compaction natively** (re-sent as project instructions each turn), confirmed on Codex and consistent with how Claude/Grok/agy load it. So the 2026-06-20 failure was attention degradation, not invariant *removal* — the **floor is the real guarantee**; the re-ground teeth are reinforcement/insurance, redundant where the harness already re-injects. **Decision (owner, 2026-06-21):** keep the teeth as-is — Claude benefits (proven), Codex is covered by native reload, Grok/agy stay inert-until-trusted insurance. **Security:** no concern — each config's hook command is a benign fixed-string inline `echo` (no script file); untrusted hooks don't run; once trusted (and on Claude, with no prompt) it runs with shell privileges, so changes to that command string are review-sensitive like any executable. **Portability fix (2026-06-21):** the original `sh "__REPO_ROOT__/.agents/hooks/reground.sh"` baked an absolute path (broke on clone/move) and required a POSIX shell (broke on Windows); both are resolved by inlining the trigger as `echo` (§4.3). The Task-4 test instrument hard-coded absolute paths and ran only on macOS, so it caught neither — now guarded by a test that inspects the committed config for any baked path or script/shell dependency.
 
 ## 6. Non-goals / honest limits
 
