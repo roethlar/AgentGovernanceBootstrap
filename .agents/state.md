@@ -18,7 +18,8 @@ short and update it when important repo facts change.
 ## Next
 
 - Assessed-but-deferred toolkit decisions remain open; see `.agents/decisions.md` "Open Decisions" for the current list and their status. (Most of that queue was adopted 2026-06-20; the remainder are product items recorded there.)
-- Re-run the bootstrap on this repo to bring its own self-application current under the adopted product changes — add the Operator Requests section and `.claude/commands/` wrappers, archive the adopted decisions into `docs/history/`, and apply the other invariants. Until then this repo intentionally lags the product it ships.
+- Immediate next work is the remaining open product items in `.agents/decisions.md` "Open Decisions" (decisions-template divergence, reviewloop revision, playbook operator). Resolve those first.
+- Only once the product is stable (queue cleared), re-run the bootstrap on this repo once to bring its own self-application current — add the Operator Requests section and `.claude/commands/` wrappers, archive the adopted decisions into `docs/history/`, and apply the other invariants. Re-running before the queue is cleared would just have to be repeated, so it comes last; until then this repo intentionally lags the product it ships.
 - Run harvest sweeps in this repo only on explicit owner request as harvest reports accumulate in the dropbox (or fallback).
 - Support for small/local models remains best-effort: agents should use the fallback flow (run discovery manually then `Read .bootstrap-tmp/START-HERE.md and follow it.`) together with a plugin-free harness profile.
 - The harvest digest script is deferred until report volume justifies the work (see the 2026-06-09 spec).
