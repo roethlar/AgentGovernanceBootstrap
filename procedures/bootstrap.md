@@ -188,7 +188,11 @@ and land in the same single scoped commit.
    `AGENTS.md` (must include the Bootstrap Handoff section from the template),
    `.agents/state.md`, `.agents/decisions.md`, `.agents/repo-map.json`,
    `.agents/artifact-manifest.json`, playbooks only if the scope tier justifies
-   them. Set every `custody` value in the artifact manifest to the custody
+   them. The toolkit ships reusable playbook templates under
+   `.bootstrap-tmp/templates/playbooks/` (e.g. `reviewloop.md`, the two-agent
+   review loop); install one into `.agents/playbooks/<name>.md` when the repo's
+   work calls for it, invoked later via the `playbook` operator. Set every
+   `custody` value in the artifact manifest to the custody
    the file will have once the approval commit lands, proven by git query —
    never from path convention. Files on the summary's Committed list are
    `tracked` (existing files prove it via `git ls-files --error-unmatch

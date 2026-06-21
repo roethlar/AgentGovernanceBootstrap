@@ -883,7 +883,24 @@ adopting the token-cost archiving rule.
 
 ### 2026-06-20 - Revise the two-agent review-loop doc into a governance-compatible playbook (reviewloop.md)
 
-Status: Open (deferred; no change made)
+Status: Adopted 2026-06-20. The owner's external two-agent review-loop runbook is now
+shipped as `templates/playbooks/reviewloop.md` (a reusable playbook template; the new
+`templates/playbooks/` directory is established here and copied into target repos by
+`tools/discover.py`'s existing `templates/` copytree). The four conflicts were
+reconciled: (1) the autonomous main-branch merge is now owner-gated by default (accept
+is a verdict, not merge authority; hand off a `merge-<id>` branch or leave the branch
+for an owner-approved merge; auto-merge is an opt-in knob requiring standing owner
+authorization); (2) the parallel root `REVIEW.md` / `.review/` canon is replaced by
+`.agents/review/` nested under the governance root, with the status index at
+`.agents/review/index.md` that `.agents/state.md` points to rather than duplicating;
+(3) the hardcoded cargo/npm suite is replaced by deferral to the repo's observed
+verification command, suites as illustrative examples; (4) named subagents and the
+specific Monitor tool are reframed as capabilities with no-special-capability
+fallbacks. The aligned parts (one-branch-per-finding, `Fix <id>` per-item commits,
+atomic unit, no broad sweeps, sentinel audit trail) are kept, and repo-specific
+examples are genericized to placeholders. `procedures/bootstrap.md` greenfield step 4
+points at the shipped playbook set. The finding below is retained for the rationale
+that led to it.
 
 Finding:
 An external doc (the owner's `/tmp/SETUP.md`, a ~390-line portable two-agent
