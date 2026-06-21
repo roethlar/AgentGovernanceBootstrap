@@ -6,35 +6,6 @@ Turn the human's plain-English request into working, validated changes that fit 
 repo. Do not expand scope without approval. Do not treat unreviewed docs or generated
 scratch files as authority.
 
-## Prime Invariants
-
-These are the few rules whose violation is hardest to reverse. They are stated here -
-briefly and in their own short block - on purpose: a rule buried in a long document is
-the first thing dropped when a session runs long and context is compacted, which is
-exactly when these matter most. Re-read this block at three checkpoints: after any
-context compaction or summary, at the start of every operator request, and immediately
-before any commit, push, or merge. Brevity plus repetition is the enforcement - do not
-rely on holding these in working memory.
-
-1. **Answer with words.** A question, a handed-over artifact (defect report, findings
-   list, plan, spec), or any ambiguous framing is evidence to assess, not a go to act.
-   Reply in plain English and stop. Session framing ("a bug-fix session") is not a go;
-   only an explicit instruction to make a specific change is.
-2. **No write without an explicit go.** Do not edit files, commit, push, merge, or
-   rewrite history until the human has explicitly authorized that specific action.
-   Approval authorizes the one scoped action announced - not a broader sweep, and not a
-   later reshaping of it.
-3. **One scoped item at a time.** Implement and commit one finding or fix per commit; a
-   batch sweep across many items happens only on an explicit owner request.
-
-Where the harness supports it, enforce these structurally rather than by memory alone:
-before editing files in response to a message, classify the message - a question or
-anything ambiguous means answer in words first; only an explicit change-instruction
-authorizes edits. A pre-action hook or equivalent gate that checks these before a write
-or commit is stronger than recall and is recommended where available. These restate, in
-load-bearing short form, the fuller rules in Universal Invariants and Git Safety; on any
-conflict the fuller text governs.
-
 ## Universal Invariants
 
 - Answer the human's questions with words, never with code or file edits. When
@@ -169,8 +140,7 @@ source should win. Do not silently choose whichever source is convenient.
 
 ## Operator Requests
 
-Re-read the Prime Invariants at the start of any operator request. Treat these owner
-words as process requests:
+Treat these owner words as process requests:
 
 - `catchup`: re-read `AGENTS.md`, `.agents/state.md`, and active repo docs; summarize
   current state, next action, blockers, and one proposed first action. Make no changes
@@ -217,8 +187,7 @@ Use the repo's current automated verification entry point recorded in
 - When working through a list of findings or fixes, address exactly one item per
   commit and commit each before starting the next. Batch sweeps spanning many
   findings happen only on the owner's explicit request. Whether work happens on a
-  branch is this repo's policy, not this rule's. Re-read the Prime Invariants
-  immediately before any commit, push, or merge.
+  branch is this repo's policy, not this rule's.
 - Do not rewrite history or restructure existing commits without explicit owner
   approval: no `git commit --amend`, `rebase`, `squash`, or force-push, and no
   reordering or collapsing commits already made. The owner's approval authorizes

@@ -994,26 +994,7 @@ optionally a `templates/playbooks/` set).
 
 ### 2026-06-20 - Load-bearing invariants need forceful enforcement, not just statement
 
-Status: Adopted 2026-06-20 (product only). `templates/AGENTS.template.md` gained a
-`## Prime Invariants` block placed first (right after Mission) so it is the most
-prominent and most likely to survive context compaction. It extracts the three
-hardest-to-reverse rules in brief, separable form (answer with words; no write -
-edit/commit/push/merge/history-rewrite - without an explicit go for that specific
-action; one scoped item per commit), names three re-assertion checkpoints (after any
-context compaction, at the start of every operator request, immediately before any
-commit/push/merge), and adds the where-supported pre-action gate plus a recommendation
-to enforce structurally via a harness hook where available. Reinforcing pointers were
-added at two of the checkpoints: the Operator Requests intro and the Git Safety
-one-item-per-commit bullet. This implements the recorded recommendation (Option A's
-prime-invariants subset + Option B framed as a where-supported recommendation =
-combination). The block explicitly defers to the fuller Universal Invariants / Git
-Safety text on any conflict, keeping a single canonical home for each full rule.
-
-Self-application to this repo's own `AGENTS.md` (adding the same Prime Invariants block
-and pre-action gate) is deferred to the bootstrap re-run, consistent with the other
-2026-06-20 product-only adoptions and the `.agents/state.md` sequencing (clear the
-product queue first, then re-run bootstrap to bring this repo's own application
-current). The finding below is retained for the rationale that led to it.
+Status: Open (deferred; direction recorded, specific mechanism to be decided later)
 
 Finding:
 The canon's most load-bearing invariants - answer-with-words, words-first, and the
