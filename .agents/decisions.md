@@ -831,3 +831,37 @@ Recommendation: adopt the ask-early option (owner-chosen). Scope: product
 `templates/AGENTS.template.md` Session Startup / Bootstrap Handoff if agents should
 be told to confirm git presence first). This is a procedure/ordering change;
 `discover.py`'s non-git fallback stays as-is.
+
+### 2026-06-20 - Decisions template under-models the Open-queue / Adopted pattern
+
+Status: Open (deferred; no change made)
+
+Finding:
+`templates/decisions.template.md` models a decisions doc with only `Status: Active
+| Superseded` and a single `## Decisions` section. But this repo's own
+`.agents/decisions.md` - the canonical example - evolved a richer structure the
+template never teaches: an `## Open Decisions` queue for assessed-but-deferred
+findings, and an `Adopted` status for queue items whose rule has moved into the
+canon. A repo bootstrapped from the current template gets no guidance on the
+queue/Adopted lifecycle, so the toolkit's most-used decision workflow is
+undocumented in the product. This also leaves the just-added archiving rule
+referencing closed/settled states the template does not define.
+
+Evidence (2026-06-20):
+- `templates/decisions.template.md` - the entry-format comment lists only
+  `Status: Active | Superseded`; no Open queue, no `Adopted` status.
+- `.agents/decisions.md` - uses an `## Open Decisions` (deferred) section and
+  `Status: Adopted YYYY-MM-DD` entries throughout (this whole session's work).
+
+Options:
+- Adopt: extend the decisions template to model the queue and the `Adopted` status
+  - add an open/deferred section, document the lifecycle (Open -> Adopted, rule
+  moves to its canonical home, entry archived per the archiving rule), and list
+  `Adopted` alongside `Active | Superseded`.
+- Leave: keep the template minimal and treat the queue/Adopted pattern as a local
+  elaboration this repo happens to use.
+
+Recommendation: adopt - the queue/Adopted lifecycle is load-bearing in practice and
+pairs directly with the archiving rule. Scope: product
+(`templates/decisions.template.md`), harness-agnostic. Surfaced 2026-06-20 while
+adopting the token-cost archiving rule.
