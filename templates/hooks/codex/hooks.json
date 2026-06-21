@@ -1,0 +1,8 @@
+{
+  "hooks": {
+    "SessionStart": [
+      { "matcher": "compact",
+        "hooks": [ { "type": "command", "command": "sh \"__REPO_ROOT__/.agents/hooks/reground.sh\"" } ] }
+    ]
+  }
+}

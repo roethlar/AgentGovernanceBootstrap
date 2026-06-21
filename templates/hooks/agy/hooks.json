@@ -1,0 +1,7 @@
+{
+  "hooks": {
+    "SessionStart": [
+      { "hooks": [ { "type": "command", "command": "sh \"__REPO_ROOT__/.agents/hooks/reground.sh\"" } ] }
+    ]
+  }
+}

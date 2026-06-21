@@ -368,5 +368,20 @@ class TestUpdateRouteHeuristic(unittest.TestCase):
             self.assertEqual(manifest["route"], "update")
 
 
+class TestHookTemplates(unittest.TestCase):
+    def test_hook_templates_present_and_copied(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = fixtures.make_greenfield_repo(Path(tmp) / "repo")
+            fixtures.run_discover(repo)
+            hooks = repo / ".bootstrap-tmp" / "templates" / "hooks"
+            rels = ("reground.sh", "claude/settings.json", "codex/hooks.json",
+                    "grok/hooks/reground.json", "agy/hooks.json")
+            for rel in rels:
+                self.assertTrue((hooks / rel).is_file(), rel)
+            for rel in rels[1:]:
+                self.assertIn("reground.sh",
+                              (hooks / rel).read_text(encoding="utf-8"))
+
+
 if __name__ == "__main__":
     unittest.main()
