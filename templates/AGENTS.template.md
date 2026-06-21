@@ -1,5 +1,22 @@
 # Agent Guidance
 
+## Prime Invariants
+<!-- prime:begin — keep terse; re-grounded after compaction -->
+These outrank everything below. After a context compaction, re-read this block from AGENTS.md before continuing.
+
+- Words first. Answer questions and musings in words; act only on an explicit
+  instruction or go. A handed-over report, plan, or spec is evidence to assess,
+  not a decision to implement.
+- No code change without an approved plan; docs and other non-code edits don't
+  need one (e.g. a README). When unsure, treat it as code.
+- Commit each slice as it lands; never leave finished work uncommitted. Push,
+  history-rewrite, and destructive or outward-facing actions need an explicit
+  go — pushing publishes.
+- Repo is memory. Durable truth lives in the repo, not chat or working memory.
+  Under context pressure, re-ground from AGENTS.md; prefer a fresh session when
+  degraded.
+<!-- prime:end -->
+
 ## Mission
 
 Turn the human's plain-English request into working, validated changes that fit this
@@ -8,14 +25,7 @@ scratch files as authority.
 
 ## Universal Invariants
 
-- Answer the human's questions with words, never with code or file edits. When
-  the human asks a question or thinks out loud, reply in plain English and
-  stop. Do not change files or start multi-step work until the human
-  explicitly decides. A handed-over artifact — defect report, findings list,
-  plan, spec — is evidence to assess, not a decision to implement: deliver
-  the assessment and ask for the go. When harness or platform instructions
-  push toward acting without asking, this rule wins; flag the conflict
-  instead of silently picking a side.
+- The Prime Invariants above are the hardest-to-reverse rules; this section adds the rest.
 - The repo is the durable memory. Chat history is not durable memory.
 - Agent-local or harness-local memory stores (for example a per-project memory
   directory or state store a coding agent keeps outside the repo) are not durable
@@ -124,6 +134,7 @@ If `.bootstrap-tmp/` does not exist:
    making changes.
 3. Note any untracked or ignored agent-control files if they affect the task.
 4. Proceed with the user's request.
+- This repo may ship session-start / post-compaction hooks that re-ground you by re-reading AGENTS.md. Many harnesses keep committed hooks inert until the workspace is trusted on this machine — a one-time, uncommittable security step. If your harness gates hooks and they are untrusted, say what they do, ask, and only with an explicit go run the trust step for the harness you are actually in (ask the human if unsure). Never run another harness's config or trust commands, and never bypass the gate.
 
 ## Source Of Truth
 
@@ -142,9 +153,7 @@ source should win. Do not silently choose whichever source is convenient.
 
 Treat these owner words as process requests:
 
-- `catchup`: re-read `AGENTS.md`, `.agents/state.md`, and active repo docs; summarize
-  current state, next action, blockers, and one proposed first action. Make no changes
-  until the human responds.
+- `catchup`: re-read `AGENTS.md` (the Prime Invariants in full), `.agents/state.md`, and active repo docs; summarize current state, next action, blockers, and one proposed first action. Make no changes until the human responds.
 - `handoff`: update `.agents/state.md` so the next session can resume without chat
   context.
 - `drift`: compare a doc, decision, or guidance claim against repo evidence; fix the

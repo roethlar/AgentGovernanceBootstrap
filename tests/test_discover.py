@@ -325,6 +325,23 @@ class TestGoldenManifests(unittest.TestCase):
         self._check(fixtures.make_governance_repo, "governance-manifest.json")
 
 
+class TestPrimeInvariantsTemplate(unittest.TestCase):
+    def test_prime_block_present_and_copied(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = fixtures.make_greenfield_repo(Path(tmp) / "repo")
+            fixtures.run_discover(repo)
+            tmpl = (repo / ".bootstrap-tmp" / "templates"
+                    / "AGENTS.template.md").read_text(encoding="utf-8")
+        self.assertIn("<!-- prime:begin", tmpl)
+        self.assertIn("<!-- prime:end -->", tmpl)
+        head = tmpl[:tmpl.index("<!-- prime:end -->")]
+        for phrase in ("Words first.",
+                       "No code change without an approved plan",
+                       "Commit each slice as it lands",
+                       "re-ground from AGENTS.md"):
+            self.assertIn(phrase, head)
+
+
 class TestUpdateRouteHeuristic(unittest.TestCase):
     def test_agents_dir_without_standard_layout_routes_migration(self):
         # The Blit case: a pre-existing .agents/ (e.g., workspace skills)
