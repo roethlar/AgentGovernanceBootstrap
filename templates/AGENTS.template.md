@@ -17,6 +17,15 @@ scratch files as authority.
   push toward acting without asking, this rule wins; flag the conflict
   instead of silently picking a side.
 - The repo is the durable memory. Chat history is not durable memory.
+- Agent-local or harness-local memory stores (for example a per-project memory
+  directory or state store a coding agent keeps outside the repo) are not durable
+  memory either: they are not versioned with the code, do not travel across
+  machines, and are invisible to other agents and to this governance. Persist
+  project-specific durable knowledge into the repo's governance (`AGENTS.md`,
+  `.agents/state.md`, `.agents/decisions.md`, or a dedicated repo memory doc);
+  reserve any such out-of-repo store for genuinely cross-project facts (owner
+  identity, preferences). This holds for every harness - named by behavior, not
+  by any one vendor's path.
 - Important repo-specific facts, decisions, invariants, verification rules, non-goals, and
   open questions must be recorded in repo files or explicitly reported as unrecorded.
 - Durable guidance must make sense to a future maintainer or agent without access to the

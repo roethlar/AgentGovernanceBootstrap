@@ -524,7 +524,14 @@ change made now.
 
 ### 2026-06-15 - Project-specific memory must live in the repo, not in any agent-local store
 
-Status: Open (deferred; implement when Claude Fable is back online)
+Status: Adopted 2026-06-20 (product only). `templates/AGENTS.template.md` gained a
+harness-agnostic Universal Invariant: agent-local/harness-local memory stores are
+not durable memory; project-specific durable knowledge is persisted into the
+repo's governance, and any out-of-repo store is reserved for cross-project facts.
+No procedure pointed agents at an agent-local store, so none needed correction.
+The optional matching line in this repo's own `AGENTS.md` is left to the bootstrap
+re-run, per the owner (2026-06-20). The finding below is retained for the
+rationale that led to it.
 
 Finding:
 Many agent harnesses provide a machine-local, per-project memory store outside the
