@@ -121,7 +121,7 @@ Restructure `templates/AGENTS.template.md` into:
     instruction or go. A handed-over report, plan, or spec is evidence to assess,
     not a decision to implement.
   - No code change without an approved plan; docs and other non-code edits don't
-    (e.g. a README). When unsure, treat it as code.
+    need one (e.g. a README). When unsure, treat it as code.
   - Commit each slice as it lands; never leave finished work uncommitted. Push,
     history-rewrite, and destructive or outward-facing actions need an explicit
     go — pushing publishes.
@@ -215,6 +215,15 @@ the boundary it exists to enforce.
   up, add its row.
 - Toolkit's own gate: `python3 -m unittest discover -s tests -v` for changes to
   `tools/discover.py`, `tests/`, or copied `templates/`/`procedures/` content.
+
+## 5b. Task 4 results (2026-06-21) + the standing-context finding
+
+Manual `/compact` verification per harness:
+- **Claude Code: PASS** — `SessionStart`+`compact` fired on `/compact`; trigger emitted. Teeth proven on the primary coding harness.
+- **Codex: hook did not fire on manual `/compact`** — but Codex confirmed it **re-injects `AGENTS.md` after compaction natively** ("AGENTS restored by the environment"); the floor covers it, and `/compact` is likely not the hook's trigger (auto-compaction only). Redundant-but-harmless on Codex.
+- **Grok, agy: left inert** (workspace not trusted) as best-effort insurance for a possible workflow shift; the floor covers them meanwhile. agy has no manual `/compact`; agy also over-applied words-first (asked for a go on direct *read* instructions) — a wording-precision observation, not a blocker.
+
+**Key finding:** `AGENTS.md` is **standing context that survives compaction natively** (re-sent as project instructions each turn), confirmed on Codex and consistent with how Claude/Grok/agy load it. So the 2026-06-20 failure was attention degradation, not invariant *removal* — the **floor is the real guarantee**; the re-ground teeth are reinforcement/insurance, redundant where the harness already re-injects. **Decision (owner, 2026-06-21):** keep the teeth as-is — Claude benefits (proven), Codex is covered by native reload, Grok/agy stay inert-until-trusted insurance. **Security:** no concern — `reground.sh` is a benign fixed-string `printf`; untrusted hooks don't run; once trusted (and on Claude, with no prompt) it runs with shell privileges, so changes to that file are review-sensitive like any executable.
 
 ## 6. Non-goals / honest limits
 
