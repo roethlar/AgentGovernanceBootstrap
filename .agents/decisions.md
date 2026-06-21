@@ -295,7 +295,14 @@ clarification, update-route template sub-question.)
 
 ### 2026-06-15 - Packet over-claims custody for a directory git collapsed to ignored
 
-Status: Open (deferred by owner; no change made)
+Status: Adopted 2026-06-20. `tools/discover.py` `mark_ignored` now renders a
+collapsed ignored directory with neutral wording (it describes the current entry,
+not a custody verdict for future child paths; run `git check-ignore` on the exact
+final path), keeping "gitignored - local-only; cannot be committed as-is" only for
+directly-ignored individual files. `tools/manifest-schema.md` gained a matching
+one-line reinforcement, and `tests/test_discover.py` now covers both case A (rule
+on the directory) and case B (rule on a child, where `git check-ignore <dir>`
+exits 1). The finding below is retained for the rationale that led to it.
 
 Finding:
 When a directory contains only ignored files and no tracked files, `git status

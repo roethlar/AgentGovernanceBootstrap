@@ -238,11 +238,16 @@ class TestCiMarkerValidation(unittest.TestCase):
             self.assertIn("likely inactive", packet)
 
 
-class TestIgnoredMarkerAnnotation(unittest.TestCase):
-    """F2 from the ExchangeAdminWeb pilot: a gitignored harness dir must be
-    labeled local-only in the packet so it is never proposed as committable."""
+class TestIgnoredDirectoryAnnotation(unittest.TestCase):
+    """Queue item #5: when `git status --ignored` collapses a directory to a
+    single `dir/` entry, the packet must not assert it 'cannot be committed' -
+    that over-claims custody on future child paths. The collapse looks identical
+    whether a rule ignores the directory (case A, children inherit) or only the
+    current children are individually ignored (case B, a new non-matching child
+    IS committable), so the packet stays neutral and points at `git check-ignore`
+    on the exact final path."""
 
-    def test_packet_marks_gitignored_claude_dir(self):
+    def test_case_a_rule_on_directory_is_neutral(self):
         with tempfile.TemporaryDirectory() as tmp:
             repo = _make_repo(Path(tmp) / "repo", {
                 "README.md": "# x\n",
@@ -253,7 +258,26 @@ class TestIgnoredMarkerAnnotation(unittest.TestCase):
             self.assertIn(".claude/", manifest["ignoredFiles"])
             packet = (repo / ".bootstrap-tmp" / "bootstrap-review-packet.md"
                       ).read_text(encoding="utf-8")
-            self.assertIn("(gitignored - local-only", packet)
+            self.assertIn("a directory git reports as ignored", packet)
+            self.assertIn("git check-ignore", packet)
+            self.assertNotIn("cannot be committed as-is", packet)
+
+    def test_case_b_rule_on_child_is_neutral(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = _make_repo(Path(tmp) / "repo", {
+                "README.md": "# x\n",
+                ".gitignore": ".claude/settings.local.json\n",
+            })
+            fixtures._write(repo, ".claude/settings.local.json", "{}\n")
+            manifest = fixtures.run_discover(repo)
+            # git collapses the all-ignored dir even though no rule matches
+            # `.claude/` itself (`git check-ignore .claude/` exits 1).
+            self.assertIn(".claude/", manifest["ignoredFiles"])
+            packet = (repo / ".bootstrap-tmp" / "bootstrap-review-packet.md"
+                      ).read_text(encoding="utf-8")
+            self.assertIn("a directory git reports as ignored", packet)
+            self.assertIn("git check-ignore", packet)
+            self.assertNotIn("cannot be committed as-is", packet)
 
 
 class TestNonGitTarget(unittest.TestCase):

@@ -52,4 +52,7 @@ name-match: a lead to verify, never a fact to record in durable guidance.
   --exclude-standard`, and `git status --ignored --short` respectively.
   `ignoredFiles` may list a directory (for example `.claude/`) rather than
   each file inside it. Use these (or live `git check-ignore`) to set
-  `custody` values - never path convention.
+  `custody` values - never path convention. A directory shown here is not a
+  custody verdict for new child paths: git collapses both a directly-ignored
+  directory and one whose current children are each ignored to the same `dir/`
+  entry, so run `git check-ignore` on the exact final path before deciding it.

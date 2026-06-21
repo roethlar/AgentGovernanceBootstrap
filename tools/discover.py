@@ -403,6 +403,12 @@ def write_review_packet(path, manifest):
 
     def mark_ignored(item):
         if item in ignored_set or item.rstrip("/") + "/" in ignored_set:
+            if item.endswith("/"):
+                return (f"`{item}` (a directory git reports as ignored - this "
+                        "describes the current entry and its contents, not a "
+                        "custody verdict for every future child path; run "
+                        "`git check-ignore` on the exact final path before "
+                        "deciding custody)")
             return f"`{item}` (gitignored - local-only; cannot be committed as-is)"
         return f"`{item}`"
 
