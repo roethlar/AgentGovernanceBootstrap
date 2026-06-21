@@ -843,7 +843,13 @@ be told to confirm git presence first). This is a procedure/ordering change;
 
 ### 2026-06-20 - Decisions template under-models the Open-queue / Adopted pattern
 
-Status: Open (deferred; no change made)
+Status: Adopted 2026-06-20. `templates/decisions.template.md` now teaches the full
+lifecycle: a `## Decision lifecycle` section defining Open -> Active / Adopted ->
+Superseded -> archived, an `Adopted YYYY-MM-DD` status listed alongside `Active |
+Superseded` in the entry-format comment, and an `## Open Decisions (deferred - not
+yet adopted)` section with its own Finding/Evidence/Options/Recommendation comment
+modeled on this repo's own usage. The finding below is retained for the rationale
+that led to it.
 
 Finding:
 `templates/decisions.template.md` models a decisions doc with only `Status: Active
