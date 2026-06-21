@@ -63,17 +63,26 @@ to `~/dev/AgentGovernanceBootstrap` first; if you cannot clone (offline or
 sandboxed), continue with the scratch pack and flag the toolkit version as
 unverified.
 
-## Step 1: Ensure fresh discovery
+## Step 1: Confirm git presence, then ensure fresh discovery
 
 Discovery is a deterministic script. It writes `.bootstrap-tmp/` in the target repo:
 a manifest of every file, detected markers, and copies of these procedures and the
 drafting templates. You run it; you do not replicate it by hand, because a script
 cannot get lazy on a large repo and you can.
 
-1. Find the script. Prefer `.bootstrap-tmp/tools/discover.py` if it exists, else
+1. Confirm the target is a git repository before discovery. Check whether the
+   target root's `.git/` exists. git is a hard requirement for this toolkit, so do
+   not run discovery, draft a packet, and surface "not a git repository" only at
+   the end. If `.git/` is missing, resolve it here via the "If the target is not a
+   git repository" section below: put the owner-gated `git init` question before
+   discovery, not at the approval stage. If the owner approves, run `git init`
+   first so discovery sees a real repo; if the owner declines, continue under that
+   section's no-version-control path. Either way the init decision is made now,
+   before the script runs.
+2. Find the script. Prefer `.bootstrap-tmp/tools/discover.py` if it exists, else
    `tools/discover.py` in the bootstrap repo (the directory containing the
    `procedures/` folder this file lives in).
-2. Pick a working interpreter with a functional probe, in order: `py -3
+3. Pick a working interpreter with a functional probe, in order: `py -3
    --version` (the canonical Windows launcher; prefer it there), then
    `python3 --version`, then `python --version`. Treat a candidate as absent
    when the command fails OR its output mentions "was not found" or
@@ -82,9 +91,9 @@ cannot get lazy on a large repo and you can.
    `python3` on PATH does not imply a usable interpreter. Use the first
    candidate that prints a real version. If every probe fails, Python is
    missing — help the human install it first.
-3. If `.bootstrap-tmp/repo-discovery-manifest.json` is missing, run:
+4. If `.bootstrap-tmp/repo-discovery-manifest.json` is missing, run:
    `<probed-python> <script> <target-repo-root>`
-4. If the manifest exists, compare its `git.commit` to current `HEAD`
+5. If the manifest exists, compare its `git.commit` to current `HEAD`
    (`git rev-parse HEAD`). If they differ, re-run the script. Do not ask the human;
    this is self-healing. Only if you cannot run the script (sandboxed environment)
    stop and say, in plain English: "The discovery snapshot is older than the repo.
@@ -230,17 +239,21 @@ and land in the same single scoped commit.
 
 ## If the target is not a git repository
 
-Discovery reports `git.isGitRepository: false` when the target has no `.git`.
-Every custody probe there - `git ls-files --error-unmatch`, `git check-ignore`,
-`git rev-parse` - exits 128. Exit 128 means git is absent and custody is
-unprovable: it is neither "ignored" nor "tracked", and nothing is committable.
+Step 1 checks for `.git/` before discovery, so you normally reach this section
+early - as soon as the missing repo is detected, before running the script.
+Discovery is the backstop: it reports `git.isGitRepository: false` for the same
+case. Every custody probe on a non-git target - `git ls-files --error-unmatch`,
+`git check-ignore`, `git rev-parse` - exits 128. Exit 128 means git is absent and
+custody is unprovable: it is neither "ignored" nor "tracked", and nothing is
+committable.
 
-1. Never run `git init` unprompted. Ask the owner, as a question in the
-   approval summary, whether to initialize git and make the scoped first
-   commit part of this bootstrap.
-2. If the owner approves: run `git init`, then follow the normal
-   after-approval steps. Custody values record post-commit custody as usual,
-   proven by git query after the commit lands.
+1. Never run `git init` unprompted. Ask the owner - as soon as Step 1 detects the
+   missing `.git/`, before discovery and drafting, not deferred to the approval
+   summary - whether to initialize git and make the scoped first commit part of
+   this bootstrap.
+2. If the owner approves: run `git init`, then continue with discovery and the
+   normal after-approval steps. Custody values record post-commit custody as
+   usual, proven by git query after the commit lands.
 3. If the owner declines: every `custody` value in the artifact manifest is
    `untracked`, the approval summary's Committed list is "None" (retitle the
    bucket "On disk only - no version control"), and the drafted guidance must

@@ -780,8 +780,17 @@ wording.
 
 ### 2026-06-20 - Resolve git presence as the earliest bootstrap step, before discovery
 
-Status: Open (deferred; approach chosen by owner 2026-06-20 — ask-early, owner-gate
-preserved; not yet implemented)
+Status: Adopted 2026-06-20. `procedures/bootstrap.md` Step 1 now confirms `.git/`
+presence before running discovery: a missing repo is resolved via the owner-gated
+`git init` question up front (approve -> `git init` then discover; decline ->
+proceed under the no-version-control path), instead of surfacing "not a git
+repository" only at the approval stage. The "If the target is not a git
+repository" section is reframed as early-detection with discovery as the backstop.
+`migration.md` needs no change (it is entered only after discovery routes an
+already-governed, hence git, repo, and the Step 1 check precedes the route split so
+it covers all routes); the template needs none (this is a bootstrap-process
+concern, not generated-repo guidance). The finding below is retained for the
+rationale that led to it.
 
 Finding:
 git is a hard requirement for the toolkit — custody probes, the commit contract,
