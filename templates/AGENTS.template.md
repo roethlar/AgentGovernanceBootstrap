@@ -26,10 +26,9 @@ scratch files as authority.
 ## Universal Invariants
 
 - The Prime Invariants above are the hardest-to-reverse rules; this section adds the rest.
-- The repo is the durable memory. Chat history is not durable memory.
 - Agent-local or harness-local memory stores (for example a per-project memory
   directory or state store a coding agent keeps outside the repo) are not durable
-  memory either: they are not versioned with the code, do not travel across
+  memory: they are not versioned with the code, do not travel across
   machines, and are invisible to other agents and to this governance. Persist
   project-specific durable knowledge into the repo's governance (`AGENTS.md`,
   `.agents/state.md`, `.agents/decisions.md`, or a dedicated repo memory doc);
@@ -138,8 +137,8 @@ If `.bootstrap-tmp/` does not exist:
 2. Read `AGENTS.md`, `.agents/state.md` if present, and relevant `.agents/` files before
    making changes.
 3. Note any untracked or ignored agent-control files if they affect the task.
-4. Proceed with the user's request.
-- This repo may ship session-start / post-compaction hooks that re-ground you by re-reading AGENTS.md. Many harnesses keep committed hooks inert until the workspace is trusted on this machine — a one-time, uncommittable security step. If your harness gates hooks and they are untrusted, say what they do, ask, and only with an explicit go run the trust step for the harness you are actually in (ask the human if unsure). Never run another harness's config or trust commands, and never bypass the gate.
+4. Hook trust: this repo may ship session-start / post-compaction hooks that re-ground you by re-reading AGENTS.md. Many harnesses keep committed hooks inert until the workspace is trusted on this machine — a one-time, uncommittable security step. If your harness gates hooks and they are untrusted, say what they do, ask, and only with an explicit go run the trust step for the harness you are actually in (ask the human if unsure). Never run another harness's config or trust commands, and never bypass the gate.
+5. Proceed with the user's request.
 
 ## Source Of Truth
 

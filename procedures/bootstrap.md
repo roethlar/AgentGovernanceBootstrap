@@ -177,7 +177,14 @@ present, nothing to do."
    harness config at its canonical path (`.claude/settings.json`,
    `.codex/hooks.json`, `.grok/hooks/reground.json`, `.agents/hooks.json`).
    Substitute every occurrence of the literal token `__REPO_ROOT__` with the
-   target repo's absolute root path.
+   target repo's absolute root path. On a Windows target, write an
+   OS-appropriate invocation of `reground.sh` (the platform is known at install
+   time) instead of a bare `sh` command. For a multi-purpose config file
+   (notably `.claude/settings.json`, which also holds permissions, env, and
+   model settings), merge the `hooks` key into the existing file rather than
+   replacing it — never overwrite a repo's existing settings. Dedicated hook
+   files (`.codex/hooks.json`, `.grok/hooks/reground.json`,
+   `.agents/hooks.json`) are written whole.
 2. Make them committable. Run `git check-ignore` on each final path. If an
    ignore rule covers it, propose a narrowed `.gitignore` edit that admits the
    hook file while keeping genuinely machine-local state ignored — never
