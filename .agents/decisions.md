@@ -267,6 +267,40 @@ Supersedes:
 The deferred "Command wrappers are created only on the migration route"
 (2026-06-15), now adopted in generalized form.
 
+### 2026-06-22 - Update route reconciles a stale AGENTS.md; templateVersion stamp detects drift
+
+Status: Active
+
+Decision:
+Bootstrapped repos carry a `<!-- templateVersion: YYYY-MM-DD -->` stamp at the
+top of `AGENTS.md`, mirroring the stamp in the toolkit's
+`templates/AGENTS.template.md`. Discovery records an `agentsTemplate` block in the
+manifest (`currentVersion`, `targetVersion`, `reconcileRecommended`,
+`missingSections`): it compares the target's stamp against the toolkit's and, on
+the update route, probes the target `AGENTS.md` for missing structure (the Prime
+Invariants block, the operator set). The update route (`procedures/bootstrap.md`
+Step 3) reconciles a stale or unstamped `AGENTS.md` to the current template -
+reusing the `procedures/migration.md` Step 2 discipline (carry earned rules
+forward, migrate the rule not its stale examples, verify migrated facts) - before
+running the operator-wrapper and hook guarantees. The wrapper/hook guidance treats
+a missing target section as a staleness signal to reconcile, never a cue to narrow
+the artifact to fit the stale file. Bump the stamp when the template's structural
+contract changes; a forgotten bump is backstopped by the missing-sections probe.
+
+Reason:
+The update route previously delegated straight to the target's own
+(older-template) bootstrap-handoff rule and never reconciled `AGENTS.md`, so the
+all-routes wrapper/hook guarantees - drawn from the current templates - pointed at
+sections (Prime Invariants, `playbook`) a stale file lacked. With no instruction
+to upgrade the source, an agent narrowed the wrappers to fit the stale file,
+degrading the toolkit's own canon. This closes the gap: detect drift mechanically,
+reconcile the source.
+
+Supersedes:
+Refines the 2026-06-18 "generated repos self-audit on update runs" assumption,
+which held only when `AGENTS.md` was already at the current template version; that
+decision stays Active for the wrapper guarantee itself.
+
 ## Open Decisions (deferred - not yet adopted)
 
 These are assessed findings the owner chose to record for a future decision
