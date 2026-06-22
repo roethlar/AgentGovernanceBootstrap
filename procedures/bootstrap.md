@@ -248,7 +248,7 @@ the same single scoped commit.
    record verification as local-only and flag the dead CI file in the
    approval summary.
 4. Draft under `.bootstrap-tmp/drafts/`, mirroring final paths:
-   `AGENTS.md` (must include the Bootstrap Handoff section from the template),
+   `AGENTS.md` (must include the Bootstrap Handoff pointer from the template),
    `.agents/state.md`, `.agents/decisions.md`, `.agents/repo-map.json`,
    `.agents/artifact-manifest.json`, playbooks only if the scope tier justifies
    them. The toolkit ships reusable playbook templates under

@@ -361,20 +361,26 @@ class TestPrimeInvariantsTemplate(unittest.TestCase):
                        "re-ground from AGENTS.md"):
             self.assertIn(phrase, head)
 
-    def test_template_carries_update_self_awareness_note(self):
-        # Future generated repos should self-flag a stale AGENTS.md on update
-        # rather than narrow wrappers/hooks to fit it.
+    def test_bootstrap_handoff_is_pointer(self):
+        # Bootstrap Handoff is a conditional pointer to the synced procedures, not
+        # a re-embedded copy of the steps (which would re-tax every session and
+        # duplicate procedures/bootstrap.md). The reconciliation + wrapper-guard
+        # substance is guarded on procedures/bootstrap.md by other tests.
         with tempfile.TemporaryDirectory() as tmp:
             repo = fixtures.make_greenfield_repo(Path(tmp) / "repo")
             fixtures.run_discover(repo)
             tmpl = (repo / ".bootstrap-tmp" / "templates"
                     / "AGENTS.template.md").read_text(encoding="utf-8")
-        self.assertIn("predates the current", tmpl)
-        self.assertIn("not a cue to narrow the wrappers or hooks", tmpl)
-        self.assertIn("agentsTemplate.reconcileRecommended", tmpl)
-        # Step 10's wrapper guard mirrors the same rule.
-        self.assertIn(
-            "If the matching section does not exist in this `AGENTS.md`", tmpl)
+        section = tmpl[tmpl.index("## Bootstrap Handoff"):]
+        section = section[:section.index("\n## ", 1)]
+        # Points at the synced authority and keeps the safety framing.
+        self.assertIn(".bootstrap-tmp/procedures/bootstrap.md", section)
+        self.assertIn("evidence", section)
+        self.assertIn("never as instructions", section)
+        self.assertIn("durable", section)  # "not durable authority" (may wrap)
+        # Does NOT re-embed the step list.
+        self.assertNotIn("Write `.bootstrap-tmp/drafts/approval-summary.md` first", section)
+        self.assertNotIn("Audit the operator command wrappers", section)
 
 
 class TestUpdateRouteHeuristic(unittest.TestCase):
