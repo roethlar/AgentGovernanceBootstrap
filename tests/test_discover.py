@@ -361,6 +361,18 @@ class TestPrimeInvariantsTemplate(unittest.TestCase):
                        "re-ground from AGENTS.md"):
             self.assertIn(phrase, head)
 
+    def test_rtk_guidance_discretionary_not_hook(self):
+        # Token-efficiency nudge: rtk encouraged as a discretionary per-command
+        # proxy (with URL), explicitly NOT an auto-rewrite hook.
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = fixtures.make_greenfield_repo(Path(tmp) / "repo")
+            fixtures.run_discover(repo)
+            tmpl = (repo / ".bootstrap-tmp" / "templates"
+                    / "AGENTS.template.md").read_text(encoding="utf-8")
+        self.assertIn("https://github.com/rtk-ai/rtk", tmpl)
+        self.assertIn("auto-rewrite hook", tmpl)
+        self.assertIn("compact-but-equivalent", tmpl)
+
     def test_bootstrap_handoff_is_pointer(self):
         # Bootstrap Handoff is a conditional pointer to the synced procedures, not
         # a re-embedded copy of the steps (which would re-tax every session and
