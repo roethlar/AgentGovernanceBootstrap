@@ -138,9 +138,13 @@ ROUTE_BLOCKS = {
         "`.bootstrap-tmp/procedures/migration.md`."
     ),
     "update": (
-        "This repo already uses the standard `.agents/` layout. Read `AGENTS.md`\n"
-        "and follow its bootstrap handoff rule; if it has none, follow\n"
-        "`.bootstrap-tmp/procedures/migration.md`."
+        "This repo already uses the standard `.agents/` layout. First check\n"
+        "`agentsTemplate.reconcileRecommended` in the manifest: when true, this\n"
+        "repo's `AGENTS.md` is behind the current template (see\n"
+        "`agentsTemplate.missingSections`) - reconcile it to the template per\n"
+        "`.bootstrap-tmp/procedures/bootstrap.md` (Step 3, update route) before\n"
+        "anything else. Then read `AGENTS.md` and follow its bootstrap handoff\n"
+        "rule; if it has none, follow `.bootstrap-tmp/procedures/migration.md`."
     ),
 }
 

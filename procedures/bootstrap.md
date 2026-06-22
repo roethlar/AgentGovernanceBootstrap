@@ -117,9 +117,22 @@ cannot get lazy on a large repo and you can.
 ## Step 3: Follow the route
 
 - `migration` -> follow `.bootstrap-tmp/procedures/migration.md`.
-- `update` -> follow the repo's `AGENTS.md` bootstrap handoff rule; if it has
-  none, follow `.bootstrap-tmp/procedures/migration.md` (it handles already-
-  standard repos as a small inventory).
+- `update` -> first reconcile the repo's `AGENTS.md` against the current
+  template, then follow its bootstrap handoff rule. Discovery's manifest
+  reports `agentsTemplate.reconcileRecommended`; when it is true (the repo's
+  `AGENTS.md` is unstamped or its `templateVersion` is behind
+  `.bootstrap-tmp/templates/AGENTS.template.md`, with `agentsTemplate.missingSections`
+  naming structure it lacks), the file predates the current template. Draft an
+  updated `AGENTS.md` under `.bootstrap-tmp/drafts/` using the reconciliation
+  discipline of `.bootstrap-tmp/procedures/migration.md` Step 2 (carry the
+  repo's earned rules forward in generalized wording; migrate the rule, not its
+  stale examples; verify every migrated fact against current repo evidence),
+  adding the template sections the repo lacks - the Prime Invariants block, the
+  full operator set - so the wrapper and hook guarantees below point at sections
+  that exist. The drafted `AGENTS.md` goes through the approval summary like any
+  other change before it is copied. Then follow the (now-current) handoff rule;
+  if the repo has none, follow `.bootstrap-tmp/procedures/migration.md` (it
+  handles already-standard repos as a small inventory).
 - `greenfield` -> continue below.
 
 Every route also runs the operator command wrapper guarantee below.

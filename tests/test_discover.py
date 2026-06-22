@@ -112,6 +112,14 @@ class TestScratchOutput(unittest.TestCase):
                     "tools/discover.py", "tools/manifest-schema.md"):
             self.assertTrue((scratch / rel).is_file(), rel)
 
+    def test_update_route_has_reconciliation_step(self):
+        # The update route must reconcile a stale AGENTS.md to the current
+        # template before delegating to its handoff rule.
+        bootstrap = (self.gov / ".bootstrap-tmp" / "procedures"
+                     / "bootstrap.md").read_text(encoding="utf-8")
+        self.assertIn("first reconcile the repo's `AGENTS.md`", bootstrap)
+        self.assertIn("agentsTemplate.reconcileRecommended", bootstrap)
+
     def test_start_here_routes_migration(self):
         text = (self.gov / ".bootstrap-tmp" / "START-HERE.md").read_text(
             encoding="utf-8")
@@ -472,6 +480,16 @@ class TestAgentsTemplateStatus(unittest.TestCase):
         self.assertIsNone(at["targetVersion"])
         self.assertIn("prime-invariants-block", at["missingSections"])
         self.assertIn("operator:playbook", at["missingSections"])
+
+    def test_update_start_here_points_at_reconciliation(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            manifest = self._update_repo(
+                tmp, "# Agent contract\n\nRead docs/STATE.md first.\n")
+            self.assertEqual(manifest["route"], "update")
+            start_here = (Path(tmp) / "repo" / ".bootstrap-tmp"
+                          / "START-HERE.md").read_text(encoding="utf-8")
+        self.assertIn("reconcileRecommended", start_here)
+        self.assertIn("Step 3, update route", start_here)
 
     def test_update_route_no_false_positive_when_current(self):
         stamp = self._template_version()
