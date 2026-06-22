@@ -1,7 +1,7 @@
 {
   "validated_against": {
-    "commit": "fcb58228fc7ea19f3c3ff21910c14a96e6532de0",
-    "date": "2026-06-10"
+    "commit": "d9e616faf2f28cdc0d305bc2099dd747a5173175",
+    "date": "2026-06-21"
   },
   "projects": [
     {
@@ -27,6 +27,7 @@
     "docs/usage.md",
     "docs/design.md",
     "docs/superpowers/specs/2026-06-09-existing-governance-migration-design.md",
+    "docs/superpowers/specs/2026-06-21-invariant-reground-reinjection-design.md",
     "tools/discover.py",
     "procedures/bootstrap.md",
     "procedures/migration.md",
@@ -42,6 +43,17 @@
     "templates/shims/CLAUDE.template.md",
     "templates/shims/GEMINI.template.md",
     "templates/state.template.md",
+    "templates/commands/claude/catchup.md",
+    "templates/commands/claude/handoff.md",
+    "templates/commands/claude/drift.md",
+    "templates/commands/claude/decision.md",
+    "templates/commands/claude/plan.md",
+    "templates/commands/claude/playbook.md",
+    "templates/hooks/claude/settings.json",
+    "templates/hooks/codex/hooks.json",
+    "templates/hooks/grok/hooks/reground.json",
+    "templates/hooks/agy/hooks.json",
+    "templates/playbooks/reviewloop.md",
     "tests/fixtures.py",
     "tests/golden/governance-manifest.json",
     "tests/golden/greenfield-manifest.json",
@@ -52,14 +64,23 @@
   ],
   "guidance_paths": [
     "AGENTS.md",
+    "CLAUDE.md",
     ".agents/state.md",
     ".agents/decisions.md",
     ".agents/repo-map.json",
-    ".agents/artifact-manifest.json"
+    ".agents/artifact-manifest.json",
+    "docs/history/decisions-archive.md",
+    ".claude/commands/catchup.md",
+    ".claude/commands/handoff.md",
+    ".claude/commands/drift.md",
+    ".claude/commands/decision.md",
+    ".claude/commands/plan.md",
+    ".claude/commands/playbook.md",
+    ".claude/settings.json"
   ],
   "notes": [
     "This is the source repo for the bootstrap toolkit itself. Its AGENTS.md declares the active baseline files that define the process. The .agents/ layout was introduced by the 2026-06-10 self-migration.",
-    "Discovery on 2026-06-10 found route 'migration' because only root AGENTS.md existed as a governance marker; no prior .agents/ directory at root.",
+    "2026-06-21: the repo's own self-application was brought current with the product — added a CLAUDE.md shim, committed .claude/commands/ operator wrappers and a .claude/settings.json re-ground hook, rewrote AGENTS.md to the product shape (Prime Invariants, Universal Invariants, Operator Requests, Session Startup), and archived closed decisions into docs/history/decisions-archive.md.",
     "No suspected misplaced CI or branch mismatches were flagged."
   ]
 }
