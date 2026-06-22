@@ -34,6 +34,37 @@ live rule now owned elsewhere - archive it per the rule above: move it verbatim 
 
 ## Decisions
 
+### 2026-06-22 - Bug reports are filed to the agent-harvest dropbox under `bugs/`
+
+Status: Active
+
+Decision: The shared `agent-harvest` dropbox (canonical on GitHub at
+`roethlar/agent-harvest`) stores not only harvested governance rules but also bug
+reports for defects in the AgentGovernanceBootstrap product itself — its code or
+its procedures — under a `bugs/` folder, kept separate from the top-level rules
+mailbox. When a run (dogfood here or a foreign target-repo session) confirms a
+defect, the agent auto-writes a structured report from
+`templates/bug-report.template.md` and files it per the canonical recipe
+`procedures/file-bug-report.md`: preferred no-clone write via `gh api` to GitHub,
+clone-and-commit fallback, and an in-repo `.agents/bug-reports/` last resort when
+the dropbox is unreachable. Writing the report is automatic; any publish (the
+`gh api` write or a clone push) requires an explicit owner go, per the
+pushing-publishes invariant. Bug files are append-only. The harvest sweep
+(`procedures/harvest.md`) reads `bugs/` and triages each report (still-open /
+already-fixed / fix-now) rather than folding it into a template; a fix is a
+separate scoped change.
+
+Earned by a real incident: the 2026-06-22 dogfood run found a false positive in
+`tools/discover.py` (the `operator:playbook` probe matched a bare `` `playbook` ``
+while the operator is written `` `playbook <name>` ``, so it was always reported
+missing and wrongly recommended reconciling a current `AGENTS.md`). There was no
+durable home for that finding, because the dropbox README scoped the mailbox to
+rules only. This decision closes that gap.
+
+Relationship: extends the harvest dropbox's role (the 2026-06-11 harvest mailbox
+conventions) to a second artifact class; does not change the rules-harvest gating,
+naming, or template.
+
 ### 2026-06-09 - Migrate to the standard .agents/ layout for all bootstrapped repos
 
 Status: Active

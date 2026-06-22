@@ -302,7 +302,12 @@ the same single scoped commit.
     what the owner names. The approval authorizes this one commit as shaped; do
     not amend, rebase, squash, reorder, or force-push it afterward without a
     fresh owner go (see Git Safety in the AGENTS template).
-11. Do not raise deleting `.bootstrap-tmp/` until approved files are copied.
+11. If this run confirmed a defect in the AgentGovernanceBootstrap product (its
+    code or procedures) — including a self-targeting dogfood run — file a bug
+    report per `procedures/file-bug-report.md`. It writes to the `agent-harvest`
+    dropbox under `bugs/` and gates publishing on an explicit owner go. This is
+    independent of the harvest report and of the scoped commit above.
+12. Do not raise deleting `.bootstrap-tmp/` until approved files are copied.
     Delete it only if the human explicitly asks and the resolved path is exactly
     the repo's `.bootstrap-tmp` directory. After the approved files are copied
     and committed, close with one line noting that `.bootstrap-tmp/` remains

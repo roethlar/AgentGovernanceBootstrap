@@ -145,12 +145,17 @@ file.
    committed file in place). When no dropbox is reachable, copy the report to
    `.agents/harvest.md` in this repo instead; it travels with the repo via
    git.
-4. Apart from the harvest dropbox, never write outside this repo. The
+4. If you confirmed a defect in the AgentGovernanceBootstrap product (its code
+   or procedures) during this run, file a bug report per
+   `procedures/file-bug-report.md`. That recipe writes to the same `agent-harvest`
+   dropbox (under `bugs/`) and gates publishing on an explicit owner go. Filing a
+   bug report is independent of whether a harvest report exists.
+5. Apart from the harvest dropbox, never write outside this repo. The
    canonical bootstrap repo is never modified from a session targeting
    another repo; when the bootstrap repo is itself the target (a
    self-migration), the approved scoped commit applies to it like any other
    target, and Step 0's sync remains the only other sanctioned write.
-5. Commit the migration as ONE scoped commit: `git add` exactly the files
+6. Commit the migration as ONE scoped commit: `git add` exactly the files
    the approval summary lists as Committed (tracked) - never `git add -A`,
    so unrelated working-tree changes stay untouched, and never `git add -f`;
    files in the Local-only list are copied into place but stay out of the
@@ -167,7 +172,7 @@ file.
    approval authorizes this one commit as shaped; do not amend, rebase, squash,
    reorder, or force-push it afterward without a fresh owner go (see Git Safety in
    the AGENTS template).
-6. Do not raise deleting `.bootstrap-tmp/` until approved files are copied.
+7. Do not raise deleting `.bootstrap-tmp/` until approved files are copied.
    After the approved files are copied and committed, close with one line
    noting that `.bootstrap-tmp/` remains (untracked) and will be deleted only
    if the owner says so.

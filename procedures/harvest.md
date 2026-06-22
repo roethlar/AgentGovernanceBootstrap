@@ -37,3 +37,20 @@ good one costs nothing, because the report stays where it is.
    dropbox, move handled files into a `processed/` subfolder.
 6. Run this repo's smoke tests if any script changed; template and procedure
    edits are docs-only and need a read-through, not a test run.
+
+## Bug reports
+
+The dropbox also holds bug reports under its `bugs/` folder (filed per
+`procedures/file-bug-report.md`). These are defects in this product, not
+governance rules, so they are triaged rather than folded into templates:
+
+1. Read the `bugs/` files on the same post-sync tree. Skip any already logged in
+   `harvest/processed.md`.
+2. For each, confirm the defect still reproduces against current `HEAD` (a report
+   may predate a fix). Give the owner a per-report verdict in plain English —
+   still-open / already-fixed / fix-now — citing the check that decided it.
+3. A "fix-now" verdict is a separate scoped code change under the normal
+   plan/approval contract; the sweep itself does not fix code.
+4. When a report is handled (fixed, or confirmed obsolete), log one line in
+   `harvest/processed.md` and move the file into the dropbox's `processed/`
+   subfolder — the same disposition as a handled rules report.
