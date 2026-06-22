@@ -21,6 +21,12 @@
     "cap": 2000
   },
   "route": "greenfield",
+  "agentsTemplate": {
+    "currentVersion": "<NORMALIZED>",
+    "targetVersion": null,
+    "reconcileRecommended": false,
+    "missingSections": []
+  },
   "bootstrapRepoPath": "<BOOTSTRAP_REPO>",
   "harvestRepoPath": "<NORMALIZED>",
   "projectMarkers": [

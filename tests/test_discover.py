@@ -2,6 +2,7 @@
     python3 -m unittest discover -s tests -v
 """
 import json
+import re
 import subprocess
 import sys
 import tempfile
@@ -426,6 +427,66 @@ class TestHookTemplates(unittest.TestCase):
                 commands.add(command)
             # All four harnesses must ship the identical trigger copy.
             self.assertEqual(len(commands), 1)
+
+
+class TestAgentsTemplateStatus(unittest.TestCase):
+    """Slice 1: discovery stamps the current template version and, on the
+    update route, flags an AGENTS.md that is behind the current template."""
+
+    OPERATORS = ("catchup", "handoff", "drift", "decision", "plan", "playbook")
+
+    def _template_version(self):
+        text = (fixtures.BOOTSTRAP_ROOT / "templates"
+                / "AGENTS.template.md").read_text(encoding="utf-8")
+        m = re.search(r"<!--\s*templateVersion:\s*(\S+)\s*-->", text)
+        return m.group(1) if m else None
+
+    def _update_repo(self, tmp, agents_md):
+        """Governance repo + standard `.agents/` layout (routes update), with a
+        chosen AGENTS.md body."""
+        repo = fixtures.make_governance_repo(Path(tmp) / "repo")
+        (repo / "AGENTS.md").write_text(agents_md, encoding="utf-8")
+        (repo / ".agents").mkdir()
+        (repo / ".agents" / "state.md").write_text(
+            "# Agent State\n", encoding="utf-8")
+        fixtures._git(repo, "add", "-A")
+        fixtures._git(repo, "commit", "-q", "-m", "adopt standard layout")
+        return fixtures.run_discover(repo)
+
+    def test_current_version_extracted_from_template(self):
+        stamp = self._template_version()
+        self.assertIsNotNone(
+            stamp, "templateVersion stamp missing from AGENTS.template.md")
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = fixtures.make_greenfield_repo(Path(tmp) / "repo")
+            manifest = fixtures.run_discover(repo)
+        self.assertEqual(manifest["agentsTemplate"]["currentVersion"], stamp)
+
+    def test_update_route_flags_stale_unstamped_agents(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            manifest = self._update_repo(
+                tmp, "# Agent contract\n\nRead docs/STATE.md first.\n")
+        self.assertEqual(manifest["route"], "update")
+        at = manifest["agentsTemplate"]
+        self.assertTrue(at["reconcileRecommended"])
+        self.assertIsNone(at["targetVersion"])
+        self.assertIn("prime-invariants-block", at["missingSections"])
+        self.assertIn("operator:playbook", at["missingSections"])
+
+    def test_update_route_no_false_positive_when_current(self):
+        stamp = self._template_version()
+        ops = " ".join(f"`{op}`" for op in self.OPERATORS)
+        agents_md = (
+            f"# Agent Guidance\n<!-- templateVersion: {stamp} -->\n\n"
+            "## Prime Invariants\n<!-- prime:begin -->\n- Words first.\n"
+            "<!-- prime:end -->\n\n## Operator Requests\n" + ops + "\n")
+        with tempfile.TemporaryDirectory() as tmp:
+            manifest = self._update_repo(tmp, agents_md)
+        self.assertEqual(manifest["route"], "update")
+        at = manifest["agentsTemplate"]
+        self.assertFalse(at["reconcileRecommended"])
+        self.assertEqual(at["targetVersion"], stamp)
+        self.assertEqual(at["missingSections"], [])
 
 
 if __name__ == "__main__":

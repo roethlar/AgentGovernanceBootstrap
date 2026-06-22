@@ -94,4 +94,8 @@ def normalize_manifest(manifest):
     m["repo"]["root"] = "<REPO_ROOT>"
     m["bootstrapRepoPath"] = "<BOOTSTRAP_REPO>"
     m["harvestRepoPath"] = "<NORMALIZED>"
+    # currentVersion tracks the toolkit's template stamp and changes on every
+    # bump; blank it so goldens stay stable. The version mechanism itself is
+    # guarded by TestAgentsTemplateStatus, not the golden contract.
+    m["agentsTemplate"]["currentVersion"] = "<NORMALIZED>"
     return m

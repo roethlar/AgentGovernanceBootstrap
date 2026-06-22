@@ -21,6 +21,25 @@ name-match: a lead to verify, never a fact to record in durable guidance.
   `candidateCount` (files seen), `includedCount` (suggested reads kept),
   `cap` (truncation threshold).
 - `route` (string): `"greenfield"`, `"migration"`, or `"update"`.
+- `agentsTemplate` (object): whether the target's `AGENTS.md` is behind the
+  current template. Drives the update route's reconciliation step.
+  - `currentVersion` (string or null): the `<!-- templateVersion: ... -->`
+    stamp in the toolkit's `templates/AGENTS.template.md`. Bump this stamp
+    whenever the template's structural contract changes (sections, the Prime
+    Invariants block, the operator set). A forgotten bump is backstopped by
+    `missingSections`.
+  - `targetVersion` (string or null): the same stamp read from the target
+    repo's `AGENTS.md`; null when absent (the file predates versioned
+    templates).
+  - `reconcileRecommended` (bool): true on the `update` route when
+    `targetVersion` differs from `currentVersion` (including when absent).
+    The update route reconciles `AGENTS.md` to the current template before
+    running the operator-wrapper and hook guarantees. Always false on
+    greenfield/migration, which draft `AGENTS.md` fresh.
+  - `missingSections` (array of strings): mechanical probe of the target
+    `AGENTS.md`, populated only on the `update` route - tokens like
+    `"prime-invariants-block"` and `"operator:playbook"` for structure the
+    file lacks. A lead for reconciliation, never a durable fact.
 - `bootstrapRepoPath` (string): bootstrap repo the pack was copied from.
 - `harvestRepoPath` (string or null): owner's machine-local harvest dropbox,
   if configured.

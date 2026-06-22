@@ -21,6 +21,12 @@
     "cap": 2000
   },
   "route": "migration",
+  "agentsTemplate": {
+    "currentVersion": "<NORMALIZED>",
+    "targetVersion": null,
+    "reconcileRecommended": false,
+    "missingSections": []
+  },
   "bootstrapRepoPath": "<BOOTSTRAP_REPO>",
   "harvestRepoPath": "<NORMALIZED>",
   "projectMarkers": [

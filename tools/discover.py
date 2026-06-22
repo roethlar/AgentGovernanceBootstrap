@@ -239,6 +239,52 @@ def _read_text(repo_root, rel):
         return ""
 
 
+# Operator vocabulary the current template advertises. A target AGENTS.md that
+# omits any of these (or the Prime Invariants block) predates the current
+# template; the update route must reconcile it before the wrapper/hook
+# guarantees point at sections that do not exist yet.
+OPERATOR_WORDS = ("catchup", "handoff", "drift", "decision", "plan", "playbook")
+
+
+def extract_template_version(text):
+    """The `<!-- templateVersion: ... -->` stamp from an AGENTS file, or None.
+
+    Bumped in templates/AGENTS.template.md whenever the template's structural
+    contract changes (sections, Prime Invariants, operator set). A target whose
+    stamp differs from the toolkit's - or is absent - is behind the template."""
+    m = re.search(r"<!--\s*templateVersion:\s*(\S+)\s*-->", text)
+    return m.group(1) if m else None
+
+
+def compute_agents_template_status(repo_root, route):
+    """Compare the target's AGENTS.md against the current template so the update
+    route can reconcile a stale file instead of narrowing artifacts to fit it.
+
+    `missingSections` is a mechanical probe, populated only on the update route
+    (greenfield/migration draft AGENTS.md fresh, so a missing-list is not
+    actionable there). It is a lead for reconciliation, not a durable fact."""
+    current = extract_template_version(
+        _read_text(BOOTSTRAP_REPO_ROOT, "templates/AGENTS.template.md"))
+    agents_text = _read_text(repo_root, "AGENTS.md")
+    target = extract_template_version(agents_text) if agents_text else None
+    missing = []
+    reconcile = False
+    if route == "update":
+        reconcile = current != target
+        if agents_text:
+            if "<!-- prime:begin" not in agents_text:
+                missing.append("prime-invariants-block")
+            for op in OPERATOR_WORDS:
+                if f"`{op}`" not in agents_text:
+                    missing.append(f"operator:{op}")
+    return {
+        "currentVersion": current,
+        "targetVersion": target,
+        "reconcileRecommended": reconcile,
+        "missingSections": missing,
+    }
+
+
 def read_harvest_repo_path():
     """Owner's optional, machine-local harvest dropbox path. Never an error."""
     try:
@@ -559,6 +605,7 @@ def discover(repo_arg, coverage_cap=2000):
     agent_markers = match_paths(all_paths, AGENT_MARKER_PATTERNS)
     governance_markers = match_paths(all_paths, GOVERNANCE_MARKER_PATTERNS)
     route = compute_route(governance_markers)
+    agents_template = compute_agents_template_status(repo_root, route)
 
     marker_paths = project_markers + ci_markers + agent_markers + governance_markers
     suggested, excluded = build_suggested_reads(records, marker_paths)
@@ -575,6 +622,7 @@ def discover(repo_arg, coverage_cap=2000):
         "coverage": {"status": coverage_status, "candidateCount": len(records),
                      "includedCount": len(suggested), "cap": coverage_cap},
         "route": route,
+        "agentsTemplate": agents_template,
         "bootstrapRepoPath": str(BOOTSTRAP_REPO_ROOT),
         "harvestRepoPath": read_harvest_repo_path(),
         "projectMarkers": project_markers,
