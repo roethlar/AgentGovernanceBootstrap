@@ -159,7 +159,11 @@ present, nothing to do."
    word. Draft any that are missing under `.bootstrap-tmp/drafts/` mirroring the
    final path (for Claude Code, `.bootstrap-tmp/drafts/.claude/commands/<name>.md`),
    copied from the template set. Each wrapper is a one-paragraph pointer to the
-   relevant `AGENTS.md` section - never a copy of it.
+   relevant `AGENTS.md` section - never a copy of it. If the section a wrapper
+   should point at does not exist in this repo's `AGENTS.md`, do NOT narrow the
+   wrapper to fit what is there - a missing target section means the `AGENTS.md`
+   predates the current template. Flag it and reconcile `AGENTS.md` first (the
+   update route, Step 3), then point the wrapper at the reconciled section.
 3. Make the wrappers committable. Run `git check-ignore` on each final wrapper
    path. If an ignore rule covers it (commonly a blanket `.claude/` rule), the
    fix is NOT a silent `git add -f`: propose editing `.gitignore` so the
@@ -183,7 +187,9 @@ compaction. Each config's command is a self-contained inline `echo` that prints 
 short pointer back to AGENTS.md — no external script, no baked path. Like operator
 command wrappers, these are portable repo artifacts: draft them on every route
 regardless of which harness you are running in. The expected steady state is
-"already present, nothing to do."
+"already present, nothing to do." The hook copy points at the Prime Invariants
+block; if this repo's `AGENTS.md` lacks that block, reconcile `AGENTS.md` (the
+update route, Step 3) rather than editing the hook message to match the stale file.
 
 1. For each harness the toolkit ships a `templates/hooks/<harness>/` config for,
    draft the target-repo file under `.bootstrap-tmp/drafts/` mirroring its

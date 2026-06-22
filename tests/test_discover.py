@@ -120,6 +120,17 @@ class TestScratchOutput(unittest.TestCase):
         self.assertIn("first reconcile the repo's `AGENTS.md`", bootstrap)
         self.assertIn("agentsTemplate.reconcileRecommended", bootstrap)
 
+    def test_wrapper_and_hook_missing_section_guard(self):
+        # A missing target section is a staleness signal, not a cue to narrow
+        # the wrapper/hook to fit the stale file.
+        bootstrap = (self.gov / ".bootstrap-tmp" / "procedures"
+                     / "bootstrap.md").read_text(encoding="utf-8")
+        self.assertIn("do NOT narrow the", bootstrap)
+        self.assertIn("predates the current template", bootstrap)
+        self.assertIn(
+            "rather than editing the hook message to match the stale file",
+            bootstrap)
+
     def test_start_here_routes_migration(self):
         text = (self.gov / ".bootstrap-tmp" / "START-HERE.md").read_text(
             encoding="utf-8")
@@ -361,6 +372,9 @@ class TestPrimeInvariantsTemplate(unittest.TestCase):
         self.assertIn("predates the current", tmpl)
         self.assertIn("not a cue to narrow the wrappers or hooks", tmpl)
         self.assertIn("agentsTemplate.reconcileRecommended", tmpl)
+        # Step 10's wrapper guard mirrors the same rule.
+        self.assertIn(
+            "If the matching section does not exist in this `AGENTS.md`", tmpl)
 
 
 class TestUpdateRouteHeuristic(unittest.TestCase):

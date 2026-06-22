@@ -112,7 +112,10 @@ If `.bootstrap-tmp/` exists, treat it as temporary bootstrap input.
     harness ran the bootstrap, since the wrappers serve whichever harness a
     future session uses. If any are missing, draft them (for Claude Code,
     `.claude/commands/<name>.md`, a one-paragraph pointer to the matching section
-    here). If an ignore rule keeps them out of git, propose a `.gitignore` edit
+    here). If the matching section does not exist in this `AGENTS.md`, do not
+    narrow the wrapper to fit - reconcile this `AGENTS.md` to the current
+    template first (see the update-run note below). If an ignore rule keeps them
+    out of git, propose a `.gitignore` edit
     that makes the command files committable while keeping machine-local harness
     state (e.g. `.claude/settings.local.json`) ignored - never `git add -f`. If
     they already exist and are committed, change nothing.
