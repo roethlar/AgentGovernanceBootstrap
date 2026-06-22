@@ -65,6 +65,15 @@ Relationship: extends the harvest dropbox's role (the 2026-06-11 harvest mailbox
 conventions) to a second artifact class; does not change the rules-harvest gating,
 naming, or template.
 
+Follow-up (same day): the dropbox-write mechanics were factored into a single
+shared transport recipe, `procedures/file-to-dropbox.md`, used by both the harvest
+report path (`procedures/migration.md` Step 8) and the bug report path
+(`procedures/file-bug-report.md`). This gave the harvest path the no-clone
+`gh api` transport it lacked and retired its former standing auto-push: every
+publish to the dropbox now asks for an explicit owner go, consistent for both
+artifact classes. The `gh api` PUT path was verified end-to-end against
+`roethlar/agent-harvest` on 2026-06-22.
+
 ### 2026-06-09 - Migrate to the standard .agents/ layout for all bootstrapped repos
 
 Status: Active
@@ -83,7 +92,7 @@ The prior two-stage PowerShell architecture (historical record only in `docs/his
 Status: Active
 
 Decision:
-During a migration the agent may (rarely) record generalizable governance rules in a harvest report, under strict limits: expected outcome is no report; an idea qualifies only if earned by a real citable incident, not already covered by templates, useful to other repos, and at most three ideas total; never a "nothing found" file. Delivery: write append-only as a new dated file in the owner's harvest dropbox repo (path from untracked harvest.config.json) if configured and reachable, then commit/push only that dropbox under standing authorization; otherwise fall back to `.agents/harvest.md` in the target. Harvest reports are never delivered into the canonical bootstrap repo itself.
+During a migration the agent may (rarely) record generalizable governance rules in a harvest report, under strict limits: expected outcome is no report; an idea qualifies only if earned by a real citable incident, not already covered by templates, useful to other repos, and at most three ideas total; never a "nothing found" file. Delivery: write append-only as a new dated file in the `agent-harvest` dropbox via the shared transport recipe (`procedures/file-to-dropbox.md`), which any session may publish to only with an explicit owner go; otherwise fall back to `.agents/harvest.md` in the target. Harvest reports are never delivered into the canonical bootstrap repo itself. (Supersedes the earlier "standing authorization" auto-push: as of 2026-06-22 every dropbox publish — harvest report or bug report — asks before pushing, so the two paths share one transport and one gate.)
 
 Reason:
 Prevents over-eager padding and keeps the shared canon clean. A separate sweep session (owner-initiated only) in this repo judges new reports skeptically and logs outcomes in `harvest/processed.md`.

@@ -31,52 +31,18 @@ keeps two same-day reports for one repo from colliding.
 
 ## File it to the dropbox
 
-The dropbox is `agent-harvest` (canonical on GitHub at
-`roethlar/agent-harvest`, default branch `main`); bug reports live under its
-`bugs/` folder. The local clone path, if any, is in this repo's untracked
-`harvest.config.json` (`harvestRepoPath`). Bug files are append-only: never
-overwrite or edit an existing `bugs/` file; if the name already exists, append
-`-2` (then `-3`, …).
+File the report to the `agent-harvest` dropbox per the shared transport recipe
+`procedures/file-to-dropbox.md`, with:
 
-Filing a report off this machine — by either path below — publishes it. Ask the
-owner once, in one line, before the publishing step. Writing the local file is
-not the publish; the commit/push or the direct API write is.
+- **dest (path in dropbox):** `bugs/<source-repo>-<slug>-<YYYY-MM-DD>.md` (the
+  filename from above, under the `bugs/` folder)
+- **in-repo fallback:** `.agents/bug-reports/<name>.md` in the repo you are
+  running in (used only when the dropbox is unreachable; mirrors the harvest
+  fallback to `.agents/harvest.md`)
 
-### Preferred — no clone, via `gh`
-
-If `gh` is installed and authenticated (`gh auth status`), write straight to
-GitHub without a local clone. This commits directly to `main`, so it IS the
-publish — get the owner's go first, then:
-
-```
-gh api -X PUT repos/roethlar/agent-harvest/contents/bugs/<name>.md \
-  -f message="bug: <short title>" \
-  -f branch=main \
-  -f content="$(base64 -i <local-report-file>)"
-```
-
-(`content` must be base64; `base64 -i` on macOS, `base64 -w0` on GNU.) If the
-PUT fails because the path already exists, rename per the append-only rule and
-retry.
-
-### Fallback — local clone
-
-If `gh` is unavailable or unauthed: ensure a local clone of the dropbox. Use
-`harvestRepoPath` if it is set and on disk; otherwise clone
-`https://github.com/roethlar/agent-harvest.git` to a path the owner names (or
-`~/dev/agent-harvest`). Before reading or writing, sync fast-forward-only the
-same way the harvest sweep does (`git -C <clone> ls-remote --exit-code <remote>
-HEAD`, then `fetch` and `merge --ff-only`) so you are not writing onto a stale
-tree. Write the report under `bugs/`, then — with the owner's go — commit and
-push in the dropbox repo only, naming the remote in the one-line ask. If the push
-fails, say so plainly and leave the committed file in place.
-
-### Last resort — neither path works
-
-If the dropbox is unreachable (offline, no clone possible, no `gh`), write the
-report to `.agents/bug-reports/<name>.md` in the repo you are running in so it
-travels with that repo's git, and say plainly that it landed there instead of the
-shared dropbox. (This mirrors the harvest fallback to `.agents/harvest.md`.)
+That recipe covers the preferred no-clone `gh api` write, the clone fallback, the
+append-only rule, and the ask-before-publish gate. Use a commit message like
+`bug: <short title>`.
 
 ## Not your job here
 

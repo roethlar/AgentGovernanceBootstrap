@@ -136,15 +136,14 @@ file.
 
 1. Copy approved drafts to their final tracked paths.
 2. Apply approved supersession banners to the tops of the superseded files.
-3. If an approved harvest report exists: when the manifest records a
-   `harvestRepoPath` and that repo is present and writable, write the report
-   there as a NEW file named `<repo-name>-<YYYY-MM-DD>.md` - append-only,
-   never overwrite or edit anything that already exists - then commit and
-   push in the dropbox repo only (the owner's standing authorization covers
-   the harvest dropbox alone; if the push fails, say so plainly and leave the
-   committed file in place). When no dropbox is reachable, copy the report to
-   `.agents/harvest.md` in this repo instead; it travels with the repo via
-   git.
+3. If an approved harvest report exists, file it to the `agent-harvest` dropbox
+   per the shared transport recipe `procedures/file-to-dropbox.md`, with:
+   dest = `<repo-name>-<YYYY-MM-DD>.md` at the dropbox top level (harvest reports
+   live there, not under `bugs/`); in-repo fallback = `.agents/harvest.md` in
+   this repo. That recipe covers the preferred no-clone
+   `gh api` write, the clone fallback, the append-only rule, and the
+   ask-before-publish gate (publishing a harvest report requires an explicit
+   owner go, the same as any other dropbox write).
 4. If you confirmed a defect in the AgentGovernanceBootstrap product (its code
    or procedures) during this run, file a bug report per
    `procedures/file-bug-report.md`. That recipe writes to the same `agent-harvest`
