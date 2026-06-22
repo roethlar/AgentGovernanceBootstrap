@@ -234,7 +234,7 @@ Status: Active
 
 Decision:
 On every route (greenfield, migration, update), the process audits the operator
-vocabulary (`catchup`, `handoff`, `drift`, `decision`, `plan`) and, on a harness
+vocabulary (`catchup`, `handoff`, `drift`, `decision`, `plan`, `playbook`) and, on a harness
 that supports command files, drafts any missing slash-command wrappers and the
 `.gitignore` edit that makes them committable - removing a blanket `.claude/`
 ignore rule and adding a narrower `.claude/settings.local.json` rule so
