@@ -267,6 +267,19 @@ Manual `/compact` verification per harness:
    Claude Code + Codex (strong) + Grok (soft) + agy (SessionStart injection
    confirmed; post-compaction re-fire to verify during build).
 5. ~~Bad-rule removal~~ — **resolved:** via the bootstrap re-run, not a hand-edit.
+6. **Cross-harness re-ground efficacy (OPEN, reopened 2026-06-21 by review of
+   commit `145fe58`).** The configs are now portable and the trigger is locked,
+   but two load-bearing assumptions remain unverified for Codex, Grok, and agy:
+   (a) does the hook command's **stdout get injected into the model's context**
+   after compaction (vs only printed to scrollback)? — the deleted `reground.sh`
+   comment admitted this varies by harness; if a harness only scrollback-shows it,
+   the re-ground is inert there regardless of portability. (b) Does each harness
+   actually **parse and honor this Claude-shaped schema** (`SessionStart`/`matcher`
+   / `PostCompact`, `hooks[].{type,command}`)? Confirmed only for Claude. (c) Does
+   it fire on **automatic** compaction, not just manual `/compact`? This is a
+   behavioral verification task (extends Task 4), not a portability item; the
+   portable floor (AGENTS.md as standing context, §5b) is the real guarantee
+   meanwhile.
 
-All open questions resolved; spec finalized 2026-06-21. Commits fold into the
-first product commit (not committed separately).
+Questions 1–5 resolved 2026-06-21; Q6 is open behavioral-verification work that
+does not block the portability fix.
