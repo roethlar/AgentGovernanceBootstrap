@@ -535,6 +535,20 @@ class TestAgentsTemplateStatus(unittest.TestCase):
         self.assertIn("reconcileRecommended", start_here)
         self.assertIn("Step 3, update route", start_here)
 
+    def test_update_route_flags_missing_section_despite_matching_stamp(self):
+        # Backstop: stamp matches the toolkit but a probed section is absent
+        # (forgotten bump after a structural change) -> still recommend reconcile.
+        stamp = self._template_version()
+        agents_md = (f"# Agent Guidance\n<!-- templateVersion: {stamp} -->\n\n"
+                     "## Notes\nNo Prime Invariants block, no operators.\n")
+        with tempfile.TemporaryDirectory() as tmp:
+            manifest = self._update_repo(tmp, agents_md)
+        self.assertEqual(manifest["route"], "update")
+        at = manifest["agentsTemplate"]
+        self.assertEqual(at["targetVersion"], stamp)        # stamp matches
+        self.assertTrue(at["reconcileRecommended"])         # but backstop fires
+        self.assertIn("prime-invariants-block", at["missingSections"])
+
     def test_update_route_no_false_positive_when_current(self):
         stamp = self._template_version()
         ops = " ".join(f"`{op}`" for op in self.OPERATORS)

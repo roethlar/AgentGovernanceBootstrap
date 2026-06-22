@@ -274,13 +274,16 @@ def compute_agents_template_status(repo_root, route):
     missing = []
     reconcile = False
     if route == "update":
-        reconcile = current != target
         if agents_text:
             if "<!-- prime:begin" not in agents_text:
                 missing.append("prime-invariants-block")
             for op in OPERATOR_WORDS:
                 if f"`{op}`" not in agents_text:
                     missing.append(f"operator:{op}")
+        # Recommend reconciliation when the stamp is behind OR the probe found
+        # missing structure - the latter backstops a forgotten version bump after
+        # a structural template change (stamp unchanged but sections dropped).
+        reconcile = (current != target) or bool(missing)
     return {
         "currentVersion": current,
         "targetVersion": target,
