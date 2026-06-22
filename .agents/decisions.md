@@ -301,6 +301,35 @@ Refines the 2026-06-18 "generated repos self-audit on update runs" assumption,
 which held only when `AGENTS.md` was already at the current template version; that
 decision stays Active for the wrapper guarantee itself.
 
+### 2026-06-22 - Trim the per-session guidance tax: Bootstrap Handoff pointer; rtk discretionary, not a hook
+
+Status: Active
+
+Decision:
+`CLAUDE.md` `@`-imports the whole `AGENTS.md` every session, so `AGENTS.md` length
+is a recurring per-session cost. A density audit found prose compression yields only
+~2.7% savings once every normative claim must survive (the guidance is dense with
+load-bearing rules, not padded), so we do NOT compress wording. Instead: (1) the
+`## Bootstrap Handoff` section - only actionable when `.bootstrap-tmp/` exists, and a
+near-duplicate of the synced `procedures/bootstrap.md` - is collapsed to a short
+conditional pointer to `.bootstrap-tmp/START-HERE.md` + `procedures/bootstrap.md`,
+making the procedure the single canonical home and cutting ~600 tokens/session;
+(2) the token-efficiency invariant encourages `rtk` (https://github.com/rtk-ai/rtk)
+as a discretionary per-command proxy and forbids its auto-rewrite hook, which would
+compress every Bash call and remove the agent's access to raw output when it matters;
+it generalizes to compact-but-equivalent working (targeted reads, scoped searches, no
+re-reads).
+
+Reason:
+Reduce recurring context cost without losing semantic content. Update routing is
+unaffected - `compute_route()` keys off the `.agents/` layout markers, not the
+section's presence.
+
+Supersedes:
+Nothing. Complements the 2026-06-22 update-route reconciliation decision: the
+reconciliation and wrapper-guard logic now lives solely in `procedures/bootstrap.md`,
+no longer duplicated in the template's Bootstrap Handoff section.
+
 ## Open Decisions (deferred - not yet adopted)
 
 These are assessed findings the owner chose to record for a future decision
