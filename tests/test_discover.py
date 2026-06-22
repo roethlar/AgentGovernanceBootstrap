@@ -350,6 +350,18 @@ class TestPrimeInvariantsTemplate(unittest.TestCase):
                        "re-ground from AGENTS.md"):
             self.assertIn(phrase, head)
 
+    def test_template_carries_update_self_awareness_note(self):
+        # Future generated repos should self-flag a stale AGENTS.md on update
+        # rather than narrow wrappers/hooks to fit it.
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = fixtures.make_greenfield_repo(Path(tmp) / "repo")
+            fixtures.run_discover(repo)
+            tmpl = (repo / ".bootstrap-tmp" / "templates"
+                    / "AGENTS.template.md").read_text(encoding="utf-8")
+        self.assertIn("predates the current", tmpl)
+        self.assertIn("not a cue to narrow the wrappers or hooks", tmpl)
+        self.assertIn("agentsTemplate.reconcileRecommended", tmpl)
+
 
 class TestUpdateRouteHeuristic(unittest.TestCase):
     def test_agents_dir_without_standard_layout_routes_migration(self):

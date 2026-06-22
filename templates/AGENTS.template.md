@@ -127,6 +127,14 @@ If `.bootstrap-tmp/` exists, treat it as temporary bootstrap input.
     explicitly asks and the resolved path exactly matches this repo's `.bootstrap-tmp`
     directory.
 
+On an update run, if this Bootstrap Handoff section or the wrapper/hook guarantees
+(steps 10-11) reference structure this `AGENTS.md` lacks - the Prime Invariants
+block, an operator in the set - that is a signal this file predates the current
+template, not a cue to narrow the wrappers or hooks to fit it. Reconcile this
+`AGENTS.md` against `.bootstrap-tmp/templates/AGENTS.template.md` first (see
+`.bootstrap-tmp/procedures/bootstrap.md`, Step 3, update route); discovery's
+manifest flags this as `agentsTemplate.reconcileRecommended`.
+
 Do not treat `.bootstrap-tmp/` as durable authority.
 
 ## Session Startup
