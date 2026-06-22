@@ -119,6 +119,8 @@ class TestScratchOutput(unittest.TestCase):
                      / "bootstrap.md").read_text(encoding="utf-8")
         self.assertIn("first reconcile the repo's `AGENTS.md`", bootstrap)
         self.assertIn("agentsTemplate.reconcileRecommended", bootstrap)
+        # Reconciliation must precede deferring to a stale resident handoff rule.
+        self.assertIn("must not preempt its", bootstrap)
 
     def test_wrapper_and_hook_missing_section_guard(self):
         # A missing target section is a staleness signal, not a cue to narrow
