@@ -177,6 +177,9 @@ nothing to substitute, and `echo` exists in `sh`, `cmd`, and PowerShell. The one
 residual is that the harness must run the hook command through a shell with `echo`
 — verified on macOS; Windows is best-effort until tested. Keep the string
 single-quoted and ASCII (no apostrophes) so the same JSON is valid on every shell.
+When inlined, the pointer was also normalized — the old script's em-dash and
+`(re)started` became ASCII commas and the wording was lightly smoothed — so it is
+not byte-identical to the deleted `printf`, though the meaning is unchanged.
 
 New product scaffolding: `templates/hooks/<harness>/` + a bootstrap install/register
 step modeled on the all-routes operator-wrapper guarantee (incl. `.gitignore`

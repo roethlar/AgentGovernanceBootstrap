@@ -179,7 +179,10 @@ regardless of which harness you are running in. The expected steady state is
    the hook command is an inline `echo` with no path to substitute and no shell
    script to install, so the same file is correct on every machine and OS (`echo`
    exists in `sh`, `cmd`, and PowerShell; verified on macOS, treat Windows as
-   best-effort until tested). If a hook config already exists at a target path,
+   best-effort until tested). The pointer is delivered by a single-quoted `echo`,
+   so if you ever edit its text keep it ASCII and free of any apostrophe/single
+   quote — one would close the quoting and silently break the hook. If a hook
+   config already exists at a target path,
    merge the re-ground hook into it rather than replacing the file — a repo may
    already have other hooks, and `.claude/settings.json` also holds permissions,
    env, and model settings. If a safe merge is not possible, stop and ask. Only

@@ -369,33 +369,63 @@ class TestUpdateRouteHeuristic(unittest.TestCase):
 
 
 class TestHookTemplates(unittest.TestCase):
+    # The single canonical re-ground command, inlined byte-identically into
+    # every harness config. Locked here so a reworded, desynced, or
+    # shell-broken variant fails CI instead of silently shipping.
+    CANONICAL_COMMAND = (
+        "echo 'Context was compacted or the session restarted. Before "
+        "continuing, re-read AGENTS.md from disk, especially the Prime "
+        "Invariants block. Treat AGENTS.md, not this message, as authoritative.'"
+    )
+
+    # rel -> (harness event key, expected matcher value or None for no matcher)
+    HOOK_SCHEMA = {
+        "claude/settings.json": ("SessionStart", "compact"),
+        "codex/hooks.json": ("SessionStart", "compact"),
+        "agy/hooks.json": ("SessionStart", "compact"),
+        "grok/hooks/reground.json": ("PostCompact", None),
+    }
+
     def test_hook_configs_present_copied_and_portable(self):
         with tempfile.TemporaryDirectory() as tmp:
             repo = fixtures.make_greenfield_repo(Path(tmp) / "repo")
             fixtures.run_discover(repo)
             hooks = repo / ".bootstrap-tmp" / "templates" / "hooks"
-            cfgs = ("claude/settings.json", "codex/hooks.json",
-                    "grok/hooks/reground.json", "agy/hooks.json")
-            for rel in cfgs:
-                self.assertTrue((hooks / rel).is_file(), rel)
             # The re-ground trigger is inlined into each config; there is no
             # shared shell script to install.
             self.assertFalse((hooks / "reground.sh").exists())
-            # Each config must be portable: inline pointer back to AGENTS.md,
-            # with no baked path, no token to substitute, and no script/shell
-            # dependency that would break on clone, move, or Windows.
-            for rel in cfgs:
-                txt = (hooks / rel).read_text(encoding="utf-8")
-                self.assertIn("re-read AGENTS.md", txt, rel)
+
+            commands = set()
+            for rel, (event, matcher) in self.HOOK_SCHEMA.items():
+                path = hooks / rel
+                self.assertTrue(path.is_file(), rel)
+                txt = path.read_text(encoding="utf-8")
+                # Portable: no baked path, no token to substitute, and no
+                # script/shell dependency that would break on clone, move, or
+                # Windows.
                 self.assertNotIn("__REPO_ROOT__", txt, rel)
                 self.assertNotIn("reground.sh", txt, rel)
                 self.assertNotIn(".sh", txt, rel)
                 self.assertNotIn("/Users/", txt, rel)
                 self.assertNotIn("git rev-parse", txt, rel)
-            for rel in ("claude/settings.json", "codex/hooks.json", "agy/hooks.json"):
-                self.assertIn("compact", (hooks / rel).read_text(encoding="utf-8"), rel)
-            self.assertIn("PostCompact",
-                          (hooks / "grok/hooks/reground.json").read_text(encoding="utf-8"))
+                # Assert against the PARSED JSON, not the prose: this validates
+                # the config is loadable and prevents the matcher check from
+                # being satisfied by the word "compacted" in the trigger text.
+                cfg = json.loads(txt)
+                entry = cfg["hooks"][event][0]
+                if matcher is None:
+                    self.assertNotIn("matcher", entry, rel)
+                else:
+                    self.assertEqual(entry.get("matcher"), matcher, rel)
+                command = entry["hooks"][0]["command"]
+                # Allowlist the shape (an inline echo, not an interpreter or a
+                # helper script) and lock the exact pointer text, including the
+                # anti-injection clause "...not this message, as authoritative."
+                self.assertTrue(command.startswith("echo "), rel)
+                self.assertEqual(command, self.CANONICAL_COMMAND, rel)
+                commands.add(command)
+            # All four harnesses must ship the identical trigger copy.
+            self.assertEqual(len(commands), 1)
 
 
 if __name__ == "__main__":
