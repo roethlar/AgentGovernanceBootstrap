@@ -444,6 +444,18 @@ alone stops being sufficient proof of toolkit ownership. Still Open: not yet
 implemented. Next step is a `plan` for the file shape, the template, and the
 `compute_route()` change.
 
+Update 2026-06-23: deprioritized by owner; value unclear, not being implemented
+now. Discussion established that the route only selects which procedure starts,
+and every route converges behind the approval summary, so detecting "is this
+ours" buys speed, not thoroughness — and the owner values thoroughness over
+duration. The two candidate ownership signals (a `bootstrap.config.json` marker,
+or a `templateVersion`-stamped `AGENTS.md`) are both weak as provenance. That
+reframes the real question as whether to collapse the update route into migration
+(run the thorough inventory every time) rather than ship a routing marker at all
+— which would touch the 2026-06-22 "update route reconciles a stale AGENTS.md"
+decision. Left Open pending that larger call; this supersedes the "next step is a
+plan" line above as the current stance.
+
 ### Open: route/verification probes match literal `package.json` against repo-relative paths (monorepo subdir miss)
 
 Evidence: `tools/discover.py` tests membership of the literal `"package.json"` in
