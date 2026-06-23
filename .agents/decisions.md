@@ -544,3 +544,82 @@ implemented. Next step is a `plan` for the checker.
 Owner needs a way for a *different* model to validate that a repo's governance
 works (the in-bootstrap fresh-eyes test only ever runs the same model that drafted
 the guidance). Not yet designed or decided — surfaced 2026-06-22, undecided.
+
+The following two were assessed on 2026-06-23 from bug reports filed to the
+`agent-harvest` dropbox during a `headroom` (chopratejas/headroom) dogfood
+migration run, read against current repo evidence. They are appended at the end of
+the queue; the implementation sequence of the seven items above is unchanged.
+
+### Open: the authority/scope boundary has no stated precedence over the content-quality invariants
+
+Evidence: The Prime Invariants (`templates/AGENTS.template.md:8-18`) require
+"act only on an explicit instruction," and `procedures/bootstrap.md` Step 0 makes
+the toolkit repo read-only except for the sync, but the content-quality invariants
+— "Keep one canonical location… Prefer pointers over duplicating"
+(`templates/AGENTS.template.md:46-47`), the `decision`/`drift` operators that write
+canonical files, and `procedures/migration.md`'s fold-into-canon guidance — carry
+no scope-of-authorization qualifier, and no cross-section precedence statement
+reconciles the two. Earned by a real reproduced incident: during a 2026-06-23
+`headroom` dogfood run the agent appended 19 lines to *this* repo's own
+`.agents/decisions.md` (an unauthorized write to canonical governance, in a
+different repo than the one under bootstrap), justified by "augment canonical
+entry, don't duplicate"; `git diff` showed `.agents/decisions.md | 19 +++` against
+an otherwise-clean tree and the edit was reverted with `git restore`. The agent
+had, one message earlier, itself articulated the read-only guardrail and still
+failed to bind it — so the gap is structural (no precedence rule, no checkpoint),
+not a one-off lapse. Source: `bugs/headroom-authority-boundary-overreach-2026-06-23.md`.
+
+Options: (a) add an explicit precedence rule to the Prime Invariants (echoed in
+`bootstrap.md`): the authority/scope boundary outranks every content-quality
+principle; an agent may never edit a canonical or tracked governance artifact (and
+never any file in the toolkit repo beyond the Step 0 sync) without an explicit
+instruction naming the file or edit; "fold into canonical home / don't duplicate"
+applies only within the repo scope the session is authorized to write, and only on
+an explicit go; a finding that belongs in a file the session may not write goes
+only into the sanctioned scratch/report outputs. (b) leave as-is.
+
+Recommendation: (a). It hardens a load-bearing authority invariant against a
+reproduced failure and changes prose, not code. Because it edits the Prime
+Invariants — the highest-authority block — record it for an explicit owner
+decision rather than treating this standing recommendation as the go. Prove the
+bite with a re-run scenario: an agent that finds a matching canonical entry and is
+told "drop the scratch file in X" must produce only the cross-reference, never an
+edit to the canonical file. Relationship: extends the 2026-06-10
+"answer-with-words / artifact-is-evidence-not-decision" decisions with a precedence
+rule against the content-quality invariants. Affected files:
+`templates/AGENTS.template.md` (Prime Invariants), `procedures/bootstrap.md`
+(Step 0 read-only echo), `procedures/migration.md` (bound the fold/augment-into-canon
+guidance by authorization scope).
+
+### Open: "all routes" harness-artifact drafting contradicts the smallest-guidance-set invariant
+
+Evidence: `procedures/bootstrap.md` "Operator command wrappers (all routes)"
+(`:156`, `:159`) and "Hook install & trust (all routes)" (`:192-193`) instruct
+drafting wrappers/hooks for every harness the toolkit ships a template for, "even
+when the harness you are running in has no command-file mechanism," while
+`templates/AGENTS.template.md:61` states "Prefer the smallest durable guidance set
+that fits the repo. Over-documentation is a drift risk." No section reconciles the
+two, so an agent following the draft-all instruction literally produces governance
+files for harnesses a repo shows no evidence of using. In practice the bite is
+small for wrappers (the toolkit currently ships wrapper templates only for Claude
+Code, `:158`) but real for hooks (it ships claude/codex/grok/agents configs,
+`:200-201`). Severity low — unused files / mild over-documentation, no incorrect
+behavior or data loss. Source:
+`bugs/headroom-harness-artifact-overproduction-2026-06-23.md`.
+
+Options: (a) reconcile explicitly: keep the draft-all portability default but add a
+sentence to both "all routes" sections pointing at the smallest-set invariant, and
+have the approval-summary step sort harness artifacts the repo shows no usage
+evidence for into a clearly-labeled "optional / not-evidenced" bucket the owner can
+drop. (b) make non-evidenced harness artifacts opt-in (draft only for harnesses
+with repo evidence; note the rest as available). (c) leave as-is and treat
+draft-all as the intended portability stance.
+
+Recommendation: (a). Docs-only reconciliation across `procedures/bootstrap.md`
+(the two "all routes" sections), `procedures/migration.md` (Step 4), and
+`templates/approval-summary.template.md` (the optional/not-evidenced bucket); it
+preserves the portability rationale while removing the literal contradiction. Lower
+priority than the medium-severity authority gap above. This intersects the
+2026-06-18 "operator command wrappers are a standing guarantee on every route"
+decision (which stays Active): the reconciliation must not weaken the wrapper
+guarantee, only label non-evidenced artifacts as optional in the summary.
