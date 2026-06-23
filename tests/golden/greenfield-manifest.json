@@ -12,7 +12,9 @@
     "isGitRepository": true,
     "branch": "main",
     "commit": "<NORMALIZED>",
-    "status": []
+    "status": [],
+    "degraded": false,
+    "errors": []
   },
   "coverage": {
     "status": "complete",

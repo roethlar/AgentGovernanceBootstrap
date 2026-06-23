@@ -566,5 +566,43 @@ class TestAgentsTemplateStatus(unittest.TestCase):
         self.assertEqual(at["missingSections"], [])
 
 
+class TestGitFailureSurfaced(unittest.TestCase):
+    """Open queue item: run_git must distinguish a git command FAILURE from an
+    empty result. A corrupt index makes `git ls-files`/`status` fail (returncode
+    128) while `rev-parse --show-toplevel`/`HEAD` still succeed, so the repo is
+    still detected as git. Discovery must record the failure (`git.degraded`,
+    `git.errors`) and warn in the packet, instead of emitting a clean, empty
+    inventory that becomes false evidence of a clean repo (the 2026-06-10
+    evidence rule)."""
+
+    def test_failed_git_commands_recorded_not_silently_empty(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = fixtures.make_greenfield_repo(Path(tmp) / "repo")
+            (repo / ".git" / "index").write_bytes(b"not a real git index\n")
+            manifest = fixtures.run_discover(repo)
+            # Still a git repo, and HEAD is still readable (refs, not the index).
+            self.assertTrue(manifest["git"]["isGitRepository"])
+            self.assertIsNotNone(manifest["git"]["commit"])
+            # The failure is surfaced, not swallowed.
+            self.assertTrue(manifest["git"]["degraded"])
+            failed = " ".join(e["command"] for e in manifest["git"]["errors"])
+            self.assertIn("ls-files", failed)
+            self.assertIn("status", failed)
+            for err in manifest["git"]["errors"]:
+                self.assertNotEqual(err["returncode"], 0)
+            # The empty inventory must NOT read as a clean repo: the packet warns.
+            packet = (repo / ".bootstrap-tmp" / "bootstrap-review-packet.md"
+                      ).read_text(encoding="utf-8")
+            self.assertIn("git.degraded", packet)
+
+    def test_clean_repo_is_not_degraded(self):
+        # Happy path: no git failure -> degraded false, errors empty, no warning.
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = fixtures.make_greenfield_repo(Path(tmp) / "repo")
+            manifest = fixtures.run_discover(repo)
+            self.assertFalse(manifest["git"]["degraded"])
+            self.assertEqual(manifest["git"]["errors"], [])
+
+
 if __name__ == "__main__":
     unittest.main()

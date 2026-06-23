@@ -384,6 +384,18 @@ sequence.
 
 ### Open: `run_git` fails open — git errors are indistinguishable from empty results
 
+Status: Adopted 2026-06-23. Option (a) landed in `tools/discover.py`: a new
+`_git_exec()` returns `(executed, returncode, lines, stderr)`; `run_git()` keeps
+its lines-or-`[]` contract for callers where a non-zero is a legitimate negative;
+`get_git_root()` now raises when git cannot be executed at all (instead of
+silently taking the non-git branch); and `discover()` routes the inventory
+commands through a checked runner that records unexpected failures into the new
+manifest fields `git.errors` and `git.degraded`, with a matching WARNING in the
+review packet so an empty inventory cannot read as a clean repo. Guarded by
+`tests/test_discover.py::TestGitFailureSurfaced` (revert-proof: corrupts `.git/index`
+so `ls-files`/`status` fail while the repo is still detected as git). The text
+below is retained as the rationale until archived.
+
 Evidence: `tools/discover.py` `run_git()` returns `[]` on `OSError` and on any
 non-zero return code, so a missing git, an unsafe-directory refusal, a corrupt
 index, or a permission denial collapses to the same empty result a genuinely

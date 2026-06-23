@@ -13,6 +13,7 @@ import re
 import shutil
 import subprocess
 import sys
+from collections import namedtuple
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -149,20 +150,44 @@ ROUTE_BLOCKS = {
 }
 
 
-def run_git(repo, *args):
+# Result of one git invocation. executed is False only when git itself could
+# not be run (OSError: not installed / not on PATH); a git that ran and returned
+# non-zero has executed=True with the real returncode.
+GitExec = namedtuple("GitExec", "executed returncode lines stderr")
+
+
+def _git_exec(repo, *args):
     try:
         proc = subprocess.run(["git", *args], cwd=repo, capture_output=True,
                               text=True)
-    except OSError:
+    except OSError as exc:
+        return GitExec(False, None, [], str(exc))
+    lines = [line for line in proc.stdout.splitlines() if line.strip()]
+    return GitExec(True, proc.returncode, lines, proc.stderr.strip())
+
+
+def run_git(repo, *args):
+    """Lines on success; [] on any failure. For callers where a non-zero return
+    is a legitimate negative (not-a-repo, unborn HEAD). Callers that need to tell
+    failure from emptiness use _git_exec directly (see discover())."""
+    res = _git_exec(repo, *args)
+    if not res.executed or res.returncode != 0:
         return []
-    if proc.returncode != 0:
-        return []
-    return [line for line in proc.stdout.splitlines() if line.strip()]
+    return res.lines
 
 
 def get_git_root(path):
-    lines = run_git(path, "rev-parse", "--show-toplevel")
-    return Path(lines[0]).resolve() if lines else None
+    res = _git_exec(path, "rev-parse", "--show-toplevel")
+    if not res.executed:
+        # git could not run at all. Do not silently fall through to the non-git
+        # branch (which would list every file as untracked and read as a clean
+        # repo) - that is the false-evidence failure this guard exists to stop.
+        raise SystemExit(
+            "git could not be executed (is git installed and on PATH?); "
+            f"cannot run discovery reliably: {res.stderr}")
+    if res.returncode != 0:
+        return None  # ran fine and reported this is not a git repository
+    return Path(res.lines[0]).resolve() if res.lines else None
 
 
 def sensitivity_reason(rel_path):
@@ -449,6 +474,15 @@ def write_review_packet(path, manifest):
         lines.append("  `git check-ignore`) exit 128 here. Every file is listed as")
         lines.append("  untracked (on disk only); nothing is committable without")
         lines.append("  `git init`, which is the owner's decision.")
+    if manifest["git"].get("degraded"):
+        lines.append("- WARNING: git commands failed during discovery "
+                     "(`git.degraded` = true). The file inventory below is "
+                     "INCOMPLETE and must not be read as a clean or empty repo. "
+                     "Failed commands (`git.errors`):")
+        for err in manifest["git"]["errors"]:
+            detail = (err["stderr"] or "").splitlines()
+            lines.append(f"  - `{err['command']}` exited {err['returncode']}"
+                         + (f": {detail[0]}" if detail else ""))
     cov = manifest["coverage"]
     lines.append(f"- Coverage (`coverage.status`): {cov['status']} ({cov['candidateCount']} candidates, cap {cov['cap']})")
 
@@ -570,15 +604,33 @@ def discover(repo_arg, coverage_cap=2000):
 
     tracked, untracked, ignored, status = [], [], [], []
     commit, branch = None, None
+    git_errors = []
     if is_git:
-        commit_lines = run_git(repo_root, "rev-parse", "HEAD")
+        def checked(*args, expect_failure=False):
+            """Run a git command inside the confirmed repo. On an unexpected
+            failure, record it in git_errors and return [] (partial output on a
+            failed command is not trustworthy inventory). expect_failure marks
+            commands whose non-zero is legitimate (e.g. unborn HEAD)."""
+            res = _git_exec(repo_root, *args)
+            if not res.executed or res.returncode != 0:
+                if not expect_failure:
+                    git_errors.append({
+                        "command": "git " + " ".join(args),
+                        "returncode": res.returncode,
+                        "stderr": res.stderr,
+                    })
+                return []
+            return res.lines
+
+        commit_lines = checked("rev-parse", "HEAD", expect_failure=True)
         commit = commit_lines[0] if commit_lines else None
-        branch_lines = run_git(repo_root, "rev-parse", "--abbrev-ref", "HEAD")
+        branch_lines = checked("rev-parse", "--abbrev-ref", "HEAD",
+                               expect_failure=True)
         branch = branch_lines[0] if branch_lines else None
-        tracked = run_git(repo_root, "ls-files")
-        untracked = run_git(repo_root, "ls-files", "--others", "--exclude-standard")
-        status = run_git(repo_root, "status", "--short")
-        ignored = [line[3:] for line in run_git(repo_root, "status", "--ignored", "--short")
+        tracked = checked("ls-files")
+        untracked = checked("ls-files", "--others", "--exclude-standard")
+        status = checked("status", "--short")
+        ignored = [line[3:] for line in checked("status", "--ignored", "--short")
                    if line.startswith("!! ")]
     else:
         # No git: nothing is tracked. List every file as untracked so the
@@ -625,7 +677,8 @@ def discover(repo_arg, coverage_cap=2000):
         "validated_against": {"commit": commit, "date": now.strftime("%Y-%m-%d")},
         "repo": {"root": str(repo_root), "scope": scope},
         "git": {"isGitRepository": is_git, "branch": branch, "commit": commit,
-                "status": list(status)},
+                "status": list(status), "degraded": bool(git_errors),
+                "errors": git_errors},
         "coverage": {"status": coverage_status, "candidateCount": len(records),
                      "includedCount": len(suggested), "cap": coverage_cap},
         "route": route,
