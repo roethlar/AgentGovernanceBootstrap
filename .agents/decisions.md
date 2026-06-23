@@ -425,6 +425,13 @@ version, at the cost of a new required artifact on every bootstrapped repo. (b)
 is less surface. Either way it removes the false-positive route. Pairs with the
 `run_git` fix as the two grounded `discover.py` issues from the reviews.
 
+Owner decision 2026-06-22: option (a). Define `bootstrap.config.json` (a
+provenance / toolkit-version marker), ship a template for it, populate it in this
+repo, and make it the authoritative update-route ownership marker; `state.md`
+alone stops being sufficient proof of toolkit ownership. Still Open: not yet
+implemented. Next step is a `plan` for the file shape, the template, and the
+`compute_route()` change.
+
 ### Open: route/verification probes match literal `package.json` against repo-relative paths (monorepo subdir miss)
 
 Evidence: `tools/discover.py` tests membership of the literal `"package.json"` in
@@ -493,8 +500,12 @@ agent-judged escape hatch cheaply; (c) is a compromise. Low effort either way.
 ### Open: a `governance-lint` self-audit playbook (mechanical checks only)
 
 Evidence: `AGENTS.md` advertises `.agents/playbooks/*` as an authority slot and a
-`playbook <name>` operator, but the `playbooks/` directory does not yet exist —
-an advertised-but-unbuilt mechanism. Three doc-health checks are mechanizable
+`playbook <name>` operator. The toolkit already ships a playbook template
+(`templates/playbooks/reviewloop.md`, a two-agent review loop installable into a
+target repo), but this repo's own `.agents/playbooks/` directory does not yet
+exist — so governance-lint would be the first playbook authored as a self-audit
+and the first one installed into this repo, not the first use of the mechanism.
+Three doc-health checks are mechanizable
 against existing structures: (1) **state freshness** — `.agents/repo-map.json`
 carries a structured `validated_against: {commit, date}`; compare it against the
 git log for `.agents/` to flag a state doc that has drifted past its last
@@ -520,6 +531,10 @@ script gate); and it makes the `validated_against` freshness signal — which
 nothing currently checks despite guarding the "discoverable current-state entry
 point" invariant — actually load-bearing. The narrow form (freshness +
 pointer/stamp) is not YAGNI; the broad "audit governance health" form Grok
-originally proposed would be. This is a `decision` (settle the
-playbook-not-gate / mechanical-not-semantic / citation-deferred scope) then a
-`plan` for the checker.
+originally proposed would be.
+
+Owner decision 2026-06-22: option (a) — standalone
+`.agents/playbooks/governance-lint.md` plus a small checker, run on-demand and
+recommended (not gated) by the update route; evidence-citation sufficiency stays
+an explicit non-goal (the `drift` operator's job). Still Open: not yet
+implemented. Next step is a `plan` for the checker.
