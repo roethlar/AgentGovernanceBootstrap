@@ -376,5 +376,150 @@ These are assessed findings the owner chose to record for a future decision
 rather than implement now. The process is unchanged until one is adopted. Each
 states the verified evidence, the options, and the standing recommendation.
 
-None open. (The prior queue was fully adopted by 2026-06-21 and archived to
-`docs/history/decisions-archive.md`.)
+The following seven were assessed on 2026-06-22 from three external repo
+reviews (DeepSeek, GPT-5.5, Grok) read against current repo evidence. The
+reviews' other suggestions were rejected as scope-inflating or already covered
+and are not recorded. Recommendation order below is the suggested implementation
+sequence.
+
+### Open: `run_git` fails open — git errors are indistinguishable from empty results
+
+Evidence: `tools/discover.py` `run_git()` returns `[]` on `OSError` and on any
+non-zero return code, so a missing git, an unsafe-directory refusal, a corrupt
+index, or a permission denial collapses to the same empty result a genuinely
+clean repo produces. The HEAD / branch / ls-files / status callers cannot tell
+"nothing to report" from "git failed." Discovery output is cited as evidence for
+governance drafting (the 2026-06-10 evidence rule), so a silently-empty git
+result can become false evidence of a clean or empty repo.
+
+Options: (a) make `run_git` fail loud — distinguish command failure from empty
+output (e.g. return a sentinel / raise on non-zero), and have callers surface the
+failure in the manifest rather than emitting a clean inventory; (b) leave as-is.
+
+Recommendation: (a). This is a correctness fix squarely in service of the
+existing evidence rule, not new surface. No design fork — implement directly
+after recording. Prove the guard with the revert-the-fix test (a probe that
+fails when `run_git` swallows an error).
+
+### Open: `bootstrap.config.json` is documented layout but unshipped, and the update route depends on it
+
+Evidence: `README.md` lists `.agents/bootstrap.config.json` in the canonical
+`.agents/` layout, but no template ships it and this toolkit's own `.agents/`
+does not contain it. `tools/discover.py` `compute_route()` treats the presence of
+`.agents/state.md` OR `.agents/bootstrap.config.json` as proof of toolkit
+ownership and returns the `update` route, which then triggers AGENTS.md template
+reconciliation (`procedures/bootstrap.md` Step 3). `state.md` is a generic name a
+foreign governance system could also use, so a non-toolkit repo can be misrouted
+into update/reconciliation; the only unambiguous toolkit marker would be the
+config file, which does not exist.
+
+Options: (a) define `bootstrap.config.json` (a provenance/version marker),
+template it, populate it in this repo, and make it the authoritative update-route
+marker — `state.md` alone becomes a weaker signal; (b) drop
+`bootstrap.config.json` from the documented layout and tighten the update-route
+test another way (e.g. require a toolkit-stamped `AGENTS.md`); (c) leave as-is.
+
+Recommendation: decide between (a) and (b) before any code — this is a genuine
+design fork. (a) gives a clean provenance marker and a place for the toolkit
+version, at the cost of a new required artifact on every bootstrapped repo. (b)
+is less surface. Either way it removes the false-positive route. Pairs with the
+`run_git` fix as the two grounded `discover.py` issues from the reviews.
+
+### Open: route/verification probes match literal `package.json` against repo-relative paths (monorepo subdir miss)
+
+Evidence: `tools/discover.py` tests membership of the literal `"package.json"` in
+the path set, but paths are stored repo-relative (`relative_to(repo_root)`), so a
+subdir-scoped run on e.g. `packages/api/` yields `packages/api/package.json`,
+which never matches — silently losing verification-command detection for the
+scoped case.
+
+Precondition: confirm whether subdir-scoped bootstrap is a supported mode. If it
+is not a real path, this does not bite and should be closed as not-applicable
+rather than fixed.
+
+Recommendation: resolve the precondition first. If scoped runs are supported,
+match by basename / suffix instead of literal full-path membership. Lower
+priority than the two above.
+
+### Open: hook-merge strategy is underspecified in the procedure
+
+Evidence: `procedures/bootstrap.md` "Hook install & trust" says to merge the
+re-ground hook into an existing config "rather than replacing the file" and to
+"stop and ask" if a safe merge is not possible, but specifies no merge algorithm
+— for `.claude/settings.json`, which also holds permissions, env, and model
+settings, "safe merge" carries undocumented weight.
+
+Options: (a) add a concrete merge rule to the procedure — the hook lives under a
+known key, preserve all sibling keys, append to the relevant hook array, and
+stop-and-ask only on structural ambiguity; (b) leave the judgment to the agent.
+
+Recommendation: (a). Docs-only change to one procedure section; no plan required
+under the invariants. Reduces an ambiguous agent judgment to a stated rule.
+
+### Open: committed operator wrappers are skipped without a staleness check
+
+Evidence: `procedures/bootstrap.md` step 4 of "Operator command wrappers" does a
+binary exist-and-committed → change-nothing, with no version/staleness check —
+even though the 2026-06-22 update-route decision added `templateVersion` stamping
+and reconciliation for `AGENTS.md`. The same staleness logic was not extended to
+the command wrappers, so a repo can carry current `AGENTS.md` guidance behind
+outdated wrappers and the update route will not notice.
+
+Options: (a) extend version-aware reconciliation to wrappers on the update route —
+detect a wrapper that predates the current template and propose an update through
+the normal approval summary, never a silent overwrite; (b) leave wrappers as
+exist→skip.
+
+Recommendation: (a), scoped narrowly to update-route wrapper reconciliation,
+following the existing `AGENTS.md` reconciliation precedent. Consistency fix for
+work already shipped, not new surface.
+
+### Open: greenfield fresh-eyes test is agent-judged "optional", at a point the repo distrusts agent judgment
+
+Evidence: `procedures/bootstrap.md` greenfield step 8 makes the fresh-eyes test
+"optional ... recommended whenever the drafts are substantial"; migration
+(`procedures/migration.md` Step 6) requires it. The greenfield wording leans on
+the agent to judge "substantial," whereas the 2026-06-10 fresh-eyes decision and
+the repo's broader stance distrust agent self-assessment.
+
+Options: (a) make the greenfield fresh-eyes test mandatory unless the run is a
+genuine no-op (no drafted changes); (b) keep "optional/recommended"; (c) some
+middle threshold tied to an objective signal (e.g. any new `.agents/` file
+drafted).
+
+Recommendation: a one-line judgment call for the owner. (a) removes the
+agent-judged escape hatch cheaply; (c) is a compromise. Low effort either way.
+
+### Open: a `governance-lint` self-audit playbook (mechanical checks only)
+
+Evidence: `AGENTS.md` advertises `.agents/playbooks/*` as an authority slot and a
+`playbook <name>` operator, but the `playbooks/` directory does not yet exist —
+an advertised-but-unbuilt mechanism. Three doc-health checks are mechanizable
+against existing structures: (1) **state freshness** — `.agents/repo-map.json`
+carries a structured `validated_against: {commit, date}`; compare it against the
+git log for `.agents/` to flag a state doc that has drifted past its last
+validation; (2) **pointer/section/stamp resolution** — cross-references are
+backtick-wrapped paths (regex-extractable, `Path.exists()`-checkable),
+`repo-map.json.guidance_paths` supplies the golden file list to walk, and
+`discover.py` already has `extract_template_version()` for the stamp; (3) dead
+backtick-path links fall out of (2). `discover.py` exposes reusable helpers
+(`run_git`, `match_paths`, `extract_template_version`), so the core is ~150 lines.
+Evidence-citation sufficiency and prose-reference resolution are explicitly NOT
+mechanizable (they need semantic judgment) and stay the `drift` operator's job.
+
+Options: (a) build a standalone `.agents/playbooks/governance-lint.md` (+ a small
+Python checker) covering freshness + pointer/section/stamp resolution, run
+on-demand and recommended by the update route's reconciliation step — not a
+blocking gate; (b) fold the mechanical freshness check into the existing `drift`
+operator without a new playbook; (c) YAGNI — leave it.
+
+Recommendation: (a), with evidence-citation checking declared an explicit
+non-goal. It fills the already-advertised, currently-empty playbook slot rather
+than adding new surface; it stays agent-driven (a playbook the agent runs, not a
+script gate); and it makes the `validated_against` freshness signal — which
+nothing currently checks despite guarding the "discoverable current-state entry
+point" invariant — actually load-bearing. The narrow form (freshness +
+pointer/stamp) is not YAGNI; the broad "audit governance health" form Grok
+originally proposed would be. This is a `decision` (settle the
+playbook-not-gate / mechanical-not-semantic / citation-deferred scope) then a
+`plan` for the checker.
