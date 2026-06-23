@@ -538,3 +538,9 @@ Owner decision 2026-06-22: option (a) — standalone
 recommended (not gated) by the update route; evidence-citation sufficiency stays
 an explicit non-goal (the `drift` operator's job). Still Open: not yet
 implemented. Next step is a `plan` for the checker.
+
+### Open: foreign-model governance validation
+
+Owner needs a way for a *different* model to validate that a repo's governance
+works (the in-bootstrap fresh-eyes test only ever runs the same model that drafted
+the guidance). Not yet designed or decided — surfaced 2026-06-22, undecided.
