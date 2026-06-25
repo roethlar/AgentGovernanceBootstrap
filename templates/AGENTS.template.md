@@ -1,5 +1,5 @@
 # Agent Guidance
-<!-- templateVersion: 2026-06-22 -->
+<!-- templateVersion: 2026-06-25 -->
 
 ## Prime Invariants
 <!-- prime:begin — keep terse; re-grounded after compaction -->
@@ -70,6 +70,17 @@ scratch files as authority.
   thoroughly enough to confirm it is not load-bearing; if you cannot, treat it as
   legitimate and stop or ask. A roadblock is correct until proven otherwise; making the
   error go away is not a basis for removing it.
+- Escalate an iterative process on stalled progress, never on duration. A loop,
+  a multi-finding sweep, or a long autonomous run must bank verifiable progress each
+  cycle — a new observable delta: a test moving red→green, a finding closed with its
+  guard proof, a build or type error resolved, a committed slice. A cycle that
+  produces none of these is a stall (the loop-level form of the vacuous-change and
+  drift rules). After a small number of consecutive stalled cycles — state the
+  threshold you are using; default ~2-3 — stop and surface to a human rather than
+  continuing to spend. Length is never itself the trigger: a long run that closes a
+  verified delta each cycle is healthy and must not be capped on duration or turn
+  count; the failure is a process that will not terminate productively, however
+  briefly it has run.
 - Prefix shell commands with `rtk` (`rtk git status`, `rtk pytest`) to cut context use;
   unfiltered commands pass through unchanged. Escape hatch: when you need exact output or
   will cite it as evidence, run raw or `rtk proxy <cmd>`.
