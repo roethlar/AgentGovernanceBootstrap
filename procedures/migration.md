@@ -155,15 +155,10 @@ file.
    self-migration), the approved scoped commit applies to it like any other
    target, and Step 0's sync remains the only other sanctioned write.
 6. Commit the migration as ONE scoped commit, following the after-approval commit
-   discipline in `.bootstrap-tmp/procedures/bootstrap.md` step 10 (the canonical recipe:
-   `git add` exactly the approved files - never `git add -A` or `-f`; the owner's approval
-   authorizes that one commit; the rejection-then-approval and confirm-scope-wording
-   exceptions; ask once before pushing, naming the remotes; no amend/rebase/squash/
-   force-push without a fresh go). That step is the canonical recipe; do not duplicate it
-   here. Migration specifics: the approved files are the summary's Committed (tracked)
-   list, while Local-only files are copied into place but stay out of the commit; the
-   approval still authorizes the commit in repos whose rules gate git operations on the
-   owner.
+   discipline in `.bootstrap-tmp/procedures/bootstrap.md` step 10 — that step is the
+   canonical recipe; do not restate it here. Migration specifics: the files step 10
+   commits are the approval summary's Committed (tracked) list, while Local-only files
+   are copied into place but stay out of the commit.
 7. Do not raise deleting `.bootstrap-tmp/` until approved files are copied.
    After the approved files are copied and committed, close with one line
    noting that `.bootstrap-tmp/` remains (untracked) and will be deleted only
