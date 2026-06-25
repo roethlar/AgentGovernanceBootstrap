@@ -414,6 +414,57 @@ Nothing. Complements the 2026-06-22 update-route reconciliation decision: the
 reconciliation and wrapper-guard logic now lives solely in `procedures/bootstrap.md`,
 no longer duplicated in the template's Bootstrap Handoff section.
 
+### 2026-06-25 - Stall-not-length: iterative processes escalate on stalled progress, never on duration
+
+Status: Open (owner-approved design; awaiting a `plan` for the exact invariant
+wording + `templateVersion` bump before it lands in durable guidance).
+
+Decision (design settled 2026-06-25, five points the owner approved):
+A new Universal Invariant governs every iterative agent process — a loop, a
+multi-finding sweep, a long autonomous run. The escalation trigger is **stall, not
+length**: a process must surface to a human when it completes a cycle that banks no
+**verifiable progress**, and length/duration is *never itself* the trigger. A run
+that closes a verified delta each cycle is healthy at any duration (the invariant
+must not break Fable/ultracode-style long autonomous runs); a process that loops
+without banking a delta is the failure, however briefly it has run.
+
+1. **Home.** One full statement as a bullet in `## Universal Invariants` of
+   `templates/AGENTS.template.md`; mirrored to this repo's `AGENTS.md` only by the
+   normal self-application; pointers, not copies, anywhere else.
+2. **"Verifiable progress" defined by evidence class, not metric.** A cycle banks
+   progress when it produces a new observable delta — a test moving red→green, a
+   finding closed with guard proof, a build/type error resolved, a committed slice.
+   A cycle producing none of these is a stall. (Same evidence family as the
+   vacuous-test and drift rules: "cycle with no observable delta" at the loop level.)
+3. **Trigger by consecutive stalled cycles, threshold by agent judgment with a small
+   stated default (~2-3), not a hardcoded N.** Hardcoding a count invites the same
+   false-positive brittleness the synchronous-review work spent effort avoiding; the
+   agent states the threshold it is using.
+4. **Mechanical consequence.** Adding a Universal Invariant is a structural template
+   change, so bump `<!-- templateVersion -->` in `templates/AGENTS.template.md` so the
+   update route reconciles stale target `AGENTS.md` files (the 2026-06-22 stamp
+   machinery working as designed).
+5. **Scope guard is part of the wording.** The invariant explicitly states that
+   length/duration is never the trigger and names the long-autonomous-run case, so no
+   future agent reads it as a turn cap.
+
+Reason: serves the repo's overarching mission — improve agentic coding for humans,
+token-efficiently — by killing non-converging runs early (the largest avoidable token
+sink) without capping productive long ones. It extends the repo's evidence-over-
+assertion vocabulary (drift = "diverged from truth"; vacuous-test = "change with no
+observable delta") to a new axis: runaway = "process that will not terminate
+productively."
+
+Relationship: complements, does not supersede, the 2026-06-24 section-level
+deduplication decision (one full statement, pointers elsewhere) and the 2026-06-22
+`templateVersion` reconciliation decision. Considered and rejected: a duration/turn
+cap (e.g. "stop after N turns") — it strangles the long converging runs that are an
+existence proof the duration is not the failure mode.
+
+Next step: a `plan` for the exact invariant sentence(s), the `templateVersion` bump,
+and verification (`python3 -m unittest discover -s tests -v` for the template/stamp
+touch; the revert-the-fix discipline if a test guards the stamp).
+
 ## Open Decisions (deferred - not yet adopted)
 
 These are assessed findings the owner chose to record for a future decision
