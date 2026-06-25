@@ -34,6 +34,50 @@ live rule now owned elsewhere - archive it per the rule above: move it verbatim 
 
 ## Decisions
 
+### 2026-06-24 - Content-first discovery and desired-custody `.gitignore` reconciliation
+
+Status: Active (implementation in progress per the design spec)
+
+Decision: Discovery determines what governance a repo has, and what custody each
+path should have, from on-disk content — not from git's current ignore state.
+Git's tracked/ignored/untracked status is recorded as a per-path attribute that
+feeds a reconciliation engine, never as the filter for what counts as governance.
+Every path is tagged with categories; each category declares a desired custody
+(`tracked` / `ignored` / `review`); each mismatch between desired and *actual*
+custody is a finding for the approval summary, with the remediation chosen by the
+actual custody — add an ignore rule for untracked junk; `git rm --cached` + ignore
+for already-committed junk; un-ignore + commit for wrongly-ignored governance;
+rotate/scrub for a committed secret (it is already in history, so ignore-forward
+alone is insufficient). The junk catalog is language-agnostic and extensible
+(seeded from the `github/gitignore` corpus). The human decides every finding;
+keeping governance paths ignored yields a local-only install — offered, but
+labeled as a portability / rule-exception tradeoff, with durable committed
+wrappers named as the recommended end state per the 2026-06-18 decision.
+Completeness is the requirement; efficiency and speed are explicitly not.
+
+Design: `docs/superpowers/specs/2026-06-24-content-first-discovery-gitignore-reconciliation-design.md`
+(approved 2026-06-24, incorporating an external review). The spec's open
+decisions were approved: `github/gitignore` basis for the junk catalog (D1),
+nested + global-aware `.gitignore` parsing (D2), editor/OS configs surfaced as
+`review` findings rather than auto-junk (D3), and the update-vs-migration "is this
+ours" ownership question kept out of scope (D4).
+
+Earned by: the incident_june bug — a git-ignored, machine-local
+`.claude/settings.local.json` mis-routed a fresh repo to migration — exposed that
+discovery read the repo through git's ignore lens while the toolkit's own job
+includes correcting that lens, a circular dependency.
+
+Relationship: generalizes the 2026-06-18 "repair the gitignore" decision from the
+wrappers-only case to all categories; aligns with the 2026-06-10 gitignore-aware
+custody decision (respect owner intent, no silent `git add -f`, custody proven by
+git query); closes the incident_june finding; adjacent to open items #1
+(`bootstrap.config.json` ownership marker) and #3 (monorepo subdir path matching).
+
+Supersedes: the deferred one-line incident_june routing fix (filtering ignored
+markers out of `compute_route`), rejected as too broad — it would have re-broken
+the 2026-06-18 ignored-wrapper case by treating a wrongly-ignored real wrapper as
+"nothing to migrate."
+
 ### 2026-06-24 - Section-level rule deduplication: one full statement per rule, pointers elsewhere
 
 Status: Active
