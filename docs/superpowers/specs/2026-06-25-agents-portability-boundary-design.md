@@ -33,9 +33,40 @@ enforces it at the moment an agent edits `AGENTS.md`.
 This is a falsifiable test an agent applies in the moment: *would this line still be
 true and useful in an unrelated repo?* If not, it is repo-specific.
 
+**The test allows the toolkit's own standard paths.** A reference to a governance
+path that travels with the toolkit — `.agents/state.md`, `.agents/decisions.md`,
+`procedures/bootstrap.md`, an operator name — *is* portable: it is true in every
+bootstrapped repo, so it passes. What fails is a path/name/fact unique to *this* repo:
+a concrete application source path (`src/api/handlers/auth.py`), the repo's own
+project name, its specific verification command, a restatement of its current state.
+Refined test: a line is repo-specific (and misplaced) if it names something true only
+of this one repo; it is governance (and allowed) if it is true of any repo the toolkit
+governs, including references to the toolkit's own standard `.agents/`/`procedures/`
+layout.
+
 The toolkit's own `templates/AGENTS.template.md` is the portable artifact by
 construction; this rule makes that property explicit and required of every generated
 `AGENTS.md`, not just the template.
+
+## The write-authority rule
+
+Portability governs *what content* belongs in `AGENTS.md`. A second, complementary
+rule governs *when it may be written at all*:
+
+> **`AGENTS.md` is written only by a bootstrap or update run, through the approval
+> gate.** The sanctioned writers are exactly two, both gated: (1) a greenfield/
+> migration bootstrap run that drafts the initial `AGENTS.md`, and (2) the update
+> route that *reconciles* a stale `AGENTS.md` against the current template
+> (`procedures/bootstrap.md`). Both pass through the approval summary and land in one
+> scoped commit. Outside such a run, no agent edits `AGENTS.md` — a repo-specific fact
+> discovered mid-task goes to `.agents/`, not into governance. An `AGENTS.md` edit
+> proposed outside a bootstrap/update run is out of bounds, to be questioned, not
+> performed.
+
+This pairs with portability: even content that *would* be portable does not get
+hand-edited into `AGENTS.md` during ordinary work; it enters only through the gated
+drafting/reconciliation path. The two rules together close both halves — wrong content
+*and* wrong moment.
 
 ## Enforcement — three layers, by harness capability
 
@@ -52,7 +83,7 @@ own docs before a `.codex/` hook template ships (see open questions).
 | Layer | Mechanism | Claude Code | Codex | Grok | agy |
 |---|---|---|---|---|---|
 | 1. Rule | invariant text in `AGENTS.md` (every harness injects it) | ✅ | ✅ | ✅ | ✅ |
-| 2. Pre-edit guard | block + reiterate on `AGENTS.md` edit | ✅ | ⚠️ partial | ❌ | ❌ |
+| 2. Pre-edit guard | non-blocking reminder on `AGENTS.md` edit (tripwire) | ✅ | ✅ | ❌ | ❌ |
 | 3. Audit | `drift` operator finds + relocates leaks | ✅ | ✅ | ✅ | ✅ |
 
 ### Layer 1 — the invariant (portable backbone, all harnesses)
@@ -66,34 +97,53 @@ context. It is the backbone; layers 2–3 reinforce it.
 ### Layer 2 — pre-edit guard hook (Claude Code + Codex only)
 
 A `PreToolUse`-style hook that fires when the agent is about to write/edit a file
-whose path is `AGENTS.md`, and injects a model-visible reminder of the boundary rule
-(it does not hard-block — the edit is legitimate; it reiterates the test at the moment
-of temptation, which is where leaks are written). This catches drift *as it is
-created*, where layer 3 only catches it after.
+whose path is `AGENTS.md`, and injects a **non-blocking, model-visible reminder** of
+both boundary rules. It does **not** hard-block: a bootstrap/update run's edit is
+legitimate, and a content judgment cannot be made by a path matcher anyway. Given the
+write-authority rule, the hook's real job is a **tripwire** — most `AGENTS.md` edits
+outside a bootstrap/update run should not be happening, so the reminder is "you are
+editing AGENTS.md: this is governance-only and portable, and is normally written only
+by a gated bootstrap/update run — confirm this is one." It catches both a content leak
+and an out-of-band edit *as they are attempted*, where layer 3 only catches them
+after.
 
 - **Claude Code**: a `PreToolUse` hook (the repo already ships per-harness hook
   templates under `templates/hooks/<harness>/` for the re-ground hook; this is a
   second hook in the same slot).
-- **Codex**: `PreToolUse` in `.codex/config.toml` / `hooks.json`, matching
-  `apply_patch|Edit|Write`, parsing the target path, returning a reason as additional
-  context (Codex supports `permissionDecision: "deny"` + reason; we use the
-  reason/context, not a hard deny).
+- **Codex**: a `PreToolUse` hook in `.codex/hooks.json` or `.codex/config.toml`,
+  matching `apply_patch|Edit|Write`, parsing the target path, returning the reminder
+  via **`additionalContext`** (non-blocking). `permissionDecision: "deny"` is the
+  blocking mode and is **not** used here. Confirmed against Codex's own hooks
+  documentation (https://developers.openai.com/codex/hooks) by a Codex self-review of
+  this spec, 2026-06-25.
 - **Grok, agy**: no pre-edit interception exists. Documented as unavailable; these
   harnesses rely on layers 1 + 3 only. Revisit if their harnesses gain the capability.
 
 Both hooks are **trust-gated** and **inert until trusted** (same caveat as the
 existing re-ground hook); the install/trust discipline is the one already documented
 in `procedures/bootstrap.md` "Hook install & trust." The reminder text must be terse
-— it fires on every `AGENTS.md` edit, so verbosity becomes noise.
+— it fires on every `AGENTS.md` edit, so verbosity becomes noise. **Until the
+follow-on spec validates each hook in a live trusted workspace, the layer-2 behavior
+is a dependency/assumption, not a proven fact** (the repo's evidence rule).
 
 ### Layer 3 — `drift` operator audit (cross-harness backstop)
 
 Extend the `drift` operator definition (`AGENTS.md` Operator Requests, and the
-template) to make `AGENTS.md` portability an explicit drift target: scan `AGENTS.md`
-for repo-specific leakage — concrete non-`.agents/` file paths, the repo's own name,
-restatements of `state.md`/`decisions.md` content — and flag each as drift to relocate
-into `.agents/` with a pointer left behind. This is the load-bearing layer for Grok
-and agy (their only enforcement beyond the rule text) and a backstop everywhere.
+template) to make `AGENTS.md` portability and write-authority explicit drift targets:
+scan `AGENTS.md` for repo-specific leakage and flag each as drift to relocate into
+`.agents/` with a pointer left behind. This is the load-bearing layer for Grok and agy
+(their only enforcement beyond the rule text) and a backstop everywhere.
+
+Acceptance examples (so reviewers do not disagree on "leakage"):
+
+- **Flag (repo-specific, relocate):** a concrete application source path
+  (`src/api/auth.py:42`); the repo's own project name used as a fact; a specific
+  verification command (`pytest tests/api -k auth`); a sentence restating current
+  state or the decisions queue that `state.md`/`decisions.md` owns.
+- **Allow (portable governance):** references to the toolkit's standard layout
+  (`.agents/state.md`, `procedures/bootstrap.md`); operator names (`drift`, `handoff`);
+  invariant prose; a pointer *to* `.agents/` ("see `.agents/state.md` for current
+  state"). A pointer names where a repo-specific fact lives without copying it.
 
 The mechanizable subset (concrete paths / repo-name occurrences in `AGENTS.md`) is a
 candidate check for the already-queued `governance-lint` playbook (Open Decision,
@@ -101,11 +151,11 @@ candidate check for the already-queued `governance-lint` playbook (Open Decision
 
 ## Scope of changes
 
-- **Add** the portability invariant to `templates/AGENTS.template.md` Universal
-  Invariants; **bump** `templateVersion`.
-- **Extend** the `drift` operator wording in `templates/AGENTS.template.md` (and this
-  repo's `AGENTS.md` only via deliberate self-application, per the frozen-instance
-  rule) to name `AGENTS.md` portability as a drift target.
+- **Add** the portability invariant **and the write-authority invariant** to
+  `templates/AGENTS.template.md` Universal Invariants; **bump** `templateVersion`.
+- **Extend** the `drift` operator wording in `templates/AGENTS.template.md` to name
+  `AGENTS.md` portability and write-authority as drift targets, with the accept/flag
+  acceptance examples.
 - This repo's own `AGENTS.md` is **not** edited here (frozen instance; updated only by
   a deliberate self-application run — same handling as the 2026-06-24 and 2026-06-25
   stall-not-length decisions).
@@ -113,12 +163,18 @@ candidate check for the already-queued `governance-lint` playbook (Open Decision
   unittest discover -s tests -v` plus `git diff --check`, plus a functional check that
   `discover.extract_template_version` reads the bumped stamp.
 
-## Follow-on (separate spec, not this one)
+## Follow-on (separate specs, not this one)
 
-The **layer-2 pre-edit guard hooks** (Claude Code + Codex) are a separate spec. They
-carry concerns the backbone does not: verifying the Codex hook syntax against Codex's
-docs, the trust-gate/noise tradeoff, and a second hook template per harness. The
-backbone (layers 1 + 3) ships independently and is useful on its own.
+- **Layer-2 pre-edit guard hooks** (Claude Code + Codex): a separate spec. Concerns
+  the backbone does not carry — validating each hook in a live trusted workspace, the
+  trust-gate/noise tradeoff, a second hook template per harness. The backbone (layers
+  1 + 3) ships independently and is useful on its own.
+- **Cleanup reconciliation for existing bad `AGENTS.md`**: a separate process to
+  detect and repair already-bootstrapped repos whose `AGENTS.md` carries
+  repo-specifics — relocating the leaked content into `.agents/` and leaving pointers,
+  through the gated update-route reconciliation. This spec defines the *rule* and the
+  *forward* enforcement; retroactive cleanup of existing offenders is its own design
+  (it intersects the 2026-06-22 update-route reconciliation machinery).
 
 ## Non-goals
 
@@ -131,11 +187,13 @@ backbone (layers 1 + 3) ships independently and is useful on its own.
 
 ## Open questions for planning
 
-1. Verify the Codex `PreToolUse` hook syntax against Codex's own documentation before
-   shipping a `.codex/` hook template (self-report says
-   https://developers.openai.com/codex/hooks).
-2. Exact `drift`-operator wording: how prescriptive to make the "repo-specific
-   leakage" definition without it rotting (portability test vs. an enumerated list of
-   leak types).
+1. ~~Verify the Codex `PreToolUse` hook syntax.~~ **Resolved** by a Codex self-review
+   of this spec (2026-06-25): `PreToolUse` in `.codex/hooks.json`/`config.toml`,
+   matchers `apply_patch|Edit|Write`, `additionalContext` for the non-blocking
+   reminder. Belongs to the layer-2 follow-on spec regardless.
+2. Exact `drift`-operator wording: lead with the portability *test* (does this survive
+   copy to an unrelated repo?) as the durable rule, with the accept/flag examples as
+   illustration — not an enumerated leak list that rots. Confirm the framing in the
+   plan.
 3. Whether the mechanizable path/name scan lands in `governance-lint` (Open Decision)
    or stays an agent-judgment `drift` step for now.
