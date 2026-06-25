@@ -108,8 +108,8 @@ If `.bootstrap-tmp/` does not exist:
 6. Current code, tests, and CI as evidence for behavior.
 7. Existing docs, only when consistent with current repo evidence.
 
-When sources disagree, report the drift and fix the lower-authority source or ask which
-source should win. Do not silently choose whichever source is convenient.
+When sources disagree, apply the flag-conflicts invariant (Universal Invariants): surface
+the conflict and fix the lower-authority source, or ask which should win.
 
 ## Operator Requests
 
