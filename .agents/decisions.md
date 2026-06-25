@@ -416,8 +416,14 @@ no longer duplicated in the template's Bootstrap Handoff section.
 
 ### 2026-06-25 - Stall-not-length: iterative processes escalate on stalled progress, never on duration
 
-Status: Open (owner-approved design; awaiting a `plan` for the exact invariant
-wording + `templateVersion` bump before it lands in durable guidance).
+Status: Adopted 2026-06-25. The invariant landed as a bullet in
+`templates/AGENTS.template.md` `## Universal Invariants` ("Escalate an iterative
+process on stalled progress, never on duration…"), with `templateVersion` bumped
+2026-06-22 → 2026-06-25 so the update route reconciles stale targets. This repo's
+own `AGENTS.md` is intentionally NOT edited here: it is a frozen instance brought
+current only by a deliberate self-application run (same handling as the 2026-06-24
+deduplication decision), so the missing bullet there is expected, not drift. The
+text below is retained as the rationale until archived.
 
 Decision (design settled 2026-06-25, five points the owner approved):
 A new Universal Invariant governs every iterative agent process — a loop, a
