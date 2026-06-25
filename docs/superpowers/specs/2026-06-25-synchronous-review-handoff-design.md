@@ -59,22 +59,45 @@ long-lived process.
    passed intake triage and produced a guard proof — all unchanged from the
    discipline the current playbook already defines.
 2. The coder dispatches the reviewer **headless, non-interactive, one-shot** against
-   that branch and the finding doc. Both are read by the reviewer **from the shared
-   workspace** — the diff is *not* marshalled across the process boundary; the
-   reviewer runs its own `git diff <main>..<branch>`, reads
-   `.agents/review/findings/<id>.md`, and independently performs the guard proof
-   (revert → confirm FAIL → restore → confirm PASS). The shared filesystem is the
-   bus; the handoff passes only a pointer + the reviewer instruction, never content.
-3. The reviewer emits its verdict on **stdout**. The coder reads it directly. The
-   verdict is one of: **accepted**, **reopened** (fix-ups needed), or **invalid/
-   contested** (the finding does not hold). The reviewer is asked to lead its output
-   with a structured line (`VERDICT: accepted|reopened|invalid`) followed by
-   `file:line` comments, so classification is unambiguous.
+   that branch and the finding doc. The reviewer reads the code **from the shared
+   workspace** — the diff is *not* marshalled across the process boundary. The
+   handoff pins an **explicit base**: the coder passes the reviewed branch HEAD SHA
+   and the base SHA (the merge-base at dispatch time), so the reviewer evaluates
+   `git diff <base-sha>..<head-sha>` against a fixed snapshot. This avoids the drift
+   when the main branch moves mid-review (a `main..branch` range is not stable).
+   **Guard-proof isolation:** the reviewer performs its independent guard proof
+   (revert → confirm FAIL → restore → confirm PASS) in **its own `git worktree`**
+   checked out at the head SHA — never by mutating the coder's working tree. A
+   reviewer that crashes mid-proof leaves only its disposable worktree dirty, not the
+   coder's branch. The reviewer must not write to the coder's tree at all (verdict
+   excepted, below).
+3. **Verdict contract (structured, fail-closed).** The reviewer is invoked in the
+   harness's **JSON output mode** (e.g. grok `--output-format json`; the agy/codex
+   equivalents — derived live by the same probe as the launch incantation, since the
+   flag appears in `--help`). This separates the *transport* (the harness's JSON
+   envelope, free of logs/ANSI/reasoning) from the *verdict payload*. The reviewer is
+   instructed to make its result field a JSON object matching:
+   ```json
+   {"verdict":"accepted|reopened|invalid","guard_confirmed":true,
+    "reviewed_sha":"<head-sha>","base_sha":"<base-sha>","comments":["file:line — …"]}
+   ```
+   The coder parses the envelope's result field against this schema. **Fail closed:**
+   any of {non-zero exit, missing/!valid JSON envelope, result field not matching the
+   schema, `verdict` not in the enum, `reviewed_sha` ≠ the dispatched head SHA} →
+   the outcome is **not accepted**. The coder re-prompts once with the schema
+   restated; if it still fails, the finding is routed to the owner as contested. A
+   parse miss never silently becomes an accept. (Note: the harness's JSON mode
+   guarantees a valid *envelope*, not that the model filled the *payload* to schema —
+   hence the inner parse + fail-closed rule, not envelope-validity alone.)
 4. **Before acting, the coder records the verdict into the repo** — the durable trail
-   that replaces the deleted sentinel/results files. The reviewer's verdict and key
-   comments go into the finding doc's `## Reviewer comments`, the finding **Status**
-   flips, and whether the reviewer confirmed the guard proof is noted. This satisfies
-   the repo invariant that durable truth lives in the repo, not in ephemeral output.
+   that replaces the deleted sentinel/results files. The record (in the finding doc's
+   `## Reviewer comments`, with the **Status** flipped) captures: reviewer **harness
+   name + version**, the **reviewed head SHA and base SHA**, **`guard_confirmed`**,
+   the **verdict**, a UTC **timestamp**, and the comments. Whether that record is
+   committed (vs left as a working-tree edit) is stated explicitly in the playbook.
+   This satisfies the repo invariant that durable truth lives in the repo, not in
+   ephemeral output, and preserves the machine-checkable guard attestation the old
+   `guard_proved` sentinel field carried.
 5. The coder acts on the recorded verdict:
    - **accepted** → branch is ready for an **owner-gated** merge (never merged or
      pushed on agent authority).
@@ -87,16 +110,54 @@ long-lived process.
 ### Per-harness isolation
 
 The **only** harness-specific knowledge is the headless-launch incantation for each
-agent (e.g. `codex exec "<prompt>"`, and the `agy`/`grok` equivalents). This is
-quarantined in one place — a small labelled table in the playbook (and/or a thin
-adapter the playbook points to) — so adding a new reviewer harness is a one-line
-change and the rest of the playbook names capabilities, not vendors. This honors the
-existing "capabilities, not harness-specific tool or agent names" principle.
+agent (e.g. `codex exec "<prompt>"`, and the `agy`/`grok` equivalents). The toolkit
+does **not** ship this as a human-maintained table, and does **not** derive it by
+parsing `--help` prose as a committed artifact. Both were rejected: a curated table
+requires human upkeep (an explicit owner constraint), and a help-text parser is a
+brittle committed regex whose failure mode is a silently-wrong flag mid-review.
+
+Instead the coding agent **derives the incantation live, per harness, per session,
+by probing** — the same thing a capable agent already does today when a human says
+"review this with grok." The playbook ships the *procedure*, not the answer:
+
+1. Confirm presence (`command -v <agent>`) and surface (`<agent> --help`,
+   `<agent> --version`).
+2. If the headless entry is ambiguous, drill one level (`<agent> exec --help` /
+   `<agent> chat --help`, whichever the top level lists).
+3. Smoke-test the candidate headless incantation with a trivial prompt (e.g.
+   `<agent> exec "say OK"`) under a **bounded probe**: a timeout (a hung process is
+   a failed probe, not a wait); **non-interactive detection** (if it opens a TUI /
+   alternate screen / waits on a TTY, the incantation is wrong — try the next
+   candidate); and run it from a context the harness accepts (the smoke test
+   surfaced that codex refuses a non-trusted dir and needs `--skip-git-repo-check`,
+   and agy must run from the real repo cwd — a canned `say OK` in an arbitrary temp
+   dir does **not** reveal these, so the smoke test runs in a real git repo and the
+   procedure treats a launch refusal as a flag to adjust, not a dead end).
+4. Use the verified incantation to run the review. Probing is bounded to
+   `--help`/`--version`/the trivial smoke prompt — never arbitrary commands.
+
+This keeps the harness knowledge as a *capability the agent exercises*, not a vendor
+name baked into a durable artifact — honoring the existing "capabilities, not
+harness-specific tool or agent names" principle, with zero human upkeep. The agent
+can tell when its guess was wrong (the smoke test failed or opened a UI) and adapt,
+which a static table or regex cannot.
+
+**Optional session cache (convenience, not source of truth):** once verified, the
+agent may record an incantation in a gitignored machine-local file (e.g.
+`.agents/review/harnesses.local.json`) to skip re-probing next session. Harness
+availability and CLI syntax are genuinely machine-specific, so a `*.local.*` file is
+the correct home (consistent with the repo's treatment of `settings.local.json` as
+untracked machine state). The cache is advisory: the source of truth is
+"re-derive by probing," so a stale cache self-corrects on the next smoke test.
+Probing is bounded to `--help`/`--version`/a trivial smoke prompt — never more —
+consistent with the repo's caution about executing unfamiliar binaries.
 
 The reviewer **prompt** is canonical and harness-neutral: one shipped reviewer
-instruction (pointing the agent at the branch, the finding doc, and the guard-proof
-+ verdict requirements) is used for every agent, so review *semantics* are identical
-regardless of which harness is named. Only the launch incantation differs per agent.
+instruction (pointing the agent at the branch + base/head SHAs, the finding doc, the
+guard-proof requirement, and the JSON verdict schema) is used for every agent, so
+review *semantics* are identical regardless of which harness is named. Only the
+launch incantation and the JSON-mode flag differ per agent, and both are
+probe-derived.
 
 ### What is removed vs the current `reviewloop.md`
 
@@ -104,8 +165,9 @@ Deleted (the async machinery, now unnecessary):
 
 - The `ready/<id>.json` sentinel system and the `mv`-into-place atomic-write step.
 - The reviewer wake mechanism / polling watcher (current Step 7).
-- The sentinel JSON schemas (current Step 9), including `guard`/`guard_proved`
-  fields — the guard-proof *record* survives as prose in the finding doc.
+- The sentinel JSON schemas (current Step 9). The machine-checkable guard
+  attestation the `guard_proved` field carried is **not** lost — it survives as the
+  `guard_confirmed` key in the structured verdict and in the finding-doc record.
 - The `results/<id>.verified.json` / `<id>.reopened.md` file protocol, replaced by
   the finding-doc record + a contested file for disagreements.
 - The async-only knobs: multiple coders, multiple reviewers, persistent-reviewer
@@ -141,12 +203,54 @@ Kept (the accuracy machinery — untouched in intent):
 
 ## Open questions for planning
 
-1. Exact headless incantations for `codex`, `agy`, `grok` (and the Claude-subagent
-   case) — verified against each CLI, not assumed.
+1. ~~Exact headless incantations for `codex`, `agy`, `grok`.~~ **Resolved:** the
+   agent derives them live by probing (see Per-harness isolation). The remaining
+   detail is the exact wording of the probe-and-verify procedure shipped in the
+   playbook, and the schema of the optional local cache.
 2. Whether `review` should join `OPERATOR_WORDS` (and thus template-version
    detection) or stay a playbook-only operator. This trades discoverability against
    touching the staleness machinery.
 3. Where the canonical reviewer prompt physically lives (inline in the playbook vs a
    shipped prompt file the adapter feeds).
-4. The minimum-viable structured-verdict contract the reviewer must emit, and the
-   coder's fallback when a foreign agent ignores the format.
+4. ~~The structured-verdict contract and the fallback when a foreign agent ignores
+   the format.~~ **Resolved:** JSON output mode + an inner schema parse + a
+   fail-closed rule (re-prompt once, then route to owner as contested). See the
+   Verdict contract in the dispatch steps.
+
+## Cross-harness review test (2026-06-25)
+
+The probe-and-verify procedure and the review flow were exercised end-to-end against
+this very spec. All three target harnesses were present, their headless incantations
+were derived live from `--help`, and each returned a usable review:
+
+- **grok** → `grok -p "<prompt>"` (`--single`; `--output-format json` available).
+- **agy** → `agy -p "<prompt>"` (`--print`; must run from the real repo cwd).
+- **codex** → `codex exec --skip-git-repo-check "<prompt>"` (`exec` = non-interactive;
+  refuses a non-trusted dir without the flag).
+
+The smoke test (`say OK`) verified launch but did **not** surface codex's
+trusted-dir refusal or agy's cwd requirement — which is exactly why the bounded
+probe now runs the smoke test in a real git repo and treats a launch refusal as a
+flag to adjust. All three independently returned `VERDICT: concerns` and converged on
+the same hazards: weak stdout parsing, guard proof mutating a shared tree, and an
+unstable diff base. Those findings drove the revisions above (structured fail-closed
+verdict, worktree-isolated guard proof, pinned base SHA, enriched record). The raw
+reviews are retained as the durable trail (see Declined revisions for what was not
+taken).
+
+## Declined revisions (with rationale)
+
+From the cross-harness review, two suggestions were considered and **declined**:
+
+- **Make `harnesses.local.json` the primary human-provided config (agy).** Declined:
+  a human-maintained incantation source is an explicit owner constraint against. The
+  file stays an optional self-correcting cache; the source of truth is live probing.
+- **Re-introduce / preserve the "Faster" disjoint-scope multi-pending WIP mode
+  (grok).** Declined as a deliberate non-goal: the owner chose synchronous,
+  one-finding-at-a-time accuracy over parallel throughput. Recorded here so the
+  dropped contract is an intentional decision, not an oversight.
+
+One lower-altitude observation is **noted, not actioned here:** grok flagged that
+adding `review` to `OPERATOR_WORDS` collides with the same deferred `playbook <name>`
+staleness-probe false-positive already tracked in `.agents/state.md`. Open question 2
+already owns this; planning must weigh it before touching `OPERATOR_WORDS`.
