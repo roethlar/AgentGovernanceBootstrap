@@ -36,9 +36,11 @@ verification, and future agent behavior aligned.>
 
 ## Verification Default
 
-<State the observed automated verification command(s), if any, then apply the verification
-default rule from the AGENTS Verification section — do not restate its conditions here, and
-do not ask the human to approve this normal default.>
+<State this run's verification concretely: the automated command(s) run and their result,
+or — for a docs-only change exempt under the verification default (see the AGENTS
+Verification section) — that it was exempt and why. Give the applied outcome for this run,
+not a copy of the generic rule's conditions; do not ask the human to approve this normal
+default.>
 
 ## Assumptions
 
