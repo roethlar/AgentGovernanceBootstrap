@@ -11,6 +11,8 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import fixtures  # noqa: E402
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "tools"))
+import discover  # noqa: E402
 
 
 class TestCliExists(unittest.TestCase):
@@ -699,6 +701,62 @@ class TestGitFailureSurfaced(unittest.TestCase):
             manifest = fixtures.run_discover(repo)
             self.assertFalse(manifest["git"]["degraded"])
             self.assertEqual(manifest["git"]["errors"], [])
+
+
+class TestCategoryCatalog(unittest.TestCase):
+    """Slice 1 of the content-first discovery rework: the category catalog and
+    classifier. Classification is by on-disk content/path, independent of git."""
+
+    def test_pattern_directory_name_matches_at_any_depth(self):
+        self.assertTrue(discover.path_matches_pattern("node_modules/", "node_modules/"))
+        self.assertTrue(discover.path_matches_pattern("a/node_modules/b.js", "node_modules/"))
+        self.assertFalse(discover.path_matches_pattern("notnode_modules/x", "node_modules/"))
+
+    def test_pattern_anchored_glob(self):
+        self.assertTrue(discover.path_matches_pattern("a/b/c.txt", "a/b/*"))
+        self.assertTrue(discover.path_matches_pattern(
+            ".claude/settings.local.json", ".claude/settings.local.json"))
+        self.assertFalse(discover.path_matches_pattern(
+            ".claude/settings.json", ".claude/settings.local.json"))
+
+    def test_pattern_basename_glob_is_case_insensitive(self):
+        self.assertTrue(discover.path_matches_pattern("a/b/foo.pyc", "*.pyc"))
+        self.assertTrue(discover.path_matches_pattern("FOO.PYC", "*.pyc"))
+
+    def test_governance_vs_harness_local_precision(self):
+        # The heart of the incident_june fix at the classification layer:
+        # settings.json is governance, settings.local.json is machine-local.
+        self.assertEqual(discover.classify_path(".claude/settings.json"),
+                         ["governance"])
+        self.assertEqual(discover.classify_path(".claude/settings.local.json"),
+                         ["harness-local-state"])
+        self.assertEqual(discover.classify_path(".claude/commands/catchup.md"),
+                         ["governance"])
+        self.assertEqual(discover.classify_path("AGENTS.md"), ["governance"])
+
+    def test_derived_and_secret_and_lockfile_classification(self):
+        self.assertIn("python-derived", discover.classify_path("src/__pycache__/x.pyc"))
+        self.assertEqual(discover.classify_path("node_modules/p/index.js"),
+                         ["node-derived"])
+        self.assertEqual(discover.classify_path("package-lock.json"), ["lockfile"])
+        self.assertEqual(discover.classify_path(".env"), ["secret"])
+        self.assertEqual(discover.classify_path(".vscode/settings.json"),
+                         ["editor-os"])
+
+    def test_ordinary_source_matches_no_category(self):
+        self.assertEqual(discover.classify_path("src/main.py"), [])
+        self.assertEqual(discover.classify_path("README.md"), [])
+
+    def test_desired_custody_resolution(self):
+        self.assertEqual(discover.desired_custody(["governance"]), "tracked")
+        self.assertEqual(discover.desired_custody(["harness-local-state"]), "ignored")
+        self.assertEqual(discover.desired_custody(["python-derived"]), "ignored")
+        self.assertEqual(discover.desired_custody(["lockfile"]), "tracked")
+        self.assertEqual(discover.desired_custody(["editor-os"]), "review")
+        self.assertIsNone(discover.desired_custody([]))
+        # strongest-wins: ignored beats tracked beats review
+        self.assertEqual(discover.desired_custody(["governance", "secret"]), "ignored")
+        self.assertEqual(discover.desired_custody(["editor-os", "lockfile"]), "tracked")
 
 
 if __name__ == "__main__":

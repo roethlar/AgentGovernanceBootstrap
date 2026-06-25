@@ -104,6 +104,72 @@ EXTENSIONLESS_TEXT_NAMES = {
 }
 VERIFICATION_SCRIPT_PREFIXES = ("test", "lint", "check", "typecheck", "build")
 
+# --- Category catalog: content-first classification ---------------------------
+# Each path is classified by what it IS (zero or more categories). A category
+# declares the custody it SHOULD have, independent of what git currently does:
+#   "tracked" - belongs in version control (governance, source, lockfiles)
+#   "ignored" - should be git-ignored (caches, build output, deps, secrets,
+#               machine-local harness state)
+#   "review"  - intent-dependent; surface for a human decision, never auto-set
+# The reconciliation engine compares a category's desired custody against a
+# path's ACTUAL git custody and emits findings. This catalog is the completeness
+# surface: supporting another language/tool is adding a row, not code.
+#
+# Pattern semantics (case-insensitive, repo-relative POSIX paths):
+#   "name/"        - a directory whose basename matches `name` at any depth
+#                    ("node_modules/" matches "node_modules/" and "a/node_modules/")
+#   "a/b/*"        - an anchored glob (has a non-trailing "/") matched against
+#                    the whole relative path
+#   "*.ext" / "x"  - a basename glob matched against the final path segment
+CATEGORY_CATALOG = [
+    {"id": "governance", "desiredCustody": "tracked",
+     "rationale": "agent governance the repo and other agents rely on",
+     "patterns": [
+         "agents.md", "claude.md", "gemini.md", ".cursorrules",
+         ".agents/", ".claude/commands/", ".claude/settings.json",
+         ".claude/hooks/", ".cursor/", ".aider*", ".antigravitycli/",
+     ]},
+    {"id": "harness-local-state", "desiredCustody": "ignored",
+     "rationale": "per-machine harness state, not durable governance",
+     "patterns": [".claude/settings.local.json"]},
+    {"id": "lockfile", "desiredCustody": "tracked",
+     "rationale": "reproducible builds depend on committed lockfiles",
+     "patterns": ["package-lock.json", "npm-shrinkwrap.json", "yarn.lock",
+                  "pnpm-lock.yaml", "poetry.lock", "pdm.lock", "uv.lock",
+                  "go.sum", "gemfile.lock", "composer.lock", "cargo.lock"]},
+    {"id": "secret", "desiredCustody": "ignored",
+     "rationale": "credentials must never be committed; if committed, escalate",
+     "patterns": [".env", ".env.*", "*.pem", "*.key", "id_rsa", "id_dsa",
+                  "*.p12", "*.pfx", "*.keystore"]},
+    {"id": "python-derived", "desiredCustody": "ignored", "ecosystem": "python",
+     "patterns": ["__pycache__/", "*.pyc", "*.pyo", ".venv/", "venv/",
+                  ".pytest_cache/", ".mypy_cache/", ".ruff_cache/", ".tox/",
+                  "*.egg-info/", ".eggs/"]},
+    {"id": "node-derived", "desiredCustody": "ignored", "ecosystem": "node",
+     "patterns": ["node_modules/", ".next/", ".nuxt/", ".svelte-kit/",
+                  ".parcel-cache/", ".turbo/"]},
+    {"id": "rust-derived", "desiredCustody": "ignored", "ecosystem": "rust",
+     "patterns": ["target/"]},
+    {"id": "jvm-derived", "desiredCustody": "ignored", "ecosystem": "jvm",
+     "patterns": [".gradle/", "*.class"]},
+    {"id": "dotnet-derived", "desiredCustody": "ignored", "ecosystem": "dotnet",
+     "patterns": ["bin/", "obj/"]},
+    {"id": "native-derived", "desiredCustody": "ignored", "ecosystem": "native",
+     "patterns": ["*.o", "*.so", "*.a", "*.out", "*.dll", "*.dylib"]},
+    {"id": "build-output", "desiredCustody": "ignored",
+     "patterns": ["dist/", "build/", "coverage/", ".cache/", ".coverage",
+                  "*.log", "tmp/", "*.tmp"]},
+    {"id": "editor-os", "desiredCustody": "review",
+     "rationale": "editor/OS files are sometimes committed intentionally",
+     "patterns": [".vscode/", ".idea/", ".ds_store", "thumbs.db", "*.swp",
+                  "*~"]},
+]
+# Strongest-wins precedence when a path matches categories of differing custody.
+# The seed categories are effectively mutually exclusive, so this is a defensive
+# tiebreak; "ignored" wins so a cache/secret is never left exposed by a weaker
+# claim, then explicit "tracked", then "review".
+_CUSTODY_PRECEDENCE = ("ignored", "tracked", "review")
+
 START_HERE_TEMPLATE = """# Agent Bootstrap Kickoff
 
 Route computed by discovery: **{route}**
@@ -201,6 +267,53 @@ def sensitivity_reason(rel_path):
         if re.search(regex, name, re.IGNORECASE) or re.search(regex, rel_path, re.IGNORECASE):
             return "sensitive name marker"
     return ""
+
+
+def _path_segments(rel_path):
+    return [s for s in rel_path.strip("/").split("/") if s]
+
+
+def path_matches_pattern(rel_path, pattern):
+    """Match a repo-relative POSIX path against a CATEGORY_CATALOG pattern.
+
+    Three forms (case-insensitive): a "name/" directory pattern matches any
+    path segment equal to `name`; a pattern containing a non-trailing "/" is an
+    anchored glob over the whole path; anything else is a basename glob."""
+    p = rel_path.lower().rstrip("/")
+    pat = pattern.lower()
+    if pat.endswith("/"):
+        base = pat[:-1]
+        if "/" in base:
+            # Multi-segment directory, anchored at the repo root: the directory
+            # itself or anything under it (literal prefix; seed dir patterns
+            # carry no globs).
+            return p == base or p.startswith(base + "/")
+        # Single-segment directory name: any path segment equal to it, any depth.
+        return any(fnmatch.fnmatch(seg, base) for seg in _path_segments(p))
+    if "/" in pat:
+        return fnmatch.fnmatch(p, pat)
+    base = p.rsplit("/", 1)[-1]
+    return fnmatch.fnmatch(base, pat)
+
+
+def classify_path(rel_path):
+    """Return the sorted category ids matching rel_path. Directories should be
+    passed with a trailing '/'. A path may match more than one category."""
+    return sorted(cat["id"] for cat in CATEGORY_CATALOG
+                  if any(path_matches_pattern(rel_path, pat)
+                         for pat in cat["patterns"]))
+
+
+def desired_custody(category_ids):
+    """The strongest desired custody among a path's categories, or None when the
+    path matched no category. See _CUSTODY_PRECEDENCE."""
+    ids = set(category_ids)
+    custodies = {cat["desiredCustody"] for cat in CATEGORY_CATALOG
+                 if cat["id"] in ids}
+    for level in _CUSTODY_PRECEDENCE:
+        if level in custodies:
+            return level
+    return None
 
 
 def match_paths(paths, patterns):
