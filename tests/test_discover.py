@@ -759,5 +759,82 @@ class TestCategoryCatalog(unittest.TestCase):
         self.assertEqual(discover.desired_custody(["editor-os", "lockfile"]), "tracked")
 
 
+class TestFilesystemEnumeration(unittest.TestCase):
+    """Slice 2: walk the real tree (so we see what git collapses), attribute git
+    custody as an attribute, and apply hard traversal exclusions."""
+
+    def test_walk_sees_inside_a_dir_git_would_collapse(self):
+        # The core capability: a real wrapper file on disk is enumerated even
+        # though git would collapse a fully-ignored .claude/ to one entry.
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = _make_repo(Path(tmp) / "repo", {
+                "README.md": "# x\n", ".gitignore": ".claude/\n"})
+            fixtures._write(repo, ".claude/commands/catchup.md", "ptr\n")
+            walked = discover.walk_tree(repo)
+            self.assertIn(".claude/commands/catchup.md", walked)
+
+    def test_walk_excludes_git_internals_and_scratch(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = _make_repo(Path(tmp) / "repo", {"README.md": "# x\n"})
+            fixtures._write(repo, ".bootstrap-tmp/scratch.txt", "x\n")
+            walked = discover.walk_tree(repo)
+            self.assertNotIn(".bootstrap-tmp", walked)
+            self.assertFalse(any(p == ".git" or p.startswith(".git/")
+                                 for p in walked))
+            self.assertNotIn(".bootstrap-tmp/scratch.txt", walked)
+
+    def test_walk_prunes_artifact_dir(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = _make_repo(Path(tmp) / "repo", {"README.md": "# x\n"})
+            fixtures._write(repo, "node_modules/pkg/index.js", "x\n")
+            walked = discover.walk_tree(repo)
+            self.assertIn("node_modules/", walked)
+            self.assertNotIn("node_modules/pkg/index.js", walked)
+
+    def test_walk_does_not_follow_symlinks(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = _make_repo(Path(tmp) / "repo", {"README.md": "# x\n"})
+            (repo / "real").mkdir()
+            (repo / "real" / "f.txt").write_text("x\n", encoding="utf-8")
+            import os
+            os.symlink(repo / "real", repo / "link")
+            walked = discover.walk_tree(repo)
+            self.assertIn("link", walked)
+            self.assertNotIn("link/f.txt", walked)
+
+    def test_walk_stops_at_submodule_boundary(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = _make_repo(Path(tmp) / "repo", {"README.md": "# x\n"})
+            (repo / "sub" / ".git").mkdir(parents=True)
+            (repo / "sub" / "inner.txt").write_text("x\n", encoding="utf-8")
+            walked = discover.walk_tree(repo)
+            self.assertIn("sub/", walked)
+            self.assertNotIn("sub/inner.txt", walked)
+
+    def test_attribute_custody_direct_and_inherited(self):
+        tracked = {"AGENTS.md"}
+        ignored = {".claude/"}            # git collapses a fully-ignored dir
+        untracked = {"new.py"}
+        self.assertEqual(discover.attribute_custody(
+            "AGENTS.md", tracked, ignored, untracked, True), "tracked")
+        self.assertEqual(discover.attribute_custody(
+            "new.py", tracked, ignored, untracked, True), "untracked")
+        # a wrapper inside the collapsed-ignored .claude/ inherits ignored
+        self.assertEqual(discover.attribute_custody(
+            ".claude/commands/catchup.md", tracked, ignored, untracked, True),
+            "ignored")
+        # non-git: everything untracked
+        self.assertEqual(discover.attribute_custody(
+            "AGENTS.md", set(), set(), set(), False), "untracked")
+
+    def test_classify_tree_pairs_custody_with_categories(self):
+        walked = [".claude/commands/catchup.md"]
+        recs = discover.classify_tree(walked, set(), {".claude/"}, set(), True)
+        self.assertEqual(recs, [{
+            "path": ".claude/commands/catchup.md",
+            "custody": "ignored",
+            "categories": ["governance"]}])
+
+
 if __name__ == "__main__":
     unittest.main()

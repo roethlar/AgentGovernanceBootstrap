@@ -327,6 +327,91 @@ def match_paths(paths, patterns):
     return sorted(out)
 
 
+def _ancestors(rel_path):
+    parts = rel_path.rstrip("/").split("/")
+    for i in range(len(parts) - 1, 0, -1):
+        yield "/".join(parts[:i])
+
+
+# Directory basenames that are pure build/cache/dependency artifacts: recorded
+# but not recursed into, so the walk stays bounded without losing the finding.
+_PRUNE_DIR_NAMES = frozenset(
+    pat[:-1].lower()
+    for cat in CATEGORY_CATALOG if cat["desiredCustody"] == "ignored"
+    for pat in cat["patterns"]
+    if pat.endswith("/") and "/" not in pat[:-1] and "*" not in pat)
+
+
+def walk_tree(repo_root, scope="."):
+    """Filesystem-truth enumeration: the real paths on disk (repo-relative
+    POSIX), so we see inside directories git collapses - e.g. a fully-ignored
+    `.claude/`. Hard exclusions: any `.git/` (git internals) and the root
+    `.bootstrap-tmp/` scratch. Boundaries: a nested repository/submodule (a dir
+    holding its own `.git`) is recorded as `dir/` and not descended; symlinks are
+    recorded but never followed (no cycles, no escaping the root); a catalog
+    artifact dir (`node_modules/`, `.venv/`, `target/`, ...) is recorded as
+    `dir/` without recursing. Returns sorted relative paths; pruned/boundary dirs
+    carry a trailing '/'."""
+    root = Path(repo_root)
+    start = root if scope == "." else root / scope
+    out = []
+    stack = [start]
+    while stack:
+        try:
+            entries = list(stack.pop().iterdir())
+        except OSError:
+            continue
+        for entry in entries:
+            rel = entry.relative_to(root).as_posix()
+            if entry.is_symlink():
+                out.append(rel)
+                continue
+            if entry.is_dir():
+                if entry.name == ".git" or rel == ".bootstrap-tmp":
+                    continue
+                if (entry / ".git").exists():
+                    out.append(rel + "/")
+                    continue
+                if entry.name.lower() in _PRUNE_DIR_NAMES:
+                    out.append(rel + "/")
+                    continue
+                stack.append(entry)
+            elif entry.is_file():
+                out.append(rel)
+    return sorted(out)
+
+
+def attribute_custody(rel_path, tracked, ignored, untracked, is_git):
+    """Git custody of a walked path as an ATTRIBUTE (never a filter): tracked /
+    ignored / untracked. Paths git did not list directly - a file inside a
+    collapsed ignored dir, a pruned/boundary dir - inherit ignored from an
+    ignored ancestor, else untracked. Non-git repos are all untracked. tracked /
+    ignored / untracked are sets of repo-relative paths from the git inventory."""
+    if not is_git:
+        return "untracked"
+    key = rel_path.rstrip("/")
+    if key in tracked:
+        return "tracked"
+    if key in ignored or (key + "/") in ignored:
+        return "ignored"
+    if key in untracked:
+        return "untracked"
+    for anc in _ancestors(key):
+        if anc in ignored or (anc + "/") in ignored:
+            return "ignored"
+    return "untracked"
+
+
+def classify_tree(walked, tracked, ignored, untracked, is_git):
+    """Combine the filesystem walk with categories and git custody into the
+    content-first record set the reconciliation engine consumes: one
+    {path, custody, categories} per walked path."""
+    return [{"path": rel,
+             "custody": attribute_custody(rel, tracked, ignored, untracked, is_git),
+             "categories": classify_path(rel)}
+            for rel in walked]
+
+
 def path_record(path, source):
     reason = sensitivity_reason(path)
     return {"path": path, "source": source,
