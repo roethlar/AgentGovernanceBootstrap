@@ -34,6 +34,50 @@ live rule now owned elsewhere - archive it per the rule above: move it verbatim 
 
 ## Decisions
 
+### 2026-06-24 - Section-level rule deduplication: one full statement per rule, pointers elsewhere
+
+Status: Active
+
+Decision: A normative rule gets exactly one full statement in the governance
+set; every other location that needs it carries a pointer, not a second copy.
+This applies the existing "smallest durable guidance set / over-documentation is
+a drift risk" and "keep one canonical location, prefer pointers" invariants at
+the section level — within a single AGENTS file (a rule stated in full in both
+Universal Invariants and a later dedicated section is the redundancy), and across
+procedures (a paragraph copied near-verbatim between `bootstrap.md` and
+`migration.md`). Anchor+elaboration layering is preserved where the anchor is
+genuinely terse — the Prime Invariants re-ground hook plus a fuller statement
+that adds content the anchor omits — but that is not a license for two full
+same-altitude copies.
+
+Earned by a real incident: a bug report (ExchangeAdminWeb, filed to the
+`agent-harvest` dropbox 2026-06-24) found a generated `AGENTS.md` restating core
+rules across sections, so the file violated the minimality invariant it ships. A
+redundancy map across the product governance set (2026-06-24) confirmed three
+genuine targets and rejected the bug's broader framing (words-first,
+no-code-without-plan, and repo-is-memory are single anchors or intended
+anchor+elaboration, not redundant): (1) the flag-conflicts/report-drift rule
+stated in full in both Universal Invariants and Source Of Truth; (2) the
+docs-only verification carve-out stated in full in both Universal Invariants and
+the Verification section (and a third time in `approval-summary.template.md`);
+(3) the commit-discipline/push-gate paragraph duplicated between `bootstrap.md`
+and `migration.md`. The fix keeps each rule's full statement in one canonical
+home and replaces the others with pointers.
+
+Scope: the product files only — `templates/AGENTS.template.md`,
+`procedures/migration.md`, `templates/approval-summary.template.md`. This repo's
+own `AGENTS.md` carries copies of (1) and (2), but it is a frozen instance from
+the last deliberate self-application, not a live view of the template; it is
+brought current only by deliberately re-running the product on this repo, so its
+copies are left for that run and are not edited here.
+
+Relationship: refines the 2026-06-22 "trim the per-session guidance tax"
+decision, which rejected word-level prose compression (~2.7% savings; the
+guidance is dense, not padded). That holds — this is a distinct axis (whole-rule
+section-level duplication, not wording length), so the two are complementary, not
+in conflict. Concretely applies the 2026-06-09/10 one-canonical-location and
+smallest-guidance-set invariants.
+
 ### 2026-06-22 - Bug reports are filed to the agent-harvest dropbox under `bugs/`
 
 Status: Active
