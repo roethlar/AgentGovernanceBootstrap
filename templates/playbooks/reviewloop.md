@@ -1,13 +1,15 @@
-# Playbook: two-agent review loop (`reviewloop`)
+# Playbook: synchronous cross-harness review (`review`)
 
-A portable workflow for running a **coder** role and a **reviewer** role over a
-multi-fix sweep (security pass, refactor, bug-fix batch) on one git repo, with
-strong per-fix verification and a structured handoff channel. One agent can play
-both roles (single-agent mode) or two agents can run in parallel.
+A portable workflow for reviewing a multi-fix sweep (security pass, refactor,
+bug-fix batch) on one git repo with strong per-fix verification. You — the agent in
+the harness you launched from — play the **coder**. The **reviewer** is a second,
+independent agent harness (`codex`, `agy`, `grok`, a subagent, …) that you dispatch
+**headless and one-shot per finding** to get a different model's eyes on the fix.
 
-Invoke it with the `playbook` operator: `playbook reviewloop`. This file is durable
-guidance; it defers to this repo's `AGENTS.md` and `.agents/` layout wherever they
-overlap. Where this playbook and the repo's invariants disagree, the invariants win.
+Invoke it with `review <agent>` (in Claude Code: the tab-completable `/review
+<agent>`). This file is durable guidance; it defers to this repo's `AGENTS.md` and
+`.agents/` layout wherever they overlap. Where this playbook and the repo's
+invariants disagree, the invariants win.
 
 ## What this loop is for
 
@@ -32,11 +34,10 @@ finding has to predict an observable failure and a fix has to demonstrate it clo
 
 ## Atomic unit
 
-The whole loop rests on one rule: **one finding ↔ one branch ↔ one sentinel ↔ one
-verdict**. That is what keeps each fix independently reviewable and bisectable. It is
-the same discipline as the repo's one-item-per-commit rule, applied across two roles.
-Broad multi-finding branches are forbidden unless the owner explicitly asks for a
-sweep.
+The whole loop rests on one rule: **one finding ↔ one branch ↔ one verdict**. That is
+what keeps each fix independently reviewable and bisectable. It is the same discipline
+as the repo's one-item-per-commit rule, applied across two roles. Broad multi-finding
+branches are forbidden unless the owner explicitly asks for a sweep.
 
 ## Governance alignment (read first)
 
@@ -49,12 +50,11 @@ create a parallel canon or bypass owner gates:
   active rather than duplicating the finding table (pointer doc points; it does not
   keep a second copy of an enumeration another doc owns). There is no root
   `REVIEW.md`.
-- **Merging into the main branch is owner-gated.** A reviewer "accept" verdict
+- **Merging into the main branch is owner-gated.** A reviewer "accepted" verdict
   records that a branch passed review; it does **not** authorize the agent to merge
   into the main branch. Default: leave the accepted branch (or hand off a
   `merge-<id>` branch) for an owner-approved merge. Never merge, push, or rewrite
-  history without an explicit owner go (see the repo's Git Safety invariants). The
-  "auto-merge" knob below is opt-in and requires standing owner authorization.
+  history without an explicit owner go (see the repo's Git Safety invariants).
 - **Disagreement is a recorded verdict, never a silent veto.** Declining a finding,
   disputing one, or ruling a fix invalid are all logged outcomes that route to the
   owner when the two roles cannot agree. An agent never quietly drops a finding or
@@ -65,77 +65,104 @@ create a parallel canon or bypass owner gates:
   guidance before any commit. The example commands in this playbook are illustrative
   only.
 - **Capabilities, not harness-specific tool or agent names.** Where this playbook
-  says "dispatch a reviewing agent" or "arm a file-watch", it means *whatever
-  mechanism your harness provides*; every such step has a no-special-capability
-  fallback. Substitute your harness's equivalents.
+  names `codex`/`agy`/`grok`, those are *examples* of reviewer harnesses. The loop
+  works with any agent CLI that can run headless; the per-harness specifics are
+  derived live (see below), never baked into this file.
 
-## Prerequisites
+## Operator
 
-- A git repo.
-- An agent (or two) that can run shell commands, read/write files, and — ideally —
-  dispatch a subagent and watch files for changes. Both extras have fallbacks below.
+`review <agent>` is the harness-neutral entry. In Claude Code it is the
+tab-completable slash command `/review <agent>`; on another harness the owner speaks
+"review \<agent\>". `<agent>` names the reviewer harness to dispatch.
 
-## Directory layout
+The flow is **synchronous by construction**: the coder dispatches the reviewer and
+blocks on its verdict before acting on that finding. There is therefore **no
+quick/wait toggle and no Strict/Faster WIP mode** — the prior async loop's
+parallelism knobs do not apply here. One finding is dispatched, reviewed, recorded,
+and acted on before the next is dispatched.
 
-Create this under the existing governance root:
+## Deriving the reviewer incantation (probe-and-verify)
 
-```
-.agents/
-├── state.md                    Single current-state entry point; points to
-│                               .agents/review/index.md while a loop is active.
-├── playbooks/reviewloop.md     This playbook.
-└── review/                     Working channel for an active loop.
-    ├── index.md                Human-readable status index (state.md points here).
-    ├── findings/<id>.md        Candidate + implementation record per finding.
-    ├── ready/<id>.json         Coder → reviewer signal (sentinel).
-    └── results/
-        ├── <id>.verified.json  Reviewer → coder: accepted (awaiting owner-gated merge).
-        ├── <id>.reopened.md    Reviewer → coder: needs fix-ups.
-        └── <id>.contested.md   Disagreement (declined / disputed / invalid) → owner.
-```
+The only harness-specific fact the loop needs is **how to run `<agent>` headless,
+non-interactive, one-shot**. This is **not** shipped as a human-maintained table and
+**not** derived by parsing `--help` prose into a committed regex — both rot or break
+silently. Instead derive it live, per harness, per session, by probing — the same
+thing a capable agent already does when a human says "review this with grok":
 
-Commit `.agents/review/` to git: the `ready/` and `results/` trail is part of the
-project's verification history.
+1. **Presence + surface.** `command -v <agent>`; then `<agent> --help` and
+   `<agent> --version`. The top-level help usually reveals whether the headless entry
+   is a subcommand (`<agent> exec …`) or a flag (`<agent> -p …`).
+2. **Drill if ambiguous.** If the headless entry is not obvious, drill one level
+   (`<agent> exec --help`, `<agent> chat --help`, whichever the top level lists) to
+   find the non-interactive flag and how to pass a prompt. Note the harness's JSON
+   output flag here too (e.g. `--output-format json`) — the verdict contract uses it.
+3. **Bounded smoke-test.** Run the candidate incantation with a trivial prompt (e.g.
+   `<agent> exec "say OK"`) under bounds: a **timeout** (a hung process is a failed
+   probe, not a wait); **non-interactive detection** (if it opens a TUI / alternate
+   screen / waits on a TTY, the incantation is wrong — try the next candidate); and
+   run it **from a real git repo** (a canned prompt in an arbitrary temp dir hides
+   launch requirements — e.g. codex refuses a non-trusted dir and needs
+   `--skip-git-repo-check`, agy must run from the real repo cwd). Treat a launch
+   refusal as a flag to adjust, not a dead end.
+4. **Use the verified incantation** to run the review. Probing is bounded to
+   `--help`/`--version`/the trivial smoke prompt — never arbitrary commands.
 
-## Step 1 — Scaffold
+**Optional session cache (convenience, not source of truth).** Once verified, you may
+record an incantation in a gitignored machine-local file,
+`.agents/review/harnesses.local.json`, to skip re-probing next session. Harness
+availability and CLI syntax are machine-specific, so a `*.local.*` file is the correct
+home (consistent with the repo's treatment of `settings.local.json` as untracked
+machine state). The cache is advisory and **self-authored** — never hand-maintained;
+the source of truth is "re-derive by probing," so a stale cache self-corrects on the
+next smoke test.
 
-```bash
-mkdir -p .agents/review/{findings,ready,results}
-```
+## Per-finding flow
 
-Then add the status index and seed findings (Steps 2–3) before committing.
+For each admitted finding (intake/triage and the coder's own guard proof are done —
+see the gate below):
 
-## Step 2 — Status index: `.agents/review/index.md`
+1. **Finish the fix** on a per-finding branch `fix/<id>-<slug>`, smallest coherent
+   slice, touching only the files the finding doc declares.
+2. **Dispatch the reviewer** headless and one-shot, in the harness's **JSON output
+   mode** (the flag found while probing). Pass an **explicit base**: the reviewed
+   branch **head SHA** and the **base SHA** (the merge-base with the main branch at
+   dispatch time), so the reviewer evaluates `git diff <base-sha>..<head-sha>` against
+   a fixed snapshot — a `main..branch` range is *not* stable if the main branch moves.
+   The reviewer reads the code from the **shared workspace** (you do not pipe it the
+   diff); it reads `.agents/review/findings/<id>.md`, and **independently performs the
+   guard proof** (revert → confirm FAIL → restore → confirm PASS) **in its own `git
+   worktree` checked out at the head SHA** — never by mutating your working tree. A
+   reviewer that crashes mid-proof leaves only its disposable worktree dirty.
+3. **Verdict contract (structured, fail-closed).** The reviewer returns its verdict in
+   the JSON envelope. Its result payload must match:
+   ```json
+   {"verdict":"accepted|reopened|invalid","guard_confirmed":true,
+    "reviewed_sha":"<head-sha>","base_sha":"<base-sha>","comments":["file:line — …"]}
+   ```
+   Parse the envelope's result field against this schema. **Fail closed:** any of
+   {non-zero exit, missing/!valid JSON envelope, payload not matching the schema,
+   `verdict` not in the enum, `reviewed_sha` ≠ the dispatched head SHA} → the outcome
+   is **not accepted**. Re-prompt once with the schema restated; if it still fails,
+   route the finding to the owner as contested. A parse miss never silently becomes an
+   accept. (The harness's JSON mode guarantees a valid *envelope*, not that the model
+   filled the *payload* to schema — hence the inner parse, not envelope-validity
+   alone.)
+4. **Record the verdict** into `.agents/review/findings/<id>.md` `## Reviewer
+   comments` **before acting** — the durable trail. Capture: reviewer **harness name +
+   version**, **reviewed head SHA + base SHA**, **`guard_confirmed`**, the
+   **verdict**, a UTC **timestamp**, and the comments. Flip the finding **Status** and
+   the index row. State whether this record is committed (it should be, as part of the
+   verification history).
+5. **Act on the recorded verdict:**
+   - **accepted** → the branch is ready for an **owner-gated** merge. Do not merge,
+     push, or rewrite history on agent authority; leave the branch (or hand off a
+     `merge-<id>` branch).
+   - **reopened** → apply fix-ups on the same branch, then re-run `review <agent>`.
+   - **invalid** → write `.agents/review/<id>.contested.md` (which kind of
+     disagreement, the reason, what the owner must decide) and route to the owner.
+     Disagreement is a recorded verdict, never a silent veto.
 
-Short, human-readable scoreboard. Per-finding detail lives in
-`.agents/review/findings/<id>.md`; do not turn the index into a discussion log.
-
-```markdown
-# Review status
-
-Workflow: see `.agents/playbooks/reviewloop.md`.
-Per-finding detail: see `.agents/review/findings/<id>.md`.
-
-## Legend
-- `[ ]` Admitted, open (passed intake triage; not yet started)
-- `[~]` In progress / pending review
-- `[x]` Verified (awaiting owner-gated merge unless auto-merge is authorized)
-- `[!]` Contested — declined, disputed, or ruled invalid; awaiting owner adjudication
-- `[-]` Declined at intake (kept for the record; no work)
-
-## Findings
-
-| ID    | Severity | Impact (one line)            | Status | Branch |
-|-------|----------|------------------------------|--------|--------|
-| sec-1 | HIGH     | <observable consequence>     | `[ ]`  |        |
-| ...   | ...      | ...                          | ...    | ...    |
-```
-
-Add one line to `.agents/state.md` while a loop is active, e.g. "Active review loop:
-see `.agents/review/index.md`." Remove it when the loop is done. `state.md` points;
-it does not copy the table.
-
-## Step 3 — Finding intake and triage
+## Finding intake and triage
 
 This is the gate the false-positive problem dies at, before any branch is cut. It
 applies whether findings come from a human, the coder, a separate review pass, or a
@@ -161,19 +188,18 @@ Every candidate finding must carry three things before it can be admitted:
 **Triage each candidate to a verdict:**
 
 - **ADMITTED** → it has evidence, a predicted failure, and a justified severity. Give
-  it an id, add a `[ ]` row, write the finding doc (Step 4).
+  it an id, add a `[ ]` row, write the finding doc.
 - **DECLINED** → it lacks evidence or a predicted observable failure, is style-only, is
   out of scope, or duplicates another finding. Record it as a `[-]` row and write one
-  line in `.agents/review/results/<id>.contested.md` stating why. Declining is the
-  expected fate of most stylistic or speculative findings; it is the loop working, not
-  failing.
+  line in `.agents/review/<id>.contested.md` stating why. Declining is the expected
+  fate of most stylistic or speculative findings; it is the loop working, not failing.
 
 If a single agent is generating and triaging its own findings, it must still write the
 DECLINED reasons down — the discipline is in making the rejection explicit and
 reviewable, not in who performs it. Severity is not decoration: if you cannot write the
 impact line, the finding is a DECLINE or a LOW, not a CRITICAL.
 
-## Step 4 — Per-finding record: `.agents/review/findings/<id>.md`
+## Per-finding record: `.agents/review/findings/<id>.md`
 
 Written when a finding is admitted; the coder completes the lower half when work starts.
 
@@ -204,179 +230,52 @@ the new/changed functions and files. 2–6 sentences.
 
 ## Guard proof
 - `path/to/test::name` — the assertion. Reverting the fix makes this FAIL; restoring
-  makes it PASS. (See Step 8.) If the change is genuinely untestable, state why and
-  name the manual check that was run instead.
+  makes it PASS. If the change is genuinely untestable, state why and name the manual
+  check that was run instead.
 
 ## Coder dispute (if any)
 If the coder believes the finding is wrong or not worth fixing, state the reason here
-instead of implementing, and route to a Contested verdict (Step 6). Empty otherwise.
+instead of implementing, and route to a contested verdict. Empty otherwise.
 
 ## Known gaps
 Anything uncertain, out of scope, or overlapping another finding the reviewer should
 grade explicitly. Empty if nothing.
 
 ## Reviewer comments
-(Reviewer writes here on reopen; coder addresses; sentinel resets.)
+Reviewer harness + version, reviewed/base SHA, guard_confirmed, verdict, UTC
+timestamp, and the comments. On reopen the coder addresses these and re-runs the
+review.
 ```
 
-## Step 5 — Branch contract
+## Status index: `.agents/review/index.md`
 
-- **One branch per finding**, named `fix/<id-lowercased>-<short-slug>`.
-- **Smallest coherent slice** that addresses one finding id. No bundling.
-- Touch only files declared under **Files changed** in the finding doc. Declare any
-  unavoidable overlap under **Known gaps**.
-- Use `git worktree add <path> fix/<id-…>` for parallel work without checkout thrash.
-- Branch from the repo's current main branch; substitute its actual name (`main`,
-  `master`, …) wherever this playbook says "the main branch".
+Short, human-readable scoreboard. Per-finding detail lives in
+`.agents/review/findings/<id>.md`; do not turn the index into a discussion log.
 
-## Step 6 — Coder loop
+```markdown
+# Review status
 
-1. Pick the highest-priority `[ ]` (Open) finding in `.agents/review/index.md`.
-2. **Decide whether the finding holds.** If you judge it wrong, already handled, or not
-   worth the change, do not implement it. Fill in **Coder dispute** in the finding doc,
-   set the row to `[!]`, write `.agents/review/results/<id>.contested.md` with the
-   reason, and move on. The owner (or an adjudication pass) resolves it; you do not
-   silently drop it, and you do not implement a fix you believe is unwarranted just to
-   clear the row. A disputed finding is the loop working.
-3. Otherwise create the branch (and a worktree if working in parallel). Implement the
-   fix and write the test that encodes the **Predicted observable failure**.
-4. Run **this repo's observed verification command** (from `AGENTS.md`). Do not
-   commit on failure. (Illustrative only — your repo's command may differ:
-   `cargo test --workspace`; `npm run lint && npm run build`; `pytest`.)
-5. **Prove the test guards the fix** (the repo's vacuous-test rule): temporarily revert
-   the fix, confirm the new test FAILS, restore the fix, confirm it PASSES. A test that
-   passes with the fix reverted proves nothing and must be replaced. Record the result
-   under **Guard proof**. If the change is genuinely untestable, say why and name the
-   manual check instead.
-6. Commit on the finding branch with subject `Fix <id>: <one-line summary>` and a
-   body mirroring the finding doc. Scoped, per-item commit on a feature branch — not the
-   main branch.
-7. Fill in **Files changed / Guard proof / Known gaps** in the finding doc.
-8. Update the index row: `[ ]` → `[~]`, link the branch.
-9. Write the sentinel atomically (write to a temp file, then `mv` into place):
-   ```bash
-   tmp=$(mktemp .agents/review/ready/.<id>.json.XXXX)
-   cat > "$tmp" <<EOF
-   {"id":"<id>","branch":"fix/<id-…>","sha":"$(git rev-parse HEAD)","guard":"<test::name or 'manual: …'>","ts":"<utc-iso8601>"}
-   EOF
-   mv "$tmp" .agents/review/ready/<id>.json
-   ```
-10. Move to the next finding. Do not wait for the verdict to start the next branch —
-    but do not stack new work on a branch that already has a pending sentinel.
+Workflow: see `.agents/playbooks/reviewloop.md`.
+Per-finding detail: see `.agents/review/findings/<id>.md`.
 
-## Step 7 — Reviewer wake mechanism
+## Legend
+- `[ ]` Admitted, open (passed intake triage; not yet started)
+- `[~]` In progress / pending review
+- `[x]` Verified (awaiting owner-gated merge)
+- `[!]` Contested — declined, disputed, or ruled invalid; awaiting owner adjudication
+- `[-]` Declined at intake (kept for the record; no work)
 
-If your harness has a file-watch / notification capability, point it at
-`.agents/review/ready/` so each new sentinel wakes the reviewer. Otherwise use this
-portable polling fallback (no `inotify`/`fswatch` dependency); a low-frequency cron
-running the same scan also works:
+## Findings
 
-```bash
-cd <repo-root> && last=""
-while true; do
-  current=$(ls .agents/review/ready/*.json 2>/dev/null | xargs -n1 basename 2>/dev/null | sort | tr '\n' ' ')
-  for name in $current; do
-    case " $last " in
-      *" $name "*) ;;
-      *) echo "READY: $name" ;;
-    esac
-  done
-  last="$current"
-  sleep 5
-done
+| ID    | Severity | Impact (one line)            | Status | Branch |
+|-------|----------|------------------------------|--------|--------|
+| sec-1 | HIGH     | <observable consequence>     | `[ ]`  |        |
+| ...   | ...      | ...                          | ...    | ...    |
 ```
 
-Each new sentinel emits one `READY: <id>.json`. Failure for the reviewer is silence,
-caught by a periodic human check-in or a separate heartbeat, not by this loop.
-
-## Step 8 — Reviewer loop
-
-On each new sentinel:
-
-1. Read `.agents/review/ready/<id>.json`; parse `branch` + `sha` + `guard`. Reject a
-   malformed sentinel by writing `.agents/review/results/<id>.reopened.md` noting the
-   schema violation.
-2. Check out the branch (or use a separate worktree). Run the repo's verification
-   command.
-3. **Independently confirm the guard proof.** Revert the fix commit, confirm the named
-   test FAILS, restore, confirm it PASSES. If the guard does not behave as the finding
-   doc claims — the test passes with the fix reverted, or there is no test and no
-   adequate manual justification — the fix is unproven regardless of how reasonable it
-   looks. Treat that as Reopened (no proof) at minimum.
-4. Review the diff `<main-branch>..<branch>` against the finding scope. If your
-   harness supports subagents, dispatch one whose expertise matches the finding's
-   domain — name the capability you need (security; concurrency/quality; UI/UX;
-   cross-cutting architecture) rather than a fixed agent name. If it does not, review
-   directly. Ask only: (a) does the fix address the root cause, (b) does the guard proof
-   hold, (c) are any regressions introduced.
-5. Write exactly one verdict:
-   - **Accepted** → `.agents/review/results/<id>.verified.json` (schema below), only if
-     the guard proof holds. Update the index row to `[x]`. Delete the ready sentinel. Do
-     **not** merge into the main branch on your own authority — leave the accepted branch
-     (or hand off a `merge-<id>` branch) for an owner-approved merge, unless auto-merge is
-     authorized (see Knobs).
-   - **Reopened** → `.agents/review/results/<id>.reopened.md` with concrete `file:line`
-     comments (missing guard proof, inadequate test, regression, wrong root cause).
-     Update the row to `[ ]`. Delete the ready sentinel. The branch stays; the coder
-     pushes fix-ups and writes a fresh sentinel.
-   - **Invalid** → `.agents/review/results/<id>.contested.md` when the *finding itself*
-     does not hold: the predicted failure cannot be reproduced, or the "fix" addresses a
-     non-problem. Update the row to `[!]`. This routes to the owner; the reviewer does not
-     unilaterally discard a finding the coder implemented, nor rubber-stamp a fix for a
-     problem that cannot be shown to exist.
-
-A reviewer that returns Accepted on every sentinel, or never returns Reopened/Invalid,
-is exhibiting the same capitulation this playbook exists to prevent. Verdicts should
-track the guard proof and the diff, not the wish to close rows.
-
-## Step 9 — Sentinel schemas
-
-`.agents/review/ready/<id>.json` — all fields required:
-
-```json
-{"id":"sec-1","branch":"fix/sec-1-<slug>","sha":"<git-sha>","guard":"<test::name or 'manual: …'>","ts":"<utc-iso8601>"}
-```
-
-`.agents/review/results/<id>.verified.json`:
-
-```json
-{"id":"sec-1","sha":"<git-sha>","guard":"<test::name>","guard_proved":true,"ts":"<utc-iso8601>","reviewer":"<name>"}
-```
-
-`guard_proved` records that the reviewer independently saw the test fail on revert and
-pass on restore. An Accepted verdict with `guard_proved:false` is only legitimate for an
-explicitly justified untestable change, and the justification goes in the finding doc.
-
-`.agents/review/results/<id>.reopened.md`: free-form Markdown with concrete `file:line`
-comments. Clarity over structure.
-
-`.agents/review/results/<id>.contested.md`: states which kind of disagreement (declined
-at intake / coder dispute / reviewer-invalid), the reason, and what the owner needs to
-decide. This is the only channel for dropping or overriding a finding.
-
-## WIP limit
-
-- **Strict (default)**: at most one branch may have a pending sentinel at a time.
-- **Faster**: multiple pending sentinels allowed only if each branch's **Files
-  changed** set is fully disjoint from every other pending branch.
-
-## Migrating existing WIP
-
-If multi-finding WIP accumulated before adopting this loop, split it into per-finding
-branches; the reviewer does **not** commit on the coder's behalf:
-
-```bash
-git stash
-git stash show -p > /tmp/wip.patch            # inspect
-# For each finding id:
-git checkout -b fix/<id>-<slug> <main-branch>
-git checkout -p stash@{0} -- <relevant paths>  # or: git apply a path-filtered patch
-# run verification, prove the guard, commit, write sentinel
-```
-
-For genuinely entangled WIP, document the entanglement under **Known gaps** and ship
-one branch covering both; the reviewer grades them together and flags the bundling as
-a process violation, not a code defect.
+Add one line to `.agents/state.md` while a loop is active, e.g. "Active review loop:
+see `.agents/review/index.md`." Remove it when the loop is done. `state.md` points;
+it does not copy the table.
 
 ## Calibration anti-patterns
 
@@ -387,16 +286,16 @@ Name them when they appear; they are process defects, not code defects.
   like not doing the job. Cure: an empty findings table is a valid result; every
   admitted finding needs a predicted observable failure.
 - **Author capitulation.** Accepting every finding as valid and implementing a change
-  for each. Cure: the coder must judge each finding and route wrong ones to a Contested
+  for each. Cure: the coder must judge each finding and route wrong ones to a contested
   verdict instead of fixing them.
 - **Severity decoration.** Tagging findings CRITICAL/HIGH without an impact line.
   Cure: no impact line, no high severity — downgrade or decline.
 - **Churn without evidence.** A "fix" that no test can distinguish from the original.
   Cure: the guard proof; if reverting the fix breaks nothing, the change is churn and
-  should be Reopened or Declined.
+  should be reopened or declined.
 - **Convergence read as correctness.** Treating two roles agreeing as proof the code is
-  right. Cure: agreement is not the gate; the guard proof is. The verified sentinel
-  records the proof, not the consensus.
+  right. Cure: agreement is not the gate; the guard proof is. The recorded verdict
+  carries the proof, not the consensus.
 
 ## Anti-patterns
 
@@ -404,36 +303,28 @@ Name them when they appear; they are process defects, not code defects.
   only.
 - **Manufacturing findings.** Inventing issues so a pass has output. A clean pass is a
   result.
-- **Silent veto.** Dropping or overriding a finding without a Contested record.
-- **Merging or pushing without an owner go.** Accept is a verdict, not merge authority.
+- **Silent veto.** Dropping or overriding a finding without a contested record.
+- **Accepting on a parse miss.** A missing, non-JSON, or off-schema verdict is **not**
+  an accept. Fail closed: re-prompt once, then route to the owner as contested.
+- **Reviewer mutating the coder's tree.** The reviewer's guard proof belongs in its
+  own `git worktree`; it must never revert/restore in the coder's working tree.
+- **Merging or pushing without an owner go.** Accepted is a verdict, not merge
+  authority.
 - **Rewriting history** (amend/rebase/squash/force-push) on reviewed work without an
   explicit owner go.
-- **Accepting on an unproven guard.** No guard proof = Reopened, not Accepted.
 - **Editing the index prose freely.** It is a status board; discussion goes in the
-  finding or results doc.
-- **Skipping the sentinel.** No sentinel = no review; the watcher watches sentinels,
-  not commits.
-- **Stacking commits on a pending-review branch.** Wait for the verdict or signal a
-  fresh sentinel.
-- **Reviewer modifying the coder's branch.** Reviewer's job is verdict + (owner-gated)
-  merge or reopen, not pushing fix-ups.
+  finding or contested doc.
+- **Reviewing against a moving base.** Pin the base + head SHAs at dispatch; do not let
+  `main..branch` drift mid-review.
 
 ## Knobs
 
-- **Single-agent mode**: one agent alternates coder and reviewer hats; drop the WIP
-  limit (it serializes naturally) but keep per-finding branches, the guard proof, and
-  the sentinel / results trail. The discipline that matters in this mode is writing the
-  DECLINED and Contested reasons down even though one mind holds both roles — that is
-  what stops self-agreement from collapsing the loop.
-- **Multiple coders**: each owns disjoint findings; enforce disjointness via the
-  faster-mode WIP limit; coders add `"coder":"<name>"` to the sentinel.
-- **Multiple reviewers**: reviewer identity goes in the verified sentinel; load-balance
-  with a per-reviewer watch and a domain filter.
-- **Adjudicator (optional)**: when coder and reviewer disagree (a Contested record),
-  a third role — or the owner — reads the finding, the dispute, and the guard proof and
+- **Single-agent mode**: one agent alternates coder and reviewer hats (no foreign
+  harness). Keep per-finding branches, the guard proof, and the recorded-verdict
+  trail. The discipline that matters in this mode is writing the DECLINED and contested
+  reasons down even though one mind holds both roles — that is what stops self-agreement
+  from collapsing the loop.
+- **Adjudicator (optional)**: when coder and reviewer disagree (a contested record), a
+  third role — or the owner — reads the finding, the dispute, and the guard proof and
   issues a final ADMIT/DECLINE. Useful when the coder and reviewer are two models prone
   to deferring to each other.
-- **Auto-merge (opt-in, owner-authorized only)**: with standing owner authorization
-  for the session, the reviewer may fast-forward an accepted branch into the main
-  branch. Without that authorization the default stands: hand off for an owner-approved
-  merge.
