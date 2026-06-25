@@ -60,11 +60,9 @@ scratch files as authority.
   facts until repo evidence or explicit human approval supports them.
 - Prefer the smallest durable guidance set that fits the repo. Over-documentation is a
   drift risk.
-- For code changes, run the repo's current automated verification before claiming
-  completion. Docs-only changes do not require code verification unless they affect setup,
-  commands, runtime behavior, generated files, or user-visible behavior. Behavior not
-  covered by automation needs the relevant manual check, smoke test, or playtest, or a
-  clear note that it was not run.
+- Verify before claiming completion. For the operative rules — automated verification on
+  code changes, the docs-only exemption, and the check for behavior automation does not
+  cover — see the Verification section below.
 - Do not circumvent a roadblock whose provenance you have not established — a failing
   test, a guard or assertion, a lint or type error, a `.gitignore` rule, a refusal or
   permission denial, a config prohibition, a CI gate. Before removing, disabling,

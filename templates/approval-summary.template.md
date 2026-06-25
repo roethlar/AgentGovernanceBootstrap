@@ -36,12 +36,9 @@ verification, and future agent behavior aligned.>
 
 ## Verification Default
 
-<State the observed automated verification command(s), if any. Apply the default rule:
-code changes require current automated verification before claiming completion; docs-only
-changes do not require code verification unless they affect setup, commands, runtime
-behavior, generated files, or user-visible behavior; behavior not covered by automation
-requires the relevant manual check or a clear note that it was not run. Do not ask the
-human to approve this normal default.>
+<State the observed automated verification command(s), if any, then apply the verification
+default rule from the AGENTS Verification section — do not restate its conditions here, and
+do not ask the human to approve this normal default.>
 
 ## Assumptions
 
