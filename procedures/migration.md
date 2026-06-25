@@ -154,23 +154,16 @@ file.
    another repo; when the bootstrap repo is itself the target (a
    self-migration), the approved scoped commit applies to it like any other
    target, and Step 0's sync remains the only other sanctioned write.
-6. Commit the migration as ONE scoped commit: `git add` exactly the files
-   the approval summary lists as Committed (tracked) - never `git add -A`,
-   so unrelated working-tree changes stay untouched, and never `git add -f`;
-   files in the Local-only list are copied into place but stay out of the
-   commit - using the commit message the approval summary announced. The owner's approval of the summary IS the
-   explicit authorization for this single commit, including in repos whose
-   rules gate git operations on the owner - with one exception: after an
-   explicit rejection ("do not approve"), a later approval re-authorizes the
-   commit only if its wording unambiguously covers committing. Wording that
-   names only part of the action ("move the files into place", "proceed")
-   approves copying alone - confirm commit scope in one line before
-   committing. Never push unprompted: after
-   committing, ask once, in one line, whether to push - naming the repo's
-   remotes when there is more than one - and push only what the owner names. The
-   approval authorizes this one commit as shaped; do not amend, rebase, squash,
-   reorder, or force-push it afterward without a fresh owner go (see Git Safety in
-   the AGENTS template).
+6. Commit the migration as ONE scoped commit, following the after-approval commit
+   discipline in `.bootstrap-tmp/procedures/bootstrap.md` step 10 (the canonical recipe:
+   `git add` exactly the approved files - never `git add -A` or `-f`; the owner's approval
+   authorizes that one commit; the rejection-then-approval and confirm-scope-wording
+   exceptions; ask once before pushing, naming the remotes; no amend/rebase/squash/
+   force-push without a fresh go). That step is the canonical recipe; do not duplicate it
+   here. Migration specifics: the approved files are the summary's Committed (tracked)
+   list, while Local-only files are copied into place but stay out of the commit; the
+   approval still authorizes the commit in repos whose rules gate git operations on the
+   owner.
 7. Do not raise deleting `.bootstrap-tmp/` until approved files are copied.
    After the approved files are copied and committed, close with one line
    noting that `.bootstrap-tmp/` remains (untracked) and will be deleted only
