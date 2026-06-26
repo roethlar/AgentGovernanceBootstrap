@@ -47,15 +47,39 @@ an existing section is invisible to `missingSections`). So a leaked-but-current 
 would **never trigger reconciliation**, and cleanup-in-update would be a no-op on
 exactly the files that most need it.
 
-Cleanup therefore needs a **new discovery signal**: a portability scan that flags
-*candidate* leaks regardless of version/section-completeness, surfaced in the manifest
-(e.g. `agentsTemplate.portabilityLeaks` / a candidate list), and made a third input to
-`reconcileRecommended` (or a sibling `cleanupRecommended`). Without this, (b) and (c)
-have nothing to fire on.
+Cleanup therefore needs a **new discovery signal**. The signal is **surplus over the
+portable template**, not a scan for specific leak shapes. Discovery does not ask "is
+*this line* repo-specific?" (a content judgment); it asks the **structural** question
+"does this `AGENTS.md` carry *more than the portable baseline accounts for*?" The
+toolkit already ships that baseline (`templates/AGENTS.template.md`), so the surplus is
+computable by comparison — and it is the natural **inverse of `missingSections`**:
+that signal detects what the target *lacks* versus the template; this detects what the
+target *has that the template does not*. Same comparison, opposite sign.
 
-Scope note: discovery is mechanical Python; it produces **candidates**, never the
-final call (see (c)). The signal's job is "this file is worth a cleanup
-reconciliation," not "these exact lines are leaks."
+This closes the trigger gap mechanically without any specifics-scan: a current-
+versioned, structurally-complete file with an extra leaked line *is* surplus over the
+template, so it trips the signal — no regex hunting for `src/` paths, and so no
+dependence on a leak "looking like" a path (a leak in prose, a restated-state
+sentence, the repo's name as a fact are all caught, because they are all surplus).
+
+Surfaced in the manifest (e.g. `agentsTemplate.surplus` — the diff: sections and
+within-section bullets present in the target but absent from the template) and made an
+input to a `cleanupRecommended` signal (kept distinct from `reconcileRecommended` so
+"structurally stale" and "carries surplus" read differently to an operator; see open
+question 1).
+
+Granularity: section-level surplus is trivial (invert the `missingSections`
+comparison). Within-section surplus (an extra bullet in a section both files share) is
+harder, because the target's bullets are legitimately *reworded* from the template's,
+so it is not a clean text diff — it is "which target bullets have no template
+counterpart." That is fuzzier but still **structural** (no content semantics), and far
+more tractable than "is this line repo-specific." The plan settles how precise the
+within-section match must be.
+
+Scope note: discovery is mechanical Python; the surplus is the **candidate set**,
+never the final call (see (c)). The signal's job is "this file carries content beyond
+the portable baseline — worth a cleanup reconciliation," not "these exact lines are
+leaks."
 
 ## (b) The reconciliation step — relocate, don't breadcrumb
 
@@ -84,51 +108,72 @@ rare.
 All relocations go through the existing approval summary and land in the same gated
 draft → copy flow; no new custody mechanism.
 
-## (c) Mechanical vs. agent-judgment — defer to governance-lint's line
+## (c) Mechanical vs. agent-judgment — the agent sorts the surplus
 
-"Is this line repo-specific?" is a content judgment — the same one the whole boundary
-rests on — so the **final flag/allow call is the agent's** during reconciliation, and
-the cross-harness `drift` audit remains the semantic backstop. Discovery only mechanizes
-the **candidate** scan (concrete-looking paths, occurrences of the repo's own
-name/dir). That split is already drawn by the `governance-lint` Open Decision
-(owner-approved option (a), 2026-06-22), which puts mechanizable structural checks in a
-playbook and leaves "evidence-citation sufficiency and prose-reference resolution… for
-semantic judgment" to `drift`. The mechanizable portability scan in (a) is a natural
-member of that same playbook's check set.
+The mechanical/judgment split is cleaner under the surplus framing. Discovery computes
+the **surplus** structurally (no content semantics) — what the target has beyond the
+portable template. The agent then **sorts each surplus item: allowed-repo-specific, or
+leak.** That residual judgment is unavoidable and genuinely needs a model, because
+surplus is *not* the same as leak: a bootstrapped `AGENTS.md` legitimately carries some
+surplus — the `## Current State` pointer, a verification-entry-point reference, an
+Active Sources list, earned repo-specific rules migrated in generalized wording. So the
+agent's job is "allowed vs. leak," and the cross-harness `drift` audit remains the
+semantic backstop.
 
-Open sub-question for planning: does the candidate scan ship **in** `governance-lint`
-(consistent with its approved scope; cleanup-in-update consumes the playbook's output)
-or as a **standalone discovery field** (so the update route does not depend on a
-playbook that is itself not yet built)? Sequencing matters: `governance-lint` is
-approved-but-unimplemented, so making cleanup depend on it couples two unbuilt pieces.
+Why this beats a specifics-scan: "here is everything beyond the portable baseline,
+sort it" is a strictly better prompt than "trust this regex found the leaks." No
+pattern can miss a leak that does not look like a path, because the candidate set is
+*all* surplus, not a guessed subset of it. The structural diff over-includes (it hands
+the agent allowed surplus too), but over-inclusion is safe here — the agent is already
+in the reconciliation loop and confirms each item; under-inclusion (a missed leak)
+would not be safe, and the surplus diff cannot under-include a leak that is genuinely
+extra content.
+
+This aligns with the `governance-lint` Open Decision (owner-approved option (a),
+2026-06-22), which puts mechanizable **structural** checks in a playbook and leaves
+semantic judgment ("evidence-citation sufficiency and prose-reference resolution") to
+`drift`. Surplus-over-template is exactly a structural check, so it is a natural member
+of that playbook's set — which raises the sequencing question (open question 2):
+whether the surplus computation ships *in* `governance-lint` or as a standalone
+discovery field the update route reads directly (sequencing matters:
+`governance-lint` is approved-but-unimplemented, so making cleanup depend on it
+couples two unbuilt pieces — open question 2).
 
 ## Scope of changes (when this is planned)
 
-- `tools/discover.py`: a portability candidate-leak scan over `AGENTS.md`, surfaced in
-  the manifest; feed it into `reconcileRecommended` (or a sibling signal). With a
+- `tools/discover.py`: compute the **surplus** of the target `AGENTS.md` over
+  `templates/AGENTS.template.md` (the inverse of the existing `missingSections`
+  comparison), surfaced in the manifest, feeding a `cleanupRecommended` signal. With a
   revert-proof test.
 - `procedures/bootstrap.md` Step 3: extend the reconciliation discipline with the
-  relocate-don't-breadcrumb rule of (b).
-- Coordinate the candidate scan with `governance-lint` per (c) — do not duplicate it.
+  relocate-don't-breadcrumb rule of (b), and the "agent sorts surplus into
+  allowed-vs-leak" step of (c).
+- Coordinate the surplus computation with `governance-lint` per (c) — one
+  implementation, not two.
 - This repo's own `AGENTS.md` is a frozen instance; not edited by this work.
 - Verification: `python3 -m unittest discover -s tests -v` (touches `discover.py` and
   copied procedure content).
 
 ## Non-goals
 
-- No mechanical *auto-relocation*: the agent makes the flag/allow call and the move,
-  gated by the approval summary. Discovery only flags candidates.
+- No mechanical *auto-relocation*: discovery computes surplus; the agent makes the
+  allowed-vs-leak call and the move, gated by the approval summary.
 - Not re-deciding the forward enforcement (the boundary spec owns that). This is repair
   of existing files only.
 - No per-fact pointer breadcrumbs (see (b)).
 
 ## Open questions for planning
 
-1. (a) signal shape: extend `reconcileRecommended`, or a separate
-   `cleanupRecommended`? A separate flag keeps "structurally stale" distinct from
-   "leaky-but-current," which read differently to an operator.
-2. (c) sequencing: candidate scan inside `governance-lint` vs. standalone discovery
-   field — which ships first, and does cleanup-in-update block on `governance-lint`?
-3. How aggressive is the candidate scan's recall/precision target? Over-flagging trains
-   operators to rubber-stamp; under-flagging misses leaks. Likely: high-recall
-   candidates + agent confirmation, since the agent is in the loop anyway.
+1. (a) signal shape: a separate `cleanupRecommended`, or fold into
+   `reconcileRecommended`? A separate flag keeps "structurally stale (version/missing
+   sections)" distinct from "carries surplus over baseline," which read differently to
+   an operator. Leaning separate.
+2. (c) sequencing: surplus computation inside `governance-lint` vs. a standalone
+   discovery field — which ships first, and does cleanup-in-update block on
+   `governance-lint` (approved-but-unbuilt)?
+3. (a) within-section granularity: how precisely must a target bullet be matched to its
+   reworded template counterpart before the *unmatched* remainder is called surplus?
+   Too loose → real leaks hide as "matched"; too strict → every reworded bullet reads
+   as surplus and the agent rubber-stamps. Since the agent confirms each item, lean
+   toward *over*-reporting surplus (safe: agent sorts it) rather than under (a missed
+   leak is the unsafe failure).
