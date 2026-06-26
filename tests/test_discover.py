@@ -550,6 +550,37 @@ class TestAgentsTemplateStatus(unittest.TestCase):
         self.assertTrue(at["reconcileRecommended"])         # but backstop fires
         self.assertIn("prime-invariants-block", at["missingSections"])
 
+    def test_update_route_reconciles_stale_stamp_when_sections_present(self):
+        # A same-day second structural change carries a dotted sub-version
+        # (e.g. 2026-06-25 -> 2026-06-25.2). A target reconciled against the
+        # earlier same-day stamp has every probed *section* present, so the
+        # missingSections backstop stays silent — the version difference is the
+        # ONLY signal that the target is stale. This guards that a sub-version
+        # bump still drives reconciliation (the new-invariant-within-an-existing-
+        # section case the section probe cannot see). Bites: if currentVersion is
+        # not bumped past the target's bare-date stamp, the stamps match, the
+        # backstop finds nothing missing, reconcileRecommended is False, and this
+        # assertion fails.
+        current = self._template_version()
+        # Derive the bare-date predecessor of a dotted current stamp.
+        stale = current.split(".")[0]
+        self.assertNotEqual(
+            stale, current,
+            "this test requires a dotted sub-version stamp; if the template "
+            "reverts to a bare date, the same-day-collision guard is moot")
+        ops = " ".join(f"`{op}`" for op in self.OPERATORS)
+        agents_md = (
+            f"# Agent Guidance\n<!-- templateVersion: {stale} -->\n\n"
+            "## Prime Invariants\n<!-- prime:begin -->\n- Words first.\n"
+            "<!-- prime:end -->\n\n## Operator Requests\n" + ops + "\n")
+        with tempfile.TemporaryDirectory() as tmp:
+            manifest = self._update_repo(tmp, agents_md)
+        at = manifest["agentsTemplate"]
+        self.assertEqual(at["targetVersion"], stale)
+        self.assertEqual(at["currentVersion"], current)
+        self.assertEqual(at["missingSections"], [])      # backstop silent
+        self.assertTrue(at["reconcileRecommended"])       # version drives it
+
     def test_update_route_no_false_positive_when_current(self):
         stamp = self._template_version()
         ops = " ".join(f"`{op}`" for op in self.OPERATORS)
