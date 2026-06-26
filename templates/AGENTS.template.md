@@ -84,6 +84,25 @@ scratch files as authority.
 - Prefix shell commands with `rtk` (`rtk git status`, `rtk pytest`) to cut context use;
   unfiltered commands pass through unchanged. Escape hatch: when you need exact output or
   will cite it as evidence, run raw or `rtk proxy <cmd>`.
+- `AGENTS.md` is governance only — it must be portable. Apply the test: would this
+  line still be true and useful if copied unchanged into an unrelated repo? Process,
+  invariants, and operator definitions pass. Anything true only of *this* repo — a
+  concrete source path, the repo's own name as a fact, its verification commands, a
+  restatement of current state or the decisions queue — fails, and lives in `.agents/`
+  (`state.md`, `decisions.md`, `repo-map.json`). `AGENTS.md` *points* to those ("see
+  `.agents/state.md`"); it never restates their content. References to the toolkit's
+  own standard layout — `.agents/state.md`, `procedures/bootstrap.md`, operator names —
+  are portable and allowed: they are true in every bootstrapped repo. If a line would
+  be false or meaningless elsewhere, it is misplaced — move it to `.agents/` and leave
+  a pointer.
+- `AGENTS.md` is written only by a gated bootstrap or update run. The sanctioned
+  writers are exactly two, both through the approval gate: a greenfield/migration run
+  that drafts it, and the update route that reconciles a stale `AGENTS.md` against the
+  current template. Outside such a run no agent edits `AGENTS.md` — a repo-specific
+  fact discovered mid-task goes to `.agents/`, not into governance. An `AGENTS.md` edit
+  proposed outside a bootstrap/update run is out of bounds: question it, do not perform
+  it. (Even portable content enters only through the gated path; the two rules together
+  close both wrong-content and wrong-moment.)
 
 ## Bootstrap Handoff
 
