@@ -149,7 +149,17 @@ Treat these owner words as process requests:
 - `drift`: compare a doc, decision, or guidance claim against repo evidence; fix the
   lower-authority source or report the unresolved conflict. Guidance files
   themselves - `AGENTS.md` and `.agents/*` - are in scope as drift targets, not
-  just sources of truth.
+  just sources of truth. `AGENTS.md` portability and write-authority (see the two
+  governance-boundary invariants) are explicit drift targets: scan `AGENTS.md` for
+  lines that fail the portability test — would this survive being copied unchanged
+  into an unrelated repo? — and relocate each into `.agents/`, leaving a pointer.
+  Lead with the test, not a fixed leak list. Flag (repo-specific, relocate): a
+  concrete application source path, the repo's own name used as a fact, a specific
+  verification command, a sentence restating current state or the decisions queue
+  another doc owns. Allow (portable governance): references to the toolkit's
+  standard layout (`.agents/state.md`, `procedures/bootstrap.md`), operator names,
+  invariant prose, and pointers *to* `.agents/` — a pointer names where a fact
+  lives without copying it.
 - `decision`: record a settled durable decision in `.agents/decisions.md` and update
   affected guidance.
 - `plan`: draft or update a durable plan before broad implementation work.
