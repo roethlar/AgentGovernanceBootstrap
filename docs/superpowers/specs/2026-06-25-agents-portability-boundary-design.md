@@ -1,6 +1,8 @@
 # AGENTS.md portability boundary: governance-only, enforced
 
-**Status:** Design, awaiting owner review
+**Status:** Implemented 2026-06-25 (layers 1–3 landed; see
+`docs/superpowers/plans/2026-06-25-agents-portability-boundary.md` for the plan,
+the layer-2 validation evidence, and the framing correction below).
 **Date:** 2026-06-25
 
 ## Problem
@@ -70,15 +72,31 @@ drafting/reconciliation path. The two rules together close both halves — wrong
 
 ## Enforcement — three layers, by harness capability
 
+> **Framing correction (2026-06-25, from validation evidence).** This section
+> originally called layers 1+3 the "backbone" and layer 2 a deferred "bonus." Live
+> validation inverted the emphasis and the plan reframed it: **layer 1 (invariant
+> text) is the primary, proven steerer** — across three escalating baits, Sonnet and
+> GLM read the rule and routed the repo-specific fact to `.agents/` *before* ever
+> reaching for `AGENTS.md`, so the hook never had to fire. **Layer 3 (`drift` audit)
+> is the necessary backstop** — the only layer that catches what 1 and 2 let through
+> (a model can read the layer-2 reminder and rationalize past it; one did). **Layer 2
+> (the hook) is a real but advisory in-the-moment nudge** — it fires, is model-visible,
+> is non-blocking, and was observed to make a model self-revert a leak once; but it
+> raises the odds of self-correction, it does not guarantee it, and must never be
+> described or relied on as a gate. All three ship. Read the layer descriptions below
+> with that correction in mind.
+
 The rule is a content judgment (is *this line* portable?), which no mechanical gate
 can make — only the model reading the rule can. So enforcement is layered: a portable
-text rule everywhere, a hard pre-edit guard where the harness supports one, and an
+text rule everywhere, an advisory pre-edit nudge where the harness supports one, and an
 after-the-fact audit as the cross-harness backstop.
 
 The harness capabilities below were established 2026-06-25 by querying each harness's
-own CLI headless (`codex`/`grok`/`agy`) plus the known Claude Code behavior. They are
-self-reports; the Codex hook syntax in particular must be verified against Codex's
-own docs before a `.codex/` hook template ships (see open questions).
+own CLI headless (`codex`/`grok`/`agy`) plus the known Claude Code behavior, then
+**confirmed by live validation** (the layer-2 hook fires, is model-visible, and is
+non-blocking on Codex and on a non-Anthropic model via Claude Code; Codex has no
+scriptless path matcher, so the shipped hook is a stdlib-Python script). See the plan's
+Evidence section.
 
 | Layer | Mechanism | Claude Code | Codex | Grok | agy |
 |---|---|---|---|---|---|
@@ -181,19 +199,23 @@ candidate check for the already-queued `governance-lint` playbook (Open Decision
 - No hard *block* of `AGENTS.md` edits — the edit is legitimate; the goal is to keep
   its *content* portable, a judgment only the model makes.
 - No reliance on any one harness's gate as the rule's enforcement — the cross-harness
-  rule is the invariant; hooks are a bonus where available.
+  rule (layer 1) is the primary enforcement; the layer-2 hook is an advisory nudge
+  where available, never the thing relied upon.
 - Not re-litigating the `state.md`↔`decisions.md` duplication (that is the existing
   anti-enumeration invariant; this spec is about `AGENTS.md`↔`.agents/`).
 
 ## Open questions for planning
 
-1. ~~Verify the Codex `PreToolUse` hook syntax.~~ **Resolved** by a Codex self-review
-   of this spec (2026-06-25): `PreToolUse` in `.codex/hooks.json`/`config.toml`,
-   matchers `apply_patch|Edit|Write`, `additionalContext` for the non-blocking
-   reminder. Belongs to the layer-2 follow-on spec regardless.
-2. Exact `drift`-operator wording: lead with the portability *test* (does this survive
-   copy to an unrelated repo?) as the durable rule, with the accept/flag examples as
-   illustration — not an enumerated leak list that rots. Confirm the framing in the
-   plan.
-3. Whether the mechanizable path/name scan lands in `governance-lint` (Open Decision)
-   or stays an agent-judgment `drift` step for now.
+1. ~~Verify the Codex `PreToolUse` hook syntax.~~ **Resolved & validated live
+   (2026-06-25).** Codex `PreToolUse`, matcher `apply_patch|Edit|Write`, target path
+   in `tool_input.command` (the patch body), non-blocking reminder via
+   `hookSpecificOutput.additionalContext`, exit 0. Confirmed against Codex's own hooks
+   docs and exercised in a live run. Codex has **no** scriptless path matcher (matcher
+   is tool-name only), so the shipped tripwire is a stdlib-Python script, not an
+   inline echo.
+2. ~~Exact `drift`-operator wording.~~ **Resolved.** Lands as implemented: lead with
+   the portability *test*, accept/flag examples as illustration, not an enumerated
+   leak list. See the `drift` bullet in `templates/AGENTS.template.md`.
+3. **Still deferred.** Whether the mechanizable path/name scan lands in
+   `governance-lint` (Open Decision, 2026-06-22) or stays an agent-judgment `drift`
+   step. Not built here; the `drift` step is agent-judgment for now.
