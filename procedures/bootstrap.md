@@ -186,30 +186,46 @@ and land in the same single scoped commit.
 
 ## Hook install & trust (all routes)
 
-The toolkit ships per-harness re-grounding hook configs that fire on context
-compaction. Each config's command is a self-contained inline `echo` that prints a
-short pointer back to AGENTS.md — no external script, no baked path. Like operator
-command wrappers, these are portable repo artifacts: draft them on every route
-regardless of which harness you are running in. The expected steady state is
-"already present, nothing to do." The hook copy points at the Prime Invariants
-block; if this repo's `AGENTS.md` lacks that block, reconcile `AGENTS.md` (the
-update route, Step 3) rather than editing the hook message to match the stale file.
+The toolkit ships per-harness hook configs of two kinds. Both are portable repo
+artifacts — drafted on every route regardless of which harness you are running in,
+with the steady state "already present, nothing to do."
 
-1. For each harness the toolkit ships a `templates/hooks/<harness>/` config for,
-   draft the target-repo file under `.bootstrap-tmp/drafts/` mirroring its
+- **Re-ground hook (all four harnesses).** Fires on context compaction; its command
+  is a self-contained inline `echo` printing a short pointer back to AGENTS.md — no
+  external script, no baked path. The copy points at the Prime Invariants block; if
+  this repo's `AGENTS.md` lacks that block, reconcile `AGENTS.md` (the update route,
+  Step 3) rather than editing the hook message to match the stale file.
+- **AGENTS.md pre-edit tripwire (Claude Code + Codex only).** A `PreToolUse` hook
+  that fires when an edit targets `AGENTS.md` and injects an advisory, non-blocking
+  reminder of the governance-boundary invariants (portability + write-authority).
+  Firing on a specific file requires branching on the edit target, which an inline
+  `echo` cannot do, so this hook is a small **stdlib-Python** script
+  (`agents-md-tripwire.py`, shipped beside the config) — Python 3 is already the
+  toolkit's baseline, so no new dependency. It is **advisory, not a gate**: it emits
+  `additionalContext` and exits 0; it never blocks the edit. The script resolves its
+  own location portably (`$CLAUDE_PROJECT_DIR`, `git rev-parse --show-toplevel`) — no
+  baked absolute path. Grok and agy have no pre-edit interception, so they ship the
+  re-ground hook only.
+
+1. For each harness the toolkit ships a `templates/hooks/<harness>/` directory for,
+   draft the target-repo file(s) under `.bootstrap-tmp/drafts/` mirroring their
    canonical path (`.claude/settings.json`, `.codex/hooks.json`,
-   `.grok/hooks/reground.json`, `.agents/hooks.json`). Copy the config verbatim:
-   the hook command is an inline `echo` with no path to substitute and no shell
-   script to install, so the same file is correct on every machine and OS (`echo`
-   exists in `sh`, `cmd`, and PowerShell; verified on macOS, treat Windows as
-   best-effort until tested). The pointer is delivered by a single-quoted `echo`,
-   so if you ever edit its text keep it ASCII and free of any apostrophe/single
-   quote — one would close the quoting and silently break the hook. If a hook
-   config already exists at a target path,
-   merge the re-ground hook into it rather than replacing the file — a repo may
-   already have other hooks, and `.claude/settings.json` also holds permissions,
-   env, and model settings. If a safe merge is not possible, stop and ask. Only
-   write a config file whole when none exists at that path.
+   `.grok/hooks/reground.json`, `.agents/hooks.json`). Copy everything in the
+   harness directory verbatim — for Claude Code and Codex that is the config **plus**
+   the `agents-md-tripwire.py` script beside it (canonical paths
+   `.claude/agents-md-tripwire.py`, `.codex/agents-md-tripwire.py`). The re-ground
+   command is an inline `echo` with no path to substitute and no script to install,
+   so it is correct on every machine and OS (`echo` exists in `sh`, `cmd`, and
+   PowerShell; verified on macOS, Windows best-effort until tested); it is delivered
+   by a single-quoted `echo`, so if you ever edit its text keep it ASCII and free of
+   any apostrophe/single quote — one would close the quoting and silently break the
+   hook. The tripwire command invokes `python3` on the shipped script via a portable
+   repo-root resolution (no baked path); keep the script byte-identical across the
+   harnesses that ship it. If a hook config already exists at a target path, merge
+   the toolkit's hooks into it rather than replacing the file — a repo may already
+   have other hooks, and `.claude/settings.json` also holds permissions, env, and
+   model settings. If a safe merge is not possible, stop and ask. Only write a config
+   file whole when none exists at that path.
 2. Make them committable. Run `git check-ignore` on each final path. If an
    ignore rule covers it, propose a narrowed `.gitignore` edit that admits the
    hook file while keeping genuinely machine-local state ignored — never

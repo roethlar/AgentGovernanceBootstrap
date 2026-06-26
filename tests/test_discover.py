@@ -445,41 +445,107 @@ class TestHookTemplates(unittest.TestCase):
             repo = fixtures.make_greenfield_repo(Path(tmp) / "repo")
             fixtures.run_discover(repo)
             hooks = repo / ".bootstrap-tmp" / "templates" / "hooks"
-            # The re-ground trigger is inlined into each config; there is no
-            # shared shell script to install.
-            self.assertFalse((hooks / "reground.sh").exists())
 
             commands = set()
             for rel, (event, matcher) in self.HOOK_SCHEMA.items():
                 path = hooks / rel
                 self.assertTrue(path.is_file(), rel)
                 txt = path.read_text(encoding="utf-8")
-                # Portable: no baked path, no token to substitute, and no
-                # script/shell dependency that would break on clone, move, or
-                # Windows.
+                # PORTABILITY PRINCIPLE (applies to EVERY hook command in the
+                # file, re-ground or otherwise): a hook must not bake a
+                # machine-specific path or a developer-checkout token. It MAY use
+                # an interpreter (python3) and MAY resolve the repo root the
+                # portable way (`$CLAUDE_PROJECT_DIR`, `git rev-parse
+                # --show-toplevel`) — those travel across clone, move, and
+                # machine. We assert the property (no absolute/user path), not a
+                # banned shape, so a new portable script hook passes without a
+                # per-category exception.
                 self.assertNotIn("__REPO_ROOT__", txt, rel)
-                self.assertNotIn("reground.sh", txt, rel)
-                self.assertNotIn(".sh", txt, rel)
                 self.assertNotIn("/Users/", txt, rel)
-                self.assertNotIn("git rev-parse", txt, rel)
-                # Assert against the PARSED JSON, not the prose: this validates
-                # the config is loadable and prevents the matcher check from
-                # being satisfied by the word "compacted" in the trigger text.
+                self.assertNotIn("/home/", txt, rel)
+                # Config must be loadable JSON.
                 cfg = json.loads(txt)
+
+                # The re-ground entry is still locked exactly: same event,
+                # matcher, and byte-identical canonical command across every
+                # harness. This is the cross-harness desync guard, unrelated to
+                # the echo-vs-script question.
                 entry = cfg["hooks"][event][0]
                 if matcher is None:
                     self.assertNotIn("matcher", entry, rel)
                 else:
                     self.assertEqual(entry.get("matcher"), matcher, rel)
                 command = entry["hooks"][0]["command"]
-                # Allowlist the shape (an inline echo, not an interpreter or a
-                # helper script) and lock the exact pointer text, including the
-                # anti-injection clause "...not this message, as authoritative."
-                self.assertTrue(command.startswith("echo "), rel)
                 self.assertEqual(command, self.CANONICAL_COMMAND, rel)
                 commands.add(command)
-            # All four harnesses must ship the identical trigger copy.
+            # All four harnesses must ship the identical re-ground copy.
             self.assertEqual(len(commands), 1)
+
+    # Harnesses that ship the AGENTS.md pre-edit tripwire (layer 2). Grok/agy
+    # have no pre-edit interception, so they are intentionally absent.
+    TRIPWIRE_SCHEMA = {
+        "claude/settings.json": "Edit|Write|MultiEdit",
+        "codex/hooks.json": "apply_patch|Edit|Write",
+    }
+
+    def test_tripwire_hook_present_advisory_and_portable(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = fixtures.make_greenfield_repo(Path(tmp) / "repo")
+            fixtures.run_discover(repo)
+            hooks = repo / ".bootstrap-tmp" / "templates" / "hooks"
+            for rel, matcher in self.TRIPWIRE_SCHEMA.items():
+                txt = (hooks / rel).read_text(encoding="utf-8")
+                cfg = json.loads(txt)
+                entries = cfg["hooks"].get("PreToolUse")
+                self.assertTrue(entries, f"{rel}: no PreToolUse tripwire")
+                entry = entries[0]
+                self.assertEqual(entry.get("matcher"), matcher, rel)
+                command = entry["hooks"][0]["command"]
+                # The script is invoked by the toolkit's baseline interpreter,
+                # via a portable repo-root resolution (not an absolute path).
+                self.assertIn("python3", command, rel)
+                self.assertIn("agents-md-tripwire.py", command, rel)
+                # The script ships alongside the config.
+                self.assertTrue(
+                    (hooks / Path(rel).parent / "agents-md-tripwire.py").is_file(),
+                    f"{rel}: tripwire script missing")
+
+    def test_tripwire_script_fires_on_agents_md_only_and_never_blocks(self):
+        # The one canonical script body, shipped per-harness. Exercise it
+        # directly: it must emit additionalContext (advisory) for an AGENTS.md
+        # target in EITHER harness's stdin shape, stay silent otherwise, and
+        # never emit a blocking decision.
+        import subprocess
+        script = (fixtures.BOOTSTRAP_ROOT / "templates" / "hooks"
+                  / "claude" / "agents-md-tripwire.py")
+
+        def run(payload):
+            p = subprocess.run(
+                ["python3", str(script)], input=json.dumps(payload),
+                capture_output=True, text=True)
+            self.assertEqual(p.returncode, 0)         # never exit 2 / block
+            return p.stdout
+
+        # CC shape: file_path
+        out = run({"tool_input": {"file_path": "/x/AGENTS.md"}})
+        self.assertIn("additionalContext", out)
+        self.assertNotIn("permissionDecision", out)   # advisory, not a gate
+        # Codex shape: path inside the patch body (command)
+        out = run({"tool_input": {
+            "command": "*** Update File: AGENTS.md\n+x"}})
+        self.assertIn("additionalContext", out)
+        # Non-AGENTS.md edits: silent in both shapes.
+        self.assertEqual(run({"tool_input": {"file_path": "/x/README.md"}}), "")
+        self.assertEqual(
+            run({"tool_input": {"command": "*** Update File: README.md"}}), "")
+
+    def test_tripwire_script_identical_across_harnesses(self):
+        # One canonical body; the per-harness copies must not desync.
+        base = fixtures.BOOTSTRAP_ROOT / "templates" / "hooks"
+        bodies = {
+            (base / h / "agents-md-tripwire.py").read_text(encoding="utf-8")
+            for h in ("claude", "codex")}
+        self.assertEqual(len(bodies), 1, "tripwire script copies have desynced")
 
 
 class TestAgentsTemplateStatus(unittest.TestCase):
