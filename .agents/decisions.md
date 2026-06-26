@@ -471,6 +471,78 @@ Next step: a `plan` for the exact invariant sentence(s), the `templateVersion` b
 and verification (`python3 -m unittest discover -s tests -v` for the template/stamp
 touch; the revert-the-fix discipline if a test guards the stamp).
 
+### 2026-06-25 - AGENTS.md governance boundary: portable + write-authority, enforced in three layers
+
+Status: Adopted 2026-06-25. The two boundary invariants landed as bullets in
+`templates/AGENTS.template.md` `## Universal Invariants` (portability — "would this
+line survive being copied unchanged into an unrelated repo?"; and write-authority —
+"AGENTS.md is written only by a gated bootstrap or update run"); the `drift` operator
+in the same template now names AGENTS.md portability/write-authority as explicit drift
+targets; and a `PreToolUse` pre-edit tripwire (advisory, non-blocking, one stdlib-
+Python script `agents-md-tripwire.py` shared by the Claude Code and Codex hook
+configs) ships under `templates/hooks/`. `templateVersion` bumped 2026-06-25 →
+2026-06-25.2 (a same-day second structural change; the bare date could not
+distinguish it, and the section-probe backstop does not see new bullets within an
+existing section, so the sub-version is the only reconciliation signal). This repo's
+own `AGENTS.md` is intentionally NOT edited here — a frozen instance brought current
+only by a deliberate self-application run (same handling as the stall-not-length and
+2026-06-24 deduplication decisions). Design spec:
+`docs/superpowers/specs/2026-06-25-agents-portability-boundary-design.md`; plan and
+evidence: `docs/superpowers/plans/2026-06-25-agents-portability-boundary.md`. The text
+below is retained as the rationale until archived.
+
+Decision: `AGENTS.md` is governance only and must be portable — every line must
+survive being copied unchanged into an unrelated repo; repo-specific facts (paths, the
+repo's own name, current state, verification commands) live in `.agents/`, and
+`AGENTS.md` points to them rather than restating them. Complementarily, `AGENTS.md` is
+written only by the two gated writers (a greenfield/migration bootstrap draft, or the
+update-route reconciliation), never hand-edited mid-task. The two rules close both
+wrong-content and wrong-moment. Enforcement is three layers by harness capability:
+(1) the invariant text, injected on every harness; (2) the advisory pre-edit tripwire
+hook, Claude Code + Codex only (Grok/agy have no pre-edit interception); (3) the
+`drift` operator audit, cross-harness.
+
+Layer emphasis (corrected from the spec's original framing by live validation,
+2026-06-25): **layer 1 is the primary, proven steerer** — across three escalating
+baits, capable models (Sonnet, GLM) read the invariant and routed the repo-specific
+fact to `.agents/` before ever reaching for `AGENTS.md`, so the hook never had to
+fire. **Layer 3 is the necessary backstop** — the only layer that catches what 1 and
+2 let through; a model can read the layer-2 reminder and rationalize past it, and one
+did. **Layer 2 is a real but advisory nudge** — validated to fire, be model-visible
+(token echoed back), and stay non-blocking on Codex and on a non-Anthropic open model
+(GLM) via Claude Code, and observed to make a model self-revert a leak once; it raises
+the odds of self-correction but is never a gate. Validation was run in a throwaway
+repo (now discarded); the shipped script+`additionalContext` form is the exact form
+validated. Hook shape: Codex has no scriptless path matcher (matcher is tool-name
+only), so a script is required there; one stdlib-Python script (Python 3 is already
+the toolkit's baseline — no new dependency) serves both harnesses.
+
+A secondary correctness finding landed with this work: the hook-template portability
+test (`TestHookTemplates`) had encoded the *re-ground hook's* shape ("inline echo
+only; no `.sh`; no `git rev-parse`") as if it were the portability rule itself — an
+is/ought conflation that would force a per-category exception for every new hook kind.
+It was reworked to assert the portability *principle* (no machine-specific/`/Users/`
+baked path; `git rev-parse --show-toplevel` and `$CLAUDE_PROJECT_DIR` are portable and
+allowed) over every hook command, with the re-ground command still byte-locked across
+harnesses, plus dedicated tripwire guards (present+advisory+portable; fires-on-
+AGENTS.md-only/never-blocks; script-identical-across-harnesses). All new guards were
+proven to bite via hermetic mutation (temp copy, tracked files untouched).
+
+Scope guard: this spec defines the *rule* and *forward* enforcement. Two pieces are
+split to their own future specs and are NOT done here — retroactive cleanup of
+already-bootstrapped repos whose `AGENTS.md` already carries repo-specifics, and
+whether the mechanizable path/name scan folds into the queued `governance-lint`
+playbook (Open Decision, 2026-06-22) versus staying an agent-judgment `drift` step.
+
+Relationship: complements the one-canonical-location / prefer-pointers and
+anti-enumeration invariants (this names the `AGENTS.md`↔`.agents/` boundary as a
+single portable test); complements, does not supersede, the 2026-06-22
+`templateVersion` reconciliation decision (whose stamp machinery this exercises, and
+which the sub-version extends for the same-day case). Considered and rejected: a hard
+*block* on AGENTS.md edits — the edit can be legitimate (a bootstrap/update run), and
+portability is a content judgment only the model makes, so the hook is advisory by
+design.
+
 ## Open Decisions (deferred - not yet adopted)
 
 These are assessed findings the owner chose to record for a future decision
