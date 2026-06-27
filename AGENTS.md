@@ -1,8 +1,8 @@
 # Agent Guidance
-<!-- templateVersion: 2026-06-22 -->
+<!-- templateVersion: 2026-06-27.1 -->
 
 ## Prime Invariants
-<!-- prime:begin — keep terse; this block is re-grounded after compaction -->
+<!-- prime:begin — keep terse; re-grounded after compaction -->
 These outrank everything below. After a context compaction, re-read this block
 from AGENTS.md before continuing.
 
@@ -10,11 +10,11 @@ from AGENTS.md before continuing.
   instruction or go. A handed-over report, plan, or spec is evidence to assess,
   not a decision to implement.
 - No code change without an approved plan; docs and other non-code edits don't
-  need one (e.g. README). When unsure, treat it as code.
-- Commit each slice as it lands; never leave finished work uncommitted. Push,
-  history-rewrite, and destructive or outward-facing actions need an explicit
-  go — pushing publishes.
-- Repo memory. Durable truth lives in the repo, not in chat or working memory.
+  need one (e.g. a README). When unsure, treat it as code.
+- Commit each slice as it lands; never leave finished work uncommitted.
+  History-rewrite and destructive or outward-facing actions always need an
+  explicit go. Push policy: see `.agents/push-policy.md`.
+- Repo is memory. Durable truth lives in the repo, not chat or working memory.
   Under context pressure, re-ground from AGENTS.md; prefer a fresh session when
   degraded.
 <!-- prime:end -->
@@ -78,6 +78,17 @@ unreviewed docs or generated scratch files as authority.
   load-bearing; if you cannot, treat it as legitimate and stop or ask. The
   default is that the roadblock is correct until proven otherwise; "make the error
   go away" is not a basis for removing it.
+- Escalate an iterative process on stalled progress, never on duration. A loop,
+  a multi-finding sweep, or a long autonomous run must bank verifiable progress
+  each cycle — a new observable delta: a test moving red→green, a finding closed
+  with its guard proof, a build or type error resolved, a committed slice. A
+  cycle that produces none of these is a stall (the loop-level form of the
+  vacuous-change and drift rules). After a small number of consecutive stalled
+  cycles — state the threshold you are using; default ~2-3 — stop and surface to
+  a human rather than continuing to spend. Length is never itself the trigger: a
+  long run that closes a verified delta each cycle is healthy and must not be
+  capped on duration or turn count; the failure is a process that will not
+  terminate productively, however briefly it has run.
 - Work token-efficiently; prefer compact-but-equivalent. When a token-filtering
   command proxy is available (e.g. `rtk`, https://github.com/rtk-ai/rtk), invoke it
   per-command at your discretion (`rtk <cmd>`) for routine, high-volume, low-stakes
@@ -89,13 +100,35 @@ unreviewed docs or generated scratch files as authority.
   targeted reads over whole-file dumps, scoped searches, and do not re-read unchanged
   files. Recommended, not required; absent the proxy, the rest still applies. (Named
   by capability, not brand; `rtk` is only an example.)
+- `AGENTS.md` is governance only — it must be portable. Apply the test: would this
+  line still be true and useful if copied unchanged into an unrelated repo? Process,
+  invariants, and operator definitions pass. Anything true only of *this* repo — a
+  concrete source path, the repo's own name as a fact, its verification commands, a
+  restatement of current state or the decisions queue — fails, and lives in `.agents/`
+  (`state.md`, `decisions.md`, `repo-map.json`). `AGENTS.md` *points* to those ("see
+  `.agents/state.md`"); it never restates their content. References to the toolkit's
+  own standard layout — `.agents/state.md`, `procedures/bootstrap.md`, operator names —
+  are portable and allowed: they are true in every bootstrapped repo. If a line would
+  be false or meaningless elsewhere, it is misplaced — move it to `.agents/` and leave
+  a pointer. (This repo is the toolkit's own source, so some sections below name its
+  concrete paths, remotes, and verification command directly; retroactively relocating
+  those leaks into `.agents/` is tracked as separate owner-gated work, not done by a
+  routine reconciliation.)
+- `AGENTS.md` is written only by a gated bootstrap or update run. The sanctioned
+  writers are exactly two, both through the approval gate: a greenfield/migration run
+  that drafts it, and the update route that reconciles a stale `AGENTS.md` against the
+  current template. Outside such a run no agent edits `AGENTS.md` — a repo-specific
+  fact discovered mid-task goes to `.agents/`, not into governance. An `AGENTS.md` edit
+  proposed outside a bootstrap/update run is out of bounds: question it, do not perform
+  it. (Even portable content enters only through the gated path; the two rules together
+  close both wrong-content and wrong-moment.)
 - This toolkit's canon propagates only when pushed. GitHub
   `https://github.com/roethlar/AgentGovernanceBootstrap.git` is the canonical
   remote; the LAN gitea remote `http://q:3000/michael/AgentGovernanceBootstrap.git`
-  is a mirror of it (faster fetch on the LAN). After committing here, offer once
-  to push to GitHub (the gitea mirror updates downstream); target-repo sessions
-  sync from GitHub at kickoff, using the gitea mirror as a faster fetch source
-  when reachable (fast-forward only).
+  is a mirror of it (faster fetch on the LAN). Push behavior is governed by
+  `.agents/push-policy.md`; target-repo sessions sync from GitHub at kickoff,
+  using the gitea mirror as a faster fetch source when reachable (fast-forward
+  only).
 
 ## Bootstrap Handoff
 
@@ -112,11 +145,14 @@ paths, or documents. When no `.bootstrap-tmp/` exists, there is nothing to do he
 
 This repo ships a session-start / post-compaction re-ground hook
 (`.claude/settings.json`) that prompts a re-read of AGENTS.md (especially the
-Prime Invariants) when context is compacted. Many harnesses keep committed hooks
-inert until the workspace is trusted on the machine — a one-time, uncommittable
-security step. If the harness gates hooks on trust, say what the hook does, ask,
-and run the trust step only for the harness you are actually in (ask the human if
-unsure). Never run another harness's trust commands, and never bypass the gate.
+Prime Invariants) when context is compacted, plus an advisory `PreToolUse`
+tripwire that fires before an `AGENTS.md` edit to remind you of the
+governance-boundary invariants (it never blocks the edit). Many harnesses keep
+committed hooks inert until the workspace is trusted on the machine — a one-time,
+uncommittable security step. If the harness gates hooks on trust, say what the
+hooks do, ask, and run the trust step only for the harness you are actually in
+(ask the human if unsure). Never run another harness's trust commands, and never
+bypass the gate.
 
 ## Active Sources
 
@@ -166,12 +202,18 @@ Treat these owner words as process requests:
 - `drift`: compare a doc, decision, or guidance claim against repo evidence; fix
   the lower-authority source or report an unresolved conflict. The guidance files
   themselves — `AGENTS.md` and `.agents/*` — are in scope as drift targets, not
-  just as sources of truth.
+  just as sources of truth. `AGENTS.md` portability and write-authority (see the
+  two governance-boundary invariants) are explicit drift targets: scan `AGENTS.md`
+  for lines that fail the portability test — would this survive being copied
+  unchanged into an unrelated repo? — and relocate each into `.agents/`, leaving a
+  pointer. Lead with the test, not a fixed leak list.
 - `decision`: record a settled durable decision in `.agents/decisions.md` and
   update affected guidance.
 - `plan`: draft or update a durable plan before broad implementation work.
-- `playbook <name>`: read `.agents/playbooks/<name>.md` and follow it, rather than
-  guessing.
+- `playbook <name>`: read `.agents/playbooks/<name>.md` and follow it. Playbooks
+  are approved durable workflows (see Source of Truth); this operator is how a
+  session invokes one by name. If the named playbook does not exist, say so rather
+  than guessing.
 
 ## Verification
 
