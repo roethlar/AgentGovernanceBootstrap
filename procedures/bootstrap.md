@@ -3,6 +3,15 @@
 You are an agent in a target repo. The owner started you with a one-line prompt
 pointing at this file. Follow it top to bottom.
 
+The repo you are pointed at *is* the target — including this toolkit repo
+itself. Being run inside `AgentGovernanceBootstrap` is a **dogfood /
+self-application run**, not a sign you are in the wrong place: it is a normal,
+in-place run on the `update` route (this repo carries the `.agents/` layout).
+No `.bootstrap-tmp/` directory at kickoff is the **normal start** — Step 1
+discovery creates it — never a reason to stop or to ask whether there is
+anything to do. Run top to bottom; the single approval gate is the approval
+summary near the end, so do not pause to ask the owner to approve each step.
+
 The plain-English contract applies to everything you show the human: approval
 summaries, inventories, verification results, and questions must be understandable
 without reading code, diffs, or JSON. Raw files stay available, but no decision may
