@@ -555,6 +555,20 @@ reviews' other suggestions were rejected as scope-inflating or already covered
 and are not recorded. Recommendation order below is the suggested implementation
 sequence.
 
+### Adopted 2026-06-27 — push policy delegated to `.agents/push-policy.md`; four standardized options; default: ask
+
+Status: Adopted 2026-06-27. The Prime Invariants push clause in
+`templates/AGENTS.template.md` now reads: "History-rewrite and destructive or
+outward-facing actions always need an explicit go. Push policy: see
+`.agents/push-policy.md`." A new `templates/push-policy.template.md` ships the
+default (`ask`). `templates/approval-summary.template.md` gained a Push Policy
+section that presents four options at approval time (owner may pick one or
+accept the default). `procedures/bootstrap.md` Step 10 now consults
+`.agents/push-policy.md` after committing. `templateVersion` bumped to
+`2026-06-27.1`. This repo's own `.agents/push-policy.md` (option 1 — always)
+lands via a self-application dogfood run, not a direct edit. The text below is
+the original Open Decision rationale, retained until archived.
+
 ### Open: reassess the general push-needs-explicit-go rule (local-only commits are a staleness trap)
 
 Surfaced 2026-06-26 by the owner. The Prime Invariant "Push... need an explicit
