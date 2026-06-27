@@ -34,6 +34,43 @@ live rule now owned elsewhere - archive it per the rule above: move it verbatim 
 
 ## Decisions
 
+### 2026-06-27 — Dogfood / self-application is a named case of the update route (docs handrail, no detection mechanism)
+
+Status: Active
+
+Decision: Running the bootstrap procedure against this toolkit repo itself is a
+**dogfood / self-application run**. It takes the existing `update` route and runs
+**in-place** — there is no foreign target, the absence of `.bootstrap-tmp/` at
+kickoff is the normal start (Step 1 discovery creates it), and the agent follows
+`procedures/bootstrap.md` top to bottom with the approval summary as the single
+gate. `procedures/bootstrap.md` names this case explicitly so an agent does not
+read its "you are in a target repo" framing as "this procedure is not for here."
+No `compute_route()` change, no manifest detection flag, no enforcement: the fix
+is documentation only — a lens and a nudge. The route logic and what `update`
+produces are unchanged.
+
+Earned by a reproduced incident (2026-06-27): two capable sessions in a row, run
+with the canonical kickoff line `Read ./procedures/bootstrap.md and follow it.`
+from inside the toolkit repo, read the procedure's target-repo framing plus the
+missing `.bootstrap-tmp/` as "nothing to bootstrap here" and stopped to ask the
+owner instead of running discovery. Earlier runs (and an earlier run the same day)
+had improvised past the framing and reached the update route correctly, so the
+self-application case worked only by agent intuition, never by an explicit
+instruction. Naming the case removes the ambiguity without disturbing the
+behavior that has always worked.
+
+Considered and rejected: a `selfApplication` detection flag in `compute_route()`
+(by git-root identity or remote URL). Rejected because agents have reliably
+understood "this repo is both the product and the target" without a mechanism;
+adding detection risks breaking that intuition to fix a case a docs handrail
+already covers.
+
+Relationship: complements the 2026-06-22 update-route reconciliation decision
+(this run exercises that route against the toolkit's own `AGENTS.md`); does not
+change route selection.
+
+
+
 ### 2026-06-24 - Section-level rule deduplication: one full statement per rule, pointers elsewhere
 
 Status: Active
