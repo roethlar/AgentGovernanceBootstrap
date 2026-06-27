@@ -824,3 +824,86 @@ deferred to a later decision. Scope: product (`templates/AGENTS.template.md`
 invariants structure, plus optionally a harness-hook recommendation and/or
 operator-checkpoint behavior). Surfaced 2026-06-20 by an in-session failure of the
 answer-with-words rule.
+
+### Open: reassess the general push-needs-explicit-go rule (local-only commits are a staleness trap)
+
+Status: Adopted 2026-06-27 (see "push policy delegated to `.agents/push-policy.md`;
+four standardized options; default: ask" in `.agents/decisions.md` Decisions). The
+finding below is retained verbatim as the rationale that led to it; it was rotated
+out of the live Open Decisions queue on 2026-06-27 once adopted.
+
+Surfaced 2026-06-26 by the owner. The Prime Invariant "Push... need an explicit
+go — pushing publishes" treats every push as an outward-facing action requiring a
+per-instance go. That rule optimizes for one real risk (a push to a *public*
+canonical remote is exposure that is hard to retract) but imposes a cost that has
+bitten the owner repeatedly: commits that live only locally leave the canonical
+remote silently behind, and a later session (or the owner) assumes a repo is
+up to date when it is not. That directly undercuts the governance goal the repo
+otherwise enforces — durable truth lives on the canonical remote, not in a local
+commit. The `handoff` operator is the sharpest case: a handoff records resumable
+state for the next session, yet under the current rule its commit can sit unpushed,
+so the "resume point" is invisible to a fresh clone or another machine.
+
+Tension to resolve (this is why it is a decision, not a silent fix): the two pulls
+are genuine and both are in the governance. (1) "Pushing publishes" — a real
+caution for a public remote and for irreversible/outward actions. (2) "Repo is
+memory; durable truth on the remote" — local-only commits are a silent-staleness
+trap. The current blanket rule serves (1) at the cost of (2).
+
+Evidence: the Prime Invariants block in `AGENTS.md` and
+`templates/AGENTS.template.md` (the push-go clause); the Git Safety section; the
+repeated handoff loose-end this session where each handoff commit needed a
+separate explicit push. Owner reports out-of-sync repos assumed current as the
+recurring real-world cost.
+
+Options: (a) **tier by blast radius** — push-by-default for low-risk
+governance/docs/state commits (handoff, decision, drift, state updates, docs),
+retain explicit-go for code, history-rewrite, force-push, and other
+destructive/outward actions; (b) **handoff-only carve-out** — `handoff` pushes its
+own commit automatically (running handoff is the go), everything else unchanged
+(narrow, but leaves the general staleness cost for non-handoff governance commits);
+(c) **make push a named final step of handoff** that always offers (keeps
+per-instance go, just stops it being an afterthought); (d) leave the blanket rule
+as-is and accept the staleness cost. This is a **Prime-Invariant-level** change for
+(a)/(b), so adoption must edit `templates/AGENTS.template.md` (and bump
+`templateVersion`), with this repo's frozen `AGENTS.md` updated only by a
+self-application run.
+
+Recommendation: (a). It resolves the tension at the right seam — the push-go rule's
+real value is on irreversible/outward/destructive actions, which is where it should
+stay; governance/docs/state commits are low-blast-radius and are exactly the
+durable truth that most needs to be on the remote. (b)/(c) only patch the handoff
+symptom and leave the general cost. Open sub-question for the plan: define the
+"low-risk" tier precisely (by path? by operator? by commit-type?) so the rule is
+mechanically clear, not a judgment call each time.
+
+### Open: `run_git` fails open — git errors are indistinguishable from empty results
+
+Status: Adopted 2026-06-23. Option (a) landed in `tools/discover.py`: a new
+`_git_exec()` returns `(executed, returncode, lines, stderr)`; `run_git()` keeps
+its lines-or-`[]` contract for callers where a non-zero is a legitimate negative;
+`get_git_root()` now raises when git cannot be executed at all (instead of
+silently taking the non-git branch); and `discover()` routes the inventory
+commands through a checked runner that records unexpected failures into the new
+manifest fields `git.errors` and `git.degraded`, with a matching WARNING in the
+review packet so an empty inventory cannot read as a clean repo. Guarded by
+`tests/test_discover.py::TestGitFailureSurfaced` (revert-proof: corrupts `.git/index`
+so `ls-files`/`status` fail while the repo is still detected as git). The text
+below is retained as the rationale until archived.
+
+Evidence: `tools/discover.py` `run_git()` returns `[]` on `OSError` and on any
+non-zero return code, so a missing git, an unsafe-directory refusal, a corrupt
+index, or a permission denial collapses to the same empty result a genuinely
+clean repo produces. The HEAD / branch / ls-files / status callers cannot tell
+"nothing to report" from "git failed." Discovery output is cited as evidence for
+governance drafting (the 2026-06-10 evidence rule), so a silently-empty git
+result can become false evidence of a clean or empty repo.
+
+Options: (a) make `run_git` fail loud — distinguish command failure from empty
+output (e.g. return a sentinel / raise on non-zero), and have callers surface the
+failure in the manifest rather than emitting a clean inventory; (b) leave as-is.
+
+Recommendation: (a). This is a correctness fix squarely in service of the
+existing evidence rule, not new surface. No design fork — implement directly
+after recording. Prove the guard with the revert-the-fix test (a probe that
+fails when `run_git` swallows an error).

@@ -34,6 +34,42 @@ live rule now owned elsewhere - archive it per the rule above: move it verbatim 
 
 ## Decisions
 
+### 2026-06-27 — Push policy delegated to `.agents/push-policy.md`; four standardized options; default: ask
+
+Status: Active
+
+Decision: Push behavior is repo-specific, declared in `.agents/push-policy.md`,
+which the Prime Invariants delegate to. The Prime Invariants push clause in
+`templates/AGENTS.template.md` reads: "History-rewrite and destructive or
+outward-facing actions always need an explicit go. Push policy: see
+`.agents/push-policy.md`." A new `templates/push-policy.template.md` ships the
+default (`ask`). `templates/approval-summary.template.md` has a Push Policy
+section that presents four standardized options at approval time and must ask
+the human — it may not pre-fill the choice from the decisions log or other
+context (the owner's approval-time reply is the only valid source).
+`procedures/bootstrap.md` Step 10 consults `.agents/push-policy.md` after
+committing. The options: 1 `always` (push after every commit); 2 `operators`
+(auto-push after operator-invoked commits — handoff/decision/drift/plan — ask
+otherwise); 3 `docs` (auto-push docs/state-only commits, ask for code/tool);
+4 `ask` (always ask, the default). `templateVersion` bumped to `2026-06-27.1`.
+This repo's own `.agents/push-policy.md` was created by the 2026-06-27 dogfood
+self-application run and is set to `always`. The original Open Decision rationale
+(2026-06-26) is archived verbatim in `docs/history/decisions-archive.md`.
+
+Earned by an owner-surfaced cost (2026-06-26): the prior blanket
+push-needs-explicit-go Prime Invariant left commits local-only, so the canonical
+remote silently lagged and later sessions/machines assumed a repo current when it
+was not — directly undercutting "durable truth lives on the canonical remote."
+The delegation keeps the explicit-go default for repos that want it while letting
+a repo opt into auto-push. Per the AGENTS.md portability/write-authority boundary
+(2026-06-25), the *policy value* is repo-specific and lives in `.agents/`, not in
+`AGENTS.md`, which only points to it.
+
+Relationship: resolves the 2026-06-26 Open Decision (option a — tier by blast
+radius — at the seam of the policy file rather than as template-wide tiers).
+Exercises the 2026-06-25 governance-boundary boundary (repo-specifics in
+`.agents/`) and the 2026-06-22 `templateVersion` reconciliation machinery.
+
 ### 2026-06-27 — Dogfood / self-application is a named case of the update route (docs handrail, no detection mechanism)
 
 Status: Active
@@ -591,98 +627,6 @@ reviews (DeepSeek, GPT-5.5, Grok) read against current repo evidence. The
 reviews' other suggestions were rejected as scope-inflating or already covered
 and are not recorded. Recommendation order below is the suggested implementation
 sequence.
-
-### Adopted 2026-06-27 — push policy delegated to `.agents/push-policy.md`; four standardized options; default: ask
-
-Status: Adopted 2026-06-27. The Prime Invariants push clause in
-`templates/AGENTS.template.md` now reads: "History-rewrite and destructive or
-outward-facing actions always need an explicit go. Push policy: see
-`.agents/push-policy.md`." A new `templates/push-policy.template.md` ships the
-default (`ask`). `templates/approval-summary.template.md` gained a Push Policy
-section that presents four options at approval time (owner may pick one or
-accept the default). `procedures/bootstrap.md` Step 10 now consults
-`.agents/push-policy.md` after committing. `templateVersion` bumped to `2026-06-27.1`. This repo's own
-`.agents/push-policy.md` must be created by running the bootstrap update route
-on this repo — the owner selects the policy at approval time. The text below is
-the original Open Decision rationale, retained until archived.
-
-### Open: reassess the general push-needs-explicit-go rule (local-only commits are a staleness trap)
-
-Surfaced 2026-06-26 by the owner. The Prime Invariant "Push... need an explicit
-go — pushing publishes" treats every push as an outward-facing action requiring a
-per-instance go. That rule optimizes for one real risk (a push to a *public*
-canonical remote is exposure that is hard to retract) but imposes a cost that has
-bitten the owner repeatedly: commits that live only locally leave the canonical
-remote silently behind, and a later session (or the owner) assumes a repo is
-up to date when it is not. That directly undercuts the governance goal the repo
-otherwise enforces — durable truth lives on the canonical remote, not in a local
-commit. The `handoff` operator is the sharpest case: a handoff records resumable
-state for the next session, yet under the current rule its commit can sit unpushed,
-so the "resume point" is invisible to a fresh clone or another machine.
-
-Tension to resolve (this is why it is a decision, not a silent fix): the two pulls
-are genuine and both are in the governance. (1) "Pushing publishes" — a real
-caution for a public remote and for irreversible/outward actions. (2) "Repo is
-memory; durable truth on the remote" — local-only commits are a silent-staleness
-trap. The current blanket rule serves (1) at the cost of (2).
-
-Evidence: the Prime Invariants block in `AGENTS.md` and
-`templates/AGENTS.template.md` (the push-go clause); the Git Safety section; the
-repeated handoff loose-end this session where each handoff commit needed a
-separate explicit push. Owner reports out-of-sync repos assumed current as the
-recurring real-world cost.
-
-Options: (a) **tier by blast radius** — push-by-default for low-risk
-governance/docs/state commits (handoff, decision, drift, state updates, docs),
-retain explicit-go for code, history-rewrite, force-push, and other
-destructive/outward actions; (b) **handoff-only carve-out** — `handoff` pushes its
-own commit automatically (running handoff is the go), everything else unchanged
-(narrow, but leaves the general staleness cost for non-handoff governance commits);
-(c) **make push a named final step of handoff** that always offers (keeps
-per-instance go, just stops it being an afterthought); (d) leave the blanket rule
-as-is and accept the staleness cost. This is a **Prime-Invariant-level** change for
-(a)/(b), so adoption must edit `templates/AGENTS.template.md` (and bump
-`templateVersion`), with this repo's frozen `AGENTS.md` updated only by a
-self-application run.
-
-Recommendation: (a). It resolves the tension at the right seam — the push-go rule's
-real value is on irreversible/outward/destructive actions, which is where it should
-stay; governance/docs/state commits are low-blast-radius and are exactly the
-durable truth that most needs to be on the remote. (b)/(c) only patch the handoff
-symptom and leave the general cost. Open sub-question for the plan: define the
-"low-risk" tier precisely (by path? by operator? by commit-type?) so the rule is
-mechanically clear, not a judgment call each time.
-
-### Open: `run_git` fails open — git errors are indistinguishable from empty results
-
-Status: Adopted 2026-06-23. Option (a) landed in `tools/discover.py`: a new
-`_git_exec()` returns `(executed, returncode, lines, stderr)`; `run_git()` keeps
-its lines-or-`[]` contract for callers where a non-zero is a legitimate negative;
-`get_git_root()` now raises when git cannot be executed at all (instead of
-silently taking the non-git branch); and `discover()` routes the inventory
-commands through a checked runner that records unexpected failures into the new
-manifest fields `git.errors` and `git.degraded`, with a matching WARNING in the
-review packet so an empty inventory cannot read as a clean repo. Guarded by
-`tests/test_discover.py::TestGitFailureSurfaced` (revert-proof: corrupts `.git/index`
-so `ls-files`/`status` fail while the repo is still detected as git). The text
-below is retained as the rationale until archived.
-
-Evidence: `tools/discover.py` `run_git()` returns `[]` on `OSError` and on any
-non-zero return code, so a missing git, an unsafe-directory refusal, a corrupt
-index, or a permission denial collapses to the same empty result a genuinely
-clean repo produces. The HEAD / branch / ls-files / status callers cannot tell
-"nothing to report" from "git failed." Discovery output is cited as evidence for
-governance drafting (the 2026-06-10 evidence rule), so a silently-empty git
-result can become false evidence of a clean or empty repo.
-
-Options: (a) make `run_git` fail loud — distinguish command failure from empty
-output (e.g. return a sentinel / raise on non-zero), and have callers surface the
-failure in the manifest rather than emitting a clean inventory; (b) leave as-is.
-
-Recommendation: (a). This is a correctness fix squarely in service of the
-existing evidence rule, not new surface. No design fork — implement directly
-after recording. Prove the guard with the revert-the-fix test (a probe that
-fails when `run_git` swallows an error).
 
 ### Open: `bootstrap.config.json` is documented layout but unshipped, and the update route depends on it
 
