@@ -76,7 +76,8 @@ files, and the harvest report if one was drafted.>
 <State the exact commit message that will be used. Approving this summary
 authorizes copying the files above and making that ONE scoped commit
 (exactly the Committed list, never `git add -A`, never `git add -f`).
-Nothing is pushed; pushing remains the owner's action.>
+Nothing is pushed yet; the push policy written by this run governs all
+subsequent commits.>
 
 <Non-git targets: there is no commit to authorize yet. Ask here whether to
 `git init` and include the scoped first commit (see bootstrap.md, "If the
@@ -84,6 +85,21 @@ target is not a git repository"). If the owner declines, replace the two
 lists above with one list titled "On disk only - no version control" and
 replace the commit paragraph with a plain statement that `git init` remains
 the owner's decision.>
+
+## Push Policy
+
+<State the push policy that will be written to `.agents/push-policy.md`.
+Default is option 4 (ask). If the owner named a different option at approval
+time, record it here. Present as: "Push policy will be set to: [option].
+Change? (1/2/3/4, or press Enter to accept default)"
+
+Options:
+  1 — always: Always push after every commit.
+  2 — operators: Push automatically after operator-invoked commits (handoff,
+      decision, drift, plan); ask for all others.
+  3 — docs: Push automatically after docs/state-only commits; ask for code
+      or tool changes.
+  4 — ask: Always ask before pushing. (default)>
 
 ## Risks, Limitations, Or Open Questions
 
