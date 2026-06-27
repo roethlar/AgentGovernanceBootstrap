@@ -312,10 +312,12 @@ the same single scoped commit.
     rejection ("do not approve"), a later approval re-authorizes the commit
     only if its wording unambiguously covers committing. Wording that names
     only part of the action ("move the files into place", "proceed") approves
-    copying alone - confirm commit scope in one line before committing. Never
-    push unprompted: after committing, ask once, in one line, whether to push
-    - naming the repo's remotes when there is more than one - and push only
-    what the owner names. The approval authorizes this one commit as shaped; do
+    copying alone - confirm commit scope in one line before committing. After
+    committing, consult `.agents/push-policy.md`. If the policy is `always`,
+    push immediately (naming the remote). If the policy is `operators` and
+    this commit is operator-invoked, push immediately. Otherwise ask once, in
+    one line, naming the repo's remotes when there is more than one, and push
+    only what the owner names. The approval authorizes this one commit as shaped; do
     not amend, rebase, squash, reorder, or force-push it afterward without a
     fresh owner go (see Git Safety in the AGENTS template).
 11. If this run confirmed a defect in the AgentGovernanceBootstrap product (its
