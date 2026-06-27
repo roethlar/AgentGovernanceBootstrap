@@ -564,9 +564,9 @@ outward-facing actions always need an explicit go. Push policy: see
 default (`ask`). `templates/approval-summary.template.md` gained a Push Policy
 section that presents four options at approval time (owner may pick one or
 accept the default). `procedures/bootstrap.md` Step 10 now consults
-`.agents/push-policy.md` after committing. `templateVersion` bumped to
-`2026-06-27.1`. This repo's own `.agents/push-policy.md` (option 1 — always)
-lands via a self-application dogfood run, not a direct edit. The text below is
+`.agents/push-policy.md` after committing. `templateVersion` bumped to `2026-06-27.1`. This repo's own
+`.agents/push-policy.md` must be created by running the bootstrap update route
+on this repo — the owner selects the policy at approval time. The text below is
 the original Open Decision rationale, retained until archived.
 
 ### Open: reassess the general push-needs-explicit-go rule (local-only commits are a staleness trap)

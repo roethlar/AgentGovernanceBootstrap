@@ -88,18 +88,16 @@ the owner's decision.>
 
 ## Push Policy
 
-<State the push policy that will be written to `.agents/push-policy.md`.
-Default is option 4 (ask). If the owner named a different option at approval
-time, record it here. Present as: "Push policy will be set to: [option].
-Change? (1/2/3/4, or press Enter to accept default)"
+Push policy will be set to: **4 — ask** (default).
 
-Options:
+To change it, reply with a number when you approve:
+
   1 — always: Always push after every commit.
-  2 — operators: Push automatically after operator-invoked commits (handoff,
-      decision, drift, plan); ask for all others.
-  3 — docs: Push automatically after docs/state-only commits; ask for code
-      or tool changes.
-  4 — ask: Always ask before pushing. (default)>
+  2 — operators: Push automatically after operator-invoked commits (handoff, decision, drift, plan); ask for all others.
+  3 — docs: Push automatically after docs/state-only commits; ask for code or tool changes.
+  4 — ask: Always ask before pushing. (default)
+
+<Do NOT pre-select or infer the option from prior decisions, context, or the decisions log. Write the default (4) here and wait for the owner's answer at approval time. The owner's reply to the approval question is the only valid source for this choice.>
 
 ## Risks, Limitations, Or Open Questions
 
