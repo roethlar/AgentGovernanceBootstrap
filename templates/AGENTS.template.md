@@ -1,5 +1,5 @@
 # Agent Guidance
-<!-- templateVersion: 2026-06-25.2 -->
+<!-- templateVersion: 2026-06-27.1 -->
 
 ## Prime Invariants
 <!-- prime:begin — keep terse; re-grounded after compaction -->
@@ -10,9 +10,9 @@ These outrank everything below. After a context compaction, re-read this block f
   not a decision to implement.
 - No code change without an approved plan; docs and other non-code edits don't
   need one (e.g. a README). When unsure, treat it as code.
-- Commit each slice as it lands; never leave finished work uncommitted. Push,
-  history-rewrite, and destructive or outward-facing actions need an explicit
-  go — pushing publishes.
+- Commit each slice as it lands; never leave finished work uncommitted.
+  History-rewrite and destructive or outward-facing actions always need an
+  explicit go. Push policy: see `.agents/push-policy.md`.
 - Repo is memory. Durable truth lives in the repo, not chat or working memory.
   Under context pressure, re-ground from AGENTS.md; prefer a fresh session when
   degraded.
