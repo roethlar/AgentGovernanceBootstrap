@@ -76,5 +76,71 @@ class TestScoring(unittest.TestCase):
                 run_fixture.score_fixture(fx)
 
 
+def _git(args: list[str], cwd: Path) -> str:
+    import subprocess
+    env = {"GIT_AUTHOR_NAME": "t", "GIT_AUTHOR_EMAIL": "t@t", "GIT_COMMITTER_NAME": "t",
+           "GIT_COMMITTER_EMAIL": "t@t"}
+    import os
+    e = dict(os.environ); e.update(env)
+    return subprocess.run(["git", "-C", str(cwd), *args], check=True, capture_output=True,
+                          text=True, env=e).stdout.strip()
+
+
+def _make_git_oracle_fixture(tmp: Path, verify: str = "sh check.sh") -> Path:
+    """Build a tiny git source repo with a real bug→fix pair, plus a fixture that
+    references it. base: app.txt='broken'. fix-commit: adds check.sh (greps app.txt
+    for FIXED) and sets app.txt='FIXED'. test_patch=check.sh, solution_patch=app.txt."""
+    repo = tmp / "src"
+    repo.mkdir()
+    _git(["init", "-q"], repo)
+    (repo / "app.txt").write_text("broken\n", encoding="utf-8")
+    _git(["add", "-A"], repo)
+    _git(["commit", "-q", "-m", "base"], repo)
+    base = _git(["rev-parse", "HEAD"], repo)
+    (repo / "check.sh").write_text("grep -q FIXED app.txt\n", encoding="utf-8")
+    (repo / "app.txt").write_text("FIXED\n", encoding="utf-8")
+    _git(["add", "-A"], repo)
+    _git(["commit", "-q", "-m", "fix"], repo)
+    fix_commit = _git(["rev-parse", "HEAD"], repo)
+    _git(["checkout", "-q", base], repo)
+
+    fx = tmp / "fx"
+    fx.mkdir()
+    # Metadata only: SHAs + paths, no diff text vendored into the fixture.
+    (fx / "fixture.json").write_text(json.dumps({
+        "id": "oracle", "language": "shell", "kind": "gold",
+        "source": {"repo_path": str(repo), "base_commit": base, "fix_commit": fix_commit},
+        "test_paths": ["check.sh"], "solution_paths": ["app.txt"],
+        "verify": verify,
+    }), encoding="utf-8")
+    return fx
+
+
+class TestOracle(unittest.TestCase):
+    def test_valid_oracle_broken_fails_fixed_passes(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            fx = _make_git_oracle_fixture(Path(tmp))
+            o = run_fixture.check_oracle(fx)
+            self.assertTrue(o["broken_fails"], "test must fail on the parent state")
+            self.assertTrue(o["fixed_passes"], "test must pass once the solution is applied")
+            self.assertTrue(o["oracle_valid"])
+
+    def test_oracle_invalid_when_test_passes_without_fix(self):
+        # verify='true' always passes, so the "broken" state does not fail -> no oracle.
+        with tempfile.TemporaryDirectory() as tmp:
+            fx = _make_git_oracle_fixture(Path(tmp), verify="true")
+            o = run_fixture.check_oracle(fx)
+            self.assertFalse(o["broken_fails"])
+            self.assertFalse(o["oracle_valid"])
+
+    def test_test_patch_makes_verify_fail_on_parent(self):
+        # A plain score (no solution) of a gold fixture should fail: the injected test
+        # is red against the unfixed parent source.
+        with tempfile.TemporaryDirectory() as tmp:
+            fx = _make_git_oracle_fixture(Path(tmp))
+            r = run_fixture.score_fixture(fx)
+            self.assertFalse(r["functional_pass"])
+
+
 if __name__ == "__main__":
     unittest.main()

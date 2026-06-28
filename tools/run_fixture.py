@@ -101,6 +101,30 @@ def scaffold(manifest: dict[str, Any], fixture_dir: Path, workdir: Path) -> str 
                           capture_output=True, text=True).stdout.strip()
 
 
+def patch_from_commit(repo_path: Path, commit: str, paths: list[str]) -> str:
+    """Derive a unified diff for `paths` introduced by `commit`, read live from the
+    source repo. Gold fixtures store only the commit SHA + paths (metadata), never the
+    diff text, so no source-repo code is vendored into this repo."""
+    out = subprocess.run(
+        ["git", "-C", str(repo_path), "show", commit, "--", *paths],
+        check=True, capture_output=True, text=True,
+    ).stdout
+    if not out.strip():
+        raise ValueError(f"empty patch from {commit} for paths {paths}")
+    return out
+
+
+def apply_patch_text(workdir: Path, patch_text: str) -> None:
+    """Apply a derived diff into the scaffolded workdir.
+
+    Gold fixtures inject the fix-commit's failing test onto the parent state; the
+    solution diff is applied only by the oracle self-check."""
+    subprocess.run(
+        ["git", "-C", str(workdir), "apply", "--whitespace=nowarn"],
+        input=patch_text, check=True, capture_output=True, text=True,
+    )
+
+
 def overlay_profile(profile: str, workdir: Path) -> list[str]:
     """Overlay a governance profile onto the workdir. Returns the list of files overlaid.
 
@@ -125,7 +149,8 @@ def overlay_profile(profile: str, workdir: Path) -> list[str]:
 
 
 def score_fixture(
-    fixture_dir: Path, profile: str = "none", workdir: Path | None = None, run_id: str = "manual"
+    fixture_dir: Path, profile: str = "none", workdir: Path | None = None,
+    run_id: str = "manual", apply_solution: bool = False,
 ) -> dict[str, Any]:
     fixture_dir = fixture_dir.resolve()
     manifest = load_manifest(fixture_dir)
@@ -149,6 +174,17 @@ def score_fixture(
     }
     try:
         result["source_commit"] = scaffold(manifest, fixture_dir, workdir)
+        # Gold-standard fixtures inject the fix-commit's failing test onto the parent
+        # state; the solution diff is applied only by the oracle self-check. Both diffs
+        # are derived live from the source repo by commit SHA + paths.
+        source = manifest.get("source") or {}
+        if manifest.get("test_paths"):
+            repo_path = Path(source["repo_path"]).expanduser()
+            apply_patch_text(workdir, patch_from_commit(
+                repo_path, source["fix_commit"], manifest["test_paths"]))
+            if apply_solution and manifest.get("solution_paths"):
+                apply_patch_text(workdir, patch_from_commit(
+                    repo_path, source["fix_commit"], manifest["solution_paths"]))
         result["profile_files"] = overlay_profile(profile, workdir)
         env_extra = manifest.get("env") or {}
 
@@ -171,13 +207,41 @@ def score_fixture(
             shutil.rmtree(workdir, ignore_errors=True)
 
 
+def check_oracle(fixture_dir: Path) -> dict[str, Any]:
+    """Validate a gold-standard fixture: the verify command must FAIL on the parent
+    state with the test patch applied, and PASS once the solution patch is also
+    applied. A fixture that does not satisfy both has no usable oracle."""
+    fixture_dir = fixture_dir.resolve()
+    manifest = load_manifest(fixture_dir)
+    source = manifest.get("source") or {}
+    if not (manifest.get("test_paths") and manifest.get("solution_paths") and source.get("fix_commit")):
+        raise ValueError("oracle check requires source.fix_commit, test_paths, and solution_paths")
+    broken = score_fixture(fixture_dir)
+    fixed = score_fixture(fixture_dir, apply_solution=True)
+    return {
+        "id": manifest["id"],
+        "broken_fails": not broken["functional_pass"],
+        "fixed_passes": bool(fixed["functional_pass"]),
+        "oracle_valid": (not broken["functional_pass"]) and bool(fixed["functional_pass"]),
+        "broken_verify_exit": broken["verify_exit"],
+        "fixed_verify_exit": fixed["verify_exit"],
+    }
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Run and score an eval fixture.")
     parser.add_argument("fixture", help="path to a fixture directory (contains fixture.json)")
     parser.add_argument("--profile", default="none", help="governance profile to overlay")
     parser.add_argument("--run-id", default="manual", help="label recorded in the result")
     parser.add_argument("--record", action="store_true", help="write the result JSON under evals/results/")
+    parser.add_argument("--check-oracle", action="store_true",
+                        help="validate a gold fixture (broken fails, fixed passes) instead of scoring")
     args = parser.parse_args(argv)
+
+    if args.check_oracle:
+        oracle = check_oracle(Path(args.fixture))
+        print(json.dumps(oracle, indent=2))
+        return 0 if oracle["oracle_valid"] else 1
 
     result = score_fixture(Path(args.fixture), profile=args.profile, run_id=args.run_id)
     print(json.dumps(result, indent=2))
