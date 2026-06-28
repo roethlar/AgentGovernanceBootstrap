@@ -19,6 +19,7 @@ contents.
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import shutil
 import subprocess
@@ -31,6 +32,35 @@ from typing import Any
 REPO_ROOT = Path(__file__).resolve().parents[1]
 PROFILES_DIR = REPO_ROOT / "evals" / "governance_profiles"
 RESULTS_DIR = REPO_ROOT / "evals" / "results"
+
+
+def _sha(parts: list[str]) -> str:
+    h = hashlib.sha256()
+    for p in parts:
+        h.update(p.encode("utf-8", errors="replace"))
+        h.update(b"\0")
+    return h.hexdigest()[:16]
+
+
+def fixture_hash(fixture_dir: Path, manifest: dict[str, Any]) -> str:
+    """Stable identity of the fixture inputs (manifest + task), so trial results are
+    comparable across reruns and detect a fixture that changed under them."""
+    task = manifest.get("task", "TASK.md")
+    task_text = ""
+    if (fixture_dir / task).exists():
+        task_text = (fixture_dir / task).read_text(encoding="utf-8", errors="replace")
+    return _sha([json.dumps(manifest, sort_keys=True), task_text])
+
+
+def overlaid_hash(workdir: Path, overlaid: list[str]) -> str:
+    """Hash the governance actually injected (the overlaid files' contents), so two
+    trials under 'the same profile' are provably the same governance."""
+    parts: list[str] = []
+    for rel in sorted(overlaid):
+        f = workdir / rel
+        parts.append(rel)
+        parts.append(f.read_text(encoding="utf-8", errors="replace") if f.exists() else "")
+    return _sha(parts)
 
 
 def load_manifest(fixture_dir: Path) -> dict[str, Any]:
@@ -141,11 +171,14 @@ def isolate_history(workdir: Path) -> None:
 
 
 def overlay_profile(profile: str, workdir: Path) -> list[str]:
-    """Overlay a governance profile onto the workdir. Returns the list of files overlaid.
+    """Overlay a governance profile onto the workdir. Returns the relpaths overlaid.
 
-    'none' is a no-op. Other profiles copy their tree over the workdir. Harness-neutral
-    files live at the profile root; harness adapters live under per-harness subdirs and
-    are installed by a driver, not here.
+    'none' is a no-op. A profile may carry literal files (overlaid as-is) and/or a
+    `profile.json` with a `copies` list mapping product files into the workspace, e.g.
+    {"copies": [{"from": "templates/AGENTS.template.md", "to": "AGENTS.md"}]}. The copy
+    form keeps a single source of truth — `current-template` is generated from the
+    shipped templates rather than duplicating them. `profile.json` and README files are
+    metadata, not overlaid.
     """
     if profile in ("", "none"):
         return []
@@ -153,8 +186,17 @@ def overlay_profile(profile: str, workdir: Path) -> list[str]:
     if not profile_dir.is_dir():
         raise FileNotFoundError(f"unknown governance profile: {profile} ({profile_dir})")
     overlaid: list[str] = []
+    spec_path = profile_dir / "profile.json"
+    if spec_path.exists():
+        spec = json.loads(spec_path.read_text(encoding="utf-8"))
+        for copy in spec.get("copies", []):
+            src = (REPO_ROOT / copy["from"]).resolve()
+            dest = workdir / copy["to"]
+            dest.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copy2(src, dest)
+            overlaid.append(copy["to"])
     for item in sorted(profile_dir.rglob("*")):
-        if item.is_file():
+        if item.is_file() and item.name != "profile.json" and not item.name.startswith("README"):
             rel = item.relative_to(profile_dir)
             dest = workdir / rel
             dest.parent.mkdir(parents=True, exist_ok=True)
@@ -204,6 +246,8 @@ def score_fixture(
         if source:
             isolate_history(workdir)
         result["profile_files"] = overlay_profile(profile, workdir)
+        result["profile_hash"] = overlaid_hash(workdir, result["profile_files"])
+        result["fixture_hash"] = fixture_hash(fixture_dir, manifest)
         env_extra = manifest.get("env") or {}
 
         for step in manifest.get("setup", []):

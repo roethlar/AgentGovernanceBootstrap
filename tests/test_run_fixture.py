@@ -207,5 +207,51 @@ class TestDriverModule(unittest.TestCase):
         self.assertTrue(callable(self.drivers.get_driver("claude")))
 
 
+class TestProfiles(unittest.TestCase):
+    def test_none_overlays_nothing(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            self.assertEqual(run_fixture.overlay_profile("none", Path(tmp)), [])
+
+    def test_current_template_generated_from_product_templates(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            wd = Path(tmp)
+            overlaid = run_fixture.overlay_profile("current-template", wd)
+            self.assertIn("AGENTS.md", overlaid)
+            self.assertIn("CLAUDE.md", overlaid)
+            self.assertIn("Prime Invariants", (wd / "AGENTS.md").read_text(encoding="utf-8"))
+            self.assertIn("@AGENTS.md", (wd / "CLAUDE.md").read_text(encoding="utf-8"))
+
+    def test_profile_hash_differs_between_none_and_current_template(self):
+        with tempfile.TemporaryDirectory() as a, tempfile.TemporaryDirectory() as b:
+            none_h = run_fixture.overlaid_hash(Path(a), run_fixture.overlay_profile("none", Path(a)))
+            ct_h = run_fixture.overlaid_hash(Path(b), run_fixture.overlay_profile("current-template", Path(b)))
+            self.assertNotEqual(none_h, ct_h)
+
+
+class TestRunMatrix(unittest.TestCase):
+    def setUp(self):
+        sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "evals"))
+        import run_trials
+        self.rt = run_trials
+
+    def _fixer(self, workdir, fixture_dir, manifest, env_extra):
+        (Path(workdir) / "app.txt").write_text("FIXED\n", encoding="utf-8")
+        return {"driver": "fake", "exit": 0}
+
+    def test_matrix_with_driver_passes_all_runs(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            fx = _make_git_oracle_fixture(Path(tmp))
+            res = self.rt.run_matrix([fx], ["none"], 2, self._fixer, record=False)
+            agg = self.rt.summarize(res)
+            self.assertEqual(agg[("oracle", "none")]["passes"], 2)
+            self.assertEqual(agg[("oracle", "none")]["pass_rate"], 1.0)
+
+    def test_matrix_without_driver_fails_all_runs(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            fx = _make_git_oracle_fixture(Path(tmp))
+            res = self.rt.run_matrix([fx], ["none"], 2, None, record=False)
+            self.assertEqual(self.rt.summarize(res)[("oracle", "none")]["passes"], 0)
+
+
 if __name__ == "__main__":
     unittest.main()
