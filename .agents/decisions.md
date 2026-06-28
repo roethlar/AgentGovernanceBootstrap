@@ -34,6 +34,77 @@ live rule now owned elsewhere - archive it per the rule above: move it verbatim 
 
 ## Decisions
 
+### 2026-06-28 — Collapse the update route into migration; route detection is not load-bearing
+
+Status: Active (decision settled; implementation deferred to a plan).
+
+Decision: The `update` route collapses into the `migration` route. One route
+then handles every repo that already has governance — a foreign governance
+system to inventory, an already-toolkit-bootstrapped repo, or this toolkit's own
+self/dogfood run — with the `<!-- templateVersion -->` reconciliation of a stale
+or unstamped `AGENTS.md` (the 2026-06-22 decision) retained as a branch *within*
+that single route, not removed. `greenfield` (a repo with no existing governance)
+stays a distinct route; whether it too should fold is explicitly **not** part of
+this decision. What is eliminated is the `update`-vs-`migration` "is this repo
+already ours" determination in `compute_route()` — that detection was never
+load-bearing.
+
+Reason: every route converges behind the same approval-summary gate and produces
+the same vetted output, so route selection only ever affected *speed*, never
+correctness or safety. A misroute's worst case is "ran the slightly heavier
+procedure," not a wrong result. Both candidate ownership signals — the presence
+of `.agents/state.md` (a generic name a foreign system could also use) and a
+`bootstrap.config.json` marker — are weak as provenance. The owner principle on
+record (thorough every time; duration matters less than thoroughness) favors one
+thorough path over two paths plus a fragile detector. This also drops
+`bootstrap.config.json` from the documented `.agents/` layout in `README.md`:
+nothing ships it, and the `AGENTS.md` `templateVersion` stamp already covers the
+only real provenance need.
+
+Considered and rejected: (a) ship `bootstrap.config.json` as a provenance/version
+marker — adds a new required artifact on every bootstrapped repo and a second
+version-of-truth source that drifts from the `templateVersion` stamp the moment
+one is edited without the other, against the smallest-guidance-set invariant and
+the 2026-06-28 harness-neutral / no-redundant-provenance direction; (b) keep two
+routes but switch the update marker to the `templateVersion` stamp — zero new
+files, but still treats "is this ours" detection as load-bearing for no
+correctness gain. The fork is dissolved rather than answered.
+
+Accepted cost: an already-bootstrapped or dogfood run now does the unified
+route's inventory pass over files already in canonical layout (verdict "leave /
+already-canonical") — slightly more ceremony than `update`'s reconcile-only path,
+converging correctly at the same gate, consistent with thorough-every-time.
+
+Scope / deferral: implementation is owner-gated code/procedure work needing a
+separate `plan`, and touches `tools/discover.py` `compute_route()` (drop the
+`update` branch), the procedure merge (`procedures/bootstrap.md` +
+`procedures/migration.md` into one route, folding in the `templateVersion`
+reconciliation branch and the dogfood-in-place lens), `README.md` (drop
+`bootstrap.config.json` from the documented layout),
+`templates/AGENTS.template.md` Bootstrap Handoff / any "update route" wording,
+and the several Open entries that name "the update route" (the monorepo-subdir
+probe, committed-wrapper staleness, the `governance-lint` update-route
+recommendation) reworded to the single route in that plan. The `templateVersion`
+reconciliation machinery is retained — it moves into the single route, it is not
+dropped.
+
+Relationship: resolves the `Open: bootstrap.config.json` fork (archived verbatim
+in `docs/history/decisions-archive.md` in this same change) and answers its
+2026-06-23 reframe — "the question may be better framed as whether to collapse
+the update route into migration" — in the affirmative. Exercises, does not
+supersede, the 2026-06-22 update-route `templateVersion` reconciliation decision
+(that step is folded into the single route). Amends the 2026-06-27
+dogfood/self-application decision's "takes the existing `update` route" wording:
+the dogfood case becomes a named in-place case of the single route (run the one
+procedure in-place; a missing `.bootstrap-tmp/` at kickoff is still the normal
+start); that decision otherwise stays Active and its anti-stop handrail is, if
+anything, more necessary because the unified route inherits migration's
+foreign-target framing.
+
+Earned by the 2026-06-23 reframe of the `bootstrap.config.json` Open Decision and
+this session's analysis confirming detection only affects speed and a new marker
+file fights the recent harness-neutral direction. Owner decided 2026-06-28.
+
 ### 2026-06-28 — Durable truth lives only in harness-neutral files; harness-specific files are pure adapters
 
 Status: Active (principle in force now; enforcement implementation deferred to a plan)
@@ -684,56 +755,11 @@ These are assessed findings the owner chose to record for a future decision
 rather than implement now. The process is unchanged until one is adopted. Each
 states the verified evidence, the options, and the standing recommendation.
 
-The following seven were assessed on 2026-06-22 from three external repo
+The following six were assessed on 2026-06-22 from three external repo
 reviews (DeepSeek, GPT-5.5, Grok) read against current repo evidence. The
 reviews' other suggestions were rejected as scope-inflating or already covered
 and are not recorded. Recommendation order below is the suggested implementation
 sequence.
-
-### Open: `bootstrap.config.json` is documented layout but unshipped, and the update route depends on it
-
-Evidence: `README.md` lists `.agents/bootstrap.config.json` in the canonical
-`.agents/` layout, but no template ships it and this toolkit's own `.agents/`
-does not contain it. `tools/discover.py` `compute_route()` treats the presence of
-`.agents/state.md` OR `.agents/bootstrap.config.json` as proof of toolkit
-ownership and returns the `update` route, which then triggers AGENTS.md template
-reconciliation (`procedures/bootstrap.md` Step 3). `state.md` is a generic name a
-foreign governance system could also use, so a non-toolkit repo can be misrouted
-into update/reconciliation; the only unambiguous toolkit marker would be the
-config file, which does not exist.
-
-Options: (a) define `bootstrap.config.json` (a provenance/version marker),
-template it, populate it in this repo, and make it the authoritative update-route
-marker — `state.md` alone becomes a weaker signal; (b) drop
-`bootstrap.config.json` from the documented layout and tighten the update-route
-test another way (e.g. require a toolkit-stamped `AGENTS.md`); (c) leave as-is.
-
-Recommendation: decide between (a) and (b) before any code — this is a genuine
-design fork. (a) gives a clean provenance marker and a place for the toolkit
-version, at the cost of a new required artifact on every bootstrapped repo. (b)
-is less surface. Either way it removes the false-positive route. Pairs with the
-`run_git` fix as the two grounded `discover.py` issues from the reviews.
-
-Owner decision 2026-06-22: option (a). Define `bootstrap.config.json` (a
-provenance / toolkit-version marker), ship a template for it, populate it in this
-repo, and make it the authoritative update-route ownership marker; `state.md`
-alone stops being sufficient proof of toolkit ownership. Still Open: not yet
-implemented. Next step is a `plan` for the file shape, the template, and the
-`compute_route()` change.
-
-Update 2026-06-23: owner chose not to decide this now — it stays Open, with no
-priority judgment (an earlier note here called it "deprioritized"; that was the
-agent's word, not the owner's). Owner did state a governing principle: the
-bootstrap process should be thorough every time, and duration matters less than
-thoroughness. Lead from discussion, not a decision: the route only selects which
-procedure starts and every route converges behind the approval summary, so
-detecting "is this ours" affects speed more than thoroughness, and both candidate
-ownership signals (a `bootstrap.config.json` marker or a `templateVersion`-stamped
-`AGENTS.md`) are weak as provenance — so the question may be better framed as
-whether to collapse the update route into migration (cf. the 2026-06-22 "update
-route reconciles a stale AGENTS.md" decision) than as shipping a routing marker.
-No next step is committed yet; this supersedes the "next step is a plan" line
-above.
 
 ### Open: route/verification probes match literal `package.json` against repo-relative paths (monorepo subdir miss)
 
