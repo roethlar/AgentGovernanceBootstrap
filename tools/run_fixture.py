@@ -218,11 +218,22 @@ def check_oracle(fixture_dir: Path) -> dict[str, Any]:
         raise ValueError("oracle check requires source.fix_commit, test_paths, and solution_paths")
     broken = score_fixture(fixture_dir)
     fixed = score_fixture(fixture_dir, apply_solution=True)
+    # A real oracle requires the VERIFY command itself to discriminate: it must run
+    # (setup ok, not skipped) and FAIL on the parent+test state, then run and PASS once
+    # the solution is applied. A setup failure is NOT a valid oracle failure — otherwise
+    # a fixture whose `setup` happens to fail on the broken state would masquerade as a
+    # passing oracle even though `verify` never demonstrated the bug. (RF-001)
+    broken_ran = broken["setup_ok"] and broken["verify_exit"] is not None
+    fixed_ran = fixed["setup_ok"] and fixed["verify_exit"] is not None
+    broken_fails = broken_ran and broken["verify_exit"] != 0
+    fixed_passes = fixed_ran and fixed["verify_exit"] == 0
     return {
         "id": manifest["id"],
-        "broken_fails": not broken["functional_pass"],
-        "fixed_passes": bool(fixed["functional_pass"]),
-        "oracle_valid": (not broken["functional_pass"]) and bool(fixed["functional_pass"]),
+        "broken_fails": broken_fails,
+        "fixed_passes": fixed_passes,
+        "broken_setup_ok": broken["setup_ok"],
+        "fixed_setup_ok": fixed["setup_ok"],
+        "oracle_valid": broken_fails and fixed_passes,
         "broken_verify_exit": broken["verify_exit"],
         "fixed_verify_exit": fixed["verify_exit"],
     }

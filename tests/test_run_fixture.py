@@ -86,7 +86,8 @@ def _git(args: list[str], cwd: Path) -> str:
                           text=True, env=e).stdout.strip()
 
 
-def _make_git_oracle_fixture(tmp: Path, verify: str = "sh check.sh") -> Path:
+def _make_git_oracle_fixture(tmp: Path, verify: str = "sh check.sh",
+                             setup: list[str] | None = None) -> Path:
     """Build a tiny git source repo with a real bug→fix pair, plus a fixture that
     references it. base: app.txt='broken'. fix-commit: adds check.sh (greps app.txt
     for FIXED) and sets app.txt='FIXED'. test_patch=check.sh, solution_patch=app.txt."""
@@ -111,6 +112,7 @@ def _make_git_oracle_fixture(tmp: Path, verify: str = "sh check.sh") -> Path:
         "id": "oracle", "language": "shell", "kind": "gold",
         "source": {"repo_path": str(repo), "base_commit": base, "fix_commit": fix_commit},
         "test_paths": ["check.sh"], "solution_paths": ["app.txt"],
+        "setup": setup or [],
         "verify": verify,
     }), encoding="utf-8")
     return fx
@@ -130,6 +132,20 @@ class TestOracle(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             fx = _make_git_oracle_fixture(Path(tmp), verify="true")
             o = run_fixture.check_oracle(fx)
+            self.assertFalse(o["broken_fails"])
+            self.assertFalse(o["oracle_valid"])
+
+    def test_oracle_invalid_when_broken_fails_only_in_setup(self):
+        # RF-001 regression: if the broken state fails in SETUP (verify never runs),
+        # that is not a valid oracle failure. verify='true' always passes; setup
+        # 'grep -q FIXED app.txt' fails on the parent (app.txt='broken') and passes
+        # once the solution sets app.txt='FIXED'. The verify command never
+        # discriminates, so the oracle must be rejected.
+        with tempfile.TemporaryDirectory() as tmp:
+            fx = _make_git_oracle_fixture(Path(tmp), verify="true",
+                                          setup=["grep -q FIXED app.txt"])
+            o = run_fixture.check_oracle(fx)
+            self.assertFalse(o["broken_setup_ok"])
             self.assertFalse(o["broken_fails"])
             self.assertFalse(o["oracle_valid"])
 
