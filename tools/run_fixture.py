@@ -96,8 +96,10 @@ def run_command(
 def scaffold(manifest: dict[str, Any], fixture_dir: Path, workdir: Path) -> str | None:
     """Materialize the fixture into workdir. Returns the resolved source commit, if any.
 
-    source=None  -> empty workdir; copy fixture's inline `files/` payload if present.
-    source=repo  -> local git clone at a pinned commit with remotes stripped.
+    source=None       -> empty workdir; copy fixture's inline `files/` payload if present.
+    source.copy_dir   -> copy a local directory (e.g. a benchmark exercise), excluding
+                         named entries (the reference solution); no source commit.
+    source.repo_path  -> local git clone at a pinned commit with remotes stripped.
     """
     source = manifest.get("source")
     if not source:
@@ -110,6 +112,21 @@ def scaffold(manifest: dict[str, Any], fixture_dir: Path, workdir: Path) -> str 
                     shutil.copytree(item, dest)
                 else:
                     shutil.copy2(item, dest)
+        return None
+
+    if source.get("copy_dir"):
+        src_dir = Path(source["copy_dir"]).expanduser().resolve()
+        if not src_dir.is_dir():
+            raise FileNotFoundError(f"source.copy_dir is not a directory: {src_dir}")
+        excludes = set(source.get("exclude", []))
+        for item in sorted(src_dir.iterdir()):
+            if item.name in excludes:
+                continue
+            dest = workdir / item.name
+            if item.is_dir():
+                shutil.copytree(item, dest, ignore=shutil.ignore_patterns(*excludes) if excludes else None)
+            else:
+                shutil.copy2(item, dest)
         return None
 
     repo_path = Path(source["repo_path"]).expanduser()

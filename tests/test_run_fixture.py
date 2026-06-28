@@ -369,6 +369,54 @@ class TestRunMatrix(unittest.TestCase):
             self.assertEqual(self.rt.summarize(res)[("oracle", "none")]["passes"], 0)
 
 
+class TestCopyDir(unittest.TestCase):
+    def test_copy_dir_excludes_reference_solution(self):
+        with tempfile.TemporaryDirectory() as src, tempfile.TemporaryDirectory() as wd:
+            s = Path(src)
+            (s / "stub.py").write_text("def f(): pass", encoding="utf-8")
+            (s / "sub").mkdir()
+            (s / "sub" / "helper.py").write_text("x = 1", encoding="utf-8")
+            (s / ".meta").mkdir()
+            (s / ".meta" / "example.py").write_text("def f(): return 42  # REFERENCE", encoding="utf-8")
+            run_fixture.scaffold({"source": {"copy_dir": str(s), "exclude": [".meta"]}}, Path(src), Path(wd))
+            self.assertTrue((Path(wd) / "stub.py").exists())
+            self.assertTrue((Path(wd) / "sub" / "helper.py").exists())
+            self.assertFalse((Path(wd) / ".meta").exists(), "reference solution must be excluded")
+
+
+class TestPolyglotFixture(unittest.TestCase):
+    def setUp(self):
+        sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "tools"))
+        import polyglot_fixture
+        self.pf = polyglot_fixture
+
+    def _fake_exercise(self, bench: Path) -> None:
+        ex = bench / "python" / "exercises" / "practice" / "foo"
+        (ex / ".meta").mkdir(parents=True)
+        (ex / ".docs").mkdir(parents=True)
+        (ex / ".meta" / "config.json").write_text(json.dumps(
+            {"files": {"solution": ["foo.py"], "test": ["foo_test.py"], "example": [".meta/example.py"]}}),
+            encoding="utf-8")
+        (ex / ".docs" / "instructions.md").write_text("Implement foo so it returns 42.", encoding="utf-8")
+        (ex / ".meta" / "example.py").write_text("def foo(): return 42", encoding="utf-8")
+        (ex / "foo.py").write_text("def foo(): pass", encoding="utf-8")
+        (ex / "foo_test.py").write_text("import unittest", encoding="utf-8")
+
+    def test_build_references_path_excludes_meta_and_prompts_instructions(self):
+        with tempfile.TemporaryDirectory() as bench, tempfile.TemporaryDirectory() as out:
+            self._fake_exercise(Path(bench))
+            o = self.pf.build(bench, "python", "foo", Path(out) / "f")
+            fx = json.loads((o / "fixture.json").read_text())
+            self.assertEqual(fx["language"], "python")
+            self.assertIn(".meta", fx["source"]["exclude"])
+            self.assertTrue(fx["source"]["copy_dir"].endswith("/practice/foo"))
+            prompt = (o / "PROMPT.md").read_text(encoding="utf-8")
+            self.assertIn("Implement foo so it returns 42.", prompt)  # instructions
+            self.assertIn("foo.py", prompt)                            # names the solution file
+            self.assertNotIn("return 42\n", prompt)                    # but not the reference body
+            self.assertNotIn("example.py", prompt)
+
+
 class TestAggregate(unittest.TestCase):
     def setUp(self):
         sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "evals"))
