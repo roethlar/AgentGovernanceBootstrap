@@ -1,0 +1,25 @@
+{
+  "run_id": "grokcal-none-1",
+  "id": "poly_py_pov",
+  "language": "python",
+  "profile": "none",
+  "source_commit": null,
+  "setup_ok": true,
+  "verify_exit": 0,
+  "functional_pass": true,
+  "duration_sec": 84.95,
+  "workdir": "/tmp/evalfx-poly_py_pov-_bw6kk5_",
+  "profile_files": [],
+  "profile_hash": "e3b0c44298fc1c14",
+  "fixture_hash": "4726dfaebb7166c8",
+  "driver": {
+    "driver": "grok",
+    "exit": 0,
+    "duration_sec": 84.8,
+    "changed_files": [
+      "pov.py",
+      "__pycache__/"
+    ],
+    "error_tail": ""
+  }
+}

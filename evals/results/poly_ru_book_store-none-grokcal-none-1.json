@@ -1,0 +1,26 @@
+{
+  "run_id": "grokcal-none-1",
+  "id": "poly_ru_book_store",
+  "language": "rust",
+  "profile": "none",
+  "source_commit": null,
+  "setup_ok": true,
+  "verify_exit": 0,
+  "functional_pass": true,
+  "duration_sec": 52.82,
+  "workdir": "/tmp/evalfx-poly_ru_book_store-11h99kg4",
+  "profile_files": [],
+  "profile_hash": "e3b0c44298fc1c14",
+  "fixture_hash": "eb4cb71f3e7a0389",
+  "driver": {
+    "driver": "grok",
+    "exit": 0,
+    "duration_sec": 52.7,
+    "changed_files": [
+      "src/lib.rs",
+      "Cargo.lock",
+      "target/"
+    ],
+    "error_tail": ""
+  }
+}

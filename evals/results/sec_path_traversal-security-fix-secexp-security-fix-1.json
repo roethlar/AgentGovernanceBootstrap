@@ -1,0 +1,31 @@
+{
+  "run_id": "secexp-security-fix-1",
+  "id": "sec_path_traversal",
+  "language": "python",
+  "profile": "security-fix",
+  "source_commit": null,
+  "setup_ok": true,
+  "verify_exit": 0,
+  "functional_pass": true,
+  "duration_sec": 19.3,
+  "workdir": "/tmp/evalfx-sec_path_traversal-ywjo9nrh",
+  "profile_files": [
+    "CLAUDE.md",
+    "AGENTS.md"
+  ],
+  "profile_hash": "41a7d7b058d1eb2b",
+  "fixture_hash": "bf73bc19c5949541",
+  "driver": {
+    "driver": "ollama:gpt-oss:120b-cloud",
+    "exit": 0,
+    "duration_sec": 19.1,
+    "changed_files": [
+      "files.py",
+      "AGENTS.md",
+      "CLAUDE.md"
+    ],
+    "error_tail": ""
+  },
+  "hidden_exit": 0,
+  "security_pass": true
+}

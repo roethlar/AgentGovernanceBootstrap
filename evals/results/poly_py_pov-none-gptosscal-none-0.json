@@ -1,0 +1,24 @@
+{
+  "run_id": "gptosscal-none-0",
+  "id": "poly_py_pov",
+  "language": "python",
+  "profile": "none",
+  "source_commit": null,
+  "setup_ok": true,
+  "verify_exit": 1,
+  "functional_pass": false,
+  "duration_sec": 80.32,
+  "workdir": "/tmp/evalfx-poly_py_pov-2zw9f4s7",
+  "profile_files": [],
+  "profile_hash": "e3b0c44298fc1c14",
+  "fixture_hash": "4726dfaebb7166c8",
+  "driver": {
+    "driver": "ollama:gpt-oss:120b-cloud",
+    "exit": 0,
+    "duration_sec": 80.2,
+    "changed_files": [
+      "pov.py"
+    ],
+    "error_tail": ""
+  }
+}

@@ -1,0 +1,26 @@
+{
+  "run_id": "grokcal-none-1",
+  "id": "poly_ja_forth",
+  "language": "javascript",
+  "profile": "none",
+  "source_commit": null,
+  "setup_ok": true,
+  "verify_exit": 0,
+  "functional_pass": true,
+  "duration_sec": 120.46,
+  "workdir": "/tmp/evalfx-poly_ja_forth-6csrjuq3",
+  "profile_files": [],
+  "profile_hash": "e3b0c44298fc1c14",
+  "fixture_hash": "18e40992b61318b0",
+  "driver": {
+    "driver": "grok",
+    "exit": 0,
+    "duration_sec": 107.2,
+    "changed_files": [
+      "forth.js",
+      "node_modules/",
+      "package-lock.json"
+    ],
+    "error_tail": ""
+  }
+}
