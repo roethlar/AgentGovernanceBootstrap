@@ -226,6 +226,11 @@ class TestDriverModule(unittest.TestCase):
         for name in ("codex", "claude", "grok"):
             self.assertTrue(callable(self.drivers.get_driver(name)))
 
+    def test_ollama_driver_parsed_from_name(self):
+        # model names contain ':', so the split must keep the full model id
+        d = self.drivers.get_driver("ollama:qwen3.6:27b-mlx")
+        self.assertTrue(callable(d))
+
 
 class TestHiddenScoring(unittest.TestCase):
     FX = Path(__file__).resolve().parents[1] / "evals" / "fixtures" / "sec_path_traversal"
