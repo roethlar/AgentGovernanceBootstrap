@@ -189,6 +189,13 @@ def overlay_profile(profile: str, workdir: Path) -> list[str]:
     if not profile_dir.is_dir():
         raise FileNotFoundError(f"unknown governance profile: {profile} ({profile_dir})")
 
+    # Preflight: reject any symlink anywhere in the profile tree (including a symlinked
+    # profile.json) BEFORE reading or copying anything, so a rejected profile has no
+    # side effects.
+    for item in profile_dir.rglob("*"):
+        if item.is_symlink():
+            raise ValueError(f"profile contains a symlink (not allowed): {item.relative_to(profile_dir)}")
+
     workdir_root = workdir.resolve()
 
     def _safe_dest(rel_to: str) -> Path:
@@ -210,8 +217,6 @@ def overlay_profile(profile: str, workdir: Path) -> list[str]:
             shutil.copy2(src, dest)
             overlaid.append(copy["to"])
     for item in sorted(profile_dir.rglob("*")):
-        if item.is_symlink():
-            raise ValueError(f"profile contains a symlink (not allowed): {item.relative_to(profile_dir)}")
         if item.is_file() and item.name != "profile.json" and not item.name.startswith("README"):
             rel = item.relative_to(profile_dir)
             dest = _safe_dest(str(rel))

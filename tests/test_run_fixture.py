@@ -283,6 +283,27 @@ class TestProfiles(unittest.TestCase):
             finally:
                 rf.PROFILES_DIR = orig
 
+    def test_symlinked_profile_json_rejected_before_any_copy(self):
+        # SYMLINK-SOURCE-PROFILEJSON-PREFLIGHT regression: a symlinked profile.json must
+        # be rejected before it is read/applied — no destination file created.
+        import run_fixture as rf
+        with tempfile.TemporaryDirectory() as profroot, tempfile.TemporaryDirectory() as wd, \
+                tempfile.TemporaryDirectory() as outside:
+            spec = Path(outside) / "real.json"
+            spec.write_text(json.dumps({"copies": [{"from": "README.md", "to": "leaked.txt"}]}),
+                            encoding="utf-8")
+            orig = rf.PROFILES_DIR
+            try:
+                rf.PROFILES_DIR = Path(profroot)
+                pdir = Path(profroot) / "evil"
+                pdir.mkdir()
+                (pdir / "profile.json").symlink_to(spec)
+                with self.assertRaises(ValueError):
+                    rf.overlay_profile("evil", Path(wd))
+                self.assertFalse((Path(wd) / "leaked.txt").exists(), "no copy before rejection")
+            finally:
+                rf.PROFILES_DIR = orig
+
     def test_profile_hash_differs_between_none_and_current_template(self):
         with tempfile.TemporaryDirectory() as a, tempfile.TemporaryDirectory() as b:
             none_h = run_fixture.overlaid_hash(Path(a), run_fixture.overlay_profile("none", Path(a)))
