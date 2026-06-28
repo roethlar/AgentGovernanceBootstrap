@@ -1,0 +1,10 @@
+{
+  "id": "py_duration_parser",
+  "language": "python",
+  "kind": "synthetic",
+  "source": null,
+  "files": "files",
+  "setup": [],
+  "verify": "python3 -m unittest test_duration",
+  "task": "TASK.md"
+}

@@ -162,8 +162,10 @@ def isolate_history(workdir: Path) -> None:
     fix-commit — a driven agent could `git show` it and copy the answer. Re-initializing
     at the post-scaffold (parent + injected test) state removes all ancestry, so the
     agent starts from a clean checkpoint with nothing to crib, and the agent's edits are
-    diffable against `trial-base`."""
-    shutil.rmtree(workdir / ".git")
+    diffable against `trial-base`. Also used for synthetic fixtures (no prior .git) so
+    their trials are tamper-evident too."""
+    if (workdir / ".git").exists():
+        shutil.rmtree(workdir / ".git")
     subprocess.run(["git", "-C", str(workdir), "init", "--quiet"], check=True, capture_output=True, text=True)
     subprocess.run(["git", "-C", str(workdir), "add", "-A"], check=True, capture_output=True, text=True)
     subprocess.run(["git", "-C", str(workdir), "-c", "user.email=eval@local", "-c", "user.name=eval",
@@ -264,7 +266,7 @@ def score_fixture(
             if apply_solution and manifest.get("solution_paths"):
                 apply_patch_text(workdir, patch_from_commit(
                     repo_path, source["fix_commit"], manifest["solution_paths"]))
-        if source:
+        if source or manifest.get("files"):
             isolate_history(workdir)
         result["profile_files"] = overlay_profile(profile, workdir)
         result["profile_hash"] = overlaid_hash(workdir, result["profile_files"])
