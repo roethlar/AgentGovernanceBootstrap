@@ -88,21 +88,26 @@ def codex_driver(workdir: Path, fixture_dir: Path, manifest: dict[str, Any],
 
 
 def claude_driver(workdir: Path, fixture_dir: Path, manifest: dict[str, Any],
-                  env_extra: dict[str, str] | None = None, timeout: int = 1800) -> dict[str, Any]:
+                  env_extra: dict[str, str] | None = None, timeout: int = 1800,
+                  model: str | None = None) -> dict[str, Any]:
+    """Drive Claude Code natively. `model` selects a specific Claude model (e.g. a weaker
+    older one — haiku/sonnet — to expose margin where Opus/codex ceiling); None uses the
+    session default. Native tool-use, no proxy."""
     prompt = PROMPT_WRAPPER.format(task=agent_prompt(fixture_dir, manifest))
     env = dict(os.environ)
     env.update(env_extra or {})
+    cmd = ["claude", "-p", prompt, "--permission-mode", "acceptEdits"]
+    if model:
+        cmd += ["--model", model]
     started = time.monotonic()
     try:
-        proc = subprocess.run(
-            ["claude", "-p", prompt, "--permission-mode", "acceptEdits"],
-            cwd=str(workdir), capture_output=True, text=True, timeout=timeout, env=env,
-        )
+        proc = subprocess.run(cmd, cwd=str(workdir), capture_output=True, text=True,
+                              timeout=timeout, env=env)
         exit_code, err = proc.returncode, proc.stderr[-500:]
     except subprocess.TimeoutExpired:
         exit_code, err = 124, f"TIMEOUT after {timeout}s"
     return {
-        "driver": "claude",
+        "driver": f"claude:{model}" if model else "claude",
         "exit": exit_code,
         "duration_sec": round(time.monotonic() - started, 1),
         "changed_files": _changed_files(workdir),
@@ -182,6 +187,9 @@ def get_driver(name: str) -> Callable[..., dict[str, Any]]:
     # so split only on the first).
     if name.startswith("ollama:"):
         return ollama_driver(name.split(":", 1)[1])
+    if name.startswith("claude:"):
+        model = name.split(":", 1)[1]
+        return lambda *a, **k: claude_driver(*a, model=model, **k)
     if name not in _DRIVERS:
         raise ValueError(f"unknown driver: {name} (have: {', '.join(sorted(_DRIVERS))})")
     return _DRIVERS[name]
