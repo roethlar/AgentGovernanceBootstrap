@@ -197,6 +197,17 @@ class TestDriverModule(unittest.TestCase):
             with self.assertRaises(FileNotFoundError):
                 self.drivers.agent_prompt(Path(tmp2), {})
 
+    def test_prompt_file_override_cannot_reselect_task_md(self):
+        # PROMPT-FILE-BYPASS regression: a manifest prompt_file override must NOT be able
+        # to point the agent prompt at provenance-bearing TASK.md.
+        with tempfile.TemporaryDirectory() as tmp:
+            fxdir = Path(tmp)
+            (fxdir / "TASK.md").write_text("leak qbit-mobile ae748cd\n", encoding="utf-8")
+            (fxdir / "PROMPT.md").write_text("Do the thing.\n", encoding="utf-8")
+            prompt = self.drivers.agent_prompt(fxdir, {"prompt_file": "TASK.md"})
+            self.assertEqual(prompt, "Do the thing.")
+            self.assertNotIn("qbit-mobile", prompt)
+
     def test_gold_fixture_agent_prompt_has_no_provenance(self):
         # RF-DRIVER-PROMPT-FIXCOMMIT-LEAK regression: the agent-facing prompt must not
         # name the source repo or any commit SHA, or an agent could find the checkout on
@@ -251,6 +262,26 @@ class TestProfiles(unittest.TestCase):
         with tempfile.TemporaryDirectory() as wd:
             with self.assertRaises(ValueError):
                 run_fixture.overlay_profile("../../etc", Path(wd))
+
+    def test_profile_symlink_source_is_rejected(self):
+        # SYMLINK-SOURCE regression: a symlink in a profile dir must not pull outside
+        # content into the workspace.
+        import run_fixture as rf
+        with tempfile.TemporaryDirectory() as profroot, tempfile.TemporaryDirectory() as wd, \
+                tempfile.TemporaryDirectory() as outside:
+            secret = Path(outside) / "secret.txt"
+            secret.write_text("outside secret", encoding="utf-8")
+            orig = rf.PROFILES_DIR
+            try:
+                rf.PROFILES_DIR = Path(profroot)
+                pdir = Path(profroot) / "evil"
+                pdir.mkdir()
+                (pdir / "linked.txt").symlink_to(secret)
+                with self.assertRaises(ValueError):
+                    rf.overlay_profile("evil", Path(wd))
+                self.assertFalse((Path(wd) / "linked.txt").exists())
+            finally:
+                rf.PROFILES_DIR = orig
 
     def test_profile_hash_differs_between_none_and_current_template(self):
         with tempfile.TemporaryDirectory() as a, tempfile.TemporaryDirectory() as b:

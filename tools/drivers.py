@@ -42,12 +42,13 @@ def agent_prompt(fixture_dir: Path, manifest: dict[str, Any]) -> str:
     deliberately do NOT derive the prompt from TASK.md: TASK.md is harness documentation
     and carries provenance (source repo slug, base/fix SHAs, solution paths) that an
     agent could use to locate the source checkout on disk and read the reference fix.
-    The prompt must name only workspace files, never the origin repo or its commits."""
-    prompt_file = manifest.get("prompt_file", "PROMPT.md")
-    path = fixture_dir / prompt_file
+    The prompt source is hardcoded to PROMPT.md (no manifest override) so a fixture
+    cannot opt back into a provenance-bearing file. The prompt must name only workspace
+    files, never the origin repo or its commits."""
+    path = fixture_dir / "PROMPT.md"
     if not path.exists():
         raise FileNotFoundError(
-            f"{fixture_dir.name}: no agent prompt ({prompt_file}); a driven fixture must "
+            f"{fixture_dir.name}: no agent prompt (PROMPT.md); a driven fixture must "
             f"ship a curated PROMPT.md with no source/commit provenance")
     return path.read_text(encoding="utf-8").strip()
 

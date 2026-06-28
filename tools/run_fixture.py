@@ -210,6 +210,8 @@ def overlay_profile(profile: str, workdir: Path) -> list[str]:
             shutil.copy2(src, dest)
             overlaid.append(copy["to"])
     for item in sorted(profile_dir.rglob("*")):
+        if item.is_symlink():
+            raise ValueError(f"profile contains a symlink (not allowed): {item.relative_to(profile_dir)}")
         if item.is_file() and item.name != "profile.json" and not item.name.startswith("README"):
             rel = item.relative_to(profile_dir)
             dest = _safe_dest(str(rel))
