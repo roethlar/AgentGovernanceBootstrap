@@ -1,0 +1,22 @@
+{
+  "run_id": "qwensmoke",
+  "id": "py_duration_parser",
+  "language": "python",
+  "profile": "none",
+  "source_commit": null,
+  "setup_ok": true,
+  "verify_exit": 1,
+  "functional_pass": false,
+  "duration_sec": 190.55,
+  "workdir": "/tmp/evalfx-py_duration_parser-d62j6_ld",
+  "profile_files": [],
+  "profile_hash": "e3b0c44298fc1c14",
+  "fixture_hash": "6435a735bb7f8a38",
+  "driver": {
+    "driver": "ollama:qwen3.6:27b-mlx",
+    "exit": 1,
+    "duration_sec": 190.4,
+    "changed_files": [],
+    "error_tail": "\u26a0 claude.ai connectors are disabled because ANTHROPIC_API_KEY or another auth source is set and takes precedence over your claude.ai login \u00b7 Unset it to load your organization's connectors\n"
+  }
+}

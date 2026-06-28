@@ -1,0 +1,26 @@
+{
+  "run_id": "calib-none-0",
+  "id": "poly_ja_forth",
+  "language": "javascript",
+  "profile": "none",
+  "source_commit": null,
+  "setup_ok": true,
+  "verify_exit": 0,
+  "functional_pass": true,
+  "duration_sec": 208.83,
+  "workdir": "/tmp/evalfx-poly_ja_forth-jt8g5y5l",
+  "profile_files": [],
+  "profile_hash": "e3b0c44298fc1c14",
+  "fixture_hash": "18e40992b61318b0",
+  "driver": {
+    "driver": "codex",
+    "exit": 0,
+    "duration_sec": 195.7,
+    "changed_files": [
+      "forth.js",
+      "node_modules/",
+      "package-lock.json"
+    ],
+    "error_tail": ""
+  }
+}

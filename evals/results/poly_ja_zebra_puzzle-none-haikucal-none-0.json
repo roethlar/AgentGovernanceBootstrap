@@ -1,0 +1,26 @@
+{
+  "run_id": "haikucal-none-0",
+  "id": "poly_ja_zebra_puzzle",
+  "language": "javascript",
+  "profile": "none",
+  "source_commit": null,
+  "setup_ok": true,
+  "verify_exit": 0,
+  "functional_pass": true,
+  "duration_sec": 130.98,
+  "workdir": "/tmp/evalfx-poly_ja_zebra_puzzle-nwniari6",
+  "profile_files": [],
+  "profile_hash": "e3b0c44298fc1c14",
+  "fixture_hash": "50fe248eba0aca4d",
+  "driver": {
+    "driver": "claude:haiku",
+    "exit": 0,
+    "duration_sec": 100.6,
+    "changed_files": [
+      "zebra-puzzle.js",
+      "node_modules/",
+      "package-lock.json"
+    ],
+    "error_tail": ""
+  }
+}

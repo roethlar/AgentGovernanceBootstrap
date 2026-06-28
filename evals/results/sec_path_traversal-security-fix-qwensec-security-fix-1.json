@@ -1,0 +1,30 @@
+{
+  "run_id": "qwensec-security-fix-1",
+  "id": "sec_path_traversal",
+  "language": "python",
+  "profile": "security-fix",
+  "source_commit": null,
+  "setup_ok": true,
+  "verify_exit": 1,
+  "functional_pass": false,
+  "duration_sec": 28.84,
+  "workdir": "/tmp/evalfx-sec_path_traversal-2dc8x4fo",
+  "profile_files": [
+    "CLAUDE.md",
+    "AGENTS.md"
+  ],
+  "profile_hash": "41a7d7b058d1eb2b",
+  "fixture_hash": "bf73bc19c5949541",
+  "driver": {
+    "driver": "ollama:qwen3.6:27b",
+    "exit": 0,
+    "duration_sec": 28.6,
+    "changed_files": [
+      "AGENTS.md",
+      "CLAUDE.md"
+    ],
+    "error_tail": ""
+  },
+  "hidden_exit": 1,
+  "security_pass": false
+}
