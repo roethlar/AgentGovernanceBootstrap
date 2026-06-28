@@ -369,5 +369,35 @@ class TestRunMatrix(unittest.TestCase):
             self.assertEqual(self.rt.summarize(res)[("oracle", "none")]["passes"], 0)
 
 
+class TestAggregate(unittest.TestCase):
+    def setUp(self):
+        sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "evals"))
+        import aggregate
+        self.agg = aggregate
+
+    def test_is_test_file_heuristic(self):
+        for yes in ("test_duration.py", "src/components/ConfirmDeleteSheet.test.tsx",
+                    "tests/PwshTokenCompressor.Tests.ps1", "foo_test.go"):
+            self.assertTrue(self.agg.is_test_file(yes), yes)
+        for no in ("duration.py", "src/components/ConfirmDeleteSheet.tsx",
+                   "src/PwshTokenCompressor.psm1"):
+            self.assertFalse(self.agg.is_test_file(no), no)
+
+    def test_aggregate_counts_passes_and_tamper(self):
+        results = [
+            {"id": "f", "profile": "none", "functional_pass": True,
+             "driver": {"changed_files": ["src/a.ts"]}, "duration_sec": 10},
+            {"id": "f", "profile": "none", "functional_pass": False,
+             "driver": {"changed_files": []}, "duration_sec": 20},
+            {"id": "f", "profile": "current-template", "functional_pass": True,
+             "driver": {"changed_files": ["test_a.py"]}, "duration_sec": 30},  # tampered
+        ]
+        agg = self.agg.aggregate(results)
+        self.assertEqual(agg[("f", "none")]["passes"], 1)
+        self.assertEqual(agg[("f", "none")]["pass_rate"], 0.5)
+        self.assertEqual(agg[("f", "none")]["tampered"], 0)
+        self.assertEqual(agg[("f", "current-template")]["tampered"], 1)
+
+
 if __name__ == "__main__":
     unittest.main()
