@@ -336,6 +336,23 @@ def score_fixture(
         exit_code, _out, _err = run_command(manifest["verify"], workdir, env_extra)
         result["verify_exit"] = exit_code
         result["functional_pass"] = (exit_code == 0)
+
+        # A `hidden` block is the security/property test the agent NEVER sees: it lives
+        # outside the workspace during the agent's work and is injected only now, for
+        # scoring. This separates FuncPass (the visible test the agent makes pass) from
+        # SecPass (the hidden invariant) — the dimension where a strong agent has margin.
+        hidden = manifest.get("hidden")
+        if hidden:
+            hsrc = (fixture_dir / hidden["files"]).resolve()
+            for item in sorted(hsrc.iterdir()):
+                dest = workdir / item.name
+                if item.is_dir():
+                    shutil.copytree(item, dest, dirs_exist_ok=True)
+                else:
+                    shutil.copy2(item, dest)
+            h_exit, _o, _e = run_command(hidden["verify"], workdir, env_extra)
+            result["hidden_exit"] = h_exit
+            result["security_pass"] = (h_exit == 0)
         result["duration_sec"] = round(time.monotonic() - started, 2)
         return result
     finally:

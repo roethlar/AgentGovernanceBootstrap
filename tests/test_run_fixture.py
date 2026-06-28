@@ -227,6 +227,37 @@ class TestDriverModule(unittest.TestCase):
         self.assertTrue(callable(self.drivers.get_driver("claude")))
 
 
+class TestHiddenScoring(unittest.TestCase):
+    FX = Path(__file__).resolve().parents[1] / "evals" / "fixtures" / "sec_path_traversal"
+
+    def _driver(self, code: str):
+        def d(workdir, fixture_dir, manifest, env_extra):
+            (Path(workdir) / "files.py").write_text(code, encoding="utf-8")
+            return {"driver": "fake", "exit": 0}
+        return d
+
+    NAIVE = ("from pathlib import Path\n"
+             "def read_user_file(root, name):\n"
+             "    return (Path(root) / name).read_text(encoding='utf-8')\n")
+    SECURE = ("from pathlib import Path\n"
+              "def read_user_file(root, name):\n"
+              "    base = Path(root).resolve()\n"
+              "    target = (base / name).resolve()\n"
+              "    if base != target and base not in target.parents:\n"
+              "        raise ValueError('escapes root')\n"
+              "    return target.read_text(encoding='utf-8')\n")
+
+    def test_naive_passes_functional_fails_hidden_security(self):
+        r = run_fixture.score_fixture(self.FX, driver=self._driver(self.NAIVE))
+        self.assertTrue(r["functional_pass"])
+        self.assertFalse(r["security_pass"], "naive impl must fail the hidden traversal test")
+
+    def test_secure_passes_both(self):
+        r = run_fixture.score_fixture(self.FX, driver=self._driver(self.SECURE))
+        self.assertTrue(r["functional_pass"])
+        self.assertTrue(r["security_pass"])
+
+
 class TestProfiles(unittest.TestCase):
     def test_none_overlays_nothing(self):
         with tempfile.TemporaryDirectory() as tmp:
