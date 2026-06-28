@@ -182,23 +182,37 @@ def overlay_profile(profile: str, workdir: Path) -> list[str]:
     """
     if profile in ("", "none"):
         return []
-    profile_dir = PROFILES_DIR / profile
+    profiles_root = PROFILES_DIR.resolve()
+    profile_dir = (PROFILES_DIR / profile).resolve()
+    if profiles_root not in profile_dir.parents:
+        raise ValueError(f"profile name escapes the profiles dir: {profile!r}")
     if not profile_dir.is_dir():
         raise FileNotFoundError(f"unknown governance profile: {profile} ({profile_dir})")
+
+    workdir_root = workdir.resolve()
+
+    def _safe_dest(rel_to: str) -> Path:
+        dest = (workdir / rel_to).resolve()
+        if dest != workdir_root and workdir_root not in dest.parents:
+            raise ValueError(f"profile destination escapes the workspace: {rel_to!r}")
+        return dest
+
     overlaid: list[str] = []
     spec_path = profile_dir / "profile.json"
     if spec_path.exists():
         spec = json.loads(spec_path.read_text(encoding="utf-8"))
         for copy in spec.get("copies", []):
             src = (REPO_ROOT / copy["from"]).resolve()
-            dest = workdir / copy["to"]
+            if REPO_ROOT.resolve() not in src.parents:
+                raise ValueError(f"profile copy source escapes the repo: {copy['from']!r}")
+            dest = _safe_dest(copy["to"])
             dest.parent.mkdir(parents=True, exist_ok=True)
             shutil.copy2(src, dest)
             overlaid.append(copy["to"])
     for item in sorted(profile_dir.rglob("*")):
         if item.is_file() and item.name != "profile.json" and not item.name.startswith("README"):
             rel = item.relative_to(profile_dir)
-            dest = workdir / rel
+            dest = _safe_dest(str(rel))
             dest.parent.mkdir(parents=True, exist_ok=True)
             shutil.copy2(item, dest)
             overlaid.append(str(rel))

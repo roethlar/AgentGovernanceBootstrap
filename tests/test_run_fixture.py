@@ -188,15 +188,24 @@ class TestDriverModule(unittest.TestCase):
         import drivers
         self.drivers = drivers
 
-    def test_read_task_prompt_strips_oracle_section(self):
+    def test_agent_prompt_reads_prompt_file_and_requires_it(self):
         with tempfile.TemporaryDirectory() as tmp:
             fxdir = Path(tmp)
-            (fxdir / "TASK.md").write_text(
-                "# T\nDo the thing.\n\n## Oracle\nverify: secret command\n", encoding="utf-8")
-            prompt = self.drivers.read_task_prompt(fxdir, {"task": "TASK.md"})
-            self.assertIn("Do the thing.", prompt)
-            self.assertNotIn("secret command", prompt)
-            self.assertNotIn("## Oracle", prompt)
+            (fxdir / "PROMPT.md").write_text("Do the thing.\n", encoding="utf-8")
+            self.assertEqual(self.drivers.agent_prompt(fxdir, {}), "Do the thing.")
+        with tempfile.TemporaryDirectory() as tmp2:
+            with self.assertRaises(FileNotFoundError):
+                self.drivers.agent_prompt(Path(tmp2), {})
+
+    def test_gold_fixture_agent_prompt_has_no_provenance(self):
+        # RF-DRIVER-PROMPT-FIXCOMMIT-LEAK regression: the agent-facing prompt must not
+        # name the source repo or any commit SHA, or an agent could find the checkout on
+        # disk and read the reference fix.
+        fxdir = Path(__file__).resolve().parents[1] / "evals" / "fixtures" / "ts_qbit_confirmdelete_gold"
+        manifest = json.loads((fxdir / "fixture.json").read_text())
+        prompt = self.drivers.agent_prompt(fxdir, manifest)
+        for leak in ("qbit-mobile", manifest["source"]["fix_commit"], manifest["source"]["base_commit"]):
+            self.assertNotIn(leak, prompt, f"agent prompt leaks {leak!r}")
 
     def test_get_driver_unknown_raises(self):
         with self.assertRaises(ValueError):
@@ -220,6 +229,28 @@ class TestProfiles(unittest.TestCase):
             self.assertIn("CLAUDE.md", overlaid)
             self.assertIn("Prime Invariants", (wd / "AGENTS.md").read_text(encoding="utf-8"))
             self.assertIn("@AGENTS.md", (wd / "CLAUDE.md").read_text(encoding="utf-8"))
+
+    def test_profile_copy_destination_escape_is_rejected(self):
+        # RF-PROFILE-COPY-ESCAPES-WORKDIR regression.
+        with tempfile.TemporaryDirectory() as profroot, tempfile.TemporaryDirectory() as wd:
+            import run_fixture as rf
+            orig = rf.PROFILES_DIR
+            try:
+                rf.PROFILES_DIR = Path(profroot)
+                pdir = Path(profroot) / "evil"
+                pdir.mkdir()
+                (pdir / "profile.json").write_text(json.dumps(
+                    {"copies": [{"from": "README.md", "to": "../escape.txt"}]}), encoding="utf-8")
+                with self.assertRaises(ValueError):
+                    rf.overlay_profile("evil", Path(wd))
+                self.assertFalse((Path(wd).parent / "escape.txt").exists())
+            finally:
+                rf.PROFILES_DIR = orig
+
+    def test_profile_name_traversal_is_rejected(self):
+        with tempfile.TemporaryDirectory() as wd:
+            with self.assertRaises(ValueError):
+                run_fixture.overlay_profile("../../etc", Path(wd))
 
     def test_profile_hash_differs_between_none_and_current_template(self):
         with tempfile.TemporaryDirectory() as a, tempfile.TemporaryDirectory() as b:

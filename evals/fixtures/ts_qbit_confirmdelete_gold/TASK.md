@@ -1,5 +1,10 @@
 # Gold fixture — qbit-mobile, ConfirmDeleteSheet pending state
 
+> Harness documentation only — **not** sent to the agent. The agent-facing prompt is
+> `PROMPT.md`, which is curated to contain no source-repo slug or commit SHA (an agent
+> could otherwise locate the source checkout on disk and read the reference fix).
+
+
 Derived from a real fix-commit (`qbit-mobile` @ `ae748cd`); base is its parent
 `4d925ab`. The fixture stores only the fix-commit SHA + changed paths (no vendored
 code); the runner derives the test diff live from the source repo and injects the

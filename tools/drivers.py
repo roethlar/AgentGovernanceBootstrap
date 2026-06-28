@@ -35,13 +35,21 @@ Task:
 """
 
 
-def read_task_prompt(fixture_dir: Path, manifest: dict[str, Any]) -> str:
-    """Return the agent-facing task text: the fixture's TASK file up to the harness-only
-    '## Oracle' section (which would leak the verify command and solution paths)."""
-    task_file = manifest.get("task", "TASK.md")
-    text = (fixture_dir / task_file).read_text(encoding="utf-8")
-    marker = text.find("## Oracle")
-    return (text[:marker] if marker != -1 else text).strip()
+def agent_prompt(fixture_dir: Path, manifest: dict[str, Any]) -> str:
+    """Return the agent-facing prompt — and ONLY that.
+
+    A driven fixture ships a dedicated, curated `PROMPT.md` containing just the task. We
+    deliberately do NOT derive the prompt from TASK.md: TASK.md is harness documentation
+    and carries provenance (source repo slug, base/fix SHAs, solution paths) that an
+    agent could use to locate the source checkout on disk and read the reference fix.
+    The prompt must name only workspace files, never the origin repo or its commits."""
+    prompt_file = manifest.get("prompt_file", "PROMPT.md")
+    path = fixture_dir / prompt_file
+    if not path.exists():
+        raise FileNotFoundError(
+            f"{fixture_dir.name}: no agent prompt ({prompt_file}); a driven fixture must "
+            f"ship a curated PROMPT.md with no source/commit provenance")
+    return path.read_text(encoding="utf-8").strip()
 
 
 def _changed_files(workdir: Path) -> list[str]:
@@ -53,7 +61,7 @@ def _changed_files(workdir: Path) -> list[str]:
 
 def codex_driver(workdir: Path, fixture_dir: Path, manifest: dict[str, Any],
                  env_extra: dict[str, str] | None = None, timeout: int = 1800) -> dict[str, Any]:
-    prompt = PROMPT_WRAPPER.format(task=read_task_prompt(fixture_dir, manifest))
+    prompt = PROMPT_WRAPPER.format(task=agent_prompt(fixture_dir, manifest))
     env = dict(os.environ)
     env.update(env_extra or {})
     started = time.monotonic()
@@ -80,7 +88,7 @@ def codex_driver(workdir: Path, fixture_dir: Path, manifest: dict[str, Any],
 
 def claude_driver(workdir: Path, fixture_dir: Path, manifest: dict[str, Any],
                   env_extra: dict[str, str] | None = None, timeout: int = 1800) -> dict[str, Any]:
-    prompt = PROMPT_WRAPPER.format(task=read_task_prompt(fixture_dir, manifest))
+    prompt = PROMPT_WRAPPER.format(task=agent_prompt(fixture_dir, manifest))
     env = dict(os.environ)
     env.update(env_extra or {})
     started = time.monotonic()
