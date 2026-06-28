@@ -110,9 +110,35 @@ def claude_driver(workdir: Path, fixture_dir: Path, manifest: dict[str, Any],
     }
 
 
+def grok_driver(workdir: Path, fixture_dir: Path, manifest: dict[str, Any],
+                env_extra: dict[str, str] | None = None, timeout: int = 1800) -> dict[str, Any]:
+    prompt = PROMPT_WRAPPER.format(task=agent_prompt(fixture_dir, manifest))
+    env = dict(os.environ)
+    env.update(env_extra or {})
+    started = time.monotonic()
+    try:
+        # grok -p: single-turn headless agent; --always-approve so it can edit files
+        # without interactive approval. Runs in the workspace cwd.
+        proc = subprocess.run(
+            ["grok", "-p", prompt, "--always-approve", "--output-format", "plain"],
+            cwd=str(workdir), capture_output=True, text=True, timeout=timeout, env=env,
+        )
+        exit_code, err = proc.returncode, proc.stderr[-500:]
+    except subprocess.TimeoutExpired:
+        exit_code, err = 124, f"TIMEOUT after {timeout}s"
+    return {
+        "driver": "grok",
+        "exit": exit_code,
+        "duration_sec": round(time.monotonic() - started, 1),
+        "changed_files": _changed_files(workdir),
+        "error_tail": err if exit_code != 0 else "",
+    }
+
+
 _DRIVERS: dict[str, Callable[..., dict[str, Any]]] = {
     "codex": codex_driver,
     "claude": claude_driver,
+    "grok": grok_driver,
 }
 
 

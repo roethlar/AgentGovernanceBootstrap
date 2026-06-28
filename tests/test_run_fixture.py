@@ -223,8 +223,8 @@ class TestDriverModule(unittest.TestCase):
             self.drivers.get_driver("nope")
 
     def test_known_drivers_present(self):
-        self.assertTrue(callable(self.drivers.get_driver("codex")))
-        self.assertTrue(callable(self.drivers.get_driver("claude")))
+        for name in ("codex", "claude", "grok"):
+            self.assertTrue(callable(self.drivers.get_driver(name)))
 
 
 class TestHiddenScoring(unittest.TestCase):
