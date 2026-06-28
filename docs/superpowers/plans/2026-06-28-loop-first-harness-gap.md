@@ -55,11 +55,37 @@ without new stalls.
 - Do **not** claim the experiment "closes the Cursor gap." Framing: it measures
   whether governance moves the needle at the margin.
 
+## Substrate (fixtures)
+
+The scorer is **language-agnostic**: a fixture declares its own setup + verify
+command and is scored on that command's exit, so the harness never assumes Python.
+Real fixtures are mined from owned repos via the gold-standard pattern (a real
+fix-commit → check out its parent broken state → score with the fix-commit's own
+test). Guardrail: never vendor a source repo's code into this public toolkit repo —
+scaffold a throwaway copy at a pinned commit, strip its remote, keep `evals/results/`
+to scores + SHAs.
+
+Owned substrate, by language (verified present 2026-06-28):
+
+| Language | Source repo | Runner | Status here |
+|---|---|---|---|
+| TypeScript | `qbit-mobile` (primary), `roon-controller` | Vitest / Jest | node+npm ready; needs `npm ci` in the scaffolded copy |
+| PowerShell | `PowerShell-Token-Killer` | Pester 5.7.1 | pwsh ready; runs with no install |
+| Python | — none owned with tests — | unittest/pytest | **synthetic fixtures only** |
+| Rust (bonus) | `blit_v2` | `cargo test` | cargo ready |
+| C# (bonus) | `ExchangeAdminWeb` | `dotnet test` | **dotnet MISSING here — deferred** |
+
+Python has no owned tested repo, so it stays synthetic (the two seed fixtures);
+that is still a legitimate, deterministic eval, just not mined from history. For
+JS/.NET fixtures use only the offline-deterministic unit tests, never the browser
+(Playwright) or live-service (Graph/AD/Exchange) tests.
+
 ## Verification (every slice)
 
 - New Python under `evals/` or `tools/` → `python3 -m unittest discover -s tests -v`
-  plus the scorer's own unit tests. **Fixtures use stdlib `unittest`, not `pytest`**
-  (pytest is not installed here; match the repo baseline).
+  plus the scorer's own unit tests (the **harness's** own tests are stdlib
+  `unittest`; a *fixture's* tests use whatever its repo uses — `vitest`, `Pester`,
+  `cargo test`, `pytest`).
 - Each new test gets the revert-the-fix guard proof (revert change → confirm red →
   restore → confirm green).
 - Docs-only slices → `git diff --check`.
@@ -68,9 +94,13 @@ without new stalls.
 
 ### Slice 1 — Eval instrument (scaffold / score / record)
 The measuring tool, no agent automation yet.
-- `evals/fixtures/` — convert the pack's `funcpass_duration_parser` and
-  `secpass_path_traversal` fixtures to **stdlib unittest**; each carries TASK.md,
-  failing/vulnerable starting code, `test_*.py`, EXPECTED.md.
+- `evals/fixtures/` — each fixture is a **manifest** (`fixture.json`: id, language,
+  source repo + pinned base commit, optional `setup` commands, `verify` command,
+  TASK.md pointer) plus a TASK.md. Synthetic fixtures inline their own code; real
+  fixtures reference a source repo by commit and carry no vendored code. Seed set:
+  the two Python synthetic fixtures (scorer self-test) **plus** the first two real
+  fixtures — one TypeScript (`qbit-mobile`, Vitest) and one PowerShell
+  (`PowerShell-Token-Killer`, Pester) — to prove the scorer spans toolchains.
 - `evals/governance_profiles/` — overlay dirs. `none` (empty), `current-template`
   (generated from product templates). Harness-neutral files at profile root; harness
   adapters under `hooks/claude/`, `hooks/codex/` subdirs (only a driver installs an
