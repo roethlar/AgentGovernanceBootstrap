@@ -79,12 +79,19 @@ def format_table(agg: dict[tuple[str, str], dict[str, Any]]) -> str:
 
 
 def main(argv: list[str] | None = None) -> int:
-    results_dir = Path(argv[0]) if argv else RESULTS_DIR
-    results = load_results(results_dir)
+    import argparse
+    p = argparse.ArgumentParser(description="Aggregate trial results into a comparison.")
+    p.add_argument("results_dir", nargs="?", default=str(RESULTS_DIR))
+    p.add_argument("--run", default=None, help="only include trials whose run_id starts with this")
+    args = p.parse_args(argv)
+    results = load_results(Path(args.results_dir))
+    if args.run:
+        results = [r for r in results if str(r.get("run_id", "")).startswith(args.run)]
     if not results:
-        print(f"no results in {results_dir}")
+        print(f"no results in {args.results_dir}" + (f" for run '{args.run}'" if args.run else ""))
         return 0
-    print(f"{len(results)} trials in {results_dir}\n")
+    label = f" (run '{args.run}')" if args.run else ""
+    print(f"{len(results)} trials in {args.results_dir}{label}\n")
     print(format_table(aggregate(results)))
     return 0
 
