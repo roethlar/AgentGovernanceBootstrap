@@ -1,0 +1,29 @@
+{
+  "run_id": "base-candidate-loop-first-1",
+  "id": "ts_qbit_confirmdelete_gold",
+  "language": "typescript",
+  "profile": "candidate-loop-first",
+  "source_commit": "4d925ab12c5481041ea2c8b2046a759d708278f1",
+  "setup_ok": true,
+  "verify_exit": 0,
+  "functional_pass": true,
+  "duration_sec": 383.3,
+  "workdir": "/tmp/evalfx-ts_qbit_confirmdelete_gold-56_ztpyt",
+  "profile_files": [
+    "CLAUDE.md",
+    "AGENTS.md"
+  ],
+  "profile_hash": "c7cf399e6e344d08",
+  "fixture_hash": "7139cac072b6371e",
+  "driver": {
+    "driver": "codex",
+    "exit": 0,
+    "duration_sec": 370.7,
+    "changed_files": [
+      "AGENTS.md",
+      "src/components/ConfirmDeleteSheet.tsx",
+      "src/pages/Dashboard.tsx"
+    ],
+    "error_tail": ""
+  }
+}

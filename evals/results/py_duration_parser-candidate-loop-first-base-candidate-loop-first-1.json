@@ -1,0 +1,30 @@
+{
+  "run_id": "base-candidate-loop-first-1",
+  "id": "py_duration_parser",
+  "language": "python",
+  "profile": "candidate-loop-first",
+  "source_commit": null,
+  "setup_ok": true,
+  "verify_exit": 0,
+  "functional_pass": true,
+  "duration_sec": 147.92,
+  "workdir": "/tmp/evalfx-py_duration_parser-ln2vxyt3",
+  "profile_files": [
+    "CLAUDE.md",
+    "AGENTS.md"
+  ],
+  "profile_hash": "c7cf399e6e344d08",
+  "fixture_hash": "6435a735bb7f8a38",
+  "driver": {
+    "driver": "codex",
+    "exit": 0,
+    "duration_sec": 147.8,
+    "changed_files": [
+      "duration.py",
+      "AGENTS.md",
+      "CLAUDE.md",
+      "__pycache__/"
+    ],
+    "error_tail": ""
+  }
+}
