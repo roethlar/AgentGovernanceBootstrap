@@ -34,6 +34,68 @@ live rule now owned elsewhere - archive it per the rule above: move it verbatim 
 
 ## Decisions
 
+### 2026-06-28 — Durable truth lives only in harness-neutral files; harness-specific files are pure adapters
+
+Status: Active (principle in force now; enforcement implementation deferred to a plan)
+
+Decision: Durable repo truth — governance and repo-specific facts alike — lives
+only in harness-neutral files: `AGENTS.md` (portable governance) and `.agents/`
+(repo-specifics). Harness-specific entry and config files — `CLAUDE.md` and
+equivalents (`GEMINI.md`, `.cursorrules`), the per-harness hook configs, and the
+`.claude/commands/` wrappers — are **pure adapters**: a pointer (`CLAUDE.md` is
+`@AGENTS.md` and nothing else) or a thin wrapper that calls a harness-neutral
+entry point. They carry no repo facts or governance of their own. A
+harness-specific file that holds durable truth is a **drift inflection point**:
+invisible to every other harness reading `AGENTS.md`/`.agents/`, maintained in a
+silo that diverges from the neutral source.
+
+Corollaries settled in the same session:
+
+- **Durable repo facts a working model learns** (not a decision, not churny
+  current-state) have a home: `.agents/repo-facts.jsonl` — JSONL, append-only
+  (one fact per line), `evidence` field required, read on demand, never
+  auto-injected. It is the in-repo, harness-neutral equivalent of a harness's
+  "auto memory" (which the harness-local-memory invariant forbids relying on).
+  JSONL is chosen because the data is atomic/append-only/provenance-bearing:
+  append-safety enforces the anti-rewrite discipline, a required `evidence` field
+  bakes in the evidence rule, and it is mechanically validatable by
+  `governance-lint`.
+- **`.agents/` is an agent-facing store.** Human-readability is an explicit
+  non-goal (JSON tooling covers forensics). Design priority for `.agents/`:
+  prevent drift first, then agent efficiency / token savings. This priority
+  governs future `.agents/` format and structure choices.
+- **A must-always-see operational fact is made reliable the harness-neutral way**
+  — encode it as a runnable entry point (e.g. verification = a `make`/script
+  target recorded in `.agents/repo-map.json`, run not read), not by auto-loading
+  it. An `@`-import auto-load of repo facts (via `CLAUDE.md` or a
+  `.agents/repo-facts.*` imported file) was considered and **rejected**: it loads
+  on Claude Code but is invisible to other harnesses, bifurcating the source of
+  truth.
+
+Enforcement (implementation deferred to a plan): extend the advisory `AGENTS.md`
+pre-edit tripwire to also fire before edits to `CLAUDE.md` and other harness entry
+files, with a pure-adapter message distinct from the portability message; add a
+`governance-lint` structural check that harness-specific files contain no durable
+content. The hook stays advisory, non-blocking, Claude Code + Codex only — the
+cross-harness floor is unchanged.
+
+Earned by a design near-miss caught in this session's review: to make the
+verification command reliably visible under a strict-portable `AGENTS.md`, an
+auto-load via a Claude-Code-only `@`-import was proposed and rejected for the
+bifurcation above; the same session then established the harness-neutral facts
+home and the agent-facing `.agents/` priority.
+
+Relationship: extends the 2026-06-25 governance-boundary decision (which named the
+`AGENTS.md`↔`.agents/` *content* boundary) with the harness-neutral↔harness-
+specific *file* boundary and the pure-adapter rule; generalizes the
+harness-local-memory Universal Invariant (out-of-repo stores are not durable) to
+in-repo harness-specific files. Affected guidance to reconcile in the plan:
+`templates/hooks/*` (tripwire path matcher + message), `procedures/bootstrap.md`
+(Hook install section), `templates/AGENTS.template.md` / generated `AGENTS.md`
+(the `repo-facts.jsonl` pointer + strict-zero portability), the `governance-lint`
+Open Decision (2026-06-22), and the verification-entry-point convention in
+`.agents/repo-map.json`.
+
 ### 2026-06-27 — Push policy delegated to `.agents/push-policy.md`; four standardized options; default: ask
 
 Status: Active
