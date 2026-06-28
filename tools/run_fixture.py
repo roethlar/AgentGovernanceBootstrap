@@ -206,21 +206,49 @@ def overlay_profile(profile: str, workdir: Path) -> list[str]:
             raise ValueError(f"profile destination escapes the workspace: {rel_to!r}")
         return dest
 
+    repo_root = REPO_ROOT.resolve()
+
+    def _part_src(part: str) -> Path:
+        # "repo:<path>" resolves under the repo; "profile:<path>" under the profile dir.
+        kind, _, rel = part.partition(":")
+        if kind == "repo":
+            src = (REPO_ROOT / rel).resolve()
+            if repo_root not in src.parents:
+                raise ValueError(f"concat repo part escapes the repo: {part!r}")
+        elif kind == "profile":
+            src = (profile_dir / rel).resolve()
+            if profile_dir not in src.parents:
+                raise ValueError(f"concat profile part escapes the profile: {part!r}")
+        else:
+            raise ValueError(f"concat part must be 'repo:<path>' or 'profile:<path>': {part!r}")
+        return src
+
     overlaid: list[str] = []
     spec_path = profile_dir / "profile.json"
     if spec_path.exists():
         spec = json.loads(spec_path.read_text(encoding="utf-8"))
         for copy in spec.get("copies", []):
             src = (REPO_ROOT / copy["from"]).resolve()
-            if REPO_ROOT.resolve() not in src.parents:
+            if repo_root not in src.parents:
                 raise ValueError(f"profile copy source escapes the repo: {copy['from']!r}")
             dest = _safe_dest(copy["to"])
             dest.parent.mkdir(parents=True, exist_ok=True)
             shutil.copy2(src, dest)
             overlaid.append(copy["to"])
+        # concat composes a destination from ordered parts — e.g. the product AGENTS
+        # template plus a candidate snippet — so a candidate profile adds governance
+        # without committing a duplicated copy of the template.
+        for cat in spec.get("concat", []):
+            chunks = [_part_src(p).read_text(encoding="utf-8") for p in cat["parts"]]
+            dest = _safe_dest(cat["to"])
+            dest.parent.mkdir(parents=True, exist_ok=True)
+            dest.write_text("\n".join(chunks), encoding="utf-8")
+            overlaid.append(cat["to"])
     for item in sorted(profile_dir.rglob("*")):
-        if item.is_file() and item.name != "profile.json" and not item.name.startswith("README"):
-            rel = item.relative_to(profile_dir)
+        rel = item.relative_to(profile_dir)
+        # `_parts/` holds concat fragments, not standalone overlays; skip them.
+        if item.is_file() and item.name != "profile.json" and not item.name.startswith("README") \
+                and "_parts" not in rel.parts:
             dest = _safe_dest(str(rel))
             dest.parent.mkdir(parents=True, exist_ok=True)
             shutil.copy2(item, dest)

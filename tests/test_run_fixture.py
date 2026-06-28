@@ -304,6 +304,39 @@ class TestProfiles(unittest.TestCase):
             finally:
                 rf.PROFILES_DIR = orig
 
+    def test_candidate_loop_first_concats_template_and_snippet(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            wd = Path(tmp)
+            overlaid = run_fixture.overlay_profile("candidate-loop-first", wd)
+            self.assertIn("AGENTS.md", overlaid)
+            self.assertIn("CLAUDE.md", overlaid)
+            agents = (wd / "AGENTS.md").read_text(encoding="utf-8")
+            self.assertIn("Prime Invariants", agents)            # from the product template
+            self.assertIn("Authorized execution mode", agents)   # from the candidate snippet
+            self.assertFalse(any("_parts" in o for o in overlaid), "_parts must not be overlaid")
+            self.assertFalse((wd / "_parts").exists())
+
+    def test_candidate_differs_from_current_template(self):
+        with tempfile.TemporaryDirectory() as a, tempfile.TemporaryDirectory() as b:
+            ct = run_fixture.overlaid_hash(Path(a), run_fixture.overlay_profile("current-template", Path(a)))
+            cand = run_fixture.overlaid_hash(Path(b), run_fixture.overlay_profile("candidate-loop-first", Path(b)))
+            self.assertNotEqual(ct, cand)
+
+    def test_concat_part_escaping_repo_is_rejected(self):
+        import run_fixture as rf
+        with tempfile.TemporaryDirectory() as profroot, tempfile.TemporaryDirectory() as wd:
+            orig = rf.PROFILES_DIR
+            try:
+                rf.PROFILES_DIR = Path(profroot)
+                pdir = Path(profroot) / "evil"
+                pdir.mkdir()
+                (pdir / "profile.json").write_text(json.dumps(
+                    {"concat": [{"to": "AGENTS.md", "parts": ["repo:../outside.md"]}]}), encoding="utf-8")
+                with self.assertRaises(ValueError):
+                    rf.overlay_profile("evil", Path(wd))
+            finally:
+                rf.PROFILES_DIR = orig
+
     def test_profile_hash_differs_between_none_and_current_template(self):
         with tempfile.TemporaryDirectory() as a, tempfile.TemporaryDirectory() as b:
             none_h = run_fixture.overlaid_hash(Path(a), run_fixture.overlay_profile("none", Path(a)))
