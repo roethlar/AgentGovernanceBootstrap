@@ -158,5 +158,54 @@ class TestOracle(unittest.TestCase):
             self.assertFalse(r["functional_pass"])
 
 
+class TestDriver(unittest.TestCase):
+    def test_driver_hook_runs_before_verify_and_edits_count(self):
+        # A driver that "fixes" the workspace (sets app.txt=FIXED) must make the verify
+        # command pass, proving the driver runs after scaffold/setup and before verify.
+        with tempfile.TemporaryDirectory() as tmp:
+            fx = _make_git_oracle_fixture(Path(tmp))
+
+            def fake_driver(workdir, fixture_dir, manifest, env_extra):
+                (Path(workdir) / "app.txt").write_text("FIXED\n", encoding="utf-8")
+                return {"driver": "fake", "exit": 0}
+
+            r = run_fixture.score_fixture(fx, driver=fake_driver)
+            self.assertTrue(r["functional_pass"], "verify should pass after the driver fixes it")
+            self.assertEqual(r["driver"]["driver"], "fake")
+
+    def test_no_driver_leaves_fixture_failing(self):
+        # Same fixture without a driver stays red (nobody fixed it) — guards that the
+        # driver hook, not something else, is what flips the result above.
+        with tempfile.TemporaryDirectory() as tmp:
+            fx = _make_git_oracle_fixture(Path(tmp))
+            r = run_fixture.score_fixture(fx)
+            self.assertFalse(r["functional_pass"])
+
+
+class TestDriverModule(unittest.TestCase):
+    def setUp(self):
+        sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "tools"))
+        import drivers
+        self.drivers = drivers
+
+    def test_read_task_prompt_strips_oracle_section(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            fxdir = Path(tmp)
+            (fxdir / "TASK.md").write_text(
+                "# T\nDo the thing.\n\n## Oracle\nverify: secret command\n", encoding="utf-8")
+            prompt = self.drivers.read_task_prompt(fxdir, {"task": "TASK.md"})
+            self.assertIn("Do the thing.", prompt)
+            self.assertNotIn("secret command", prompt)
+            self.assertNotIn("## Oracle", prompt)
+
+    def test_get_driver_unknown_raises(self):
+        with self.assertRaises(ValueError):
+            self.drivers.get_driver("nope")
+
+    def test_known_drivers_present(self):
+        self.assertTrue(callable(self.drivers.get_driver("codex")))
+        self.assertTrue(callable(self.drivers.get_driver("claude")))
+
+
 if __name__ == "__main__":
     unittest.main()

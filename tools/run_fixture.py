@@ -125,6 +125,21 @@ def apply_patch_text(workdir: Path, patch_text: str) -> None:
     )
 
 
+def isolate_history(workdir: Path) -> None:
+    """Replace the scaffolded clone's history with a single trial-base commit.
+
+    A gold fixture is cloned from the source repo, whose history still contains the
+    fix-commit — a driven agent could `git show` it and copy the answer. Re-initializing
+    at the post-scaffold (parent + injected test) state removes all ancestry, so the
+    agent starts from a clean checkpoint with nothing to crib, and the agent's edits are
+    diffable against `trial-base`."""
+    shutil.rmtree(workdir / ".git")
+    subprocess.run(["git", "-C", str(workdir), "init", "--quiet"], check=True, capture_output=True, text=True)
+    subprocess.run(["git", "-C", str(workdir), "add", "-A"], check=True, capture_output=True, text=True)
+    subprocess.run(["git", "-C", str(workdir), "-c", "user.email=eval@local", "-c", "user.name=eval",
+                    "commit", "--quiet", "-m", "trial-base"], check=True, capture_output=True, text=True)
+
+
 def overlay_profile(profile: str, workdir: Path) -> list[str]:
     """Overlay a governance profile onto the workdir. Returns the list of files overlaid.
 
@@ -151,6 +166,7 @@ def overlay_profile(profile: str, workdir: Path) -> list[str]:
 def score_fixture(
     fixture_dir: Path, profile: str = "none", workdir: Path | None = None,
     run_id: str = "manual", apply_solution: bool = False,
+    driver: "Callable[..., dict[str, Any]] | None" = None,
 ) -> dict[str, Any]:
     fixture_dir = fixture_dir.resolve()
     manifest = load_manifest(fixture_dir)
@@ -185,6 +201,8 @@ def score_fixture(
             if apply_solution and manifest.get("solution_paths"):
                 apply_patch_text(workdir, patch_from_commit(
                     repo_path, source["fix_commit"], manifest["solution_paths"]))
+        if source:
+            isolate_history(workdir)
         result["profile_files"] = overlay_profile(profile, workdir)
         env_extra = manifest.get("env") or {}
 
@@ -196,6 +214,12 @@ def score_fixture(
                 result["setup_error_tail"] = err[-500:]
                 result["duration_sec"] = round(time.monotonic() - started, 2)
                 return result
+
+        # Drive an agent (optional). It edits the workspace in place; the verify command
+        # below then scores the outcome. The driver runs after setup so the agent can run
+        # the project's own tests while working.
+        if driver is not None:
+            result["driver"] = driver(workdir, fixture_dir, manifest, env_extra)
 
         exit_code, _out, _err = run_command(manifest["verify"], workdir, env_extra)
         result["verify_exit"] = exit_code
@@ -247,6 +271,8 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--record", action="store_true", help="write the result JSON under evals/results/")
     parser.add_argument("--check-oracle", action="store_true",
                         help="validate a gold fixture (broken fails, fixed passes) instead of scoring")
+    parser.add_argument("--driver", default=None,
+                        help="drive an agent to attempt the fixture (e.g. 'codex'); omit to score as-is")
     args = parser.parse_args(argv)
 
     if args.check_oracle:
@@ -254,7 +280,11 @@ def main(argv: list[str] | None = None) -> int:
         print(json.dumps(oracle, indent=2))
         return 0 if oracle["oracle_valid"] else 1
 
-    result = score_fixture(Path(args.fixture), profile=args.profile, run_id=args.run_id)
+    driver = None
+    if args.driver:
+        import drivers
+        driver = drivers.get_driver(args.driver)
+    result = score_fixture(Path(args.fixture), profile=args.profile, run_id=args.run_id, driver=driver)
     print(json.dumps(result, indent=2))
     if args.record:
         RESULTS_DIR.mkdir(parents=True, exist_ok=True)
