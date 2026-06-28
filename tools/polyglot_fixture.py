@@ -45,6 +45,18 @@ LANG: dict[str, dict[str, Any]] = {
         "setup": [],
         "exclude": [".meta", ".docs", ".exercism", "target"],
     },
+    "go": {
+        "sub": "go/exercises/practice",
+        "verify": "go test ./...",
+        "setup": [],
+        "exclude": [".meta", ".docs", ".exercism"],
+    },
+    "java": {
+        "sub": "java/exercises/practice",
+        "verify": "./gradlew test -q",
+        "setup": [],
+        "exclude": [".meta", ".docs", ".exercism", ".gradle", "build"],
+    },
 }
 
 

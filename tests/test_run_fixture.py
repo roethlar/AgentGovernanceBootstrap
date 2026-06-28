@@ -402,6 +402,11 @@ class TestPolyglotFixture(unittest.TestCase):
         (ex / "foo.py").write_text("def foo(): pass", encoding="utf-8")
         (ex / "foo_test.py").write_text("import unittest", encoding="utf-8")
 
+    def test_supported_languages_registered(self):
+        for lang in ("python", "javascript", "rust", "go", "java"):
+            self.assertIn(lang, self.pf.LANG)
+            self.assertTrue(self.pf.LANG[lang]["verify"])
+
     def test_build_references_path_excludes_meta_and_prompts_instructions(self):
         with tempfile.TemporaryDirectory() as bench, tempfile.TemporaryDirectory() as out:
             self._fake_exercise(Path(bench))
