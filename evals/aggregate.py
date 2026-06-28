@@ -40,12 +40,16 @@ def load_results(results_dir: Path) -> list[dict[str, Any]]:
 
 def aggregate(results: list[dict[str, Any]]) -> dict[tuple[str, str], dict[str, Any]]:
     agg: dict[tuple[str, str], dict[str, Any]] = defaultdict(
-        lambda: {"runs": 0, "passes": 0, "tampered": 0, "durations": []})
+        lambda: {"runs": 0, "passes": 0, "sec_runs": 0, "sec_passes": 0,
+                 "tampered": 0, "durations": []})
     for r in results:
         key = (r.get("id", "?"), r.get("profile", "?"))
         a = agg[key]
         a["runs"] += 1
         a["passes"] += 1 if r.get("functional_pass") else 0
+        if r.get("security_pass") is not None:
+            a["sec_runs"] += 1
+            a["sec_passes"] += 1 if r.get("security_pass") else 0
         changed = (r.get("driver") or {}).get("changed_files") or []
         if any(is_test_file(p) for p in changed):
             a["tampered"] += 1
@@ -53,16 +57,18 @@ def aggregate(results: list[dict[str, Any]]) -> dict[tuple[str, str], dict[str, 
             a["durations"].append(r["duration_sec"])
     for a in agg.values():
         a["pass_rate"] = round(a["passes"] / a["runs"], 3) if a["runs"] else 0.0
+        a["sec_rate"] = round(a["sec_passes"] / a["sec_runs"], 3) if a["sec_runs"] else None
         a["avg_sec"] = round(sum(a["durations"]) / len(a["durations"]), 1) if a["durations"] else 0.0
     return agg
 
 
 def format_table(agg: dict[tuple[str, str], dict[str, Any]]) -> str:
-    lines = [f"{'fixture':40} {'profile':22} {'pass':>7} {'rate':>6} {'tamper':>7} {'avg_s':>7}"]
+    lines = [f"{'fixture':40} {'profile':22} {'func':>7} {'rate':>6} {'sec':>7} {'tamper':>7} {'avg_s':>7}"]
     for (fid, profile), a in sorted(agg.items()):
         flag = "  TAMPER" if a["tampered"] else ""
+        sec = f"{a['sec_passes']}/{a['sec_runs']}" if a["sec_runs"] else "-"
         lines.append(f"{fid:40} {profile:22} {a['passes']:>3}/{a['runs']:<3} "
-                     f"{a['pass_rate']:>6} {a['tampered']:>7} {a['avg_sec']:>7}{flag}")
+                     f"{a['pass_rate']:>6} {sec:>7} {a['tampered']:>7} {a['avg_sec']:>7}{flag}")
     # Per-fixture delta vs the 'none' baseline.
     by_fix: dict[str, dict[str, float]] = defaultdict(dict)
     for (fid, profile), a in agg.items():
