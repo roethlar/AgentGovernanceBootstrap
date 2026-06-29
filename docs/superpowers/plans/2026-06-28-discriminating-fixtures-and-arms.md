@@ -206,6 +206,12 @@ fixtures × frontier data-collection run is the next, separately-approved step.
   pass allowed, else dropped.
 - Python fixtures use stdlib `unittest` (no pytest on host; matches existing
   fixtures). Synthetic fixtures ship `solution` + `naive` patches for self-check.
+- **Frontier targets (owner-chosen 2026-06-28): both Claude (claude driver) and
+  GPT-5 (codex driver), as separate model arms** — calibration (Slice F) and the
+  eventual treatment runs are per-model, so the result is not one-model-specific.
+  A fixture must pass the Slice-F calibration band on *each* model arm it will be
+  run on (a fixture that is ceiling for one model but in-band for the other is kept
+  only for the model where it discriminates; recorded per arm).
 
 ## Out of scope
 
