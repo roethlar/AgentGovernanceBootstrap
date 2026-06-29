@@ -28,6 +28,26 @@ short and update it when important repo facts change.
 
 ## Next
 
+- 2026-06-29 **Floor pilot v2 (5 instances, ungoverned): 4/5 resolved — but two big caveats that
+  reshape the experiment.** (v1 was invalid: driver hardcoded the `node` user, which only exists in
+  JS images; agent never ran on Python/Go. Fixed by creating an `agent` user in any image.)
+  Verification of v2: element-web (1 file vs gold's 9) and flipt (3 vs 7) are genuine INDEPENDENT
+  minimal fixes (low similarity to gold); qutebrowser same 3 files but 0.22 similarity (likely
+  genuine); **ansible same 2 files + 0.76 added-line similarity → SUSPECTED LEAK**; navidrome
+  genuine fail (8-file attempt, 2 PASSED).
+  **CRITICAL — LEAKAGE VECTOR:** the gold fix commit exists as a reachable object in each
+  container's git repo (`git cat-file -t <fix>` = commit; `git log --all` exposes future commits).
+  An agent can search history and copy the fix. MUST be closed before any trustworthy rate:
+  scrub the agent workspace's git to base only (e.g. `git checkout -B evalbase <base>`; delete all
+  other refs; `git reflog expire --all --expire=now`; `git gc --prune=now`) so the fix is
+  unreachable/pruned while base ancestry (version info) is preserved. Applies to ALL arms. Scoring
+  is unaffected (it uses its own fresh image container).
+  **CEILING RISK (owner flagged):** even discounting the leak, the ungoverned agent solves most of
+  these → little headroom for governance to show an effect. Need HARDER instances (difficulty band
+  where ungoverned fails) and a LARGER sample (power). Owner direction 2026-06-29: "we probably
+  need more tests and more complex bugs." Open: select hard SWE-bench Pro instances vs author new
+  bugs (cf. `docs/superpowers/plans/2026-06-29-adversarial-bugcrafting-loop.md`) — pending decision.
+
 - 2026-06-29 **KEYSTONE COMPLETE — eval fully operational end-to-end with a real agent; launch
   gate CLEARED.** Owner added the `Bash(docker exec:*)` permission rule; the autonomous
   bypass-permissions agent now runs. First real ungoverned run (NodeBB instance
