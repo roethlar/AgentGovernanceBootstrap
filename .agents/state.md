@@ -28,6 +28,23 @@ short and update it when important repo facts change.
 
 ## Next
 
+- 2026-06-29 **Ungoverned baseline probe DONE → Option A confirmed; 10-instance
+  failure band in hand.** Ran the leak-free ungoverned arm (Claude Code, subscription
+  auth, in-container as non-root `agent`, re-init anti-leak scrub) over a 20-instance
+  complex+regression-rich sample. **Resolved 10/20 (50%)** — a usable headroom band
+  (not the ~80% ceiling that killed the easy sample). **All 20 produced genuine
+  non-empty source patches: 0 empty/infra failures, 0 non-`ok` statuses**, so the 10
+  non-resolves are real agent failures, not measurement noise. Full result table +
+  the 10 failure-band instance IDs (the candidate set for the governed factorial):
+  `evals/swebench-pro/probe-2026-06-29-ungoverned-baseline.md`. Failures by repo:
+  NodeBB ×3, openlibrary ×3, ansible ×2, qutebrowser ×1, element-web ×1. **NEXT:**
+  before the factorial, apply the reviewers' must-fixes (pre-registered analysis +
+  power/MDE; length-matched PLACEBO prose arm; F2P/P2P reported separately; re-measure
+  the band with replicates so the confirmatory set isn't a single-n=20 regression-to-mean;
+  ONE harness). Then the governed none/prose/prose-hooks factorial over the band.
+  (Probe driver is still scratch; formalizing into `evals/` with arg-list hardening
+  remains the deferred engineering step.)
+
 - 2026-06-29 **Leak fix validated + baseline confirmed GENUINE (not leakage).** Anti-leak scrub =
   re-init the agent workspace's git (`rm -rf .git && git init && git add -A && commit -m base`) so
   the gold fix leaves zero trace (bulletproof; ref-deletion+gc left it in a cruft pack, `git fsck
