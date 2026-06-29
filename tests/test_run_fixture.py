@@ -181,6 +181,53 @@ class TestDriver(unittest.TestCase):
             r = run_fixture.score_fixture(fx)
             self.assertFalse(r["functional_pass"])
 
+    def test_overlaid_governance_is_committed_into_trial_base(self):
+        # S1 regression, checked at the seam that the fix actually controls: the
+        # overlaid governance profile must land IN the trial-base commit (overlay runs
+        # BEFORE isolate_history), so a driver measuring its diff against trial-base
+        # never sees governance as a change it made. We assert the property directly:
+        # after scaffolding, AGENTS.md/CLAUDE.md are tracked (HEAD lists them) and the
+        # working tree is clean of them. With the ordering reverted, they are committed
+        # one step too late and show up untracked instead — this test then fails.
+        import subprocess
+        with tempfile.TemporaryDirectory() as tmp:
+            fx = _make_git_oracle_fixture(Path(tmp))
+            captured = {}
+
+            def probe_driver(workdir, fixture_dir, manifest, env_extra):
+                wd = str(workdir)
+                tracked = subprocess.run(["git", "-C", wd, "ls-tree", "-r", "--name-only", "HEAD"],
+                                         capture_output=True, text=True).stdout.split()
+                status = subprocess.run(["git", "-C", wd, "status", "--porcelain", "-uall"],
+                                        capture_output=True, text=True).stdout
+                captured["tracked"] = tracked
+                captured["untracked_governance"] = [
+                    line[3:] for line in status.splitlines()
+                    if line.startswith("?? ") and line[3:] in ("AGENTS.md", "CLAUDE.md")]
+                return {"driver": "fake", "exit": 0}
+
+            r = run_fixture.score_fixture(fx, profile="current-template", driver=probe_driver)
+            self.assertIn("AGENTS.md", r["profile_files"])
+            self.assertIn("AGENTS.md", captured["tracked"],
+                          "overlaid governance must be committed into trial-base")
+            self.assertIn("CLAUDE.md", captured["tracked"])
+            self.assertEqual(captured["untracked_governance"], [],
+                             "governance must not be left untracked (would be mis-attributed to the agent)")
+
+    def test_profile_overwrite_of_existing_file_is_rejected(self):
+        # S1 collision guard: a profile destination that would clobber an existing
+        # workspace file (not removed by the strip) must fail closed, so committing the
+        # overlay into trial-base can never hide a product/test-file mutation.
+        with tempfile.TemporaryDirectory() as wd:
+            (Path(wd) / "AGENTS.md").write_text("pre-existing product doc\n", encoding="utf-8")
+            with self.assertRaises(ValueError):
+                run_fixture.overlay_profile("current-template", Path(wd))
+            # but allow_overwrite (the strip-removed set) permits re-supply
+            (Path(wd) / "AGENTS.md").write_text("pre-existing product doc\n", encoding="utf-8")
+            overlaid = run_fixture.overlay_profile("current-template", Path(wd),
+                                                   allow_overwrite={"AGENTS.md", "CLAUDE.md"})
+            self.assertIn("AGENTS.md", overlaid)
+
 
 class TestDriverModule(unittest.TestCase):
     def setUp(self):

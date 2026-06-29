@@ -189,7 +189,8 @@ def isolate_history(workdir: Path) -> None:
                     "commit", "--quiet", "-m", "trial-base"], check=True, capture_output=True, text=True)
 
 
-def overlay_profile(profile: str, workdir: Path) -> list[str]:
+def overlay_profile(profile: str, workdir: Path,
+                    allow_overwrite: "set[str] | None" = None) -> list[str]:
     """Overlay a governance profile onto the workdir. Returns the relpaths overlaid.
 
     'none' is a no-op. A profile may carry literal files (overlaid as-is) and/or a
@@ -198,7 +199,15 @@ def overlay_profile(profile: str, workdir: Path) -> list[str]:
     form keeps a single source of truth — `current-template` is generated from the
     shipped templates rather than duplicating them. `profile.json` and README files are
     metadata, not overlaid.
+
+    Collision guard: because the overlay is committed into trial-base (so the agent's
+    diff is measured against it), a profile that silently overwrote an existing
+    product or test file would hide that mutation from `changed_files`. A destination
+    that already exists in the workdir therefore raises ValueError (fail-closed) unless
+    its relpath is in `allow_overwrite` — the set of paths the governance strip removed,
+    which a profile is legitimately allowed to re-supply.
     """
+    allow_overwrite = allow_overwrite or set()
     if profile in ("", "none"):
         return []
     profiles_root = PROFILES_DIR.resolve()
@@ -221,6 +230,15 @@ def overlay_profile(profile: str, workdir: Path) -> list[str]:
         dest = (workdir / rel_to).resolve()
         if dest != workdir_root and workdir_root not in dest.parents:
             raise ValueError(f"profile destination escapes the workspace: {rel_to!r}")
+        # Collision guard: overlaying onto an existing file would, once committed into
+        # trial-base, mask that file's mutation from the agent's changed_files. Allow
+        # only paths the strip removed (which the profile may re-supply).
+        norm = Path(rel_to).as_posix()
+        if dest.exists() and norm not in allow_overwrite:
+            raise ValueError(
+                f"profile would overwrite an existing workspace file not removed by the "
+                f"governance strip: {rel_to!r} (add it to manifest keep/strip overrides "
+                f"if this is intended)")
         return dest
 
     repo_root = REPO_ROOT.resolve()
@@ -311,10 +329,14 @@ def score_fixture(
             if apply_solution and manifest.get("solution_paths"):
                 apply_patch_text(workdir, patch_from_commit(
                     repo_path, source["fix_commit"], manifest["solution_paths"]))
-        if source or manifest.get("files"):
-            isolate_history(workdir)
+        # Overlay governance BEFORE isolating history, so the profile lands in the
+        # trial-base commit rather than as untracked files the driver's
+        # `git status` would later misattribute to the agent (the changed_files
+        # artifact). Governance is environment, not agent work.
         result["profile_files"] = overlay_profile(profile, workdir)
         result["profile_hash"] = overlaid_hash(workdir, result["profile_files"])
+        if source or manifest.get("files"):
+            isolate_history(workdir)
         result["fixture_hash"] = fixture_hash(fixture_dir, manifest)
         env_extra = manifest.get("env") or {}
 
