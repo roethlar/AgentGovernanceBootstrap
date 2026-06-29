@@ -61,3 +61,25 @@ Two independent batches agree on the **direction**: prose best, placebo worst,
 none/hooks low. Suggestive only (n≈6–7/arm). The hook increment is ~null here even
 though codex hooks fire — consistent with single-shot giving hooks little to enforce.
 Codex is currently capped; resume batches after its reset.
+
+## Batch 2-RETRY — 2026-06-29 (re-ran batch-2 instances after codex reset; capped again)
+
+Codex hit its cap AGAIN mid-batch (6/16 quota-invalid, 10/16 valid). This retry
+SUPERSEDES the partial batch 2 above. Batch-2-retry alone: none 1/3, placebo 0/3,
+prose 0/2, prose+hooks 1/2.
+
+## REVISED combined (batch 1 + batch-2-retry) — the earlier "prose best" was NOISE
+
+| arm | resolved |
+|-----|----------|
+| none | 2/7 |
+| prose | 2/6 |
+| prose+hooks | 2/6 |
+| placebo | 0/7 |
+
+With fresh draws the prose advantage **disappeared**: prose ≈ none ≈ hooks (~30%);
+only **placebo worst (0/7)** persists. So the batch-1 "prose 2/4 best" was
+small-sample luck. **Lesson reinforced:** at n≈6–7/arm the point estimates flicker
+batch-to-batch — nothing here is interpretable beyond "placebo tends worst." This also
+weakens the earlier cross-model capability hypothesis: codex now looks like Opus
+(prose ≈ none), not prose-favoring. Codex capped again; one more owner reset available.
