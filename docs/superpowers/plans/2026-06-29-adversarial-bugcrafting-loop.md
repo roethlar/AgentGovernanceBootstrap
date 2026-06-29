@@ -156,6 +156,73 @@ E with K=3 and an explicit trial-count cap. Rationale: maximizes the chance of a
 effect (or a credible null), keeps search cost bounded, and the cross-check guards
 against per-model overfitting.
 
+## ADDENDUM 2026-06-29 — SWE-bench Pro changes the recommendation
+
+Owner located a full local checkout of **ScaleAI SWE-bench Pro**
+(`/Users/michael/Dev/SWE-bench_Pro-os`, the official `scaleapi/SWE-bench_Pro-os`
+repo). This likely **supersedes both** the synthetic-fixture plan AND this
+bug-crafting loop, because it already provides — curated from real commits, not
+model-invented — exactly what those were trying to manufacture.
+
+### What it is (verified by inspection)
+- **1000 real instances** across 11 substantial repos (ansible, qutebrowser, NodeBB,
+  navidrome, gravitational/teleport, protonmail, element-hq, …). Long-horizon tasks
+  explicitly built to resist frontier saturation (the public leaderboard shows top
+  agents well under 100%).
+- Each instance ships: `Base Commit`, `Test Files`, **`FAIL_TO_PASS`** (the target
+  test the fix must make pass) and **`PASS_TO_PASS`** (tests that must STAY green).
+- Patch-based scoring: `swe_bench_pro_eval.py` applies a candidate **patch** in the
+  instance's Docker image, runs the tests, scores FAIL_TO_PASS + PASS_TO_PASS. It is
+  agnostic to how the patch was produced — the agent and the scorer are decoupled.
+- Agent scaffolds are git submodules (`SWE-agent`, `mini-swe-agent`, ScaleAI forks),
+  currently un-checked-out. Per-instance Docker images (base + instance Dockerfile).
+
+### Why this maps onto our experiment perfectly
+- **FAIL_TO_PASS = FuncPass** (our visible/functional dimension).
+- **PASS_TO_PASS = SecPass / regression guard** — a real, curated "don't break the
+  adjacent behaviour" trap. This is the exact discriminator the synthetic plan hand-
+  built as a `hidden` test, but real and already calibrated.
+- Real difficulty means a **real ungoverned failure rate** — the thing the calibration
+  gate found missing in the synthetic set. No crafting loop needed: difficulty is
+  intrinsic, not searched.
+
+### What we keep vs retire
+- **Keep:** the governance arms (none / current-template / hook-gate / hook-guard /
+  prose-hooks), `joint_pass = FuncPass AND SecPass` (here: FAIL_TO_PASS AND
+  PASS_TO_PASS), invalid-trial accounting, transcript/telemetry capture.
+- **Retire (likely):** synthetic fixtures, `--check-discrimination`, the calibration
+  band gate, and this bug-crafting loop — SWE-bench Pro removes the need to source or
+  calibrate difficulty ourselves.
+
+### The integration becomes the work — open questions
+- **F1. Execution substrate.** The official scorer runs patches in per-instance Docker
+  containers. **Docker is not currently running on this machine.** Options: (a) install
+  + run Docker locally and build/pull instance images (heavy: 1000 images, disk + time);
+  (b) use **Modal** (their cloud path, `modal>=0.50` — paid cloud, no local Docker);
+  (c) subset to a handful of instances/repos and only stand up those images.
+- **F2. Which agent generates the patch.** (a) Our existing Claude/codex drivers +
+  our governance overlay, producing a diff we hand to their scorer — keeps our hooks
+  and arms intact, closest to the Cursor↔Claude-Code question. (b) Their SWE-Agent
+  scaffold with governance injected — more faithful to the benchmark's own numbers but
+  our Claude-Code hooks don't ride in SWE-Agent. Lean (a): the experiment is about our
+  governance on a Claude-Code-style agent, and (a) preserves the arms we built.
+- **F3. Where the hooks ride.** With (a), the agent runs in a workspace we control, so
+  the overlay + gate/guard hooks work as built; the produced patch is then scored in
+  the container. Need to confirm the agent's workspace == the repo state the scorer
+  expects (same base commit, clean tree minus the agent's diff).
+- **F4. Subset + cost.** 1000 instances × 5 arms × n is far too much for a first pass.
+  Lean: pick a small, diverse subset (e.g. 15–30 instances across 3–4 repos and
+  languages) where a target model's ungoverned FAIL_TO_PASS rate is mid-range, run the
+  factorial there, expand only if a signal appears.
+
+### Revised recommendation
+Pivot to SWE-bench Pro as the fixture source. New (small) plan: stand up the execution
+substrate for a chosen subset (F1), wrap our governed driver to emit a patch (F2/F3),
+score with their harness, and run the existing 5-arm factorial with joint_pass =
+FAIL_TO_PASS ∧ PASS_TO_PASS. This is a fresh plan to draft and codex-review; the
+bug-crafting loop above is retained in the repo as the fallback if the SWE-bench Pro
+integration proves infeasible (e.g. Docker/Modal cost is prohibitive).
+
 ## Verification plan (when/if approved)
 
 - Crafter loop unit-tested on the mechanics (sharpen step wiring, stall detector,
