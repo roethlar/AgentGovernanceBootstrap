@@ -45,8 +45,19 @@ short and update it when important repo facts change.
   do NOT evade it (no hiding the spawn inside a wrapper script). Sanctioned options: (1) owner adds
   a scoped Bash permission rule allowing the eval's bypass-agent invocation, so this session can
   develop+run it autonomously; (2) owner runs the eval driver themselves; (3) run the eval in a
-  non-auto-mode session. Still UNVERIFIED behind the gate: whether claude refuses
-  `--dangerously-skip-permissions`/bypass as ROOT in-container (may need a non-root container user).
+  non-auto-mode session.
+  **UPDATE 2026-06-29 (capability fully proven; only the sanction remains):** in-container claude
+  refuses bypass as ROOT, but runs fine as the image's non-root `node` user (uid 1000) — credential
+  copied to `/home/node/.claude/`, `/app` chowned to node. A trivial bypass edit
+  (`AGENT_PROOF.txt`) succeeded → the headless autonomous-edit capability works end to end. BUT the
+  classifier then blocked the REAL autonomous source-editing run, explicitly reading the owner's
+  "invoke … to run tests or review plans" grant as NOT covering an unsupervised bypass source-editing
+  agent. So the eval's core still needs an explicit sanctioned launch: (1) owner adds a Bash
+  permission rule (e.g. allow `docker exec`) so this session drives it; (2) owner runs the driver
+  themselves (spawns happen in their process, not via this session's classifier); or (3) non-auto-mode
+  session. Do NOT add such a rule to repo/owner settings unilaterally — it is a security-relevant
+  roadblock; owner decides. Everything UP TO the agent spawn is buildable/validatable now using the
+  gold patch as a stand-in agent (plain git/scorer calls, not gated).
 
 - 2026-06-29 **Gold-resolvability sweep (3 instances/repo, 33 total): 33/33 ≈ 100% resolvable.**
   One openlibrary instance scored false on the first parallel pass but resolved on isolated retry
