@@ -189,6 +189,87 @@ def isolate_history(workdir: Path) -> None:
                     "commit", "--quiet", "-m", "trial-base"], check=True, capture_output=True, text=True)
 
 
+# Deletion-safe governance subset. This is intentionally NARROWER than
+# tools/discover.py's GOVERNANCE_MARKER_PATTERNS (which is a *detection* list and
+# includes generic doc names — state.md, decisions.md, devlog.md, review.md,
+# docs/agent/* — that a product repo may legitimately ship as its own
+# documentation). We only auto-delete the unambiguous agent-instruction artifacts:
+# a `none`-profile trial must begin from a repo with no governance steering the
+# agent, but we must never corrupt a fixture by deleting its product/docs. Detection
+# is deliberately a superset of deletion. Each entry below is a session-governance
+# file/dir, not product. Patterns are matched against workdir-relative POSIX paths;
+# `*` is a single-segment glob, a trailing `/*` matches anything under that dir.
+_GOVERNANCE_STRIP_PATTERNS = [
+    "AGENTS.md", "agents.md",
+    "CLAUDE.md", "claude.md",
+    "GEMINI.md", "gemini.md",
+    ".cursorrules",
+    ".cursor/rules/*",
+    ".aider*",
+    ".claude/*",
+    ".antigravitycli/*",
+    ".github/copilot-instructions.md",  # Copilot's AGENTS.md equivalent (not in discover's list)
+]
+
+
+def _match_governance(rel: str, patterns: list[str]) -> bool:
+    """True if a workdir-relative POSIX path is matched by a strip pattern. A trailing
+    `/*` pattern matches the whole subtree (any depth) under that directory."""
+    from fnmatch import fnmatch
+    for pat in patterns:
+        if pat.endswith("/*"):
+            base = pat[:-2]
+            if rel == base or rel.startswith(base + "/"):
+                return True
+        elif fnmatch(rel, pat):
+            return True
+    return False
+
+
+def strip_pre_existing_governance(workdir: Path, manifest: dict[str, Any]) -> list[str]:
+    """Remove pre-existing agent-governance files the source repo carried, so a
+    `none`-profile trial starts clean regardless of what the fixture repo shipped.
+    Returns the sorted relpaths removed.
+
+    Runs after scaffold and BEFORE any test/solution patch, so an injected fixture
+    file can never be a strip target. The strip set is the deletion-safe subset above;
+    a fixture may add paths via manifest['strip_governance'] (exact relpaths) or
+    protect paths via manifest['keep_governance'] (exact relpaths) when a
+    governance-named file is genuinely the fixture's subject. If a fixture's declared
+    test/solution paths intersect the strip set without an explicit keep, that is a
+    fixture-construction error and we fail loudly."""
+    keep = set(manifest.get("keep_governance") or [])
+    extra = list(manifest.get("strip_governance") or [])
+    patterns = _GOVERNANCE_STRIP_PATTERNS + extra
+
+    # Guard: a fixture's own test/solution files must never be governance-stripped.
+    source = manifest.get("source") or {}
+    declared = set(manifest.get("test_paths") or []) | set(manifest.get("solution_paths") or [])
+    for d in sorted(declared):
+        if _match_governance(d, patterns) and d not in keep:
+            raise ValueError(
+                f"fixture {manifest.get('id')!r}: declared path {d!r} matches the "
+                f"governance strip set; add it to keep_governance if intended")
+
+    removed: list[str] = []
+    root = workdir.resolve()
+    for path in sorted(workdir.rglob("*")):
+        if not (path.is_file() or path.is_symlink()):
+            continue
+        try:
+            rel = path.resolve().relative_to(root).as_posix()
+        except ValueError:
+            rel = path.relative_to(workdir).as_posix()
+        if rel.startswith(".git/"):
+            continue
+        if rel in keep:
+            continue
+        if _match_governance(rel, patterns):
+            path.unlink()
+            removed.append(rel)
+    return sorted(removed)
+
+
 def overlay_profile(profile: str, workdir: Path,
                     allow_overwrite: "set[str] | None" = None) -> list[str]:
     """Overlay a governance profile onto the workdir. Returns the relpaths overlaid.
@@ -318,6 +399,11 @@ def score_fixture(
     }
     try:
         result["source_commit"] = scaffold(manifest, fixture_dir, workdir)
+        # Strip any pre-existing agent governance the source repo carried, BEFORE
+        # applying fixture patches (so an injected test/solution file is never a strip
+        # target) — a `none`-profile trial must start from a repo with no governance
+        # steering the agent, independent of what the fixture repo shipped.
+        result["stripped_governance_files"] = strip_pre_existing_governance(workdir, manifest)
         # Gold-standard fixtures inject the fix-commit's failing test onto the parent
         # state; the solution diff is applied only by the oracle self-check. Both diffs
         # are derived live from the source repo by commit SHA + paths.
@@ -332,8 +418,11 @@ def score_fixture(
         # Overlay governance BEFORE isolating history, so the profile lands in the
         # trial-base commit rather than as untracked files the driver's
         # `git status` would later misattribute to the agent (the changed_files
-        # artifact). Governance is environment, not agent work.
-        result["profile_files"] = overlay_profile(profile, workdir)
+        # artifact). Governance is environment, not agent work. A profile may re-supply
+        # a path the strip just removed (allow_overwrite), but not clobber a surviving
+        # product/test file (collision guard).
+        result["profile_files"] = overlay_profile(
+            profile, workdir, allow_overwrite=set(result["stripped_governance_files"]))
         result["profile_hash"] = overlaid_hash(workdir, result["profile_files"])
         if source or manifest.get("files"):
             isolate_history(workdir)

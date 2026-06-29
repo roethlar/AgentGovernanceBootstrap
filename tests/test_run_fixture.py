@@ -310,6 +310,107 @@ class TestHiddenScoring(unittest.TestCase):
         self.assertTrue(r["security_pass"])
 
 
+class TestGovernanceStrip(unittest.TestCase):
+    """S2: a none-profile trial must start from a repo with no agent governance, while
+    never deleting product code or generic docs the source repo legitimately ships."""
+
+    def _src_with_governance(self, tmp: Path) -> Path:
+        """Source git repo carrying: deletion-safe governance (AGENTS.md, copilot
+        instructions, .claude/), product code whose paths merely contain 'claude'
+        (must survive), and a generic doc docs/state.md (detected but not deleted)."""
+        repo = tmp / "src"
+        repo.mkdir()
+        _git(["init", "-q"], repo)
+        (repo / "AGENTS.md").write_text("# governance\n", encoding="utf-8")
+        (repo / ".github").mkdir()
+        (repo / ".github" / "copilot-instructions.md").write_text("steer\n", encoding="utf-8")
+        (repo / ".claude").mkdir()
+        (repo / ".claude" / "settings.json").write_text("{}\n", encoding="utf-8")
+        (repo / "providers").mkdir()
+        (repo / "providers" / "claude.py").write_text("# product code\n", encoding="utf-8")
+        (repo / "hooks").mkdir()
+        (repo / "hooks" / "claude_run.sh").write_text("# product hook\n", encoding="utf-8")
+        (repo / "docs").mkdir()
+        (repo / "docs" / "state.md").write_text("# project state doc (product)\n", encoding="utf-8")
+        _git(["add", "-A"], repo)
+        _git(["commit", "-q", "-m", "base"], repo)
+        return repo
+
+    def _fixture_for(self, tmp: Path, repo: Path, **manifest_extra) -> Path:
+        base = _git(["rev-parse", "HEAD"], repo)
+        fx = tmp / "fx"
+        fx.mkdir()
+        manifest = {
+            "id": "strip", "language": "shell",
+            "source": {"repo_path": str(repo), "base_commit": base},
+            "verify": "true",
+        }
+        manifest.update(manifest_extra)
+        (fx / "fixture.json").write_text(json.dumps(manifest), encoding="utf-8")
+        return fx
+
+    def test_deletion_safe_subset_strips_governance_keeps_product_and_docs(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = self._src_with_governance(Path(tmp))
+            fx = self._fixture_for(Path(tmp), repo)
+            wd = Path(tmp) / "wd"
+            r = run_fixture.score_fixture(fx, profile="none", workdir=wd)
+            # governance gone
+            self.assertFalse((wd / "AGENTS.md").exists())
+            self.assertFalse((wd / ".github" / "copilot-instructions.md").exists())
+            self.assertFalse((wd / ".claude" / "settings.json").exists())
+            # product survives (paths merely contain 'claude')
+            self.assertTrue((wd / "providers" / "claude.py").exists())
+            self.assertTrue((wd / "hooks" / "claude_run.sh").exists())
+            # generic doc detected-but-not-deleted survives
+            self.assertTrue((wd / "docs" / "state.md").exists(),
+                            "generic doc must not be auto-deleted (detection superset != deletion subset)")
+            self.assertEqual(
+                set(r["stripped_governance_files"]),
+                {"AGENTS.md", ".github/copilot-instructions.md", ".claude/settings.json"})
+
+    def test_none_profile_leaves_no_deletion_safe_governance(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = self._src_with_governance(Path(tmp))
+            fx = self._fixture_for(Path(tmp), repo)
+            wd = Path(tmp) / "wd"
+            r = run_fixture.score_fixture(fx, profile="none", workdir=wd)
+            survivors = [p for p in wd.rglob("*")
+                         if p.is_file() and run_fixture._match_governance(
+                             p.relative_to(wd).as_posix(), run_fixture._GOVERNANCE_STRIP_PATTERNS)]
+            self.assertEqual(survivors, [], "no deletion-safe governance may survive a none trial")
+
+    def test_keep_governance_preserves_named_path(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = self._src_with_governance(Path(tmp))
+            fx = self._fixture_for(Path(tmp), repo, keep_governance=["AGENTS.md"])
+            wd = Path(tmp) / "wd"
+            r = run_fixture.score_fixture(fx, profile="none", workdir=wd)
+            self.assertTrue((wd / "AGENTS.md").exists(), "keep_governance must protect the path")
+            self.assertNotIn("AGENTS.md", r["stripped_governance_files"])
+
+    def test_strip_governance_extends_to_named_generic_doc(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = self._src_with_governance(Path(tmp))
+            fx = self._fixture_for(Path(tmp), repo, strip_governance=["docs/state.md"])
+            wd = Path(tmp) / "wd"
+            r = run_fixture.score_fixture(fx, profile="none", workdir=wd)
+            self.assertFalse((wd / "docs" / "state.md").exists(),
+                             "strip_governance must delete the explicitly named path")
+            self.assertIn("docs/state.md", r["stripped_governance_files"])
+
+    def test_declared_path_matching_governance_set_fails_loudly(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = self._src_with_governance(Path(tmp))
+            # a fixture that declares AGENTS.md as a test path (would be stripped) must error
+            fx = self._fixture_for(Path(tmp), repo, test_paths=["AGENTS.md"],
+                                   source={"repo_path": str(repo),
+                                           "base_commit": _git(["rev-parse", "HEAD"], repo),
+                                           "fix_commit": _git(["rev-parse", "HEAD"], repo)})
+            with self.assertRaises(ValueError):
+                run_fixture.score_fixture(fx, profile="none")
+
+
 class TestProfiles(unittest.TestCase):
     def test_none_overlays_nothing(self):
         with tempfile.TemporaryDirectory() as tmp:
