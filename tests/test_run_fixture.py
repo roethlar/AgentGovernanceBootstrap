@@ -676,6 +676,26 @@ class TestProfiles(unittest.TestCase):
             finally:
                 rf.PROFILES_DIR = orig
 
+    def test_profile_tokens_zero_for_none_positive_for_template(self):
+        # S5: profile_tokens estimates governance weight injected; none == 0,
+        # current-template > 0 and matches the chars/4 heuristic over overlaid files.
+        with tempfile.TemporaryDirectory() as a, tempfile.TemporaryDirectory() as b:
+            none_overlaid = run_fixture.overlay_profile("none", Path(a))
+            self.assertEqual(run_fixture.estimate_profile_tokens(Path(a), none_overlaid), 0)
+            ct_overlaid = run_fixture.overlay_profile("current-template", Path(b))
+            est = run_fixture.estimate_profile_tokens(Path(b), ct_overlaid)
+            self.assertGreater(est, 0)
+            chars = sum(len((Path(b) / rel).read_text(encoding="utf-8")) for rel in ct_overlaid)
+            self.assertEqual(est, (chars + 3) // 4)
+
+    def test_profile_tokens_recorded_in_score_result(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            fx = _make_git_oracle_fixture(Path(tmp))
+            r_none = run_fixture.score_fixture(fx, profile="none")
+            r_ct = run_fixture.score_fixture(fx, profile="current-template")
+            self.assertEqual(r_none["profile_tokens"], 0)
+            self.assertGreater(r_ct["profile_tokens"], 0)
+
     def test_profile_hash_differs_between_none_and_current_template(self):
         with tempfile.TemporaryDirectory() as a, tempfile.TemporaryDirectory() as b:
             none_h = run_fixture.overlaid_hash(Path(a), run_fixture.overlay_profile("none", Path(a)))

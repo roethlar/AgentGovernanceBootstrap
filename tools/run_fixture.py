@@ -109,6 +109,22 @@ def fixture_hash(fixture_dir: Path, manifest: dict[str, Any]) -> str:
     return _sha([json.dumps(manifest, sort_keys=True), task_text])
 
 
+def estimate_profile_tokens(workdir: Path, overlaid: list[str]) -> int:
+    """Estimate the governance token weight injected by a profile, summed over the
+    overlaid files' contents. This is a transparent, dependency-free heuristic
+    (~4 chars/token, the common English rule of thumb), NOT a real tokenizer — it is
+    used for cross-profile PROPORTIONALITY comparison (e.g. did a heavier governance
+    profile collapse a weak model's FuncPass?), where a consistent estimate suffices.
+    Billed token cost, where a harness reports it, comes from the driver telemetry."""
+    chars = 0
+    for rel in sorted(overlaid):
+        f = workdir / rel
+        if f.exists():
+            chars += len(f.read_text(encoding="utf-8", errors="replace"))
+    # ceil(chars / 4)
+    return (chars + 3) // 4
+
+
 def overlaid_hash(workdir: Path, overlaid: list[str]) -> str:
     """Hash the governance actually injected (the overlaid files' contents), so two
     trials under 'the same profile' are provably the same governance."""
@@ -481,6 +497,7 @@ def score_fixture(
         result["profile_files"] = overlay_profile(
             profile, workdir, allow_overwrite=set(result["stripped_governance_files"]))
         result["profile_hash"] = overlaid_hash(workdir, result["profile_files"])
+        result["profile_tokens"] = estimate_profile_tokens(workdir, result["profile_files"])
         result["hooks_present"] = _hooks_present(result["profile_files"])
         if source or manifest.get("files"):
             isolate_history(workdir)
