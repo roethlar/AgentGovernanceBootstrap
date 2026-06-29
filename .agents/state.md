@@ -28,6 +28,19 @@ short and update it when important repo facts change.
 
 ## Next
 
+- 2026-06-29 **Leak fix validated + baseline confirmed GENUINE (not leakage).** Anti-leak scrub =
+  re-init the agent workspace's git (`rm -rf .git && git init && git add -A && commit -m base`) so
+  the gold fix leaves zero trace (bulletproof; ref-deletion+gc left it in a cruft pack, `git fsck
+  --unreachable` still surfaced it — re-init is the robust fix). Ansible re-test with history wiped:
+  STILL resolves, tests still run → (a) re-init doesn't break the build, (b) ansible's solve was
+  genuine independent work, not the suspected leak. ⇒ the ~80% ungoverned baseline is a REAL ceiling,
+  confirming the need for harder instances. **Candidate pool for option A:** 92 instances that are
+  complex (gold ≥3 files) AND regression-rich (PASS_TO_PASS ≥15, F2P ≥3) — element-web 25,
+  qutebrowser 23, ansible 19, NodeBB 12, openlibrary 7, others few. (Only 359/731 have ANY P2P.)
+  Decision (owner 2026-06-29): go with **A — mine existing 731** for the hard/regression-rich band;
+  reassess toward bug-authoring only if A yields too few agent-failures. NEXT: larger ungoverned probe
+  over the 92 to find instances the agent FAILS (the experiment's headroom band).
+
 - 2026-06-29 **Floor pilot v2 (5 instances, ungoverned): 4/5 resolved — but two big caveats that
   reshape the experiment.** (v1 was invalid: driver hardcoded the `node` user, which only exists in
   JS images; agent never ran on Python/Go. Fixed by creating an `agent` user in any image.)
