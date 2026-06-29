@@ -4,6 +4,47 @@ Status: DRAFT 2026-06-29, pre-codex-review. Supersedes the synthetic-fixture and
 bug-crafting approaches for fixture-sourcing (see
 `2026-06-29-adversarial-bugcrafting-loop.md` addendum). No code yet.
 
+## Empirical update — 2026-06-29 (validated facts; supersedes stale substrate/P0 text below)
+
+Substrate work ran on the amd64 Linux box `netwatch-01` (NOT the Mac/Colima setup in
+"Execution substrate" below — that section is stale; Apple-Silicon amd64-emulation risk is
+MOOT here, images run native). Live authority: `.agents/state.md`.
+
+- **P0 DONE + generalized.** Gold round-trip passes; empty-patch negative control fails
+  (metric discriminates). Generalizes 11/11 repos. Gold-resolvability sweep 33/33 ≈ 100%
+  (one transient flake, resolved on retry) — gold patches are clean here, so ~all instances
+  are usable. ("No code yet" / P0-pending text below is superseded.)
+- **Disk sizing (real):** on-disk image footprint 1.6–12 GB each, avg ~4.4 GB (NOT multi-TB
+  per image). A 20–40 instance subset ≈ 90–180 GB; 320+ GB free. Subset still wise, numbers
+  far smaller than the plan assumed.
+- **Integration-contract gotchas the adapter MUST encode:** the shipped scorer targets the
+  leaderboard CSV; our jsonl trips two real mismatches — (1) it reads lowercase
+  `fail_to_pass`/`pass_to_pass` (jsonl has uppercase); (2) it `eval()`s those expecting a
+  *string*, but jsonl `FAIL_TO_PASS` is a list and `PASS_TO_PASS` a string — coerce both to
+  string. Predictions accept `model_patch` OR `patch`; always pass `--redo` (per-instance
+  output cache silently reuses stale runs).
+- **Patch-capture VALIDATED (and bigger than the plan said):** capture = source-only
+  `git diff --staged` vs base, EXCLUDING (a) governance overlay/sentinels AND (b) **test
+  files** — the scorer overlays gold test files itself (only the LAST line of
+  `before_repo_set_cmd`), applied AFTER the agent patch, so agent test edits must be stripped
+  (prevents test-gaming). Round-trip proven: gold applied into `/app`, captured, scored resolved.
+- **Metric caveat (affects the primary metric):** `PASS_TO_PASS` is EMPTY for 7 of 11 sampled
+  instances → `joint_pass = FAIL_TO_PASS ∧ PASS_TO_PASS` collapses to FAIL_TO_PASS for those.
+  The FuncPass∧SecPass framing must handle frequently-empty SecPass.
+- **Transient infra-failure mode (must handle):** at `--num_workers=4`, heavy 5–12 GB
+  containers occasionally produce NO output (absent `gold_output.json`) → scored false.
+  DISTINGUISHABLE (absent output vs tests-ran-and-failed) and RETRYABLE; retry it, never count
+  it as an agent failure.
+- **Agent-run mechanism (proven):** host `claude` native binary + subscription credential
+  mounted into the instance container, run headless as the non-root `node` user (root refused),
+  no API key. Subject = harness+model via SUBSCRIPTION, not API keys.
+- **NEW GATE (open):** launching the unsupervised bypass-permissions agent — the eval's core —
+  is blocked by the running session's safety classifier; needs an owner-sanctioned launch path
+  (settings permission rule / owner-run driver / non-auto-mode).
+- **NEW design lever (owner):** harnesses span capability — agy/grok (weaker) vs codex/claude
+  (stronger). Weaker agents plausibly have more headroom for governance to help; consider
+  spanning capability deliberately rather than a single primary frontier (revisits G1).
+
 ## Goal
 
 Measure whether our governance product (prose / hooks / both) makes a frontier agent
