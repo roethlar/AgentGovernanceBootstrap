@@ -1,0 +1,7 @@
+{
+  "description": "Governance arm: the shipped combination — current-template prose (AGENTS.md + CLAUDE.md) PLUS both load-bearing hooks (gate + guard).",
+  "copies": [
+    {"from": "templates/AGENTS.template.md", "to": "AGENTS.md"},
+    {"from": "templates/shims/CLAUDE.template.md", "to": "CLAUDE.md"}
+  ]
+}

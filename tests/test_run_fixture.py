@@ -6,6 +6,7 @@ with inline files and trivial verify commands), so no real source repo or toolch
 needed to prove the scorer classifies pass/fail and short-circuits on setup failure.
 """
 import json
+import os
 import sys
 import tempfile
 import unittest
@@ -692,6 +693,81 @@ class TestHookTelemetry(unittest.TestCase):
 
             r = run_fixture.score_fixture(fx, profile="none", driver=noop)
             self.assertIsNone(r["hooks_fired"], "no hook present -> fired is None, not False")
+
+
+class TestGovernanceHooks(unittest.TestCase):
+    """Slice D: the load-bearing gate/guard hook scripts' decision logic, driven by
+    canned stdin + env (hermetic; no model)."""
+    PROFILES = Path(__file__).resolve().parents[1] / "evals" / "governance_profiles"
+
+    def _run_hook(self, script: Path, stdin_obj: dict, env: dict):
+        import subprocess
+        full_env = dict(os.environ)
+        full_env.update(env)
+        p = subprocess.run(["python3", str(script)], input=json.dumps(stdin_obj),
+                           capture_output=True, text=True, env=full_env)
+        out = p.stdout.strip()
+        return (json.loads(out) if out else None), p.returncode
+
+    # --- gate ---
+    def test_gate_blocks_while_visible_red(self):
+        gate = self.PROFILES / "hook-gate" / ".claude" / "hooks" / "gate.py"
+        with tempfile.TemporaryDirectory() as tmp:
+            state = Path(tmp) / "gate_state"
+            decision, rc = self._run_hook(gate, {}, {
+                "AGB_VERIFY_CMD": "false",   # tests red
+                "AGB_GATE_STATE": str(state), "AGB_GATE_MAX": "3"})
+            self.assertEqual(rc, 0)
+            self.assertEqual(decision["decision"], "block", "must block while red")
+
+    def test_gate_allows_when_visible_green(self):
+        gate = self.PROFILES / "hook-gate" / ".claude" / "hooks" / "gate.py"
+        with tempfile.TemporaryDirectory() as tmp:
+            decision, rc = self._run_hook(gate, {}, {
+                "AGB_VERIFY_CMD": "true",    # tests green
+                "AGB_GATE_STATE": str(Path(tmp) / "s"), "AGB_GATE_MAX": "3"})
+            self.assertIsNone(decision, "green -> no block, allow stop")
+
+    def test_gate_gives_up_after_max_retries(self):
+        gate = self.PROFILES / "hook-gate" / ".claude" / "hooks" / "gate.py"
+        with tempfile.TemporaryDirectory() as tmp:
+            state = Path(tmp) / "gate_state"
+            state.write_text("3")  # already at the cap
+            decision, rc = self._run_hook(gate, {}, {
+                "AGB_VERIFY_CMD": "false", "AGB_GATE_STATE": str(state), "AGB_GATE_MAX": "3"})
+            self.assertIsNone(decision, "at the cap -> stop blocking so the run terminates")
+
+    # --- guard ---
+    def test_guard_refuses_test_file_edit(self):
+        guard = self.PROFILES / "hook-guard" / ".claude" / "hooks" / "guard.py"
+        decision, rc = self._run_hook(
+            guard, {"tool_input": {"file_path": "test_visible.py", "new_string": "x"}}, {})
+        self.assertEqual(decision["hookSpecificOutput"]["permissionDecision"], "deny")
+
+    def test_guard_refuses_governance_file_edit(self):
+        guard = self.PROFILES / "hook-guard" / ".claude" / "hooks" / "guard.py"
+        decision, rc = self._run_hook(
+            guard, {"tool_input": {"file_path": ".claude/settings.json", "new_string": "x"}}, {})
+        self.assertEqual(decision["hookSpecificOutput"]["permissionDecision"], "deny")
+
+    def test_guard_allows_source_edit(self):
+        guard = self.PROFILES / "hook-guard" / ".claude" / "hooks" / "guard.py"
+        decision, rc = self._run_hook(
+            guard, {"tool_input": {"file_path": "src/boxes.py", "new_string": "return (a+b-1)//b"}}, {})
+        self.assertIsNone(decision, "ordinary source edit must be allowed")
+
+    def test_guard_refuses_assertion_weakening(self):
+        guard = self.PROFILES / "hook-guard" / ".claude" / "hooks" / "guard.py"
+        decision, rc = self._run_hook(
+            guard, {"tool_input": {"file_path": "src/x.py", "new_string": "assert(True)"}}, {})
+        self.assertEqual(decision["hookSpecificOutput"]["permissionDecision"], "deny")
+
+    def test_guard_honors_declared_protected_paths(self):
+        guard = self.PROFILES / "hook-guard" / ".claude" / "hooks" / "guard.py"
+        decision, rc = self._run_hook(
+            guard, {"tool_input": {"file_path": "src/components/Foo.tsx", "new_string": "x"}},
+            {"AGB_PROTECTED_PATHS": "src/components/Foo.tsx"})
+        self.assertEqual(decision["hookSpecificOutput"]["permissionDecision"], "deny")
 
 
 class TestProfiles(unittest.TestCase):

@@ -1,0 +1,1 @@
+{"description": "Governance arm: a Stop hook that blocks the agent from finishing while the VISIBLE test suite is red (bounded retries), enforcing follow-through. Visible suite only — never the hidden SecPass test."}

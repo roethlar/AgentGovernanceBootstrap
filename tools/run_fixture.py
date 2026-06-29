@@ -21,6 +21,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import os
 import shutil
 import subprocess
 import sys
@@ -46,6 +47,13 @@ SCHEMA_VERSION = 2
 # OUTSIDE the trial worktree, so a hook writing it never reappears in the agent's
 # changed_files (which would re-create the S1 contamination this harness fixes).
 HOOK_SENTINEL_ENV = "AGB_HOOK_SENTINEL"
+# Hook-side env (never shown to the agent): the visible verify command the gate hook
+# runs to decide whether the agent may stop, and the os.pathsep-joined protected paths
+# the guard hook refuses to let the agent edit.
+VERIFY_CMD_ENV = "AGB_VERIFY_CMD"
+PROTECTED_PATHS_ENV = "AGB_PROTECTED_PATHS"
+GATE_STATE_ENV = "AGB_GATE_STATE"
+GATE_MAX_DEFAULT = 3  # max times the gate hook blocks the agent from stopping
 
 # Driver bases whose harness honors the hooks we overlay (.claude/ hooks). Claude
 # Code and ollama-via-Claude-Code do; codex/grok have their own hook systems that do
@@ -561,6 +569,18 @@ def score_fixture(
         # path is exposed to the hook (and the agent's harness) via env.
         sentinel = Path(tempfile.mkdtemp(prefix="evalhook-")) / "fired.log"
         env_extra[HOOK_SENTINEL_ENV] = str(sentinel)
+        # Export, hook-side only (never in the agent's prompt), what the load-bearing
+        # governance hooks need to act fixture-generally: the visible verify command
+        # (gate runs it to decide whether the agent may stop) and the protected-path
+        # set (guard refuses edits to these). Test paths come from the manifest when
+        # declared, else the hook falls back to its own test-name heuristic.
+        env_extra[VERIFY_CMD_ENV] = manifest.get("verify", "")
+        protected = list(manifest.get("test_paths") or [])
+        env_extra[PROTECTED_PATHS_ENV] = os.pathsep.join(protected)
+        # Gate retry-cap state file (external, like the sentinel) so the gate hook can
+        # bound its blocks and the run always terminates.
+        env_extra[GATE_STATE_ENV] = str(sentinel.parent / "gate_state")
+        env_extra["AGB_GATE_MAX"] = str(GATE_MAX_DEFAULT)
 
         for step in manifest.get("setup", []):
             exit_code, _out, err = run_command(step, workdir, env_extra)
