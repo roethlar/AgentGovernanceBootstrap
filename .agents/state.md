@@ -31,11 +31,28 @@ short and update it when important repo facts change.
 - 2026-06-28: **active research workstream — governance-efficacy measurement (`evals/`).** A
   validated, three-times-externally-reviewed experiment plan to measure whether (and which)
   governance components causally help coding agents, lives at **`evals/TEST-PLAN.md`** — start at
-  its **§15 "Resume here"** for status, the built harness, model hosts, gotchas, and the next
-  action (Phase 0 harness hardening). Screening findings so far in `evals/RESULTS-*.md`
-  (frontier models ceiling; security prose ≈ placebo; hooks transfer, prose is model-capped).
-  **Awaiting owner go on Phase 0.** This is a measurement effort *about* the toolkit, separate
+  its **§15 "Resume here"** for status, the built harness, model hosts, gotchas. Screening
+  findings in `evals/RESULTS-*.md` (frontier models ceiling; security prose ≈ placebo; hooks
+  transfer, prose is model-capped). This is a measurement effort *about* the toolkit, separate
   from the toolkit's product backlog below.
+- 2026-06-28: **Phase 0 (harness hardening) is COMPLETE and pushed** (master 2bcf6ae..747078b).
+  Owner suspended per-slice go for this eval workstream; plan was codex-reviewed to convergence
+  (3 passes) first. Seven slices, each committed + mutation-proven + pushed (push policy `always`):
+  S1 changed_files fix (overlay before trial-base) + profile collision guard; S2 strip
+  pre-existing governance (deletion-safe subset, narrower than discover's detection list);
+  S3 driver telemetry (tokens/cost/tool_calls) + transcript redaction to a **gitignored**
+  `evals/results/transcripts/`; S4 hook telemetry (present/supported_by_driver/fired via an
+  **external** sentinel) + new `hook-smoke` profile; S5 `profile_tokens`; S6 result
+  `schema_version`=2 + aggregator telemetry columns & mixed-schema flag. Plan +
+  S7 live-smoke evidence: `docs/superpowers/plans/2026-06-28-phase0-harness-hardening.md`.
+  **Test interpreter note:** the suite needs **homebrew `python3` (3.14)** — the system
+  `/usr/bin/python3` (3.9) cannot parse the tests' `X | None` annotations. 104 tests green.
+  Four clean baseline fixture repos prepped under `../test_ground/` (blit_v2, headroom,
+  qbit-mobile, rtk — governance stripped, fresh `git init`, no remotes).
+  **Next: Phase 1** (build the real-repo fixture set from those repos, calibrate, freeze) —
+  per TEST-PLAN §10. Phase 1 is approvable once fixture manifests + metric defs exist; the
+  open owner decisions in TEST-PLAN §12 (tier, repos, H6 approval arm, proportionality rule)
+  still gate the *screening* runs, not fixture construction.
 - The `.agents/decisions.md` "Open Decisions" section is the authoritative queue for deferred/owner-approved-but-unimplemented items; consult it for what is awaiting a plan. Do not echo its count or contents here (anti-enumeration invariant) — read the section.
 - **Decided 2026-06-28 — collapse the `update` route into `migration`.** Resolves the former self-contradictory `Open: bootstrap.config.json` fork (the owner chose to dissolve it, not pick (a)/(b)); that Open entry is archived verbatim in `docs/history/decisions-archive.md`, and `bootstrap.config.json` is dropped from the documented layout. The decision is recorded in `.agents/decisions.md` (2026-06-28); the implementation **plan is drafted at `docs/superpowers/plans/2026-06-28-collapse-update-route.md`** (six slices: discover.py+tests, the two procedures, README, the AGENTS template, and Open-entry rewording) and **awaits an owner go to implement** — no code touched yet. Key design point captured in the plan: the `update` route *fork* is removed but the stale-`AGENTS.md` reconciliation is *retained* (re-homed as a conditional in the migration route, gated by `agentsTemplate.reconcileRecommended`, not by a route name). Until the plan lands, the code still has three routes (the "Now" three-route line above is current and correct).
 - Possible queue trim (owner hunch, unconfirmed): the `Open: route/verification probes match literal package.json` (monorepo subdir) item is gated on a precondition — whether subdir-scoped bootstrap is a supported mode. If it is not, close as not-applicable rather than fix. Resolving that precondition may drop it from the queue.

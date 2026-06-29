@@ -368,9 +368,13 @@ not a few runs. This forces an explicit owner choice (see below).
 This plan is the durable handoff; the long session that produced it is not needed.
 
 **Status:** plan validated by three external reviews (GPT protocol amendments, Gemini 3.1 Pro
-adversarial, a final structural evaluation — all folded in). **Awaiting owner go on Phase 0.**
-No treatment runs have been made against this plan. The earlier exploration's screening
-evidence lives in `RESULTS-baseline.md` and `RESULTS-security.md`.
+adversarial, a final structural evaluation — all folded in). **Phase 0 harness hardening is
+COMPLETE (2026-06-28)** — see `docs/superpowers/plans/2026-06-28-phase0-harness-hardening.md`
+(S1–S7, codex-reviewed to convergence, each slice mutation-proven + pushed; live-smoke
+validated). **Next is Phase 1**: build + freeze the real-repo fixture set from the four
+`../test_ground/` baseline repos (blit_v2, headroom, qbit-mobile, rtk — already governance-
+stripped with fresh `git init`, no remotes). No treatment runs have been made yet. The earlier
+exploration's screening evidence lives in `RESULTS-baseline.md` and `RESULTS-security.md`.
 
 **What is already built (committed, working):**
 - Language-agnostic fixture runner `tools/run_fixture.py` (scaffold → overlay → setup → driver →
