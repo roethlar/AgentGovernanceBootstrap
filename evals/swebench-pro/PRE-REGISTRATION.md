@@ -136,6 +136,27 @@ instances whose replicated ungoverned resolve rate sits in a mid-range (e.g. 0.2
   replicated-rate band thresholds, the final instance list, the MDE if 15pp proves
   infeasible.
 
+## 9b. Capture mechanics (critical — learned 2026-06-29, sizing pilot)
+
+The agent's patch MUST be captured as the net diff against a **pinned base tag**
+(`git add -A && git diff --cached eval_base`), NOT against HEAD (`git diff --staged`).
+Reason: Claude Code commits its work autonomously, and the governed arms' AGENTS.md
+explicitly says *"commit each slice as it lands"* — so a vs-HEAD capture returns EMPTY
+whenever the agent commits, scoring a real fix as a false failure. This biases the
+**governed arms hardest** (they are instructed to commit), which would make governance
+look harmful — a catastrophic confound. Setup pins `eval_base` right after the
+re-init base commit; capture diffs the base tree against the index, ignoring any
+intermediate agent commits. Validated: a committed edit is EMPTY under vs-HEAD and
+captured under vs-eval_base. (The 2026-06-29 ungoverned baseline probe used vs-HEAD
+but had ZERO empty patches, so no baseline cell committed → that result is unaffected.)
+
+Also hardened (same session): in-container agents retry up to 4× on an empty patch
+with a fresh container per attempt (the anti-leak git re-init means in-place reset
+can't restore clean base), longer backoff when a connection-error signature appears,
+and cells flagged `neterr` when a proxy/network outage caused the empty — so a proxy
+outage surfaces as invalid cells, not as agent failures. (Earned: a power outage
+rebooted the headroom proxy mid-pilot and corrupted 24/45 cells before the guard.)
+
 ## 10. Threats to validity (carried forward)
 
 - Single harness ⇒ result is about Claude Code; generality to codex/agy/grok is a
