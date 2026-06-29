@@ -27,6 +27,108 @@ def _make_fixture(tmp: Path, manifest: dict, files: dict[str, str] | None = None
     return fx
 
 
+def _make_synthetic_discriminating_fixture(tmp: Path, *, break_mode: str = "none") -> Path:
+    """A self-contained Python (stdlib) fixture that discriminates: ceiling-division
+    box count. Ships buggy source + visible test, a `hidden` test (exact-fit/zero),
+    and `naive/`+`solution/` patch dirs. `break_mode` deliberately mis-builds it to
+    test the discrimination gate:
+      none     -> a correct, discriminating fixture
+      hidden_eq_visible -> hidden duplicates visible (buggy would pass hidden)
+      naive_passes_hidden -> naive patch is actually the correct fix
+      solution_fails_hidden -> solution patch is actually the naive fix
+    """
+    fx = tmp / "fx"
+    (fx / "files").mkdir(parents=True)
+    (fx / "hidden").mkdir()
+    (fx / "naive").mkdir()
+    (fx / "solution").mkdir()
+
+    buggy = "def boxes_needed(items, per_box):\n    return items // per_box\n"
+    (fx / "files" / "boxes.py").write_text(buggy, encoding="utf-8")
+    (fx / "files" / "test_visible.py").write_text(
+        "import unittest\nfrom boxes import boxes_needed\n"
+        "class T(unittest.TestCase):\n"
+        "    def test_partial(self): self.assertEqual(boxes_needed(10,3),4)\n", encoding="utf-8")
+
+    if break_mode == "hidden_eq_visible":
+        hidden_body = "    def test_partial(self): self.assertEqual(boxes_needed(10,3),4)\n"
+    else:
+        hidden_body = ("    def test_exact(self): self.assertEqual(boxes_needed(6,3),2)\n"
+                       "    def test_zero(self): self.assertEqual(boxes_needed(0,3),0)\n")
+    (fx / "hidden" / "test_hidden.py").write_text(
+        "import unittest\nfrom boxes import boxes_needed\nclass H(unittest.TestCase):\n" + hidden_body,
+        encoding="utf-8")
+
+    ceil = "def boxes_needed(items, per_box):\n    return (items + per_box - 1) // per_box\n"
+    naive = "def boxes_needed(items, per_box):\n    return items // per_box + 1\n"
+    # naive patch (passes visible, fails hidden) unless we're testing the broken case
+    (fx / "naive" / "boxes.py").write_text(
+        ceil if break_mode == "naive_passes_hidden" else naive, encoding="utf-8")
+    # solution patch (passes both) unless testing the broken case
+    (fx / "solution" / "boxes.py").write_text(
+        naive if break_mode == "solution_fails_hidden" else ceil, encoding="utf-8")
+
+    (fx / "fixture.json").write_text(json.dumps({
+        "id": "syn_boxes", "language": "python", "kind": "synthetic", "source": None,
+        "files": "files",
+        "verify": "python3 -m unittest test_visible",
+        "hidden": {"files": "hidden", "verify": "python3 -m unittest test_hidden"},
+    }), encoding="utf-8")
+    return fx
+
+
+class TestDiscrimination(unittest.TestCase):
+    """Slice A: --check-discrimination proves the buggy/naive/solution truth table."""
+
+    def test_correct_fixture_discriminates(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            fx = _make_synthetic_discriminating_fixture(Path(tmp))
+            d = run_fixture.check_discrimination(fx)
+            self.assertTrue(d["discriminates"], d["states"])
+            s = d["states"]
+            self.assertEqual((s["buggy"]["func_pass"], s["buggy"]["sec_pass"]), (False, True))
+            self.assertEqual((s["naive"]["func_pass"], s["naive"]["sec_pass"]), (True, False))
+            self.assertEqual((s["solution"]["func_pass"], s["solution"]["sec_pass"]), (True, True))
+
+    def test_hidden_duplicating_visible_is_rejected(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            fx = _make_synthetic_discriminating_fixture(Path(tmp), break_mode="hidden_eq_visible")
+            d = run_fixture.check_discrimination(fx)
+            self.assertFalse(d["discriminates"], "buggy must not pass a hidden test equal to visible")
+
+    def test_naive_that_passes_hidden_is_rejected(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            fx = _make_synthetic_discriminating_fixture(Path(tmp), break_mode="naive_passes_hidden")
+            d = run_fixture.check_discrimination(fx)
+            self.assertFalse(d["discriminates"], "a naive patch that passes hidden is not a trap")
+
+    def test_solution_that_fails_hidden_is_rejected(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            fx = _make_synthetic_discriminating_fixture(Path(tmp), break_mode="solution_fails_hidden")
+            d = run_fixture.check_discrimination(fx)
+            self.assertFalse(d["discriminates"], "a solution that fails hidden is not a correct fix")
+
+
+class TestSyntheticPatchGuard(unittest.TestCase):
+    """Slice A2: patch/hidden injection is fail-closed."""
+
+    def test_patch_introducing_new_file_is_rejected(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            fx = _make_synthetic_discriminating_fixture(Path(tmp))
+            # add a stray new file to the solution patch -> must fail closed
+            (fx / "solution" / "brand_new.py").write_text("x=1\n", encoding="utf-8")
+            with self.assertRaises(ValueError):
+                run_fixture.score_fixture(fx, apply_patch="solution")
+
+    def test_hidden_overwriting_source_is_rejected(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            fx = _make_synthetic_discriminating_fixture(Path(tmp))
+            # make the hidden payload clobber the existing source file
+            (fx / "hidden" / "boxes.py").write_text("def boxes_needed(*a): return 0\n", encoding="utf-8")
+            with self.assertRaises(ValueError):
+                run_fixture.score_fixture(fx)
+
+
 class TestScoring(unittest.TestCase):
     def test_verify_exit_zero_is_functional_pass(self):
         with tempfile.TemporaryDirectory() as tmp:

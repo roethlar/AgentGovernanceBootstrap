@@ -251,6 +251,33 @@ def apply_patch_text(workdir: Path, patch_text: str) -> None:
     )
 
 
+def _apply_synthetic_patch(fixture_dir: Path, workdir: Path, patch_name: str) -> None:
+    """Apply a synthetic fixture's named patch (e.g. 'solution' or 'naive'): copy each
+    file under `<fixture_dir>/<patch_name>/` over the matching path in the scaffolded
+    workdir. The patch may ONLY modify files that already exist in the workspace —
+    it must not introduce new files (a patch that added a test would let a fixture
+    fake its own discrimination). Fail closed on a missing dir or a path that does
+    not already exist (Slice A2 overwrite/append guard, inverted: here new paths are
+    the danger, so we require the destination to pre-exist)."""
+    pdir = (fixture_dir / patch_name).resolve()
+    if not pdir.is_dir():
+        raise ValueError(f"fixture {fixture_dir.name!r} has no {patch_name!r} patch dir")
+    files = [p for p in pdir.rglob("*") if p.is_file()]
+    if not files:
+        raise ValueError(f"{patch_name!r} patch dir is empty for {fixture_dir.name!r}")
+    for src in files:
+        rel = src.relative_to(pdir)
+        dest = (workdir / rel).resolve()
+        if workdir.resolve() not in dest.parents and dest != workdir.resolve():
+            raise ValueError(f"{patch_name} patch path escapes the workspace: {rel}")
+        if not dest.exists():
+            raise ValueError(
+                f"{patch_name} patch introduces a new file {rel.as_posix()!r}; a patch "
+                f"may only modify existing source, not add files (would let a fixture "
+                f"fake its own discrimination)")
+        shutil.copy2(src, dest)
+
+
 def isolate_history(workdir: Path) -> None:
     """Replace the scaffolded clone's history with a single trial-base commit.
 
@@ -455,7 +482,18 @@ def score_fixture(
     fixture_dir: Path, profile: str = "none", workdir: Path | None = None,
     run_id: str = "manual", apply_solution: bool = False,
     driver: "Callable[..., dict[str, Any]] | None" = None,
+    apply_patch: "str | None" = None,
 ) -> dict[str, Any]:
+    """Scaffold a fixture, optionally apply an agent driver, score FuncPass (visible
+    verify) and SecPass (hidden verify).
+
+    `apply_patch` names a synthetic patch the fixture ships in its own directory
+    (e.g. "solution" or "naive" -> a `solution/` / `naive/` subdir whose files are
+    copied over the scaffolded source). It is the no-git analogue of the gold
+    fixtures' commit-derived solution diff, used by --check-discrimination to prove
+    the truth table. Patch files are applied non-overwriting-guarded (see
+    _apply_synthetic_patch) so a patch can only modify existing source, never sneak
+    in a new test or clobber an unexpected path."""
     fixture_dir = fixture_dir.resolve()
     manifest = load_manifest(fixture_dir)
     cleanup = False
@@ -495,6 +533,12 @@ def score_fixture(
             if apply_solution and manifest.get("solution_paths"):
                 apply_patch_text(workdir, patch_from_commit(
                     repo_path, source["fix_commit"], manifest["solution_paths"]))
+        # Synthetic fixtures: apply a named patch dir (solution / naive) shipped in the
+        # fixture, the no-git analogue of the gold solution diff. Non-overwriting-
+        # guarded so a patch can only modify existing source.
+        if apply_patch:
+            result["applied_patch"] = apply_patch
+            _apply_synthetic_patch(fixture_dir, workdir, apply_patch)
         # Overlay governance BEFORE isolating history, so the profile lands in the
         # trial-base commit rather than as untracked files the driver's
         # `git status` would later misattribute to the agent (the changed_files
@@ -562,10 +606,18 @@ def score_fixture(
         hidden = manifest.get("hidden")
         if hidden:
             hsrc = (fixture_dir / hidden["files"]).resolve()
+            # Overwrite guard (Slice A2): the hidden payload must be test-only — new
+            # files, never clobbering existing source/tests. A fixture that made the
+            # hidden test "pass" by overwriting source during injection would be a
+            # construction error that silently invalidates SecPass. Fail closed.
             for item in sorted(hsrc.iterdir()):
                 dest = workdir / item.name
+                if dest.exists():
+                    raise ValueError(
+                        f"hidden injection would overwrite existing workspace path "
+                        f"{item.name!r}; hidden payloads must be test-only new files")
                 if item.is_dir():
-                    shutil.copytree(item, dest, dirs_exist_ok=True)
+                    shutil.copytree(item, dest)
                 else:
                     shutil.copy2(item, dest)
             h_exit, _o, _e = run_command(hidden["verify"], workdir, env_extra)
@@ -610,6 +662,55 @@ def check_oracle(fixture_dir: Path) -> dict[str, Any]:
     }
 
 
+def check_discrimination(fixture_dir: Path) -> dict[str, Any]:
+    """Prove a synthetic fixture discriminates, mechanically — the gate to enter the
+    frozen set. Applies nothing / the `naive` patch / the `solution` patch in clean
+    scaffolds and asserts the exact truth table:
+
+        applied      FuncPass(visible)   SecPass(hidden)
+        (buggy)            False               True
+        naive              True                False
+        solution           True                True
+
+    Any deviation fails (hidden duplicating visible -> buggy SecPass False -> caught;
+    a naive patch that accidentally passes hidden -> caught; a solution that breaks
+    hidden -> caught). Requires the fixture to ship `hidden`, a `naive/` and a
+    `solution/` patch dir. FuncPass here is the visible verify; SecPass is the hidden
+    verify. Setup must actually run in every state (a setup failure is not a valid
+    'fail')."""
+    fixture_dir = fixture_dir.resolve()
+    manifest = load_manifest(fixture_dir)
+    if not manifest.get("hidden"):
+        raise ValueError("discrimination check requires a `hidden` block")
+
+    def state(label, **kw):
+        r = score_fixture(fixture_dir, **kw)
+        ran = r["setup_ok"] and r["verify_exit"] is not None
+        return {
+            "label": label,
+            "func_pass": bool(ran and r["functional_pass"]),
+            "sec_pass": r.get("security_pass"),
+            "setup_ok": r["setup_ok"],
+            "verify_exit": r["verify_exit"],
+            "hidden_exit": r.get("hidden_exit"),
+        }
+
+    buggy = state("buggy")
+    naive = state("naive", apply_patch="naive")
+    solution = state("solution", apply_patch="solution")
+
+    table_ok = (
+        buggy["func_pass"] is False and buggy["sec_pass"] is True
+        and naive["func_pass"] is True and naive["sec_pass"] is False
+        and solution["func_pass"] is True and solution["sec_pass"] is True
+    )
+    return {
+        "id": manifest["id"],
+        "discriminates": table_ok,
+        "states": {"buggy": buggy, "naive": naive, "solution": solution},
+    }
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Run and score an eval fixture.")
     parser.add_argument("fixture", help="path to a fixture directory (contains fixture.json)")
@@ -618,6 +719,10 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--record", action="store_true", help="write the result JSON under evals/results/")
     parser.add_argument("--check-oracle", action="store_true",
                         help="validate a gold fixture (broken fails, fixed passes) instead of scoring")
+    parser.add_argument("--check-discrimination", action="store_true",
+                        help="prove a synthetic fixture's buggy/naive/solution truth table (frozen-set gate)")
+    parser.add_argument("--apply-patch", default=None,
+                        help="apply a synthetic patch dir (e.g. 'naive' or 'solution') before scoring")
     parser.add_argument("--driver", default=None,
                         help="drive an agent to attempt the fixture (e.g. 'codex'); omit to score as-is")
     args = parser.parse_args(argv)
@@ -627,11 +732,17 @@ def main(argv: list[str] | None = None) -> int:
         print(json.dumps(oracle, indent=2))
         return 0 if oracle["oracle_valid"] else 1
 
+    if args.check_discrimination:
+        disc = check_discrimination(Path(args.fixture))
+        print(json.dumps(disc, indent=2))
+        return 0 if disc["discriminates"] else 1
+
     driver = None
     if args.driver:
         import drivers
         driver = drivers.get_driver(args.driver)
-    result = score_fixture(Path(args.fixture), profile=args.profile, run_id=args.run_id, driver=driver)
+    result = score_fixture(Path(args.fixture), profile=args.profile, run_id=args.run_id,
+                           driver=driver, apply_patch=args.apply_patch)
     print(json.dumps(result, indent=2))
     if args.record:
         RESULTS_DIR.mkdir(parents=True, exist_ok=True)
