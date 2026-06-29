@@ -28,6 +28,19 @@ short and update it when important repo facts change.
 
 ## Next
 
+- 2026-06-29 **Gold-resolvability sweep (3 instances/repo, 33 total): 33/33 ≈ 100% resolvable.**
+  One openlibrary instance scored false on the first parallel pass but resolved on isolated retry
+  (6 PASSED) — so the dataset's gold patches are clean on this substrate; no instance needed
+  exclusion in this sample.
+  **CRITICAL methodological finding — transient infra failure under parallelism:** at
+  `--num_workers=4`, heavy containers occasionally produce **NO output at all** (the instance
+  output dir has the workspace but no `gold_output.json` / no stdout/stderr logs), which the scorer
+  counts as `resolved=false`. This is DISTINGUISHABLE from a real test failure (empty/absent output
+  vs. `gold_output.json` present with FAILED tests) and is RETRYABLE. **P1 MUST: (a) detect the
+  "no output produced" case and retry it, (b) never count an infra-empty run as an agent failure,
+  (c) keep parallelism modest for heavy repos (Go/webclients images are 5–12 GB).** Counting a
+  transient infra flake as the agent failing would silently corrupt the governance-effect measurement.
+
 - 2026-06-29 **P0 DONE — substrate PROVEN on the amd64 Linux box; the blocker below is CLEARED.**
   Box: `netwatch-01` (CachyOS, x86_64, native amd64 — no QEMU), Docker engine active, system
   `python3` is **3.14** (parses the tests), SWE-bench Pro checkout is at
