@@ -44,6 +44,17 @@ in what governance material is present in `/app` before the agent starts:
 Length-matching rule: placebo token count within ±10% of real-prose token count,
 measured with the same tokenizer; record both counts in the run metadata.
 
+**Injection mechanism (validated 2026-06-29, keystone for arm validity):** Claude
+Code in `-p` mode loads **`CLAUDE.md`** from the working dir (`/app`) as project
+memory, and follows its `@AGENTS.md` import — but a **bare `AGENTS.md` with no
+`CLAUDE.md` is INERT** (not loaded). So every governed arm MUST deliver governance
+via `CLAUDE.md` (either the prose inline, or the toolkit's real shim `CLAUDE.md` =
+`@AGENTS.md` + the AGENTS.md file). The real-prose and prose+hooks arms use the real
+shim shape (the product's actual delivery mechanism); the placebo arm likewise needs
+a `CLAUDE.md` (inline or importing the placebo file) or it would be inert and
+collapse into the `none` arm. Confirmed by canary probe: CLAUDE.md canary appeared,
+bare-AGENTS.md canary did not, `@AGENTS.md`-imported canary did.
+
 ## 4. Design
 
 - **Within-instance (paired).** Each selected instance is run under all 4 arms, so
