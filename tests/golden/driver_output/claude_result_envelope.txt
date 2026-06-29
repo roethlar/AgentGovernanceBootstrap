@@ -1,0 +1,1 @@
+{"type":"result","subtype":"success","is_error":false,"num_turns":4,"result":"Done.","total_cost_usd":0.0237,"usage":{"input_tokens":1820,"output_tokens":410}}

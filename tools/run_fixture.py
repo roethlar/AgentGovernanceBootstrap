@@ -34,6 +34,33 @@ PROFILES_DIR = REPO_ROOT / "evals" / "governance_profiles"
 RESULTS_DIR = REPO_ROOT / "evals" / "results"
 
 
+TRANSCRIPTS_DIR = RESULTS_DIR / "transcripts"
+
+
+def _store_transcript_and_redact(driver_result: dict[str, Any], fixture_id: str,
+                                 profile: str, run_id: str) -> None:
+    """Write the driver's raw stdout/stderr to a gitignored transcript file and remove
+    the raw keys from the result dict in place. Records `transcript_path` (relative to
+    the repo root) and `transcript_bytes`. If the driver supplied no raw streams, both
+    are None. This is the redaction step that makes the gitignored-transcript design
+    actually protect tracked results JSON (see the Phase 0 plan, R2-#1)."""
+    raw_out = driver_result.pop("_stdout", None)
+    raw_err = driver_result.pop("_stderr", None)
+    if raw_out is None and raw_err is None:
+        driver_result.setdefault("transcript_path", None)
+        driver_result.setdefault("transcript_bytes", None)
+        return
+    TRANSCRIPTS_DIR.mkdir(parents=True, exist_ok=True)
+    # Sanitize the filename components (profile/run_id are caller-controlled labels).
+    safe = lambda s: "".join(c if (c.isalnum() or c in "-_.") else "_" for c in str(s))
+    fname = f"{safe(fixture_id)}-{safe(profile)}-{safe(run_id)}.txt"
+    path = TRANSCRIPTS_DIR / fname
+    body = ((raw_out or "") + ("\n--- STDERR ---\n" + raw_err if raw_err else ""))
+    path.write_text(body, encoding="utf-8")
+    driver_result["transcript_path"] = str(path.relative_to(REPO_ROOT))
+    driver_result["transcript_bytes"] = len(body.encode("utf-8"))
+
+
 def _sha(parts: list[str]) -> str:
     h = hashlib.sha256()
     for p in parts:
@@ -442,7 +469,14 @@ def score_fixture(
         # below then scores the outcome. The driver runs after setup so the agent can run
         # the project's own tests while working.
         if driver is not None:
-            result["driver"] = driver(workdir, fixture_dir, manifest, env_extra)
+            driver_result = driver(workdir, fixture_dir, manifest, env_extra)
+            # Transcript storage + raw-stream redaction (S3): the driver returns raw
+            # stdout/stderr under _stdout/_stderr; score_fixture (which knows
+            # id/profile/run_id) writes them to a GITIGNORED transcript file and then
+            # strips the raw keys, so raw agent output — possibly carrying workspace
+            # source, prompts, or secrets — never lands in a tracked results JSON.
+            _store_transcript_and_redact(driver_result, result["id"], profile, run_id)
+            result["driver"] = driver_result
 
         exit_code, _out, _err = run_command(manifest["verify"], workdir, env_extra)
         result["verify_exit"] = exit_code

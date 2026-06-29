@@ -60,6 +60,110 @@ def _changed_files(workdir: Path) -> list[str]:
     return [line[3:] for line in out.splitlines() if line.strip()]
 
 
+def _parse_claude_telemetry(stdout: str, stderr: str) -> dict[str, Any]:
+    """Parse Claude Code's `--output-format json` result envelope (or a stream-json
+    tail) for usage. Claude prints a final JSON object with `total_cost_usd` and a
+    `usage` block; tool calls appear as `assistant` messages with `tool_use` content
+    in stream-json. Missing field -> None (absence is data, not zero)."""
+    tokens = cost = tool_calls = None
+    # Final result envelope: the last well-formed JSON object on stdout.
+    obj = _last_json_object(stdout)
+    if obj:
+        cost = obj.get("total_cost_usd", obj.get("cost_usd", cost))
+        usage = obj.get("usage") or {}
+        it, ot = usage.get("input_tokens"), usage.get("output_tokens")
+        if it is not None or ot is not None:
+            tokens = (it or 0) + (ot or 0)
+        if obj.get("num_turns") is not None and tool_calls is None:
+            # not tool calls per se, but a usable activity proxy when stream absent
+            pass
+    # Stream-json: count tool_use blocks across assistant events.
+    tc = _count_stream_tool_uses(stdout)
+    if tc is not None:
+        tool_calls = tc
+    return {"tokens": tokens, "cost": cost, "tool_calls": tool_calls}
+
+
+def _parse_generic_telemetry(stdout: str, stderr: str) -> dict[str, Any]:
+    """Best-effort for harnesses without a structured usage envelope (codex, grok):
+    nothing reliably machine-readable today, so record explicit nulls. A later slice
+    can add a real parser per harness; absence is recorded honestly meanwhile."""
+    return {"tokens": None, "cost": None, "tool_calls": None}
+
+
+def _last_json_object(text: str) -> "dict[str, Any] | None":
+    """Return the last top-level JSON object found scanning lines bottom-up, or None.
+    Tolerant of non-JSON log lines interleaved with a final JSON result."""
+    import json
+    for line in reversed(text.splitlines()):
+        line = line.strip()
+        if line.startswith("{") and line.endswith("}"):
+            try:
+                obj = json.loads(line)
+                if isinstance(obj, dict):
+                    return obj
+            except json.JSONDecodeError:
+                continue
+    return None
+
+
+def _count_stream_tool_uses(text: str) -> "int | None":
+    """Count tool_use content blocks in a Claude stream-json stdout. Returns None if
+    the output is not stream-json (no parseable event lines at all)."""
+    import json
+    seen_any = False
+    count = 0
+    for line in text.splitlines():
+        line = line.strip()
+        if not (line.startswith("{") and line.endswith("}")):
+            continue
+        try:
+            evt = json.loads(line)
+        except json.JSONDecodeError:
+            continue
+        seen_any = True
+        msg = evt.get("message") if isinstance(evt, dict) else None
+        content = (msg or {}).get("content") if isinstance(msg, dict) else None
+        if isinstance(content, list):
+            count += sum(1 for c in content if isinstance(c, dict) and c.get("type") == "tool_use")
+    return count if seen_any else None
+
+
+_TELEMETRY_PARSERS = {
+    "claude": _parse_claude_telemetry,
+}
+
+
+def parse_telemetry(driver_name: str, stdout: str, stderr: str) -> dict[str, Any]:
+    """Dispatch to a per-harness telemetry parser by driver name prefix. Unknown /
+    unstructured harnesses fall back to explicit nulls."""
+    base = driver_name.split(":", 1)[0]
+    parser = _TELEMETRY_PARSERS.get(base, _parse_generic_telemetry)
+    return parser(stdout, stderr)
+
+
+def _finalize(driver_name: str, exit_code: int, started: float, workdir: Path,
+              stdout: str, stderr: str) -> dict[str, Any]:
+    """Build the common driver result. Raw stdout/stderr are attached under the
+    underscore-prefixed `_stdout`/`_stderr` keys — score_fixture writes them to the
+    gitignored transcript file and then DELETES these keys before the result is
+    recorded, so raw agent output (possibly carrying source/prompts/secrets) never
+    lands in a tracked evals/results/*.json."""
+    tele = parse_telemetry(driver_name, stdout, stderr)
+    return {
+        "driver": driver_name,
+        "exit": exit_code,
+        "duration_sec": round(time.monotonic() - started, 1),
+        "changed_files": _changed_files(workdir),
+        "tool_calls": tele["tool_calls"],
+        "tokens": tele["tokens"],
+        "cost": tele["cost"],
+        "error_tail": stderr[-500:] if exit_code != 0 else "",
+        "_stdout": stdout,
+        "_stderr": stderr,
+    }
+
+
 def codex_driver(workdir: Path, fixture_dir: Path, manifest: dict[str, Any],
                  env_extra: dict[str, str] | None = None, timeout: int = 1800) -> dict[str, Any]:
     prompt = PROMPT_WRAPPER.format(task=agent_prompt(fixture_dir, manifest))
@@ -75,16 +179,10 @@ def codex_driver(workdir: Path, fixture_dir: Path, manifest: dict[str, Any],
             cwd=str(workdir), input=prompt, capture_output=True, text=True,
             timeout=timeout, env=env,
         )
-        exit_code, err = proc.returncode, proc.stderr[-500:]
-    except subprocess.TimeoutExpired:
-        exit_code, err = 124, f"TIMEOUT after {timeout}s"
-    return {
-        "driver": "codex",
-        "exit": exit_code,
-        "duration_sec": round(time.monotonic() - started, 1),
-        "changed_files": _changed_files(workdir),
-        "error_tail": err if exit_code != 0 else "",
-    }
+        exit_code, out, err = proc.returncode, proc.stdout, proc.stderr
+    except subprocess.TimeoutExpired as exc:
+        exit_code, out, err = 124, exc.stdout or "", f"TIMEOUT after {timeout}s"
+    return _finalize("codex", exit_code, started, workdir, out, err)
 
 
 def claude_driver(workdir: Path, fixture_dir: Path, manifest: dict[str, Any],
@@ -96,23 +194,22 @@ def claude_driver(workdir: Path, fixture_dir: Path, manifest: dict[str, Any],
     prompt = PROMPT_WRAPPER.format(task=agent_prompt(fixture_dir, manifest))
     env = dict(os.environ)
     env.update(env_extra or {})
-    cmd = ["claude", "-p", prompt, "--permission-mode", "acceptEdits"]
+    # --output-format json emits a final result envelope carrying usage + cost, which
+    # _parse_claude_telemetry reads; --verbose stream-json would add per-tool events
+    # but the result envelope is enough for tokens/cost.
+    cmd = ["claude", "-p", prompt, "--permission-mode", "acceptEdits",
+           "--output-format", "json"]
     if model:
         cmd += ["--model", model]
     started = time.monotonic()
     try:
         proc = subprocess.run(cmd, cwd=str(workdir), capture_output=True, text=True,
                               timeout=timeout, env=env)
-        exit_code, err = proc.returncode, proc.stderr[-500:]
-    except subprocess.TimeoutExpired:
-        exit_code, err = 124, f"TIMEOUT after {timeout}s"
-    return {
-        "driver": f"claude:{model}" if model else "claude",
-        "exit": exit_code,
-        "duration_sec": round(time.monotonic() - started, 1),
-        "changed_files": _changed_files(workdir),
-        "error_tail": err if exit_code != 0 else "",
-    }
+        exit_code, out, err = proc.returncode, proc.stdout, proc.stderr
+    except subprocess.TimeoutExpired as exc:
+        exit_code, out, err = 124, exc.stdout or "", f"TIMEOUT after {timeout}s"
+    return _finalize(f"claude:{model}" if model else "claude", exit_code, started,
+                     workdir, out, err)
 
 
 def grok_driver(workdir: Path, fixture_dir: Path, manifest: dict[str, Any],
@@ -128,16 +225,10 @@ def grok_driver(workdir: Path, fixture_dir: Path, manifest: dict[str, Any],
             ["grok", "-p", prompt, "--always-approve", "--output-format", "plain"],
             cwd=str(workdir), capture_output=True, text=True, timeout=timeout, env=env,
         )
-        exit_code, err = proc.returncode, proc.stderr[-500:]
-    except subprocess.TimeoutExpired:
-        exit_code, err = 124, f"TIMEOUT after {timeout}s"
-    return {
-        "driver": "grok",
-        "exit": exit_code,
-        "duration_sec": round(time.monotonic() - started, 1),
-        "changed_files": _changed_files(workdir),
-        "error_tail": err if exit_code != 0 else "",
-    }
+        exit_code, out, err = proc.returncode, proc.stdout, proc.stderr
+    except subprocess.TimeoutExpired as exc:
+        exit_code, out, err = 124, exc.stdout or "", f"TIMEOUT after {timeout}s"
+    return _finalize("grok", exit_code, started, workdir, out, err)
 
 
 def ollama_driver(model: str) -> Callable[..., dict[str, Any]]:
@@ -157,20 +248,18 @@ def ollama_driver(model: str) -> Callable[..., dict[str, Any]]:
         try:
             proc = subprocess.run(
                 ["claude", "-p", prompt, "--permission-mode", "acceptEdits",
-                 "--model", model, "--settings",
+                 "--output-format", "json", "--model", model, "--settings",
                  '{"env":{"ANTHROPIC_BASE_URL":"' + base_url + '"}}'],
                 cwd=str(workdir), capture_output=True, text=True, timeout=timeout, env=env,
             )
-            exit_code, err = proc.returncode, proc.stderr[-500:]
-        except subprocess.TimeoutExpired:
-            exit_code, err = 124, f"TIMEOUT after {timeout}s"
-        return {
-            "driver": f"ollama:{model}",
-            "exit": exit_code,
-            "duration_sec": round(time.monotonic() - started, 1),
-            "changed_files": _changed_files(workdir),
-            "error_tail": err if exit_code != 0 else "",
-        }
+            exit_code, out, err = proc.returncode, proc.stdout, proc.stderr
+        except subprocess.TimeoutExpired as exc:
+            exit_code, out, err = 124, exc.stdout or "", f"TIMEOUT after {timeout}s"
+        # ollama runs through Claude Code, so the Claude usage envelope applies; name
+        # the result ollama:<model> but parse with the claude telemetry parser.
+        r = _finalize("claude", exit_code, started, workdir, out, err)
+        r["driver"] = f"ollama:{model}"
+        return r
 
     return drive
 

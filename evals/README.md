@@ -49,6 +49,10 @@ git remotes so nothing can push back, overlays the chosen governance profile, ru
 - Use only offline-deterministic tests (no Playwright browser e2e, no live Graph/AD/
   Exchange calls).
 - `evals/results/` holds scores + commit SHAs, never repo contents or transcripts.
+  Raw agent stdout/stderr is captured per trial to the **gitignored**
+  `evals/results/transcripts/` tree; the recorded `*.json` keeps only
+  `transcript_path` + `transcript_bytes` + parsed telemetry (tokens/cost/tool_calls),
+  with the raw streams stripped before the result is written.
 
 ## Substrate (owned repos, by language)
 

@@ -7,3 +7,9 @@ __pycache__/
 Thumbs.db
 Desktop.ini
 *.tmp
+
+# Eval driver transcripts: raw agent stdout/stderr captured per trial. These can
+# carry workspace source, prompts, or secrets, so they are NEVER committed —
+# evals/results/*.json records only transcript_path + transcript_bytes + parsed
+# telemetry (see evals/README.md and the Phase 0 plan).
+evals/results/transcripts/

@@ -278,6 +278,84 @@ class TestDriverModule(unittest.TestCase):
         d = self.drivers.get_driver("ollama:qwen3.6:27b-mlx")
         self.assertTrue(callable(d))
 
+    # --- S3 telemetry parsing (golden-fixture driven) ---
+    GOLDEN = Path(__file__).resolve().parents[1] / "tests" / "golden" / "driver_output"
+
+    def test_claude_result_envelope_parses_tokens_and_cost(self):
+        out = (self.GOLDEN / "claude_result_envelope.txt").read_text()
+        t = self.drivers.parse_telemetry("claude", out, "")
+        self.assertEqual(t["tokens"], 1820 + 410)
+        self.assertEqual(t["cost"], 0.0237)
+
+    def test_claude_stream_json_counts_tool_uses(self):
+        out = (self.GOLDEN / "claude_stream_json.txt").read_text()
+        t = self.drivers.parse_telemetry("claude", out, "")
+        self.assertEqual(t["tool_calls"], 2, "two tool_use blocks across assistant events")
+        self.assertEqual(t["tokens"], 900 + 120)
+        self.assertEqual(t["cost"], 0.0101)
+
+    def test_claude_model_prefix_dispatches_to_claude_parser(self):
+        out = (self.GOLDEN / "claude_result_envelope.txt").read_text()
+        t = self.drivers.parse_telemetry("claude:haiku-4-5", out, "")
+        self.assertEqual(t["tokens"], 1820 + 410)
+
+    def test_unstructured_harness_records_explicit_nulls(self):
+        out = (self.GOLDEN / "codex_plain.txt").read_text()
+        t = self.drivers.parse_telemetry("codex", out, "")
+        self.assertIsNone(t["tokens"])
+        self.assertIsNone(t["cost"])
+        self.assertIsNone(t["tool_calls"])
+
+
+class TestTranscriptRedaction(unittest.TestCase):
+    """S3 / R2-#1: raw driver stdout/stderr must be written to the gitignored transcript
+    file and stripped from the recorded result, never serialized into a tracked JSON."""
+
+    def test_transcript_written_and_raw_streams_redacted(self):
+        import run_fixture
+        SECRET = "SECRET-TOKEN-sk-leak-me-12345"
+        with tempfile.TemporaryDirectory() as tmp:
+            fx = _make_git_oracle_fixture(Path(tmp))
+
+            def leaky_driver(workdir, fixture_dir, manifest, env_extra):
+                (Path(workdir) / "app.txt").write_text("FIXED\n", encoding="utf-8")
+                # mimic a driver result carrying raw streams under the redactable keys
+                return {"driver": "fake", "exit": 0, "changed_files": ["app.txt"],
+                        "tool_calls": 1, "tokens": 10, "cost": 0.0,
+                        "_stdout": f"agent log line\n{SECRET}\n", "_stderr": "warn: x"}
+
+            r = run_fixture.score_fixture(fx, driver=leaky_driver, run_id="redact-test")
+            dr = r["driver"]
+            # raw keys gone; pointer + size recorded
+            self.assertNotIn("_stdout", dr)
+            self.assertNotIn("_stderr", dr)
+            self.assertIn("transcript_path", dr)
+            self.assertTrue(dr["transcript_bytes"] > 0)
+            # the secret must NOT appear anywhere in the serialized result dict
+            self.assertNotIn(SECRET, json.dumps(r),
+                             "raw stdout/secret leaked into the recorded result JSON")
+            # but it IS in the gitignored transcript file on disk
+            tpath = run_fixture.REPO_ROOT / dr["transcript_path"]
+            try:
+                self.assertIn("transcripts/", dr["transcript_path"].replace("\\", "/"))
+                self.assertIn(SECRET, tpath.read_text(encoding="utf-8"))
+            finally:
+                if tpath.exists():
+                    tpath.unlink()
+
+    def test_driver_without_raw_streams_records_null_transcript(self):
+        import run_fixture
+        with tempfile.TemporaryDirectory() as tmp:
+            fx = _make_git_oracle_fixture(Path(tmp))
+
+            def quiet_driver(workdir, fixture_dir, manifest, env_extra):
+                (Path(workdir) / "app.txt").write_text("FIXED\n", encoding="utf-8")
+                return {"driver": "fake", "exit": 0}
+
+            r = run_fixture.score_fixture(fx, driver=quiet_driver)
+            self.assertIsNone(r["driver"]["transcript_path"])
+            self.assertIsNone(r["driver"]["transcript_bytes"])
+
 
 class TestHiddenScoring(unittest.TestCase):
     FX = Path(__file__).resolve().parents[1] / "evals" / "fixtures" / "sec_path_traversal"
