@@ -28,6 +28,26 @@ short and update it when important repo facts change.
 
 ## Next
 
+- 2026-06-29 **Keystone recon DONE — one remaining GATE: a sanctioned way to launch the
+  autonomous agent.** Proven on netwatch-01: the host `claude` (native amd64 ELF v2.1.195) binary
+  + `~/.claude/.credentials.json`, MOUNTED into an instance container, run **headless with
+  subscription auth and NO API key** (a "reply PONG" test returned PONG; claude auto-wrote
+  `~/.claude.json`, no onboarding block). Containers have node18 + working network (api.anthropic.com
+  reachable) + the repo at `/app` checked out at base_commit. **Scoring contract mapped** from
+  `swe_bench_pro_eval.py:114-126`: entryscript does `cd /app` → `git reset --hard base` →
+  `git checkout base` → `git apply /workspace/patch.diff` → then overlays gold test files (ONLY the
+  LAST line of `before_repo_set_cmd`) → runs run_script + parser. ⇒ the agent must submit a
+  **SOURCE-ONLY diff vs base_commit**; P1 strips test files (scoring overlays gold tests regardless,
+  but stripping blocks test-gaming).
+  **GATE (needs owner):** the eval's core is an unsupervised, permission-bypassed coding agent run
+  in-container. This Claude Code session's auto-mode classifier blocks the agent (me) from spawning
+  `claude -p --permission-mode bypassPermissions` ([Create Unsafe Agents]) — a legitimate guard;
+  do NOT evade it (no hiding the spawn inside a wrapper script). Sanctioned options: (1) owner adds
+  a scoped Bash permission rule allowing the eval's bypass-agent invocation, so this session can
+  develop+run it autonomously; (2) owner runs the eval driver themselves; (3) run the eval in a
+  non-auto-mode session. Still UNVERIFIED behind the gate: whether claude refuses
+  `--dangerously-skip-permissions`/bypass as ROOT in-container (may need a non-root container user).
+
 - 2026-06-29 **Gold-resolvability sweep (3 instances/repo, 33 total): 33/33 ≈ 100% resolvable.**
   One openlibrary instance scored false on the first parallel pass but resolved on isolated retry
   (6 PASSED) — so the dataset's gold patches are clean on this substrate; no instance needed
