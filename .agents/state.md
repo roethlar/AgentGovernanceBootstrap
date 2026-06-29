@@ -28,6 +28,70 @@ short and update it when important repo facts change.
 
 ## Next
 
+- 2026-06-29 **HANDOFF — RESUME HERE. Eval workstream pivoted to SWE-bench Pro; blocked on an
+  amd64 Linux box.** Read this block first, then the two plans named below. Owner will pick up on
+  their own x86_64 Linux machine.
+
+  **Where we are:** the governance-efficacy eval's *measurement instrument* is fully built and
+  pushed (Phase 0 hardening + the Phase-1 fixture/arms machinery — see the dated entries below).
+  But the **synthetic-fixture approach is DEAD**: the frontier-calibration run (Slice F) showed
+  Claude clean-passes all 5 hand-built fixtures 10/10 and GPT-5 the same on the 2 it finished —
+  zero naive traps, every fixture drops as "too easy" (a model can't invent a bug that stumps
+  itself). That result is the whole reason for the pivot; do not retry synthetic fixtures.
+
+  **The pivot (owner-directed):** use **ScaleAI SWE-bench Pro** as the fixture source. Full local
+  checkout at **`/Users/michael/Dev/SWE-bench_Pro-os`** (731 real instances in
+  `helper_code/sweap_eval_full_v2.jsonl`, 11 repos, multi-language, frontier-resistant). Mapping:
+  **FAIL_TO_PASS = our FuncPass, PASS_TO_PASS = our SecPass/regression guard**, so our existing
+  **`joint_pass = FAIL_TO_PASS ∧ PASS_TO_PASS`** metric and invalid-trial accounting apply
+  unchanged. Their `swe_bench_pro_eval.py` is a pure function `(predictions.json, sample) →
+  resolved` that scores a patch inside a per-instance Docker image — agent and scorer are
+  decoupled by a predictions-JSON file boundary. Integration plan (DRAFT, pre-codex-review):
+  **`docs/superpowers/plans/2026-06-29-swebench-pro-governance-integration.md`** (pipeline,
+  phases P0–P3, open decisions G1–G5). Background + why-the-synthetic-approach-died:
+  **`docs/superpowers/plans/2026-06-29-adversarial-bugcrafting-loop.md`** (its SWE-bench Pro
+  addendum supersedes it; the crafting loop is the documented fallback only).
+
+  **THE BLOCKER (why we stop here):** SWE-bench Pro instance images are **amd64-only** and their
+  **test runtimes segfault under Rosetta/QEMU on Apple Silicon** — verified: `uname -m` works
+  (`x86_64`) but `python3 --version` segfaults inside `jefzda/sweap-images:ansible...`; stock
+  amd64 ubuntu runs fine, so emulation is engaged but unfaithful for CPython/Node test frameworks.
+  Owner's decision: **run the Docker eval on a real x86_64 Linux box.** Local Colima (vz+rosetta,
+  8cpu/24gb/200gb disk) is up on the Mac but is NOT a usable substrate for scoring; it can stay
+  for our own unit tests but not for SWE-bench Pro images.
+
+  **Public images:** `jefzda/sweap-images` on Docker Hub (the metadata jsonl points at a *private*
+  ScaleAI ECR; ignore that). Derive the pull tag with `helper_code/image_uri.get_dockerhub_image_uri(
+  instance_id, 'jefzda', repo)` (it truncates tags >128 chars). Score with
+  `swe_bench_pro_eval.py --raw_sample_path <subset.jsonl> --patch_path <predictions.json>
+  --dockerhub_username jefzda --use_local_docker`.
+
+  **NEXT ACTIONS on the Linux box (in order):**
+  1. **P0 — gold round-trip (no governance yet):** on the amd64 box with Docker, pull ONE instance
+     image, run `swe_bench_pro_eval.py` on that instance's **gold `patch`** (shipped in the jsonl)
+     and confirm it scores **resolved**. This proves the substrate before producing any agent patch.
+  2. Decide the architecture (open in the plan): **Option A** = agent runs + scores all on the box;
+     **Option B** = governed agent runs on the Mac (our harness/hooks/keys already work), patches
+     copied to the box which only scores. Option B needs local `git clone <repo>@base_commit` for the
+     agent's workspace; Option A needs model API keys + our harness on the box.
+  3. Then P1 (instance adapter + clean patch capture — exclude governance overlay/sentinels from the
+     diff), P2 (subset selection: ungoverned FAIL_TO_PASS probe, keep ~20 mid-band instances across
+     diverse repos), P3 (the none/prose/prose-hooks factorial). Codex-review the integration plan to
+     convergence before building (the workstream's standing discipline).
+
+  **Biggest risk to watch (in the plan):** floor mirror of the earlier ceiling — SWE-bench Pro is
+  HARD, so a one-shot Claude-Code/codex driver may resolve ~0 ungoverned, leaving no room to show
+  improvement. Subset selection (mid-range ungoverned rate) guards this; if even mid-band instances
+  resolve at ~0 the driver (G3) needs a real agentic loop before the factorial.
+
+  **What's reusable as-is:** governance profiles (`evals/governance_profiles/`: none,
+  current-template, hook-gate, hook-guard, prose-hooks), `joint_pass`+invalid accounting in
+  `evals/aggregate.py`, the claude/codex drivers in `tools/drivers.py`, `evals/calibrate.py`
+  (its classify/Wilson logic still scores an ungoverned probe). **Retire/ignore for SWE-bench Pro:**
+  the 5 synthetic fixtures, `--check-discrimination`, the calibration *band* gate as a fixture
+  source. **Test interpreter: homebrew `python3` (3.14)** — system 3.9 can't parse the tests.
+  All eval work pushed to `origin/master` (last: SWE-bench Pro integration plan draft).
+
 - 2026-06-28: **active research workstream — governance-efficacy measurement (`evals/`).** A
   validated, three-times-externally-reviewed experiment plan to measure whether (and which)
   governance components causally help coding agents, lives at **`evals/TEST-PLAN.md`** — start at
