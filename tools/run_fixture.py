@@ -36,6 +36,12 @@ RESULTS_DIR = REPO_ROOT / "evals" / "results"
 
 TRANSCRIPTS_DIR = RESULTS_DIR / "transcripts"
 
+# Result schema version. Bumped when the recorded result shape changes so the
+# aggregator can flag legacy records rather than silently averaging across
+# incomparable rows. Phase 0 telemetry (transcript/tokens/cost/hooks/profile_tokens)
+# is schema 2; pre-Phase-0 records carry no schema_version and read as legacy.
+SCHEMA_VERSION = 2
+
 # Env var a hook reads to find the external firing sentinel. The sentinel lives
 # OUTSIDE the trial worktree, so a hook writing it never reappears in the agent's
 # changed_files (which would re-create the S1 contamination this harness fixes).
@@ -459,6 +465,7 @@ def score_fixture(
 
     started = time.monotonic()
     result: dict[str, Any] = {
+        "schema_version": SCHEMA_VERSION,
         "run_id": run_id,
         "id": manifest["id"],
         "language": manifest.get("language", "unknown"),

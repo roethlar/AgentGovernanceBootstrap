@@ -810,6 +810,28 @@ class TestAggregate(unittest.TestCase):
         self.assertEqual(agg[("f", "none")]["tampered"], 0)
         self.assertEqual(agg[("f", "current-template")]["tampered"], 1)
 
+    def test_aggregate_flags_mixed_schema_and_summarizes_telemetry(self):
+        # S6: a legacy record (no schema_version) mixed with a current one must be
+        # flagged, not silently blended; new telemetry columns populate from current.
+        results = [
+            {"id": "g", "profile": "none", "functional_pass": True,  # legacy
+             "driver": {"changed_files": []}, "duration_sec": 10},
+            {"id": "g", "profile": "none", "functional_pass": True,  # current + telemetry
+             "schema_version": 2, "profile_tokens": 0, "hooks_present": True, "hooks_fired": True,
+             "driver": {"changed_files": [], "tokens": 1200, "cost": 0.02,
+                        "transcript_path": "evals/results/transcripts/g-none-x.txt"}},
+        ]
+        a = self.agg.aggregate(results)[("g", "none")]
+        self.assertEqual(a["legacy_schema"], 1)
+        self.assertEqual(a["current_schema"], 1)
+        self.assertTrue(a["mixed_schema"], "legacy + current must flag mixed-schema")
+        self.assertEqual(a["with_transcript"], 1)
+        self.assertEqual(a["with_tokens"], 1)
+        self.assertEqual(a["avg_tokens"], 1200.0)
+        self.assertEqual(a["hooks_present"], 1)
+        self.assertEqual(a["hooks_fired"], 1)
+        self.assertIn("MIXED-SCHEMA", self.agg.format_table(self.agg.aggregate(results)))
+
 
 if __name__ == "__main__":
     unittest.main()

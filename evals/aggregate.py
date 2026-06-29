@@ -38,10 +38,20 @@ def load_results(results_dir: Path) -> list[dict[str, Any]]:
     return out
 
 
+# Result schema the aggregator's telemetry columns expect. Records without this
+# version (pre-Phase-0) lack transcript/tokens/cost/hooks/profile_tokens, so they are
+# counted as legacy and reported separately rather than blended into telemetry means.
+CURRENT_SCHEMA = 2
+
+
 def aggregate(results: list[dict[str, Any]]) -> dict[tuple[str, str], dict[str, Any]]:
     agg: dict[tuple[str, str], dict[str, Any]] = defaultdict(
         lambda: {"runs": 0, "passes": 0, "sec_runs": 0, "sec_passes": 0,
-                 "tampered": 0, "durations": []})
+                 "tampered": 0, "durations": [],
+                 "legacy_schema": 0, "current_schema": 0,
+                 "with_transcript": 0, "with_tokens": 0, "with_cost": 0,
+                 "tokens": [], "profile_tokens": [],
+                 "hooks_present": 0, "hooks_fired": 0})
     for r in results:
         key = (r.get("id", "?"), r.get("profile", "?"))
         a = agg[key]
@@ -55,20 +65,54 @@ def aggregate(results: list[dict[str, Any]]) -> dict[tuple[str, str], dict[str, 
             a["tampered"] += 1
         if r.get("duration_sec"):
             a["durations"].append(r["duration_sec"])
+        # Schema / telemetry availability — a legacy record is reported, never blended.
+        if r.get("schema_version") == CURRENT_SCHEMA:
+            a["current_schema"] += 1
+        else:
+            a["legacy_schema"] += 1
+        drv = r.get("driver") or {}
+        if drv.get("transcript_path"):
+            a["with_transcript"] += 1
+        if drv.get("tokens") is not None:
+            a["with_tokens"] += 1
+            a["tokens"].append(drv["tokens"])
+        if drv.get("cost") is not None:
+            a["with_cost"] += 1
+        if r.get("profile_tokens") is not None:
+            a["profile_tokens"].append(r["profile_tokens"])
+        if r.get("hooks_present"):
+            a["hooks_present"] += 1
+        if r.get("hooks_fired"):
+            a["hooks_fired"] += 1
     for a in agg.values():
         a["pass_rate"] = round(a["passes"] / a["runs"], 3) if a["runs"] else 0.0
         a["sec_rate"] = round(a["sec_passes"] / a["sec_runs"], 3) if a["sec_runs"] else None
         a["avg_sec"] = round(sum(a["durations"]) / len(a["durations"]), 1) if a["durations"] else 0.0
+        a["avg_tokens"] = round(sum(a["tokens"]) / len(a["tokens"]), 1) if a["tokens"] else None
+        a["avg_profile_tokens"] = (round(sum(a["profile_tokens"]) / len(a["profile_tokens"]), 1)
+                                   if a["profile_tokens"] else None)
+        a["mixed_schema"] = a["legacy_schema"] > 0 and a["current_schema"] > 0
     return agg
 
 
 def format_table(agg: dict[tuple[str, str], dict[str, Any]]) -> str:
-    lines = [f"{'fixture':40} {'profile':22} {'func':>7} {'rate':>6} {'sec':>7} {'tamper':>7} {'avg_s':>7}"]
+    lines = [f"{'fixture':40} {'profile':22} {'func':>7} {'rate':>6} {'sec':>7} {'tamper':>7} "
+             f"{'avg_s':>7} {'hookF':>7} {'gtok':>7} {'schema':>10}"]
     for (fid, profile), a in sorted(agg.items()):
-        flag = "  TAMPER" if a["tampered"] else ""
+        flags = []
+        if a["tampered"]:
+            flags.append("TAMPER")
+        if a["mixed_schema"]:
+            flags.append("MIXED-SCHEMA")
+        flag = ("  " + " ".join(flags)) if flags else ""
         sec = f"{a['sec_passes']}/{a['sec_runs']}" if a["sec_runs"] else "-"
+        hookf = f"{a['hooks_fired']}/{a['hooks_present']}" if a["hooks_present"] else "-"
+        gtok = a["avg_profile_tokens"] if a["avg_profile_tokens"] is not None else "-"
+        schema = (f"{a['current_schema']}c/{a['legacy_schema']}L"
+                  if a["legacy_schema"] else f"{a['current_schema']}c")
         lines.append(f"{fid:40} {profile:22} {a['passes']:>3}/{a['runs']:<3} "
-                     f"{a['pass_rate']:>6} {sec:>7} {a['tampered']:>7} {a['avg_sec']:>7}{flag}")
+                     f"{a['pass_rate']:>6} {sec:>7} {a['tampered']:>7} {a['avg_sec']:>7} "
+                     f"{hookf:>7} {str(gtok):>7} {schema:>10}{flag}")
     # Per-fixture delta vs the 'none' baseline.
     by_fix: dict[str, dict[str, float]] = defaultdict(dict)
     for (fid, profile), a in agg.items():
