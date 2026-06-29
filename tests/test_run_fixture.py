@@ -489,6 +489,83 @@ class TestGovernanceStrip(unittest.TestCase):
                 run_fixture.score_fixture(fx, profile="none")
 
 
+class TestHookTelemetry(unittest.TestCase):
+    """S4: hooks_present / hooks_supported_by_driver / hooks_fired, with the firing
+    sentinel kept OUTSIDE the worktree so it never pollutes changed_files."""
+
+    def test_hooks_present_true_for_hook_profile_false_for_none(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            fx = _make_git_oracle_fixture(Path(tmp))
+
+            def noop(workdir, fixture_dir, manifest, env_extra):
+                return {"driver": "claude", "exit": 0}
+
+            r_hook = run_fixture.score_fixture(fx, profile="hook-smoke", driver=noop)
+            r_none = run_fixture.score_fixture(fx, profile="none", driver=noop)
+            self.assertTrue(r_hook["hooks_present"])
+            self.assertFalse(r_none["hooks_present"])
+
+    def test_hooks_supported_depends_on_driver_harness(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            fx = _make_git_oracle_fixture(Path(tmp))
+
+            def claude_like(workdir, fixture_dir, manifest, env_extra):
+                return {"driver": "claude:haiku-4-5", "exit": 0}
+
+            def codex_like(workdir, fixture_dir, manifest, env_extra):
+                return {"driver": "codex", "exit": 0}
+
+            r_c = run_fixture.score_fixture(fx, profile="hook-smoke", driver=claude_like)
+            r_x = run_fixture.score_fixture(fx, profile="hook-smoke", driver=codex_like)
+            self.assertTrue(r_c["hooks_supported_by_driver"], "claude honors .claude/ hooks")
+            self.assertFalse(r_x["hooks_supported_by_driver"], "codex does not read .claude/ hooks")
+
+    def test_hooks_fired_reflects_external_sentinel_and_stays_out_of_changed_files(self):
+        import os
+        with tempfile.TemporaryDirectory() as tmp:
+            fx = _make_git_oracle_fixture(Path(tmp))
+
+            def firing_driver(workdir, fixture_dir, manifest, env_extra):
+                # Simulate the overlaid hook firing: write the EXTERNAL sentinel.
+                sentinel = env_extra.get(run_fixture.HOOK_SENTINEL_ENV)
+                self.assertTrue(sentinel, "harness must expose the sentinel path via env")
+                self.assertFalse(str(sentinel).startswith(str(workdir)),
+                                 "sentinel must live outside the trial worktree")
+                with open(sentinel, "a", encoding="utf-8") as f:
+                    f.write("fired\n")
+                (Path(workdir) / "app.txt").write_text("FIXED\n", encoding="utf-8")
+                import subprocess
+                out = subprocess.run(["git", "-C", str(workdir), "status", "--porcelain", "-uall"],
+                                     capture_output=True, text=True).stdout
+                changed = [line[3:] for line in out.splitlines() if line.strip()]
+                return {"driver": "claude", "exit": 0, "changed_files": changed}
+
+            r = run_fixture.score_fixture(fx, profile="hook-smoke", driver=firing_driver)
+            self.assertTrue(r["hooks_fired"], "an external-sentinel write must register as fired")
+            self.assertNotIn("fired.log", " ".join(r["driver"]["changed_files"]),
+                             "the firing sentinel must never appear in changed_files")
+
+    def test_hooks_fired_false_when_present_but_unfired(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            fx = _make_git_oracle_fixture(Path(tmp))
+
+            def noop(workdir, fixture_dir, manifest, env_extra):
+                return {"driver": "claude", "exit": 0}
+
+            r = run_fixture.score_fixture(fx, profile="hook-smoke", driver=noop)
+            self.assertEqual(r["hooks_fired"], False, "hook present but never wrote sentinel")
+
+    def test_hooks_fired_none_when_no_hook_present(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            fx = _make_git_oracle_fixture(Path(tmp))
+
+            def noop(workdir, fixture_dir, manifest, env_extra):
+                return {"driver": "claude", "exit": 0}
+
+            r = run_fixture.score_fixture(fx, profile="none", driver=noop)
+            self.assertIsNone(r["hooks_fired"], "no hook present -> fired is None, not False")
+
+
 class TestProfiles(unittest.TestCase):
     def test_none_overlays_nothing(self):
         with tempfile.TemporaryDirectory() as tmp:

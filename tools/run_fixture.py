@@ -36,6 +36,36 @@ RESULTS_DIR = REPO_ROOT / "evals" / "results"
 
 TRANSCRIPTS_DIR = RESULTS_DIR / "transcripts"
 
+# Env var a hook reads to find the external firing sentinel. The sentinel lives
+# OUTSIDE the trial worktree, so a hook writing it never reappears in the agent's
+# changed_files (which would re-create the S1 contamination this harness fixes).
+HOOK_SENTINEL_ENV = "AGB_HOOK_SENTINEL"
+
+# Driver bases whose harness honors the hooks we overlay (.claude/ hooks). Claude
+# Code and ollama-via-Claude-Code do; codex/grok have their own hook systems that do
+# not read .claude/, so an overlaid Claude hook is inert there.
+_HOOK_SUPPORTING_DRIVER_BASES = {"claude", "ollama"}
+
+
+def _hooks_present(profile_files: list[str]) -> bool:
+    """True if the overlaid profile installed a Claude-style hook (settings.json that
+    can declare hooks, or a hook script). Structural, no runtime needed."""
+    for rel in profile_files:
+        p = rel.replace("\\", "/")
+        if p.endswith(".claude/settings.json") or p == ".claude/settings.json":
+            return True
+        if "/hooks/" in p or p.startswith("hooks/") or p.endswith("-hook.sh"):
+            return True
+    return False
+
+
+def _hooks_supported_by_driver(driver_name: "str | None") -> "bool | None":
+    """Whether the driver's harness honors an overlaid .claude/ hook. None when no
+    driver ran (can't attribute support to a harness that wasn't exercised)."""
+    if not driver_name:
+        return None
+    return driver_name.split(":", 1)[0] in _HOOK_SUPPORTING_DRIVER_BASES
+
 
 def _store_transcript_and_redact(driver_result: dict[str, Any], fixture_id: str,
                                  profile: str, run_id: str) -> None:
@@ -451,10 +481,18 @@ def score_fixture(
         result["profile_files"] = overlay_profile(
             profile, workdir, allow_overwrite=set(result["stripped_governance_files"]))
         result["profile_hash"] = overlaid_hash(workdir, result["profile_files"])
+        result["hooks_present"] = _hooks_present(result["profile_files"])
         if source or manifest.get("files"):
             isolate_history(workdir)
         result["fixture_hash"] = fixture_hash(fixture_dir, manifest)
-        env_extra = manifest.get("env") or {}
+        env_extra = dict(manifest.get("env") or {})
+
+        # Hook-firing sentinel (S4): an external file, OUTSIDE the trial worktree, that
+        # an overlaid hook can append to when it fires. Kept external so writing it can
+        # never reappear in the agent's changed_files (the S1 contamination class). The
+        # path is exposed to the hook (and the agent's harness) via env.
+        sentinel = Path(tempfile.mkdtemp(prefix="evalhook-")) / "fired.log"
+        env_extra[HOOK_SENTINEL_ENV] = str(sentinel)
 
         for step in manifest.get("setup", []):
             exit_code, _out, err = run_command(step, workdir, env_extra)
@@ -477,6 +515,17 @@ def score_fixture(
             # source, prompts, or secrets — never lands in a tracked results JSON.
             _store_transcript_and_redact(driver_result, result["id"], profile, run_id)
             result["driver"] = driver_result
+            result["hooks_supported_by_driver"] = _hooks_supported_by_driver(
+                driver_result.get("driver"))
+        else:
+            result["hooks_supported_by_driver"] = None
+        # hooks_fired: did the external sentinel get written? None when no hook could
+        # have fired (none present) — absence of a present hook is not "didn't fire".
+        if result["hooks_present"]:
+            result["hooks_fired"] = sentinel.exists() and sentinel.stat().st_size > 0
+        else:
+            result["hooks_fired"] = None
+        shutil.rmtree(sentinel.parent, ignore_errors=True)
 
         exit_code, _out, _err = run_command(manifest["verify"], workdir, env_extra)
         result["verify_exit"] = exit_code
