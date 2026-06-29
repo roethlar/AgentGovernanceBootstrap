@@ -28,6 +28,16 @@ short and update it when important repo facts change.
 
 ## Next
 
+- 2026-06-29 **Plan reviewed by codex + claude (two blind reviews); science under-specified.**
+  Synthesis: `docs/history/2026-06-29-swebench-pro-plan-review_synthesis.md` (raw reviews:
+  `..._codex.md`, `..._claude.md`). Verdict: plumbing solid, experiment design/power not yet
+  greenlightable. Converged must-fixes before P3: pre-registered analysis + power/MDE; a
+  length-matched PLACEBO prose arm; metric honesty (report F2P/P2P separately, P2P empty ~64%);
+  a NUMERIC floor-pilot gate; subset-selection rigor (no n=3-5 regression-to-mean); ONE harness
+  for the confirmatory factorial (capability spectrum = separate study). The floor pilot is the
+  #1 de-risk AND only needs the launch-gate sanction (Blockers). Plan NOT yet revised — design
+  changes await owner decisions (see synthesis "Open decisions").
+
 - 2026-06-29 **Keystone recon DONE — one remaining GATE: a sanctioned way to launch the
   autonomous agent.** Proven on netwatch-01: the host `claude` (native amd64 ELF v2.1.195) binary
   + `~/.claude/.credentials.json`, MOUNTED into an instance container, run **headless with
