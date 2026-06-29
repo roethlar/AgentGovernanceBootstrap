@@ -32,3 +32,32 @@ Notes:
   *warn* on AGENTS.md edits, which don't occur. Re-ground (compaction) still never fires.
 - The earlier 96-cell codex run (2026-06-29) was invalidated by codex quota exhaustion
   mid-run; this batch was sized to fit the window with margin and completed clean.
+
+## Batch 2 — 2026-06-29 (other 4 instances, R=1; codex CAPPED mid-batch)
+
+Codex hit its usage cap partway through; the driver self-aborted (8 cells quota-invalid,
+0 neterr). **9/16 valid.** Instances: qutebrowser ff1c025, NodeBB 18c45b44,
+openlibrary b67138b3, ansible e40889e7.
+
+| arm | resolved (valid) |
+|-----|------------------|
+| none | 0/3 |
+| placebo | 0/2 |
+| prose | 1/2 |
+| prose+hooks | 0/2 |
+
+Remaining ~7 cells of batch 2 wait for the next codex reset.
+
+## Combined codex so far (batch 1 + batch 2 valid cells) — directional, NO power
+
+| arm | resolved |
+|-----|----------|
+| prose | 3/6 |
+| none | 1/7 |
+| prose+hooks | 1/6 |
+| placebo | 0/6 |
+
+Two independent batches agree on the **direction**: prose best, placebo worst,
+none/hooks low. Suggestive only (n≈6–7/arm). The hook increment is ~null here even
+though codex hooks fire — consistent with single-shot giving hooks little to enforce.
+Codex is currently capped; resume batches after its reset.
