@@ -23,6 +23,7 @@ from typing import Any, Callable
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPO_ROOT / "tools"))
+sys.path.insert(0, str(REPO_ROOT / "evals"))
 import run_fixture  # noqa: E402
 
 RESULTS_DIR = REPO_ROOT / "evals" / "results"
@@ -48,21 +49,34 @@ def run_matrix(
 
 
 def summarize(results: list[dict[str, Any]]) -> dict[tuple[str, str], dict[str, Any]]:
+    # Reuse the aggregator's PRIMARY metric (joint = FuncPass AND SecPass over valid
+    # trials) so the live run summary matches the final analysis, plus the raw func
+    # pass for quick diagnosis.
+    from aggregate import joint_pass, trial_validity  # noqa: E402
     agg: dict[tuple[str, str], dict[str, Any]] = {}
     for r in results:
         key = (r["id"], r["profile"])
-        a = agg.setdefault(key, {"runs": 0, "passes": 0})
+        a = agg.setdefault(key, {"runs": 0, "passes": 0, "valid_runs": 0, "joint_passes": 0})
         a["runs"] += 1
         a["passes"] += 1 if r.get("functional_pass") else 0
+        valid, _ = trial_validity(r)
+        if valid:
+            a["valid_runs"] += 1
+            if joint_pass(r):
+                a["joint_passes"] += 1
     for a in agg.values():
         a["pass_rate"] = round(a["passes"] / a["runs"], 3) if a["runs"] else 0.0
+        a["joint_rate"] = round(a["joint_passes"] / a["valid_runs"], 3) if a["valid_runs"] else None
     return agg
 
 
 def _print_summary(agg: dict[tuple[str, str], dict[str, Any]]) -> None:
-    print(f"{'fixture':40} {'profile':20} {'pass/runs':>10} {'rate':>6}")
+    print(f"{'fixture':40} {'profile':20} {'JOINT':>9} {'jrate':>6} {'func/runs':>10} {'frate':>6}")
     for (fid, profile), a in sorted(agg.items()):
-        print(f"{fid:40} {profile:20} {a['passes']:>4}/{a['runs']:<5} {a['pass_rate']:>6}")
+        jr = a.get("joint_rate")
+        joint = f"{a.get('joint_passes', 0)}/{a.get('valid_runs', 0)}"
+        print(f"{fid:40} {profile:20} {joint:>9} {str(jr if jr is not None else '-'):>6} "
+              f"{a['passes']:>4}/{a['runs']:<5} {a['pass_rate']:>6}")
 
 
 def main(argv: list[str] | None = None) -> int:
