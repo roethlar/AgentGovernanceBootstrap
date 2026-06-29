@@ -44,6 +44,17 @@ short and update it when important repo facts change.
   ONE harness). Then the governed none/prose/prose-hooks factorial over the band.
   (Probe driver is still scratch; formalizing into `evals/` with arg-list hardening
   remains the deferred engineering step.)
+  **Owner decisions (2026-06-29):** confirmatory harness = **Claude Code only** (codex
+  a possible later add only if Claude motivates it and marginal cost is small;
+  grok/agy testing-only); arms = **4-arm with placebo** (none / placebo-prose /
+  real-prose / prose+hooks). **Pre-registration drafted** (the reviewers' gate):
+  `evals/swebench-pro/PRE-REGISTRATION.md` — within-instance paired design, F2P/P2P
+  reported separately, mixed-effects logistic with 3 pre-specified contrasts (prose−none,
+  hooks−prose, prose−placebo), Holm multiplicity. **IMMEDIATE NEXT (modest compute,
+  no further gate needed): the SIZING PILOT** — 4 arms × R=3 over ~8–12 band instances
+  to estimate discordance + replicate variance, which sets R, the confirmatory N, and
+  the replicated-rate selection band. Subset selection re-measures the band with
+  replicates (regression-to-mean guard) before the confirmatory set is frozen.
 
 - 2026-06-29 **Leak fix validated + baseline confirmed GENUINE (not leakage).** Anti-leak scrub =
   re-init the agent workspace's git (`rm -rf .git && git init && git add -A && commit -m base`) so
