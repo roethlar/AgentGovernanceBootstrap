@@ -229,7 +229,10 @@ short and update it when important repo facts change.
 
 ## Blockers
 
-None recorded.
+- **Eval core launch gate (2026-06-29):** running the unsupervised, permission-bypassed coding
+  agent — the eval's central treatment — is blocked by the running session's safety classifier.
+  Needs an owner-sanctioned launch path (settings permission rule / owner-run driver /
+  non-auto-mode). All other eval machinery is proven; see the keystone entry under Next.
 
 ## Verification
 
