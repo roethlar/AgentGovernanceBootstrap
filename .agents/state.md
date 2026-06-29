@@ -77,6 +77,23 @@ short and update it when important repo facts change.
   was direct-to-Anthropic and was KILLED + relaunched so all 96 cells share one routing
   path (mixed routing would confound). Absolute rates reflect claude+headroom (the
   owner's real setup), which is intended.
+  **CODEX secondary harness — keystones validated, but first pilot INVALID
+  (2026-06-29).** Codex runs headless in-container via its native musl binary
+  (`@openai/codex-linux-x64/.../bin/codex exec --dangerously-bypass-approvals-and-sandbox
+  --dangerously-bypass-hook-trust --skip-git-repo-check -C /app`, prompt via stdin),
+  subscription auth (`~/.codex/auth.json`, no API key), model gpt-5.5 at xhigh via the
+  same headroom provider (`config.toml`). Validated: PONG, native binary, and codex
+  loads `/app/AGENTS.md` natively (so governance injects as AGENTS.md directly, no
+  CLAUDE.md shim; placebo = AGENTS.md-sized irrelevant prose). Driver
+  `arms4_codex.py` (capture-vs-base + retry + preflight PONG). The 96-cell pilot
+  COMPLETED but is unusable: **codex hit ITS OWN usage limit mid-run** (resets
+  ~10:45 PM) → 69/96 empty (≈57 usage-limit + 12 proxy-blip neterr), only 27 real
+  attempts, 0 resolved across all arms (not interpretable). LESSONS: (1) gpt-5.5 xhigh
+  is far too token-heavy for a 96-cell window — chunk codex runs or lower effort;
+  (2) the driver's invalid-cell detector must add the usage-limit signature
+  ("hit your usage limit") as a distinct QUOTA-invalid flag, not counted as agent
+  failure. Both Claude and codex caps were exhausted 2026-06-29; owner added Claude
+  usage credits.
 
 - 2026-06-29 **Leak fix validated + baseline confirmed GENUINE (not leakage).** Anti-leak scrub =
   re-init the agent workspace's git (`rm -rf .git && git init && git add -A && commit -m base`) so
