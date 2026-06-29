@@ -66,6 +66,17 @@ short and update it when important repo facts change.
   via CLAUDE.md (bare AGENTS.md inert; `@AGENTS.md` import works); hooks fire headless
   under bypassPermissions (no trust step) but re-ground needs compaction, so
   prose+hooks≈prose under one-shot.
+  **ROUTING (owner-decided 2026-06-29):** in-container agents route through the owner's
+  **headroom** token-compression proxy (`ANTHROPIC_BASE_URL=http://10.1.10.221:8787`,
+  passed via `docker exec -e`; PONG-verified through the proxy). Validity-safe and the
+  more faithful subject: headroom compresses ONLY the newest user msg + latest tool
+  result and NEVER mutates the system prompt — and Claude Code delivers CLAUDE.md/
+  @AGENTS.md governance via the system prompt, so the treatment is uncompressed;
+  compression is uniform across arms (constant factor, contrast preserved) and is a
+  compressor not a response-cache (replicates stay independent). The first pilot launch
+  was direct-to-Anthropic and was KILLED + relaunched so all 96 cells share one routing
+  path (mixed routing would confound). Absolute rates reflect claude+headroom (the
+  owner's real setup), which is intended.
 
 - 2026-06-29 **Leak fix validated + baseline confirmed GENUINE (not leakage).** Anti-leak scrub =
   re-init the agent workspace's git (`rm -rf .git && git init && git add -A && commit -m base`) so
