@@ -28,6 +28,21 @@ short and update it when important repo facts change.
 
 ## Next
 
+- 2026-06-29 **KEYSTONE COMPLETE — eval fully operational end-to-end with a real agent; launch
+  gate CLEARED.** Owner added the `Bash(docker exec:*)` permission rule; the autonomous
+  bypass-permissions agent now runs. First real ungoverned run (NodeBB instance
+  `...04998908...-vnan`): agent investigated, produced a 231-line/7-file source fix, captured
+  source-only (excluding the 3 test files + `dump.rdb`/`config.json`/`logs` test-run artifacts),
+  scored **resolved=FALSE** — the agent did NOT solve it ungoverned. Notable: the agent CLAIMED
+  its tests passed, but the held-out GOLD tests fail → the metric discriminates real resolution
+  from agent self-report (good validity signal). Mechanics now proven for real:
+  `docker run` instance image (mount host `claude` + cred) → setup non-root `node` user, chown
+  `/app` → reset to base → `claude -p "$(cat task.md)" --permission-mode bypassPermissions` as node
+  → `git add -A && git diff --staged` with test/artifact excludes → score via swe_bench_pro_eval.py.
+  **NEXT: floor pilot** — run this ungoverned loop over a diverse ~15-20 instance sample to measure
+  the baseline `resolved` rate (the reviewers' #1 de-risk; informs band selection + power). Then
+  the design must-fixes (see review synthesis) before the governed factorial.
+
 - 2026-06-29 **Plan reviewed by codex + claude (two blind reviews); science under-specified.**
   Synthesis: `docs/history/2026-06-29-swebench-pro-plan-review_synthesis.md` (raw reviews:
   `..._codex.md`, `..._claude.md`). Verdict: plumbing solid, experiment design/power not yet
@@ -239,10 +254,9 @@ short and update it when important repo facts change.
 
 ## Blockers
 
-- **Eval core launch gate (2026-06-29):** running the unsupervised, permission-bypassed coding
-  agent — the eval's central treatment — is blocked by the running session's safety classifier.
-  Needs an owner-sanctioned launch path (settings permission rule / owner-run driver /
-  non-auto-mode). All other eval machinery is proven; see the keystone entry under Next.
+- None active. (The eval-core launch gate was CLEARED 2026-06-29 — owner added the
+  `Bash(docker exec:*)` permission rule; the autonomous agent now runs. See the keystone entry
+  under Next.)
 
 ## Verification
 
