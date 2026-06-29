@@ -1,8 +1,29 @@
 # Phase 0 — eval harness hardening
 
-Status: drafted 2026-06-28, awaiting owner go to implement.
+Status: **IMPLEMENTED 2026-06-28** (S1–S7 landed, commits 2bcf6ae..on master).
 Scope: code + tests under `tools/`, `evals/`, `tests/`. No model/treatment runs.
 Plan owner reference: `evals/TEST-PLAN.md` §10 (Phase 0 list), §15 (resume).
+
+## S7 live-smoke result (2026-06-28, reported not recorded)
+
+Driver `ollama:glm-5.2:cloud` via the `:8788` Anthropic-compatible proxy, fixture
+`py_duration_parser`, three profiles. (The local `qwen3.6:27b-mlx` returned empty
+completions and was not used; the cloud model worked cleanly.) All three trials
+FuncPassed and validated the new telemetry end-to-end:
+
+| profile | func | changed_files | tokens | cost | hooks present/sup/fired | profile_tokens |
+|---|---|---|---|---|---|---|
+| none | pass | `[duration.py]` | 432104 | 2.199 | F / T / None | 0 |
+| hook-smoke | pass | `[duration.py]` | 739484 | — | **T / T / T** | 71 |
+| current-template | pass | `[duration.py]` | 445934 | 2.268 | F / — / None | 3396 |
+
+Confirmed live: S1 — overlaid governance (`AGENTS.md`/`CLAUDE.md`/`.claude/settings.json`)
+never appears in `changed_files`; S2 — strip clean; S3 — real `--output-format json`
+usage parsed (tokens/cost), raw streams redacted, transcript in the **gitignored**
+tree (`git check-ignore` ✓); S4 — the hook-smoke `.claude` hook actually **fired**
+against live Claude Code (`hooks_fired=True`) and the external sentinel stayed out of
+`changed_files`. Smoke result JSONs + transcripts were deleted afterward (Phase 0
+produces no treatment data).
 
 Phase 0 makes the harness produce trustworthy per-trial telemetry *before* any
 decision-grade runs. Each slice is independently committed and unit-tested
