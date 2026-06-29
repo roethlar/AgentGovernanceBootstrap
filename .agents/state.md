@@ -55,6 +55,17 @@ short and update it when important repo facts change.
   to estimate discordance + replicate variance, which sets R, the confirmatory N, and
   the replicated-rate selection band. Subset selection re-measures the band with
   replicates (regression-to-mean guard) before the confirmatory set is frozen.
+  **RUNNING (this session, 2026-06-29):** sizing pilot launched detached — 8 instances
+  (4 baseline-failed + 4 baseline-resolved, 5 repos) × 4 arms × 3 reps = 96 cells.
+  Driver `arms4.py` validated by a 1-instance×4-arm smoke (all arms inject; governance
+  EXCLUDED from capture — 0 leakage; prose_hooks tripwire fired 8×; scorer
+  discriminates; scorer-drop infra-retry added). Results land at scratch
+  `…/scratchpad/pilot8_out/scores.json` + `arms4_runmeta.json` (session-local — on
+  completion COPY the per-arm rates + discordance into `evals/swebench-pro/` and commit,
+  else lost to a fresh session). KEYSTONES (in PRE-REGISTRATION): governance loads only
+  via CLAUDE.md (bare AGENTS.md inert; `@AGENTS.md` import works); hooks fire headless
+  under bypassPermissions (no trust step) but re-ground needs compaction, so
+  prose+hooks≈prose under one-shot.
 
 - 2026-06-29 **Leak fix validated + baseline confirmed GENUINE (not leakage).** Anti-leak scrub =
   re-init the agent workspace's git (`rm -rf .git && git init && git add -A && commit -m base`) so
