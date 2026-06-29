@@ -49,6 +49,11 @@ short and update it when important repo facts change.
   `/usr/bin/python3` (3.9) cannot parse the tests' `X | None` annotations. 104 tests green.
   Four clean baseline fixture repos prepped under `../test_ground/` (blit_v2, headroom,
   qbit-mobile, rtk — governance stripped, fresh `git init`, no remotes).
+  **Model-host note:** drive local models via the **on-host ollama (`localhost:11434`)** —
+  local set is `qwen3.6:35b-mlx`, `gemma4:31b-mlx`, `ornith:35b`,
+  `north-mini-code-1.0:mlx-mxfp8`. The remote `10.1.10.221` ("Q") is a different host
+  serving mostly `:cloud` models and is **not** the local-model source. S7 smoke was
+  validated on the local `qwen3.6:35b-mlx` (FuncPass + live hook firing).
   **Next: Phase 1** (build the real-repo fixture set from those repos, calibrate, freeze) —
   per TEST-PLAN §10. Phase 1 is approvable once fixture manifests + metric defs exist; the
   open owner decisions in TEST-PLAN §12 (tier, repos, H6 approval arm, proportionality rule)

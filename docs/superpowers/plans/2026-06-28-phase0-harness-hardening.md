@@ -6,24 +6,30 @@ Plan owner reference: `evals/TEST-PLAN.md` §10 (Phase 0 list), §15 (resume).
 
 ## S7 live-smoke result (2026-06-28, reported not recorded)
 
-Driver `ollama:glm-5.2:cloud` via the `:8788` Anthropic-compatible proxy, fixture
-`py_duration_parser`, three profiles. (The local `qwen3.6:27b-mlx` returned empty
-completions and was not used; the cloud model worked cleanly.) All three trials
-FuncPassed and validated the new telemetry end-to-end:
+Validated on a **real local model — `qwen3.6:35b-mlx`** via the on-host ollama at
+`localhost:11434` (`AGB_OLLAMA_BASE_URL`) — the weak-model class the eval actually
+targets, not a frontier proxy. (An earlier attempt used `glm-5.2:cloud` via a remote
+host `10.1.10.221:8788` ("Q") because the model served there, `qwen3.6:27b-mlx`,
+returned empty completions; that was the **wrong host** — the project's local models
+live on this machine and complete fine.) Fixture `py_duration_parser`:
 
-| profile | func | changed_files | tokens | cost | hooks present/sup/fired | profile_tokens |
-|---|---|---|---|---|---|---|
-| none | pass | `[duration.py]` | 432104 | 2.199 | F / T / None | 0 |
-| hook-smoke | pass | `[duration.py]` | 739484 | — | **T / T / T** | 71 |
-| current-template | pass | `[duration.py]` | 445934 | 2.268 | F / — / None | 3396 |
+| driver | profile | func | changed_files | tokens | hooks present/sup/fired |
+|---|---|---|---|---|---|
+| qwen3.6:35b-mlx (local) | none | pass | `[duration.py]` | 332997 | F / T / None |
+| qwen3.6:35b-mlx (local) | hook-smoke | pass | `[duration.py]` | 398351 | **T / T / T** |
+| glm-5.2:cloud (remote)  | current-template | pass | `[duration.py]` | 445934 | F / — / None |
 
-Confirmed live: S1 — overlaid governance (`AGENTS.md`/`CLAUDE.md`/`.claude/settings.json`)
-never appears in `changed_files`; S2 — strip clean; S3 — real `--output-format json`
-usage parsed (tokens/cost), raw streams redacted, transcript in the **gitignored**
-tree (`git check-ignore` ✓); S4 — the hook-smoke `.claude` hook actually **fired**
-against live Claude Code (`hooks_fired=True`) and the external sentinel stayed out of
-`changed_files`. Smoke result JSONs + transcripts were deleted afterward (Phase 0
-produces no treatment data).
+Confirmed live: S1 — overlaid governance never appears in `changed_files`; S2 — strip
+clean; S3 — real `--output-format json` usage parsed (tokens/cost), raw streams
+redacted, transcript in the **gitignored** tree (`git check-ignore` ✓); S4 — the
+hook-smoke `.claude` hook actually **fired** against live Claude Code driving the
+**local** model (`hooks_fired=True`), external sentinel stayed out of `changed_files`.
+Smoke JSONs + transcripts deleted afterward (Phase 0 produces no treatment data).
+
+**Phase 1 host note:** use the on-host ollama (`localhost:11434`); local models here
+are `qwen3.6:35b-mlx`, `gemma4:31b-mlx`, `ornith:35b`, `north-mini-code-1.0:mlx-mxfp8`.
+The remote `10.1.10.221` ("Q") is a different, mostly-`:cloud` host and is **not** the
+local-model source for these runs.
 
 Phase 0 makes the harness produce trustworthy per-trial telemetry *before* any
 decision-grade runs. Each slice is independently committed and unit-tested
