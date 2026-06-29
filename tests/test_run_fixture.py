@@ -770,6 +770,33 @@ class TestGovernanceHooks(unittest.TestCase):
         self.assertEqual(decision["hookSpecificOutput"]["permissionDecision"], "deny")
 
 
+class TestFactorialProfilesLoad(unittest.TestCase):
+    """Slice E: all five factorial profiles overlay onto a fixture without collision
+    (the S1 guard) and the hook arms report hooks_present."""
+    FACTORIAL = ["none", "current-template", "hook-gate", "hook-guard", "prose-hooks"]
+
+    def test_all_profiles_overlay_without_collision(self):
+        for prof in self.FACTORIAL:
+            with self.subTest(profile=prof), tempfile.TemporaryDirectory() as tmp:
+                wd = Path(tmp)
+                # seed a buggy source so overlay has a realistic workspace
+                (wd / "src.py").write_text("x=1\n", encoding="utf-8")
+                files = run_fixture.overlay_profile(prof, wd)
+                present = run_fixture._hooks_present(files)
+                if prof in ("hook-gate", "hook-guard", "prose-hooks"):
+                    self.assertTrue(present, f"{prof} must install a hook")
+                else:
+                    self.assertFalse(present, f"{prof} must not install a hook")
+
+    def test_prose_hooks_carries_prose_and_both_hooks(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            files = run_fixture.overlay_profile("prose-hooks", Path(tmp))
+            self.assertIn("AGENTS.md", files)
+            self.assertIn("CLAUDE.md", files)
+            self.assertTrue(any("gate.py" in f for f in files))
+            self.assertTrue(any("guard.py" in f for f in files))
+
+
 class TestProfiles(unittest.TestCase):
     def test_none_overlays_nothing(self):
         with tempfile.TemporaryDirectory() as tmp:

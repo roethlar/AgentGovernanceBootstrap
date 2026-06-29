@@ -34,13 +34,28 @@ def run_matrix(
     driver: Callable[..., dict[str, Any]] | None, run_id_prefix: str = "trial",
     record: bool = False,
 ) -> list[dict[str, Any]]:
+    _HOOK_PROFILES = {"hook-gate", "hook-guard", "prose-hooks"}
     results: list[dict[str, Any]] = []
+    warned_inert = set()
     for fx in fixtures:
         for profile in profiles:
             for i in range(n):
                 run_id = f"{run_id_prefix}-{profile}-{i}"
                 r = run_fixture.score_fixture(Path(fx), profile=profile, run_id=run_id, driver=driver)
                 results.append(r)
+                # Up-front operator warning: a hook arm on a driver that does not honor
+                # hooks (or where they never fired) yields only INVALID trials downstream
+                # (Slice C). Warn once per (profile, reason) so it isn't a silent waste.
+                if profile in _HOOK_PROFILES:
+                    if r.get("hooks_supported_by_driver") is False and ("unsupported", profile) not in warned_inert:
+                        warned_inert.add(("unsupported", profile))
+                        print(f"WARNING: profile {profile!r} installs hooks but driver "
+                              f"{(r.get('driver') or {}).get('driver')!r} does not support them "
+                              f"-> these trials will be marked INVALID.", file=sys.stderr)
+                    elif r.get("hooks_present") and r.get("hooks_fired") is False and ("nofire", profile) not in warned_inert:
+                        warned_inert.add(("nofire", profile))
+                        print(f"WARNING: profile {profile!r} hooks did not fire this trial "
+                              f"-> will be marked INVALID if it persists.", file=sys.stderr)
                 if record:
                     RESULTS_DIR.mkdir(parents=True, exist_ok=True)
                     out = RESULTS_DIR / f"{r['id']}-{profile}-{run_id}.json"
