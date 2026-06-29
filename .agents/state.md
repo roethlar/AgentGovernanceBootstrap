@@ -28,9 +28,49 @@ short and update it when important repo facts change.
 
 ## Next
 
-- 2026-06-29 **HANDOFF — RESUME HERE. Eval workstream pivoted to SWE-bench Pro; blocked on an
-  amd64 Linux box.** Read this block first, then the two plans named below. Owner will pick up on
-  their own x86_64 Linux machine.
+- 2026-06-29 **P0 DONE — substrate PROVEN on the amd64 Linux box; the blocker below is CLEARED.**
+  Box: `netwatch-01` (CachyOS, x86_64, native amd64 — no QEMU), Docker engine active, system
+  `python3` is **3.14** (parses the tests), SWE-bench Pro checkout is at
+  **`/home/michael/dev/SWE-bench_Pro-os`** on this box (NOT the Mac `/Users/...` path the block
+  below names). P0 gold round-trip on instance
+  `instance_NodeBB__NodeBB-04998908ba6721d64eba79ae3b65a351dcfbc5b5-vnan`: gold patch scores
+  **resolved=true** (300 PASSED/0 FAILED, clean `--redo` container run ~11s); empty-patch negative
+  control scores **resolved=false** — so the metric genuinely discriminates. Artifacts in session
+  scratchpad, not committed.
+
+- 2026-06-29 **Multi-repo gold round-trip: 11/11 PASS — substrate generalizes across ALL 11 repos**
+  (one instance each: NodeBB, qutebrowser, ansible, openlibrary, element-web, navidrome, teleport,
+  vuls, flipt, tutanota, webclients; JS/Python/Go/TS). Every gold patch scores resolved=true with
+  non-vacuous PASSED counts (each ≥ its F2P+P2P). Done via a reusable adapter
+  (`scratchpad/adapter.py`, the P1 seed) that encodes the two gotchas below.
+  **Finding (metric design):** `PASS_TO_PASS` is EMPTY for 7 of the 11 sampled instances
+  (element-web, navidrome, teleport, vuls, flipt, tutanota, webclients) — so the planned SecPass
+  dimension is frequently absent and `joint_pass` collapses to FuncPass there. The plan's
+  FuncPass∧SecPass framing must account for SecPass being empty on many instances.
+  **Disk sizing (corrected):** on-disk image footprint is **1.6 GB (ansible) → 12 GB (webclients),
+  avg ~4.4 GB**; 11 images = 48 GB on disk; 367 GB free. NOTE the earlier "807 MiB" was the
+  *compressed pull* size, not on-disk — NodeBB is 3.18 GB unpacked. A ~20-instance subset is
+  roughly 50–130 GB on disk depending on repo mix (not "<20GB").
+
+  **Adapter gotchas the P1 instance-adapter MUST encode** (the shipped `swe_bench_pro_eval.py` was
+  written for the leaderboard CSV; our jsonl trips two real mismatches — worked around by deriving
+  a per-instance sample file, NOT by editing the third-party script):
+  (1) **case** — jsonl has `FAIL_TO_PASS`/`PASS_TO_PASS`, scorer reads lowercase
+  `fail_to_pass`/`pass_to_pass`; must alias. (2) **type** — scorer does `eval(field)` expecting a
+  *string*, but in the jsonl `FAIL_TO_PASS` is a native JSON **list** while `PASS_TO_PASS` is a
+  **string** (inconsistent source data); coerce both to string form (survives the pandas
+  `read_json` round-trip). Operational: `run_scripts/` (1000 dirs) is present and `instance_id`
+  matches dir names exactly; image = `get_dockerhub_image_uri(uid, 'jefzda', repo)`; **always pass
+  `--redo`** or the per-instance output cache silently reuses a stale run.
+
+  **Next:** architecture A/B decision (Option A now viable — this is a full Linux box); then the
+  multi-repo gold round-trip (validate substrate + adapter across all 11 repos with gold patches,
+  no agent/keys needed); then P1 adapter, P2 subset selection. Option A needs model API key(s) +
+  harness on this box (surfaced to owner).
+
+- 2026-06-29 **HANDOFF (superseded by the P0 entry above for substrate status; pivot context still
+  valid). Eval workstream pivoted to SWE-bench Pro.** Read the P0 entry first, then the two plans
+  named below.
 
   **Where we are:** the governance-efficacy eval's *measurement instrument* is fully built and
   pushed (Phase 0 hardening + the Phase-1 fixture/arms machinery — see the dated entries below).
@@ -52,13 +92,11 @@ short and update it when important repo facts change.
   **`docs/superpowers/plans/2026-06-29-adversarial-bugcrafting-loop.md`** (its SWE-bench Pro
   addendum supersedes it; the crafting loop is the documented fallback only).
 
-  **THE BLOCKER (why we stop here):** SWE-bench Pro instance images are **amd64-only** and their
-  **test runtimes segfault under Rosetta/QEMU on Apple Silicon** — verified: `uname -m` works
-  (`x86_64`) but `python3 --version` segfaults inside `jefzda/sweap-images:ansible...`; stock
-  amd64 ubuntu runs fine, so emulation is engaged but unfaithful for CPython/Node test frameworks.
-  Owner's decision: **run the Docker eval on a real x86_64 Linux box.** Local Colima (vz+rosetta,
-  8cpu/24gb/200gb disk) is up on the Mac but is NOT a usable substrate for scoring; it can stay
-  for our own unit tests but not for SWE-bench Pro images.
+  **THE BLOCKER — CLEARED 2026-06-29 (see P0 entry above).** It was: SWE-bench Pro instance images
+  are **amd64-only** and their **test runtimes segfault under Rosetta/QEMU on Apple Silicon**
+  (verified: `python3 --version` segfaulted inside `jefzda/sweap-images:ansible...` on the Mac).
+  Resolution: the eval now runs on the amd64 Linux box `netwatch-01` where images run natively;
+  P0 gold round-trip passed there. The Mac Colima path is abandoned for scoring.
 
   **Public images:** `jefzda/sweap-images` on Docker Hub (the metadata jsonl points at a *private*
   ScaleAI ECR; ignore that). Derive the pull tag with `helper_code/image_uri.get_dockerhub_image_uri(
