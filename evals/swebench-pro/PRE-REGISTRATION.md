@@ -22,6 +22,15 @@ harness, and model fixed?
   harness. Codex is a pre-registered *secondary* that may be added only if the
   Claude result motivates it and the marginal cost is small; if added it is analyzed
   as a separate replication, never pooled into the primary estimate.
+- **Model must be pinned (reproducibility — 2026-06-29).** The driver now passes an
+  explicit `--model`; the confirmatory model is **Opus 4.8** (`claude-opus-4-...`).
+  `~/.claude/settings.json` has no `model` key, so any run WITHOUT `--model` uses the
+  account default (ambiguous) — acceptable for a sizing pilot, but the powered
+  confirmatory run MUST pin `--model` and record the exact id. **Secondary capability
+  points** (separate replications, never pooled, throttled like codex): **Sonnet 4.6**
+  (`claude-sonnet-4-6`) and **codex gpt-5.5**. Running Opus, Sonnet, and codex/gpt-5.5
+  characterizes the governance effect as a function of model capability — governance is
+  most detectable where the model is not already saturating.
 - **Fixtures:** SWE-bench Pro instances (real bugs, real regression tests), drawn
   from the 92-instance complex+regression-rich pool (gold ≥3 files, PASS_TO_PASS ≥15,
   FAIL_TO_PASS ≥3).
