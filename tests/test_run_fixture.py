@@ -109,6 +109,32 @@ class TestDiscrimination(unittest.TestCase):
             self.assertFalse(d["discriminates"], "a solution that fails hidden is not a correct fix")
 
 
+class TestFrozenFixturesDiscriminate(unittest.TestCase):
+    """The encoded fixtures must each pass --check-discrimination. Compiled-language
+    fixtures are skipped when their toolchain is absent (so the Python-only CI subset
+    still runs); they are verified in the full sweep where go/cargo/npx exist."""
+    FIXTURES_DIR = Path(__file__).resolve().parents[1] / "evals" / "fixtures"
+    TOOLCHAIN = {"go": "go", "rust": "cargo", "typescript": "npx"}
+
+    def _has(self, tool):
+        from shutil import which
+        return which(tool) is not None
+
+    def test_each_discriminating_fixture(self):
+        import json as _json
+        for fx in sorted(self.FIXTURES_DIR.glob("*/fixture.json")):
+            m = _json.loads(fx.read_text())
+            if not m.get("hidden") or not (fx.parent / "naive").is_dir():
+                continue  # only the synthetic discriminating fixtures
+            lang = m.get("language", "")
+            tool = self.TOOLCHAIN.get(lang)
+            with self.subTest(fixture=m["id"]):
+                if tool and not self._has(tool):
+                    self.skipTest(f"{tool} toolchain absent for {m['id']}")
+                d = run_fixture.check_discrimination(fx.parent)
+                self.assertTrue(d["discriminates"], f"{m['id']} truth table: {d['states']}")
+
+
 class TestSyntheticPatchGuard(unittest.TestCase):
     """Slice A2: patch/hidden injection is fail-closed."""
 

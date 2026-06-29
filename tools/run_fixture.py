@@ -609,17 +609,19 @@ def score_fixture(
             # Overwrite guard (Slice A2): the hidden payload must be test-only — new
             # files, never clobbering existing source/tests. A fixture that made the
             # hidden test "pass" by overwriting source during injection would be a
-            # construction error that silently invalidates SecPass. Fail closed.
-            for item in sorted(hsrc.iterdir()):
-                dest = workdir / item.name
+            # construction error that silently invalidates SecPass. Fail closed at
+            # FILE granularity (not top-level dir) so a payload may add a new file into
+            # an existing dir — e.g. tests/hidden.rs beside tests/visible.rs — but may
+            # never overwrite an existing file.
+            for src in sorted(p for p in hsrc.rglob("*") if p.is_file()):
+                rel = src.relative_to(hsrc)
+                dest = workdir / rel
                 if dest.exists():
                     raise ValueError(
-                        f"hidden injection would overwrite existing workspace path "
-                        f"{item.name!r}; hidden payloads must be test-only new files")
-                if item.is_dir():
-                    shutil.copytree(item, dest)
-                else:
-                    shutil.copy2(item, dest)
+                        f"hidden injection would overwrite existing workspace file "
+                        f"{rel.as_posix()!r}; hidden payloads must be new files only")
+                dest.parent.mkdir(parents=True, exist_ok=True)
+                shutil.copy2(src, dest)
             h_exit, _o, _e = run_command(hidden["verify"], workdir, env_extra)
             result["hidden_exit"] = h_exit
             result["security_pass"] = (h_exit == 0)
