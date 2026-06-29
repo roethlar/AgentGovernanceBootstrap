@@ -58,6 +58,11 @@ short and update it when important repo facts change.
   session. Do NOT add such a rule to repo/owner settings unilaterally — it is a security-relevant
   roadblock; owner decides. Everything UP TO the agent spawn is buildable/validatable now using the
   gold patch as a stand-in agent (plain git/scorer calls, not gated).
+  **VALIDATED 2026-06-29:** capture round-trip works — gold applied into `/app` as a stand-in agent
+  output, captured a SOURCE-ONLY diff via `git add -A && git diff --staged -- . ':(exclude)<testfiles>'`,
+  fed to the scorer as a mock prediction → resolved=true. So container-working-tree → source-only
+  capture → scorer is proven; only the sanctioned autonomous agent spawn remains. (Note: after
+  chowning `/app` to node, root git needs `git config --global --add safe.directory /app`.)
 
 - 2026-06-29 **Gold-resolvability sweep (3 instances/repo, 33 total): 33/33 ≈ 100% resolvable.**
   One openlibrary instance scored false on the first parallel pass but resolved on isolated retry
