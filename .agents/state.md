@@ -76,10 +76,15 @@ short and update it when important repo facts change.
   matches dir names exactly; image = `get_dockerhub_image_uri(uid, 'jefzda', repo)`; **always pass
   `--redo`** or the per-instance output cache silently reuses a stale run.
 
-  **Next:** architecture A/B decision (Option A now viable — this is a full Linux box); then the
-  multi-repo gold round-trip (validate substrate + adapter across all 11 repos with gold patches,
-  no agent/keys needed); then P1 adapter, P2 subset selection. Option A needs model API key(s) +
-  harness on this box (surfaced to owner).
+  **Next:** architecture decision, then P1 adapter, P2 subset selection.
+  **CORRECTION (owner, 2026-06-29): there are NO API keys in this eval.** The subject under test is
+  a **(harness + model)** pair authenticated by a **subscription login** (e.g. Claude Code on a
+  Claude subscription, Codex on a ChatGPT subscription) — not API access to a model. So "Option A
+  needs API keys" was wrong; Option A's only setup cost is doing the harness's **subscription login
+  on netwatch-01**. (Assumption pending owner confirmation, not yet a settled decision: the agent
+  should run *inside* the instance container so it can run tests/verify while solving — both because
+  the containers are amd64-only/native here and because governance is largely verification
+  discipline; that points to running the harness here = Option A.)
 
 - 2026-06-29 **HANDOFF (superseded by the P0 entry above for substrate status; pivot context still
   valid). Eval workstream pivoted to SWE-bench Pro.** Read the P0 entry first, then the two plans
