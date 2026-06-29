@@ -144,3 +144,13 @@ instances whose replicated ungoverned resolve rate sits in a mid-range (e.g. 0.2
 - Placebo realism ⇒ placebo must be plausible-looking prose, not lorem ipsum, or the
   agent may ignore it differently than real governance.
 - Leakage ⇒ closed by re-init (validated); re-confirm on any new repo added.
+- **Hook exercise under single-shot `-p` (important):** the re-ground hook fires only
+  on *context compaction* and the AGENTS.md tripwire only *warns* on AGENTS.md edits.
+  A one-shot bug-fix run with a finite timeout typically neither compacts nor edits
+  AGENTS.md, so the prose+hooks arm is exercised mostly as prose, and a null
+  hook-increment (contrast ii) is the EXPECTED, interpretable outcome — not evidence
+  hooks are useless in general, only that this single-shot shape gives them little to
+  do. The driver instruments hook firing (sentinel log) so firing is observed, not
+  assumed. Properly testing the hook mechanism needs induced compaction or long
+  multi-turn agentic runs — a candidate separate study; decide before over-investing
+  in the 4th arm if the pilot shows hooks never fire.
