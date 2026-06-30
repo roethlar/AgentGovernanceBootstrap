@@ -173,4 +173,57 @@ this plan.
   plan. On restart, reset `.agents/state.md` to point at **TEST-PLAN-v2.md → Phase 0.5/1**
   as the live work, and demote the SWE-bench entries to history.
 - v1 `TEST-PLAN.md` remains the validated reference; v2 is the operational head.
-</content>
+
+---
+
+## H. Codex review amendments (2026-06-29) — apply before decision-grade
+
+Independent codex review verdict: v2 is ready for **Phase 0.5 hardening + fixture prep**,
+**not decision-grade as-is**. The single biggest risk it flagged: producing a clean answer
+to the *wrong* question — "does this arm do better?" instead of "did the hook fire and
+cause it?" Amendments (each ties to the section it tightens):
+
+- **H-a. Isolate the hook effect — never pool loop-control mechanisms.** Forced
+  continuation is a *different intervention* per harness: Claude Stop hook (canary-proven
+  continuation) ≠ grok `--check` (a CLI loop mode) ≠ codex/agy (unconfirmed). Treat each as
+  its own arm; do not average them as "the hooks arm." Gate every hook causal claim on
+  **mechanism logs** — `stop_hook_fired`, `stop_hook_blocked`, `post_stop_pass_delta`, and
+  for the guard `guard_fired`/`guard_denied`. No mechanism evidence → no hook claim.
+  (Amends §A/§E + `harness-capabilities.md`.)
+- **H-b. Restate "hooks transfer by construction."** The hook *code* fires identically, but
+  the *effect* depends on model compliance, tool-call patterns, deny-interpretation, and
+  harness semantics. Correct claim: hooks are **less model-capped than prose, but require
+  per-harness activation + behavioral validation** (canary + mechanism logs) before any
+  transfer claim.
+- **H-c. Invalid/quota exclusion is arm-correlated → can bias.** Governance arms run longer
+  → hit quota/timeout empties more; excluding them can hide a real cost. **Report
+  invalid-rate by arm**, set abort/retry thresholds, and run **sensitivity bounds** (count
+  invalids as fail, and as best-case). If the conclusion flips, it isn't robust.
+  (Amends §C item 3.)
+- **H-d. Strengthen the placebo.** Topically-irrelevant prose controls token load but not
+  instruction *salience* or governance *style*. Add a second control — a **governance-shaped
+  inert placebo** (same imperative/process voice + structure, zero useful repo/task
+  guidance). A prose win must beat **both** placebos. (Amends §B / v1 V4.)
+- **H-e. SWE-bench contamination distorts loop metrics too** (not just pass) — memorized
+  solutions cut search/verify loops. Use SWE-bench strictly for **plumbing + candidate
+  mining**; **all decision-grade causal claims (Q1 loop and Q2 pass) use clean
+  post-cutoff/owned fixtures**, SWE-bench reported separately. (Tightens §B.)
+- **H-f. Freeze survivor rules before scoring; confirm on fresh data.** n=5–10 screening is
+  triage only, never a "component works" claim. Pre-commit the exact promotion rule; rerun
+  survivors on **fresh confirmatory** fixtures; keep **per-model** fixture panels — or limit
+  each claim to the calibrated model (don't calibrate on qwen then claim for all). (Amends §E.)
+- **H-g. Don't collapse H6 / arm J (the no-plan clause).** Only interpret J if the full
+  **auto-approver / no-approver / clause-absent triad** is implemented (v1); a bare
+  present/absent comparison is uninterpretable.
+- **H-h. Freeze the stats.** Pre-register **one primary contrast per lane**; derive MDE/N
+  from pilot discordance; control multiplicity across H1–H6 / arms / metrics with **Holm or
+  hierarchical gatekeeping**. (Amends v1 Sec 8.)
+- **H-i. Add before decision-grade:** (1) explicit **model/version/effort pinning** for
+  every harness (`harness-capabilities.md`) — no unpinned runs; (2) a **minimum
+  hook-opportunity criterion** for Family-A tasks (the task must actually present an
+  edit/loop the hook can act on, or the hook arm is vacuous); (3) an **intent-to-treat vs
+  mechanism-success** analysis split; (4) a guard so **weak/local screening cannot eliminate
+  components meant only for frontier/harness-specific loop behavior** (screen those on the
+  harness that supports them, not on qwen).
+
+These were independently raised by codex; most are concrete and decision-grade-gating.
