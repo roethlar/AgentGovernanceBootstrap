@@ -1,5 +1,18 @@
 # Opus 4.8 sizing-pilot results — SWE-bench Pro 4-arm factorial
 
+> **⚠️ INVALID — wrong prose arm. Do not cite the `prose` / `prose+hooks` columns.**
+> This pilot injected the toolkit's **full `current-template` AGENTS.md** as the prose
+> arm, not the `task-prose` completion-steering profile the plan specifies
+> (`docs/superpowers/plans/2026-06-29-swebench-pro-governance-integration.md`, Addendum b:
+> the full product governance is *deliberately not* a prose arm — it is human-interaction
+> guidance, irrelevant to an autonomous bug fix). The `prose`/`prose+hooks` numbers below
+> therefore measure irrelevant-prose ≈ placebo, not governance; the "prose ≤ none"
+> direction is a wrong-arm artifact, **not a finding**. The hooks tested were also the
+> wrong ones (re-ground/tripwire, not `hook-gate`/`hook-guard`). The `none` and `placebo`
+> columns are unaffected, as is the band-selection lesson (floor/ceiling instances give no
+> discordance). Re-run with the corrected arms before any prose/hooks claim. The arm
+> definition that caused this is fixed in `PRE-REGISTRATION.md` §3. — flagged 2026-06-30
+
 Confirmatory subject (Claude Code + Opus 4.8), 8 instances × 4 arms × R=3.
 Capture-vs-base + invalid-accounting; headroom-routed. 2026-06-29.
 

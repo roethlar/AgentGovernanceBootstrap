@@ -11,9 +11,9 @@ Owner decisions locked 2026-06-29: confirmatory harness = **Claude Code only**
 
 ## 1. Question
 
-Does repository governance (AGENTS.md prose; prose + enforcement hooks) causally
-raise a coding harness+model's rate of correctly fixing real bugs, holding the bug,
-harness, and model fixed?
+Does task-relevant governance (completion-steering prose; prose + enforcement hooks)
+causally raise a coding harness+model's rate of correctly fixing real bugs, holding the
+bug, harness, and model fixed?
 
 ## 2. Subject under test
 
@@ -41,25 +41,38 @@ All arms share identical substrate (same image, same anti-leak re-init scrub, sa
 task prompt, same timeout, same source-only capture, same scorer). They differ ONLY
 in what governance material is present in `/app` before the agent starts:
 
-1. **none** — no AGENTS.md, no hooks. (= the 2026-06-29 baseline arm.)
-2. **placebo-prose** — an AGENTS.md-sized file of *topically irrelevant* prose
-   (length-matched to the real-prose arm in tokens), plus a `CLAUDE.md`/equivalent
-   pointer so it is actually loaded. Controls for "any prose in context helps."
-3. **real-prose** — the real portable AGENTS.md governance (Prime Invariants +
-   universal invariants), no hooks.
-4. **prose+hooks** — real-prose **plus** the enforcement hooks (re-ground on
-   compaction, AGENTS.md tripwire) installed in the harness config.
+1. **none** — no governance file, no hooks. (= the 2026-06-29 baseline arm.)
+2. **placebo-prose** — a file of *topically irrelevant* prose, length-matched to the
+   `task-prose` arm in tokens, plus a `CLAUDE.md`/equivalent pointer so it is actually
+   loaded. Controls for "any prose in context helps."
+3. **task-prose** — the completion-steering guidance profile
+   (`evals/governance_profiles/task-prose/`): understand the failing test, fix the root
+   cause not the symptom, do not weaken or skip tests, run the tests and iterate, don't
+   stop until green. Task-relevant guidance only — **no** drift / git / human-interaction
+   content. No hooks.
+4. **task-prose-hooks** — `task-prose` **plus** the two enforcement hooks that *enforce*
+   what the prose *states*: `hook-gate` (a Stop hook — don't finish while visible tests
+   are red) and `hook-guard` (a PreToolUse hook — refuse edits to test or protected
+   files). A clean prose-vs-enforcement factorial.
 
-Length-matching rule: placebo token count within ±10% of real-prose token count,
+**Why not the full product governance (owner decision — plan Addendum b).** The full
+`current-template` AGENTS.md (Prime Invariants, words-first, approval gates, drift/git
+discipline) is built for an agent working *with a human* and is wrong for an autonomous
+test-solving run, so it is deliberately **NOT** a prose arm; the prose arm is the
+task-relevant subset only. (A 2026-06-29 sizing pilot erroneously injected the full
+AGENTS.md as the prose arm — its prose/hooks results are invalid; see
+`opus-pilot-results.md`.)
+
+Length-matching rule: placebo token count within ±10% of the `task-prose` token count,
 measured with the same tokenizer; record both counts in the run metadata.
 
 **Injection mechanism (validated 2026-06-29, keystone for arm validity):** Claude
 Code in `-p` mode loads **`CLAUDE.md`** from the working dir (`/app`) as project
 memory, and follows its `@AGENTS.md` import — but a **bare `AGENTS.md` with no
 `CLAUDE.md` is INERT** (not loaded). So every governed arm MUST deliver governance
-via `CLAUDE.md` (either the prose inline, or the toolkit's real shim `CLAUDE.md` =
-`@AGENTS.md` + the AGENTS.md file). The real-prose and prose+hooks arms use the real
-shim shape (the product's actual delivery mechanism); the placebo arm likewise needs
+via `CLAUDE.md` (either the prose inline, or a `CLAUDE.md` = `@AGENTS.md` shim + the
+profile text in `AGENTS.md`). The task-prose and task-prose-hooks arms deliver the
+`task-prose` text through this same loading path; the placebo arm likewise needs
 a `CLAUDE.md` (inline or importing the placebo file) or it would be inert and
 collapse into the `none` arm. Confirmed by canary probe: CLAUDE.md canary appeared,
 bare-AGENTS.md canary did not, `@AGENTS.md`-imported canary did.
@@ -126,8 +139,8 @@ instances whose replicated ungoverned resolve rate sits in a mid-range (e.g. 0.2
 - **Model:** mixed-effects logistic regression on per-replicate binary `resolved`,
   fixed effect = arm (none as reference), random intercept per instance (and per
   instance×arm if replicate variance warrants). Pre-specified contrasts:
-  (i) real-prose − none, (ii) prose+hooks − real-prose (the hook increment),
-  (iii) real-prose − placebo (the content-vs-mere-prose test).
+  (i) task-prose − none, (ii) task-prose-hooks − task-prose (the hook increment),
+  (iii) task-prose − placebo (the content-vs-mere-prose test).
 - **Multiplicity:** 3 pre-specified contrasts; control family-wise error (Holm).
 - **Primary endpoint:** contrast (i) on the primary `resolved` metric. Contrasts
   (ii)–(iii) are pre-specified secondary.
@@ -174,13 +187,14 @@ rebooted the headroom proxy mid-pilot and corrupted 24/45 cells before the guard
 - Placebo realism ⇒ placebo must be plausible-looking prose, not lorem ipsum, or the
   agent may ignore it differently than real governance.
 - Leakage ⇒ closed by re-init (validated); re-confirm on any new repo added.
-- **Hook exercise under single-shot `-p` (important):** the re-ground hook fires only
-  on *context compaction* and the AGENTS.md tripwire only *warns* on AGENTS.md edits.
-  A one-shot bug-fix run with a finite timeout typically neither compacts nor edits
-  AGENTS.md, so the prose+hooks arm is exercised mostly as prose, and a null
-  hook-increment (contrast ii) is the EXPECTED, interpretable outcome — not evidence
-  hooks are useless in general, only that this single-shot shape gives them little to
-  do. The driver instruments hook firing (sentinel log) so firing is observed, not
-  assumed. Properly testing the hook mechanism needs induced compaction or long
-  multi-turn agentic runs — a candidate separate study; decide before over-investing
-  in the 4th arm if the pilot shows hooks never fire.
+- **Hook exercise under single-shot `-p`:** unlike the product's re-ground/tripwire
+  hooks (which fire only on *context compaction* or AGENTS.md edits, and so would barely
+  fire in a one-shot run), the two hooks under test here fire readily during an ordinary
+  bug-fix run: `hook-guard` (PreToolUse) fires on every edit attempt, and `hook-gate`
+  (Stop) fires whenever the agent tries to finish, blocking it while tests are red. So
+  the task-prose-hooks arm genuinely exercises the enforcement mechanism, not just the
+  prose. The driver instruments hook firing (sentinel log) so firing is observed, not
+  assumed; a cell where the relevant hook had no opportunity to fire (e.g. the agent made
+  no edit, or never attempted to stop with tests red) is recorded, so the hook-increment
+  contrast (ii) is computed only over cells where the hook could act (codex review
+  must-fix: minimum hook-opportunity criterion).
