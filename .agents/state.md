@@ -3,6 +3,52 @@
 This file is the first place future agents should read for current repo state. Keep it
 short and update it when important repo facts change.
 
+## CURRENT FOCUS — START HERE (2026-06-29): SWE-bench × governance eval
+
+**Goal:** measure whether governance helps a coding agent solve real bugs, using
+**SWE-bench Pro** as the substrate — the only thing hard enough that frontier models don't
+one-shot it (the owner's own repos are useless here: frontier fixes any authored bug).
+
+**Authority (read these; this entry only points):**
+- `docs/superpowers/plans/2026-06-29-swebench-pro-governance-integration.md` — THE plan
+  (pipeline, `joint_pass` metric, subset selection, phases, + the `Addenda 2026-06-29 (b)`).
+- `evals/harness-capabilities.md` — per-subject in-container wiring, injection vectors, hook reach.
+- `evals/governance_profiles/` — the arms. `evals/TEST-PLAN.md` (v1) — design reference.
+  `evals/TEST-PLAN-v2.md` is RETIRED (pointer only).
+
+**Design (aligned; details in the plan/harness doc):** arms = `none` / `task-prose` /
+`task-prose-hooks`. `task-prose` = TEST-FRIENDLY completion-steering guidance only —
+`current-template` (full product) is deliberately NOT the prose arm. Metric =
+`joint_pass = FAIL_TO_PASS ∧ PASS_TO_PASS`. Subjects (all viability-validated): claude,
+codex, **grok** (`grok-build`), **agy** (`gemini-3.5-flash`, needs `--new-project`),
+**qwen3.6** (local/free via Claude Code→ollama). Frontier on harder instances, **qwen on
+easier**. Forced-continuation Stop hook is Claude-Code-only (grok=`--check`, agy passive);
+never pool hook mechanisms.
+
+**Status:** P0 done; all 5 subjects validated; design aligned + committed. The earlier
+frontier × one-shot × full-prose SWE-bench pilots were SCREENING ONLY (superseded —
+confirmed the predicted null; do not repeat). The real factorial has NOT run.
+
+**Next action (plan Phase 0.5 → 1):** (1) fold the validated hardening into
+`tools/run_fixture.py` — **capture vs a pinned base TAG not HEAD** (agents commit their
+work), per-harness injection canary, invalid/quota accounting; (2) subset-select per
+subject (ungoverned mid-band ~20–70%), freeze; (3) run the arms — **start with
+qwen-via-Claude-Code** (free, weak, full hook support = highest signal, zero cap).
+
+**Operational must-knows:**
+- Serialize same-provider runs (Anthropic Opus+Sonnet share one rate limit → 429s);
+  parallelize ACROSS providers. Caps reset free; **credit overage is real money** — bound
+  every batch to cap windows.
+- **Push:** stored git credential is STALE; gh token is valid →
+  `git -c credential.helper='!gh auth git-credential' push` (or `gh auth setup-git` once).
+- **agy** OAuth is short-lived (no headless refresh) — re-run `agy` interactively if lapsed;
+  chown `/app` to `agent` or agy attempts sandbox-breakout.
+- Validated driver PROTOTYPES archived at `evals/swebench-pro/driver-prototypes/` (scratch
+  quality — fold into `run_fixture.py`, don't run as the eval). The session `scratchpad/`
+  is GONE after a restart.
+
+(The `## Next` eval entries below are superseded history — see this block for current truth.)
+
 ## Now
 
 - AgentGovernanceBootstrap is the source for the portable governance/bootstrap process.
