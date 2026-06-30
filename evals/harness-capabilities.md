@@ -10,7 +10,7 @@ agy partly from binary inspection — auth expired blocked its live canary).
 | **Claude Code** (`claude`) | Anthropic (via headroom) | **CLAUDE.md** (+`@AGENTS.md`); bare AGENTS.md is INERT | yes — PreToolUse (blocking) | **yes — Stop hook can force continuation** (the reference) | `claude -p "…" --permission-mode bypassPermissions` | `~/.claude/.credentials.json` |
 | **codex** (`codex`) | OpenAI (via headroom) | **AGENTS.md** (native) | yes — PreToolUse (fired heavily in runs) | unconfirmed (template has SessionStart+PreToolUse) | `codex exec --dangerously-bypass-approvals-and-sandbox --dangerously-bypass-hook-trust --skip-git-repo-check -C /app` (prompt on stdin) | `~/.codex/auth.json` |
 | **grok** (`grok`) | xAI (direct) | **AGENTS.md** (+CLAUDE.md; NOT .cursorrules) | **yes** — PreToolUse blocking, deny via stdout/exit-2 (fail-open) | **NO hook** — `Stop` is passive; substitute = built-in flags `--check` / `--max-turns` | `grok -p "…" --always-approve --cwd /app` | `~/.grok/auth.json` (OIDC) |
-| **agy** (Antigravity, `agy`) | Gemini/Google | **AGENTS.md + GEMINI.md** (canary-CONFIRMED; REQUIRES `--new-project`) | yes — `BeforeTool` matcher on write tools | **`OnStop` event present** (stop-equiv; force-continuation semantics TBD) | `agy --print "…" --dangerously-skip-permissions --model gemini-3.5-flash` | `~/.gemini/oauth_creds.json` (OAuth) |
+| **agy** (Antigravity, `agy`) | Gemini/Google | **AGENTS.md + GEMINI.md** (canary-CONFIRMED; REQUIRES `--new-project`) | yes — `BeforeTool` matcher on write tools | **`Stop` hook PASSIVE** — cleanup/telemetry only, NO forced continuation (Antigravity docs: only `{"decision":"allow"}`, non-zero exit = failure) | `agy --print "…" --dangerously-skip-permissions --model gemini-3.5-flash` | `~/.gemini/oauth_creds.json` (OAuth) |
 
 ## Models (set explicitly — unpinned defaults bit us)
 - Claude Code: pin `--model` (no model key in settings.json → ambiguous default). Confirmatory = Opus 4.8.
@@ -77,3 +77,23 @@ scaffolding**, on **free local GPU**. This is the single most valuable cell: wea
   → **usable difficulty window, not a floor.** Scope qwen to the easier/well-specified band.
 - **Caveats:** slow (200–400s/instance even on a 5090); prone to test-infra shortcuts
   (source-only diff + test-file excludes already guard scoring against this).
+
+## RESOLVED: forced-continuation (loop) hook is Claude-Code-ONLY
+
+Confirmed across harnesses — the **pre-edit guard** (blocking PreToolUse/BeforeTool) is
+portable to ALL (Claude, codex, grok, agy). But the **forced-continuation Stop hook**
+(block the stop, inject "not done — keep going") is **Claude Code only**:
+- **Claude Code:** Stop hook can force continuation (the reference).
+- **grok:** Stop is passive → substitute = `--check` / `--max-turns` CLI flags.
+- **agy:** Stop is passive (Antigravity docs — `{"decision":"allow"}` only, non-zero =
+  failure) → needs a flag substitute (check `agy` for a `--check`/verification/max-turns
+  equivalent — OPEN).
+- **codex:** still unconfirmed.
+
+Source: https://antigravity.google/docs/hooks
+
+**Design implication (codex review H-a):** the forced-continuation **hook** arm can only be
+tested on **Claude-Code-harness subjects** — which includes **qwen-via-Claude-Code (free,
+weak, real headroom)**. That makes qwen the prime cell for the loop-hook intervention.
+grok/agy carry the **guard hook** + **flag-based loop substitutes**, analyzed separately —
+never pooled with the Claude Stop hook.
