@@ -53,3 +53,27 @@ Re-auth done (owner ran `agy` interactively). Full smoke passed:
 
 Auth note: the OAuth token is short-lived and does NOT refresh headless — re-auth
 (`agy` interactively) at the start of a session if it has lapsed.
+
+## Weak local model via Claude Code → ollama — CONFIRMED 2026-06-29 (the key Q2 hooks cell)
+
+`qwen3.6:27b` runs as a **Claude Code subject** (full harness: tools, hooks, CLAUDE.md) —
+so the high-value hooks (incl. the **forced-continuation Stop hook**, which only the Claude
+Code harness supports) can be measured on a **weak model that actually needs the
+scaffolding**, on **free local GPU**. This is the single most valuable cell: weak model
+(real headroom) × full hook support × no cap. Per v1, qwen3.6 is a primary Q2 subject.
+
+- **No gateway needed:** ollama 0.30.11 exposes a native Anthropic-compatible
+  `/v1/messages` on `:11434`; `claude` points straight at it.
+- **Wiring (in-container, user `agent`):** run container `--network host` (host ollama on
+  `0.0.0.0:11434`); mount `~/.local/bin/claude`; env: `CLAUDE_CONFIG_DIR=/home/agent/.claude_qw`
+  (fresh → ignores the headroom settings.json), `ANTHROPIC_BASE_URL=http://127.0.0.1:11434`,
+  `ANTHROPIC_API_KEY=ollama`, `CLAUDE_CODE_MAX_OUTPUT_TOKENS=500000`; cmd
+  `claude --model qwen3.6-hictx:27b -p "$(cat task.md)" --permission-mode bypassPermissions`.
+- **Required fixes:** deliver task as `-p "$(cat task.md)"` (NOT the path — qwen won't auto-read);
+  directive imperative prompt (else it chats); high context — a `qwen3.6-hictx:27b` variant
+  (`ollama create … PARAMETER num_ctx 65536`) + 500K output cap (qwen is thinking-token-hungry).
+- **Viability result:** SOLVED qutebrowser-f7753550 (Opus-ceiling) with a real source fix
+  (~197s); FAILED ansible-e40889 (took a `conftest.py` warning-suppression shortcut, ~402s).
+  → **usable difficulty window, not a floor.** Scope qwen to the easier/well-specified band.
+- **Caveats:** slow (200–400s/instance even on a 5090); prone to test-infra shortcuts
+  (source-only diff + test-file excludes already guard scoring against this).
