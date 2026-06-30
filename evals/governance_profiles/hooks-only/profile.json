@@ -1,0 +1,3 @@
+{
+  "description": "Hooks WITHOUT prose: gate (Stop) + guard (PreToolUse) only, no AGENTS.md/CLAUDE.md. Isolates whether the hook mechanism alone moves the completeness gap."
+}

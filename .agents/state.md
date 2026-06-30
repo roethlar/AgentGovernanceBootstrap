@@ -5,6 +5,15 @@ short and update it when important repo facts change.
 
 ## CURRENT FOCUS — START HERE (2026-06-29): SWE-bench × governance eval
 
+**2026-06-30 UPDATE — read first:** the eval pivoted to a **FuncPass-only**, cost-laddered
+design (qwen→agy→grok→codex→claude; no spend without a cheaper precursor). Live plan + result +
+product direction: `evals/swebench-pro/PLAN-funcpass-2026-06-30.md`. Key free result: general
+completeness *prose* flips a weak model (qwen) from incomplete→complete patch on a purpose-built
+two-path trap (`evals/fixtures/py_vault_twopath`, 0/3→3/3); the eval gate/guard hooks fire but
+do NOT move it. This feeds the PRODUCT (the prose + a future discovery-fed completion-gate hook);
+parallel workstreams handle product integration + guidance token-efficiency. The SWE-bench-Pro
+framing below is partly superseded.
+
 **Goal:** measure whether governance helps a coding agent solve real bugs, using
 **SWE-bench Pro** as the substrate — the only thing hard enough that frontier models don't
 one-shot it (the owner's own repos are useless here: frontier fixes any authored bug).
