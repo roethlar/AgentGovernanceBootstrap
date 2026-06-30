@@ -1,5 +1,13 @@
 #!/usr/bin/env python3
 """4-arm governance factorial driver (sizing pilot).
+
+WRONG-ARM WARNING (2026-06-30): the `prose` arm here injects the full real AGENTS.md
+(`REAL_AGENTS`, see inject()), and the hook arm uses re-ground/tripwire hooks. The plan
+(2026-06-29-swebench-pro-governance-integration.md, Addendum b) deliberately EXCLUDES the
+full product governance as a prose arm and specifies `task-prose` (completion-steering
+only) + `hook-gate`/`hook-guard`. When folding these mechanics into run_fixture.py, use
+the corrected arms in PRE-REGISTRATION.md §3 — do NOT copy this arm definition forward.
+
 Arms: none | placebo | prose | prose_hooks. Within-instance, R replicates per cell.
 Injects governance via CLAUDE.md (validated keystone); captures SOURCE-ONLY diff
 excluding governance + test files; instruments hook firing via a sentinel.

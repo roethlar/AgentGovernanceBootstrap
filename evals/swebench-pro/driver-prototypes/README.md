@@ -7,6 +7,14 @@ for folding their *mechanics* into `tools/run_fixture.py`'s benchmark path. Do n
 directly as the eval — `shell=True`, hardcoded paths, and a now-deleted session `scratchpad/`
 make them reference-only.
 
+> ⚠️ **WRONG-ARM WARNING (2026-06-30) — copy the mechanics, NOT the arm definitions.**
+> Every `arms4*` driver here injects the **full real AGENTS.md** as the prose arm and uses
+> re-ground/tripwire hooks. The plan (Addendum b) deliberately **excludes** the full product
+> governance as a prose arm and specifies `task-prose` (completion-steering only) +
+> `hook-gate`/`hook-guard`. This wrong arm is what wasted the 2026-06-29 sizing pilot (see
+> `../opus-pilot-results.md`). When folding into `run_fixture.py`, take the arm definitions
+> from `../PRE-REGISTRATION.md` §3, not from these scripts.
+
 Mechanics they encode (durable per-subject reference lives in `evals/harness-capabilities.md`):
 
 - **arms4.py** — Claude Code driver: anti-leak `git init` + pinned `eval_base` tag; capture

@@ -105,17 +105,19 @@ fresh session needs no chat context. Resume at the "Next action" above.
   to estimate discordance + replicate variance, which sets R, the confirmatory N, and
   the replicated-rate selection band. Subset selection re-measures the band with
   replicates (regression-to-mean guard) before the confirmatory set is frozen.
-  **RUNNING (this session, 2026-06-29):** sizing pilot launched detached — 8 instances
-  (4 baseline-failed + 4 baseline-resolved, 5 repos) × 4 arms × 3 reps = 96 cells.
-  Driver `arms4.py` validated by a 1-instance×4-arm smoke (all arms inject; governance
-  EXCLUDED from capture — 0 leakage; prose_hooks tripwire fired 8×; scorer
-  discriminates; scorer-drop infra-retry added). Results land at scratch
-  `…/scratchpad/pilot8_out/scores.json` + `arms4_runmeta.json` (session-local — on
-  completion COPY the per-arm rates + discordance into `evals/swebench-pro/` and commit,
-  else lost to a fresh session). KEYSTONES (in PRE-REGISTRATION): governance loads only
-  via CLAUDE.md (bare AGENTS.md inert; `@AGENTS.md` import works); hooks fire headless
-  under bypassPermissions (no trust step) but re-ground needs compaction, so
-  prose+hooks≈prose under one-shot.
+  **PILOT RAN, but prose/hooks arms are INVALID (flagged 2026-06-30).** The sizing pilot
+  completed (8 instances × 4 arms × 3 reps = 96 cells) and its results are committed at
+  `evals/swebench-pro/opus-pilot-results.md` — BUT `arms4.py` injected the full
+  `current-template` AGENTS.md as the prose arm, which the plan (Addendum b) deliberately
+  excludes. The prose / `prose+hooks` columns are wrong-arm junk (and the hooks were
+  re-ground/tripwire, not the `hook-gate`/`hook-guard` the plan specifies); `none` /
+  placebo and the band-selection lesson stand. `PRE-REGISTRATION.md` §3 is corrected; the
+  driver prototype still encodes the wrong arm (warned in its README). **Re-run the sizing
+  pilot with `task-prose` / `task-prose-hooks` before reading any prose/hooks result.**
+  KEYSTONES (in PRE-REGISTRATION): governance loads only via CLAUDE.md (bare AGENTS.md
+  inert; `@AGENTS.md` import works); the arms' hooks — `hook-guard` (PreToolUse) and
+  `hook-gate` (Stop) — DO fire in one-shot runs (the re-ground hook, which needs
+  compaction, is not a test arm).
   **ROUTING (owner-decided 2026-06-29):** in-container agents route through the owner's
   **headroom** token-compression proxy (`ANTHROPIC_BASE_URL=http://10.1.10.221:8787`,
   passed via `docker exec -e`; PONG-verified through the proxy). Validity-safe and the
