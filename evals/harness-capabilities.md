@@ -10,7 +10,7 @@ agy partly from binary inspection — auth expired blocked its live canary).
 | **Claude Code** (`claude`) | Anthropic (via headroom) | **CLAUDE.md** (+`@AGENTS.md`); bare AGENTS.md is INERT | yes — PreToolUse (blocking) | **yes — Stop hook can force continuation** (the reference) | `claude -p "…" --permission-mode bypassPermissions` | `~/.claude/.credentials.json` |
 | **codex** (`codex`) | OpenAI (via headroom) | **AGENTS.md** (native) | yes — PreToolUse (fired heavily in runs) | unconfirmed (template has SessionStart+PreToolUse) | `codex exec --dangerously-bypass-approvals-and-sandbox --dangerously-bypass-hook-trust --skip-git-repo-check -C /app` (prompt on stdin) | `~/.codex/auth.json` |
 | **grok** (`grok`) | xAI (direct) | **AGENTS.md** (+CLAUDE.md; NOT .cursorrules) | **yes** — PreToolUse blocking, deny via stdout/exit-2 (fail-open) | **NO hook** — `Stop` is passive; substitute = built-in flags `--check` / `--max-turns` | `grok -p "…" --always-approve --cwd /app` | `~/.grok/auth.json` (OIDC) |
-| **agy** (Antigravity, `agy`) | Gemini/Google | **AGENTS.md + GEMINI.md** (canary-CONFIRMED; REQUIRES `--new-project`) | yes — `BeforeTool` matcher on write tools | **`Stop` hook PASSIVE** — cleanup/telemetry only, NO forced continuation (Antigravity docs: only `{"decision":"allow"}`, non-zero exit = failure) | `agy --print "…" --dangerously-skip-permissions --model gemini-3.5-flash` | `~/.gemini/oauth_creds.json` (OAuth) |
+| **agy** (Antigravity, `agy`) | Gemini/Google | **AGENTS.md + GEMINI.md** (canary-CONFIRMED; REQUIRES `--new-project`) | yes — `PreToolUse` matcher on the write tool (Claude-style event names) | **`Stop` hook PASSIVE** — cleanup/telemetry only, NO forced continuation (Antigravity docs: only `{"decision":"allow"}`, non-zero exit = failure) | `agy --print "…" --dangerously-skip-permissions --model gemini-3.5-flash` | `~/.gemini/oauth_creds.json` (OAuth) |
 
 ## Models (set explicitly — unpinned defaults bit us)
 - Claude Code: pin `--model` (no model key in settings.json → ambiguous default). Confirmatory = Opus 4.8.
@@ -21,7 +21,7 @@ agy partly from binary inspection — auth expired blocked its live canary).
 ## Hook config locations (place in GLOBAL/trusted to avoid per-project trust steps)
 - Claude/codex: `~/.claude/settings.json` / `.claude/` (codex: `CODEX_HOME/hooks.json`, `--dangerously-bypass-hook-trust`).
 - grok: `~/.grok/hooks/*.json` (global = always trusted); also auto-scans `~/.claude/settings.json` + `.cursor/hooks.json`.
-- agy: `~/.gemini/settings.json` (`hooks` block; events: BeforeTool, OnStop, PreInvocation, PostInvocation, Stop).
+- agy: `~/.gemini/settings.json` (`hooks` block; events (Claude-style): PreToolUse, PostToolUse, PreInvocation, PostInvocation, Stop; `enabled` toggle; matcher (tool name) only on Pre/PostToolUse, ignored by the rest. Docs: antigravity.google/docs/hooks).
 
 ## Hooks-lane readiness
 - **pre-edit guard (AGENTS.md tripwire equivalent): portable to ALL four** — same shell-command-on-tool-event shape.
