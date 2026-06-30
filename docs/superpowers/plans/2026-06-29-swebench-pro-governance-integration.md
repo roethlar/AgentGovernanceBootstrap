@@ -182,3 +182,49 @@ enough that the agent engages, hard enough that it often fails — so governance
 - Adapter/capture/predictions-writer unit-tested with a fake driver (no model, no
   Docker) for the file-shape contract; the Docker scoring is the live/integration part.
 - joint_pass + invalid accounting already tested (Slice C).
+
+## Addenda — 2026-06-29 (b): test-friendly prose, harness expansion, review
+
+These refine the arms/subjects above; this plan remains the head. (`evals/TEST-PLAN-v2.md`
+is retired → points here.)
+
+**Prose arm is TEST-FRIENDLY, not the full product (owner decision).** The full
+`current-template` (AGENTS.md product) is too interaction-leaning for autonomous
+test-solving (words-first, approval gates, drift/git discipline) and is NOT used as the
+prose arm. New profiles:
+- `task-prose` — completion-steering guidance only (understand the failing test, fix the
+  root cause not the symptom, don't weaken/skip tests, run tests and iterate, don't stop
+  until green). No drift/git/interaction content.
+- `task-prose-hooks` — `task-prose` + the existing `hook-gate` (Stop: don't finish while
+  visible tests red) + `hook-guard` (PreToolUse: refuse test/protected-file edits). Hooks
+  *enforce* what the prose *states* — a clean factorial.
+- Arms for P3 become: `none` / `task-prose` / `task-prose-hooks` (expand to gate/guard
+  solo if signal).
+
+**Subjects expanded beyond claude+codex** (all validated 2026-06-29; details +
+injection vectors + hook ports in `evals/harness-capabilities.md`):
+- **grok** (xAI; model `grok-build`), **agy** (Gemini Antigravity; `gemini-3.5-flash`;
+  governance via `GEMINI.md`, requires `--new-project`; chown `/app` or it attempts
+  sandbox-breakout), **qwen3.6** (local/free via Claude Code→ollama; the prime weak-model
+  hooks cell — full Claude Code harness incl. the Stop hook).
+- **Model × difficulty:** frontier on the harder instances that stump them; **qwen on the
+  easier** instances (its margin). Subset selection is per-subject mid-band.
+- **Hook reach (key):** pre-edit guard ports to ALL harnesses; the **forced-continuation
+  Stop hook is Claude-Code-only** (grok = `--check` flag; agy Stop is passive). So the
+  loop-hook arm runs on Claude-Code-family subjects (incl. qwen); grok/agy guard-only or
+  flag-substitute, analyzed separately — never pooled.
+- **grok guard caveat (validated):** a tool-name-scoped guard sat inert (`guard_fired=0`)
+  because grok edits via `bash`; the guard needs an empty matcher + in-script tool/path
+  filtering to catch shell edits.
+
+**Review must-fixes (codex, independent) — apply before decision-grade:** isolate the hook
+effect (mechanism logs `stop_hook_fired`/`guard_fired`/`post_stop_pass_delta`; never pool
+mechanisms); report invalid-rate **by arm** + sensitivity bounds (governed arms run longer
+→ more quota empties); add a governance-shaped inert placebo; freeze survivor rules before
+scoring; pin model/version/effort; minimum hook-opportunity criterion for the loop arm.
+
+**Methodology hardening already validated this session (fold into the harness):** capture
+the patch vs a **pinned base tag** not HEAD (agents commit their work → vs-HEAD reads a
+committed fix as EMPTY, biasing governed arms); per-harness injection canary; invalid/quota
+accounting with batch self-abort; serialize same-provider runs (shared rate limit),
+parallelize across providers.

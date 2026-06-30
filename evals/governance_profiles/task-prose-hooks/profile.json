@@ -1,0 +1,9 @@
+{
+  "description": "TEST-FRIENDLY prose + hooks arm: the slim completion-steering task guidance (mirrors task-prose) PLUS the two load-bearing hooks (gate = Stop hook that won't finish while visible tests are red; guard = PreToolUse that refuses test/protected-file edits). The hooks ENFORCE what the prose merely states — a clean prose-vs-hooks factorial. Hook scripts are the exact committed ones reused from prose-hooks. NOTE: _parts/task-guidance.snippet.md mirrors task-prose — keep in sync. Verify the overlay with run_fixture.py before a real run.",
+  "concat": [
+    {"to": "AGENTS.md", "parts": ["profile:_parts/task-guidance.snippet.md"]}
+  ],
+  "copies": [
+    {"from": "templates/shims/CLAUDE.template.md", "to": "CLAUDE.md"}
+  ]
+}

@@ -1,0 +1,9 @@
+{
+  "description": "TEST-FRIENDLY prose arm: completion-steering task guidance only (no drift-prevention, git, approval, or interaction material). This is the 'prose' arm for autonomous SWE-bench task-solving — it deliberately REPLACES current-template, whose full product governance is too interaction-leaning for autonomous tests (owner decision 2026-06-29).",
+  "concat": [
+    {"to": "AGENTS.md", "parts": ["profile:_parts/task-guidance.snippet.md"]}
+  ],
+  "copies": [
+    {"from": "templates/shims/CLAUDE.template.md", "to": "CLAUDE.md"}
+  ]
+}
