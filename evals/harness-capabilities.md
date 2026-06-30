@@ -25,7 +25,7 @@ agy partly from binary inspection — auth expired blocked its live canary).
 
 ## Hooks-lane readiness
 - **pre-edit guard (AGENTS.md tripwire equivalent): portable to ALL four** — same shell-command-on-tool-event shape.
-- **Stop / keep-going-until-verified (loop control):** native hook on **Claude Code** (and likely codex); **grok = flag substitute (`--check`)**; **agy = `OnStop` (verify if it can force continuation)**. This is the discriminating capability — only Claude Code is confirmed to force continuation via hook.
+- **Stop / keep-going-until-verified (loop control):** native hook on **Claude Code** (and likely codex); **grok = flag substitute (`--check`)**; **agy = passive `Stop` (no forced continuation — Antigravity docs)**. Discriminating capability: forced continuation via hook is **Claude-Code-ONLY** (grok/agy Stop are passive; codex unconfirmed).
 
 ## agy viability — CONFIRMED 2026-06-29 (auth refreshed; ran end-to-end)
 
@@ -48,7 +48,7 @@ Re-auth done (owner ran `agy` interactively). Full smoke passed:
    /etc/shadow, seeking sudo/su, namespace/bind-mount escapes) and produces an empty
    patch. With `/app` writable it does the task normally. (Behavior trait worth noting;
    the chown fixes it. arms4 already chowns.)
-2. **Strip the host `rtk` BeforeTool hook** from the mounted `~/.gemini/settings.json`
+2. **Strip the host `rtk` PreToolUse hook** from the mounted `~/.gemini/settings.json`
    (rtk isn't in the container).
 
 Auth note: the OAuth token is short-lived and does NOT refresh headless — re-auth
@@ -80,7 +80,7 @@ scaffolding**, on **free local GPU**. This is the single most valuable cell: wea
 
 ## RESOLVED: forced-continuation (loop) hook is Claude-Code-ONLY
 
-Confirmed across harnesses — the **pre-edit guard** (blocking PreToolUse/BeforeTool) is
+Confirmed across harnesses — the **pre-edit guard** (blocking PreToolUse) is
 portable to ALL (Claude, codex, grok, agy). But the **forced-continuation Stop hook**
 (block the stop, inject "not done — keep going") is **Claude Code only**:
 - **Claude Code:** Stop hook can force continuation (the reference).
