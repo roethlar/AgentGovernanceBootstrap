@@ -47,6 +47,10 @@ qwen-via-Claude-Code** (free, weak, full hook support = highest signal, zero cap
   quality — fold into `run_fixture.py`, don't run as the eval). The session `scratchpad/`
   is GONE after a restart.
 
+**HANDOFF 2026-06-29:** session paused clean — nothing running (no eval processes or
+containers), working tree clean, synced with origin. This block is the resume point; a
+fresh session needs no chat context. Resume at the "Next action" above.
+
 (The `## Next` eval entries below are superseded history — see this block for current truth.)
 
 ## Now
