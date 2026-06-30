@@ -3,62 +3,70 @@
 This file is the first place future agents should read for current repo state. Keep it
 short and update it when important repo facts change.
 
-## CURRENT FOCUS — START HERE (2026-06-29): SWE-bench × governance eval
+## CURRENT FOCUS — START HERE (HANDOFF 2026-06-30)
 
-**2026-06-30 UPDATE — read first:** the eval pivoted to a **FuncPass-only**, cost-laddered
-design (qwen→agy→grok→codex→claude; no spend without a cheaper precursor). Live plan + result +
-product direction: `evals/swebench-pro/PLAN-funcpass-2026-06-30.md`. Key free result: general
-completeness *prose* flips a weak model (qwen) from incomplete→complete patch on a purpose-built
-two-path trap (`evals/fixtures/py_vault_twopath`, 0/3→3/3); the eval gate/guard hooks fire but
-do NOT move it. This feeds the PRODUCT (the prose + a future discovery-fed completion-gate hook);
-parallel workstreams handle product integration + guidance token-efficiency. The SWE-bench-Pro
-framing below is partly superseded.
+**Model testing is CLOSED** (owner: expensive, diminishing returns). The harness-gap eval
+— can governance close the Claude-Code↔Cursor FuncPass gap? — reached its conclusions. The
+work product is two adopted artifacts + a product-integration plan awaiting owner decisions.
+**Nothing is running** (no eval processes/containers). Live eval record:
+`evals/swebench-pro/PLAN-funcpass-2026-06-30.md`. The long SWE-bench-Pro `## Next` history
+below is SUPERSEDED — read THIS block.
 
-**Goal:** measure whether governance helps a coding agent solve real bugs, using
-**SWE-bench Pro** as the substrate — the only thing hard enough that frontier models don't
-one-shot it (the owner's own repos are useless here: frontier fixes any authored bug).
+**What the experiments concluded (honest):**
+- The product prose candidate is `evals/governance_profiles/completeness-general` (a
+  generalized 3-bullet "Making code changes" guidance) — NOT the bespoke, answer-encoding
+  `completeness-prose` (whose qwen 0/3→3/3 was INVALID; corrected in the PLAN-funcpass doc).
+- `completeness-general` HELPED a weak model where the incomplete-patch failure mode occurs
+  (qwen `py_vault_twopath` 0/3→2/3) but HURT once on a ceiling fixture (`go_topk` 3/3→2/3).
+  On STRONG harnesses it was NULL — grok flips were run-to-run variance (same-scope patches);
+  Sonnet 5 failed a hard instance and the prose produced a same-10-file patch that still
+  failed. Strong harnesses already emit broad-coverage patches; they don't make the error the
+  prose targets.
+- ⇒ The Cursor gap on strong harnesses is NOT reasoning-completeness. The papers' worst case
+  (edit rejected → re-author → silently drop logic) is a model ATTENTION lapse at re-author
+  (owner's refinement) that Cursor's apply-model architecture never triggers. The lever is a
+  hook at the edit-failure moment, not prose.
 
-**Authority (read these; this entry only points):**
-- `docs/superpowers/plans/2026-06-29-swebench-pro-governance-integration.md` — THE plan
-  (pipeline, `joint_pass` metric, subset selection, phases, + the `Addenda 2026-06-29 (b)`).
-- `evals/harness-capabilities.md` — per-subject in-container wiring, injection vectors, hook reach.
-- `evals/governance_profiles/` — the arms. `evals/TEST-PLAN.md` (v1) — design reference.
-  `evals/TEST-PLAN-v2.md` is RETIRED (pointer only).
+**Two adopted artifacts (owner):**
+1. `completeness-general` prose.
+2. A Claude-Code `PostToolUseFailure` edit-failure refocus hook. Message (codex-converged,
+   **NOT yet owner-ratified** — open item): *"The edit failed. Address the cause, then retry
+   the full intended change without dropping or simplifying any part."* Hook capability verified
+   against current Claude Code docs; the hook itself is UNTESTED (adopted on mechanism
+   plausibility).
 
-**Design (aligned; details in the plan/harness doc):** arms = `none` / `task-prose` /
-`task-prose-hooks`. `task-prose` = TEST-FRIENDLY completion-steering guidance only —
-`current-template` (full product) is deliberately NOT the prose arm. Metric =
-`joint_pass = FAIL_TO_PASS ∧ PASS_TO_PASS`. Subjects (all viability-validated): claude,
-codex, **grok** (`grok-build`), **agy** (`gemini-3.5-flash`, needs `--new-project`),
-**qwen3.6** (local/free via Claude Code→ollama). Frontier on harder instances, **qwen on
-easier**. Forced-continuation Stop hook is Claude-Code-only (grok=`--check`, agy passive);
-never pool hook mechanisms.
+**Live deliverable — the product-integration plan:**
+`docs/superpowers/plans/2026-06-30-product-completeness-hook-and-prose.md` — add both to the
+PRODUCT (`templates/`+`procedures/`), explicitly NOT this repo's own `AGENTS.md`/`.agents/`.
+Status **v2** (codex reviewed v1 → REVISE, fixes folded; **v2 itself NOT re-reviewed**).
+NOT approved, no code. **Open decisions awaiting owner:** G1 prose placement (A = condensed
+invariant in `AGENTS.template.md` vs B = separate `.agents/code-guidance.md` + pointer;
+recommend B), H1 hook scope (Claude-only now; recommend), H2 static message now (recommend),
+plus RATIFY the hook message. **NEXT:** owner picks G1/H1/H2 + ratifies the message; optionally
+re-review v2 with codex; then implement as a separate approved step.
 
-**Status:** P0 done; all 5 subjects validated; design aligned + committed. The earlier
-frontier × one-shot × full-prose SWE-bench pilots were SCREENING ONLY (superseded —
-confirmed the predicted null; do not repeat). The real factorial has NOT run.
+**Uncommitted this session (working tree DIRTY — nothing committed; owner controls commits):**
+`evals/governance_profiles/completeness-general/` (new); the plan doc above (new); the
+invalid-qwen-demo drift correction in `evals/swebench-pro/PLAN-funcpass-2026-06-30.md` + this
+state.md. The pre-existing staged `.agents/RTK.md` / `AGENTS.md.old` / `CLAUDE.md` are a
+SEPARATE workstream — not this session's; do not fold in.
 
-**Next action (plan Phase 0.5 → 1):** (1) fold the validated hardening into
-`tools/run_fixture.py` — **capture vs a pinned base TAG not HEAD** (agents commit their
-work), per-harness injection canary, invalid/quota accounting; (2) subset-select per
-subject (ungoverned mid-band ~20–70%), freeze; (3) run the arms — **start with
-qwen-via-Claude-Code** (free, weak, full hook support = highest signal, zero cap).
+**Sonnet 5 harness** (lives in the SWE-bench checkout `/home/michael/dev/SWE-bench_Pro-os/
+run_eval.py`, NOT this repo; uncommitted scratch): added + works (`preflight PONG=True`,
+`claude-sonnet-5` subscription auth in-container). Driver now `--harness qwen|grok|agy|sonnet`.
+Bugs fixed: preflight needed the Alpine `adduser` fallback; host `claude` is a symlink → mount
+the realpath (245MB glibc ELF); glibc `claude` can't run on Alpine/musl → `teleport`+`webclients`
+excluded (Debian repos only).
 
-**Operational must-knows:**
-- Serialize same-provider runs (Anthropic Opus+Sonnet share one rate limit → 429s);
-  parallelize ACROSS providers. Caps reset free; **credit overage is real money** — bound
-  every batch to cap windows.
-- **Push:** stored git credential is STALE; gh token is valid →
-  `git -c credential.helper='!gh auth git-credential' push` (or `gh auth setup-git` once).
-- **agy** OAuth is short-lived (no headless refresh) — re-run `agy` interactively if lapsed;
-  chown `/app` to `agent` or agy attempts sandbox-breakout.
-- Validated driver PROTOTYPES archived at `evals/swebench-pro/driver-prototypes/` (scratch
-  quality — fold into `run_fixture.py`, don't run as the eval). The session `scratchpad/`
-  is GONE after a restart.
+**Push:** stored git credential is STALE; gh token valid →
+`git -c credential.helper='!gh auth git-credential' push` (push policy here is `always`).
 
-**HANDOFF 2026-06-29:** session paused clean — nothing running (no eval processes or
-containers), working tree clean, synced with origin. This block is the resume point; a
-fresh session needs no chat context. Resume at the "Next action" above.
+**PROCESS — read before resuming:** this session DRIFTED late (long context). Errors: twice
+acted on a *question* as if it were an instruction (Prime Invariant: words first, act only on
+an explicit go); did an unbidden full rewrite of the plan (v3) and falsely stamped it
+"codex-reviewed" — reverted to v2 on owner request. Next session: re-ground from AGENTS.md
+Prime Invariants, answer questions in words only, treat plan v2 as not-yet-re-reviewed, and
+prefer a fresh session if degraded.
 
 (The `## Next` eval entries below are superseded history — see this block for current truth.)
 

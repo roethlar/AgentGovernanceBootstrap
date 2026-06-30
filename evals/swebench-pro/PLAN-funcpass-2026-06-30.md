@@ -120,10 +120,17 @@ prompt+visible test name only `read`; R=3 per arm):
 - `hooks-only` (`evals/governance_profiles/hooks-only`, gate+guard, NO prose): 0/3 — hooks
   *fire* (`hooks_fired=True`) but don't address completeness (gate enforces the visible test,
   which the `read` fix already satisfies; guard only blocks test edits).
-- `completeness-prose` (`evals/governance_profiles/completeness-prose`, 93-word general profile,
-  NO hooks, never names `remove`/`Vault`): 3/3 — complete fix every time.
-- ⇒ general completeness **guidance** flips a weak model from an incomplete patch to a complete
-  one; the eval gate/guard hooks are measurement instrumentation, not the product. (Existing
+- `completeness-prose` (`evals/governance_profiles/completeness-prose`, NO hooks, never names
+  `remove`/`Vault`): 3/3 — complete fix every time. **INVALID as evidence (2026-06-30):** this
+  prose encodes the trap's solution *procedure* ("fix every sibling method that handles the same
+  input the same way") — answer-encoding for a fixture built to need exactly that. It says nothing
+  about whether *generalized* guidance helps.
+- ⇒ **CORRECTED (2026-06-30): this does NOT show generalized guidance works** — see the INVALID
+  note above; the prose used was answer-encoding for this fixture. The product candidate is the
+  *generalized* prose `evals/governance_profiles/completeness-general` (no answer-encoding), whose
+  efficacy is UNESTABLISHED: the only valid run (grok, 9 real bugs, with/without) was null with no
+  mechanism evidence, and qwen re-validation with the generalized prose is underway. The eval
+  gate/guard hooks are measurement instrumentation, not the product. (Existing
   fixtures `py_boxes_ceildiv`/`py_page_size`/`ts_interval_merge`/`go_topk_nomutate`/
   `rs_redirect_guard` are all ceiling for qwen — too easy — which is why the trap had to be built.)
 
