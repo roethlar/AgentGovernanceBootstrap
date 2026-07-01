@@ -36,10 +36,13 @@ was codex-reviewed at v1 only; its prose sections were never re-reviewed at v2.
 
 **Housekeeping (2026-07-01):** `AGENTS.md.old` removed (41c3753; byte-identical
 recovery residue — live `AGENTS.md` was never damaged). Owner fixed the `CLAUDE.md`
-import typo (`RTTK.md` → `RTK.md`). Still open: stale `.bootstrap-tmp/` left over from
-2026-06-27 (self-gitignored, invisible to `git status`, falsely signals a live
-bootstrap run); `.serena/` is untracked and unignored (a harness-local store —
-candidate for `.gitignore`).
+import typo (`RTTK.md` → `RTK.md`; landed in 12b0434). `.serena/` is kept tracked by
+owner decision (2026-07-01): only the shareable Serena config (`project.yml` + its
+`.gitignore`) is versioned (12b0434), while Serena's cache/memories/local settings stay
+excluded by `.serena/.gitignore` — consistent with the harness-local-store invariant,
+which bars treating such stores as durable repo memory, not versioning their config.
+Still open: stale `.bootstrap-tmp/` left over from 2026-06-27 (self-gitignored,
+invisible to `git status`, falsely signals a live bootstrap run).
 
 **Push:** stored git credential is STALE; gh token valid →
 `git -c credential.helper='!gh auth git-credential' push` (push policy here is `always`).
