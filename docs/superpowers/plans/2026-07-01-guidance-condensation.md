@@ -1,6 +1,9 @@
 # Condense the product guidance (functional cut)
 
-Status: DRAFT — awaits owner approval. No template/procedure/code touched yet.
+Status: APPROVED 2026-07-01 (owner picks: S1 = template only; S2 = full
+per-claim accounting table at the gate; G2 = defer completeness-general
+entirely). Slice 2 still lands only after the owner approves the accounting
+table / drop list. No template/procedure/code touched yet.
 Scope: the **product** (`templates/AGENTS.template.md` first; procedures are an
 owner scope pick, S1). Explicitly **not** this repo's own `AGENTS.md` (frozen
 instance; reconciled only by a later deliberate self-application run, per the
@@ -139,18 +142,15 @@ Before the template commit, the owner sees:
 - `test_ground/AGENTS_*.md` compaction attempts are scratch/trash: not a
   source, never sent to a model.
 
-## Open decisions (owner)
+## Open decisions — SETTLED by owner 2026-07-01
 
-- **S1 — scope:** template only this pass (**recommend**: it is the per-session
-  cost; procedures are per-run cost and 23.6 KB `bootstrap.md` deserves its own
-  sizing) vs. also procedures now.
-- **S2 — approval surface:** full per-claim accounting table at the gate
-  (**recommend**: cheap, and the drop list is exactly what needs owner eyes) vs.
-  summary-level approval.
-- **G2 — completeness-general:** defer entirely (**recommend**: adding an
-  exhortation artifact in the same pass that removes exhortation is incoherent
-  unless clearly opt-in; the eval evidence is weak-model-only) vs. ship now as
-  an opt-in optional template offered in the approval summary.
+- **S1 — scope: template only this pass.** Procedures are per-run cost;
+  a `bootstrap.md` pass would be its own later sizing.
+- **S2 — approval surface: full per-claim accounting table** at the gate; the
+  drop list is the sign-off surface.
+- **G2 — completeness-general: defer entirely.** Not shipped in any form this
+  pass; the profile stays in `evals/governance_profiles/` as a candidate. Any
+  future ship is a fresh owner decision.
 
 ## Verification
 
