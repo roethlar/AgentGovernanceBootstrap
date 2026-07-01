@@ -3,70 +3,46 @@
 This file is the first place future agents should read for current repo state. Keep it
 short and update it when important repo facts change.
 
-## CURRENT FOCUS — START HERE (HANDOFF 2026-06-30)
+## CURRENT FOCUS — START HERE (HANDOFF 2026-07-01)
 
-**Model testing is CLOSED** (owner: expensive, diminishing returns). The harness-gap eval
-— can governance close the Claude-Code↔Cursor FuncPass gap? — reached its conclusions. The
-work product is two adopted artifacts + a product-integration plan awaiting owner decisions.
-**Nothing is running** (no eval processes/containers). Live eval record:
-`evals/swebench-pro/PLAN-funcpass-2026-06-30.md`. The long SWE-bench-Pro `## Next` history
-below is SUPERSEDED — read THIS block.
+**Model testing is CLOSED** (owner: expensive, diminishing returns), and the owner has
+additionally closed **end-to-end trials as a method** — future validation is mechanism
+smoke tests and real-world dogfood incidents, not factorials. **Nothing is running.**
+The 2026-06-30 harness-gap conclusions (prose helps only weak models and can hurt at
+ceiling; the strong-harness gap is an attention lapse at edit-failure/re-author, i.e. a
+mechanism problem) live in `evals/swebench-pro/PLAN-funcpass-2026-06-30.md`. The long
+SWE-bench-Pro `## Next` history below is SUPERSEDED — read THIS block.
 
-**What the experiments concluded (honest):**
-- The product prose candidate is `evals/governance_profiles/completeness-general` (a
-  generalized 3-bullet "Making code changes" guidance) — NOT the bespoke, answer-encoding
-  `completeness-prose` (whose qwen 0/3→3/3 was INVALID; corrected in the PLAN-funcpass doc).
-- `completeness-general` HELPED a weak model where the incomplete-patch failure mode occurs
-  (qwen `py_vault_twopath` 0/3→2/3) but HURT once on a ceiling fixture (`go_topk` 3/3→2/3).
-  On STRONG harnesses it was NULL — grok flips were run-to-run variance (same-scope patches);
-  Sonnet 5 failed a hard instance and the prose produced a same-10-file patch that still
-  failed. Strong harnesses already emit broad-coverage patches; they don't make the error the
-  prose targets.
-- ⇒ The Cursor gap on strong harnesses is NOT reasoning-completeness. The papers' worst case
-  (edit rejected → re-author → silently drop logic) is a model ATTENTION lapse at re-author
-  (owner's refinement) that Cursor's apply-model architecture never triggers. The lever is a
-  hook at the edit-failure moment, not prose.
+**Edit-failure refocus hook: DROPPED (owner, 2026-07-01) — do not resurrect without a
+new owner decision.** A Haiku smoke test falsified the planned mechanism: Claude Code
+2.1.198 fires neither `PostToolUse` nor `PostToolUseFailure` for edit rejections
+(`tool_use_error` results are returned, not thrown; the docs promise otherwise). The
+behavioral fix was already declined upstream (anthropics/claude-code#24908, closed
+NOT_PLANNED 2026-03-12); our docs-mismatch report was filed on owner request 2026-07-01
+as anthropics/claude-code#72996. A working `PostToolBatch` variant was proven
+end-to-end, but the owner judged the required machinery (per-batch hook, interpreter
+gating, Windows caveats) too much and dropped the artifact. Full findings + decision:
+`docs/superpowers/plans/2026-06-30-product-completeness-hook-and-prose.md` (Status +
+`## Outcome (2026-07-01)`).
 
-**Two adopted artifacts (owner):**
-1. `completeness-general` prose.
-2. A Claude-Code `PostToolUseFailure` edit-failure refocus hook. Message (codex-converged,
-   **NOT yet owner-ratified** — open item): *"The edit failed. Address the cause, then retry
-   the full intended change without dropping or simplifying any part."* Hook capability verified
-   against current Claude Code docs; the hook itself is UNTESTED (adopted on mechanism
-   plausibility).
+**Live direction — guidance condensation (agreed in words 2026-07-01; NOT started;
+needs its own `plan` before any code/template change):** a functional cut of the
+product guidance — behavioral contracts, facts, and pointers stay; capability-
+exhortation prose goes (eval evidence: placebo on strong models, can hurt at ceiling).
+Word-level compression stays rejected (2026-06-22 decision, ~2.7%). The
+`completeness-general` prose ships opt-in at most — unconditional inclusion is ruled
+out by the evidence — which reframes the old G1 question. Note the 2026-06-30 plan doc
+was codex-reviewed at v1 only; its prose sections were never re-reviewed at v2.
 
-**Live deliverable — the product-integration plan:**
-`docs/superpowers/plans/2026-06-30-product-completeness-hook-and-prose.md` — add both to the
-PRODUCT (`templates/`+`procedures/`), explicitly NOT this repo's own `AGENTS.md`/`.agents/`.
-Status **v2** (codex reviewed v1 → REVISE, fixes folded; **v2 itself NOT re-reviewed**).
-NOT approved, no code. **Open decisions awaiting owner:** G1 prose placement (A = condensed
-invariant in `AGENTS.template.md` vs B = separate `.agents/code-guidance.md` + pointer;
-recommend B), H1 hook scope (Claude-only now; recommend), H2 static message now (recommend),
-plus RATIFY the hook message. **NEXT:** owner picks G1/H1/H2 + ratifies the message; optionally
-re-review v2 with codex; then implement as a separate approved step.
-
-**Uncommitted this session (working tree DIRTY — nothing committed; owner controls commits):**
-`evals/governance_profiles/completeness-general/` (new); the plan doc above (new); the
-invalid-qwen-demo drift correction in `evals/swebench-pro/PLAN-funcpass-2026-06-30.md` + this
-state.md. The pre-existing staged `.agents/RTK.md` / `AGENTS.md.old` / `CLAUDE.md` are a
-SEPARATE workstream — not this session's; do not fold in.
-
-**Sonnet 5 harness** (lives in the SWE-bench checkout `/home/michael/dev/SWE-bench_Pro-os/
-run_eval.py`, NOT this repo; uncommitted scratch): added + works (`preflight PONG=True`,
-`claude-sonnet-5` subscription auth in-container). Driver now `--harness qwen|grok|agy|sonnet`.
-Bugs fixed: preflight needed the Alpine `adduser` fallback; host `claude` is a symlink → mount
-the realpath (245MB glibc ELF); glibc `claude` can't run on Alpine/musl → `teleport`+`webclients`
-excluded (Debian repos only).
+**Housekeeping (2026-07-01):** `AGENTS.md.old` removed (41c3753; byte-identical
+recovery residue — live `AGENTS.md` was never damaged). Owner fixed the `CLAUDE.md`
+import typo (`RTTK.md` → `RTK.md`). Still open: stale `.bootstrap-tmp/` left over from
+2026-06-27 (self-gitignored, invisible to `git status`, falsely signals a live
+bootstrap run); `.serena/` is untracked and unignored (a harness-local store —
+candidate for `.gitignore`).
 
 **Push:** stored git credential is STALE; gh token valid →
 `git -c credential.helper='!gh auth git-credential' push` (push policy here is `always`).
-
-**PROCESS — read before resuming:** this session DRIFTED late (long context). Errors: twice
-acted on a *question* as if it were an instruction (Prime Invariant: words first, act only on
-an explicit go); did an unbidden full rewrite of the plan (v3) and falsely stamped it
-"codex-reviewed" — reverted to v2 on owner request. Next session: re-ground from AGENTS.md
-Prime Invariants, answer questions in words only, treat plan v2 as not-yet-re-reviewed, and
-prefer a fresh session if degraded.
 
 (The `## Next` eval entries below are superseded history — see this block for current truth.)
 

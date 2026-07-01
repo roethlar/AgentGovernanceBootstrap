@@ -1,6 +1,10 @@
 # Adopt the edit-failure refocus hook + completeness prose into the product
 
-Status: DRAFT v2 2026-06-30 — codex-reviewed (2 blockers + 3 should-fix folded). Not approved, no code. Plan only.
+Status: CLOSED for Artifact 1 (hook) — owner dropped it 2026-07-01 after a smoke test
+falsified the planned mechanism (see `## Outcome (2026-07-01)` at the end). Artifact 2
+(prose) remains open, reframed into the guidance-condensation workstream (see
+`.agents/state.md`). v2 was codex-reviewed at v1 only; v2 itself not re-reviewed. No
+code was ever implemented.
 Scope: add two artifacts to the **product** (the toolkit's `templates/` + `procedures/`
 that bootstrap *other* repos). Explicitly **not** this repo's own `AGENTS.md`/`.agents/`.
 
@@ -183,3 +187,43 @@ generated behavior still ride the same suite because they touch `templates/`.
   (target repos do receive the `.claude/` profile; only the failure *event* is Claude-specific).
   codex **confirmed** the `PostToolUseFailure` + `additionalContext` mechanism is correct against
   current Claude Code docs.
+
+## Outcome (2026-07-01) — Artifact 1 (hook) dropped after smoke test
+
+Haiku smoke test (9 short headless runs in a scratch repo; the exact planned artifact
+was tested first):
+
+- **The planned mechanism does not work.** Claude Code 2.1.198 fires NEITHER
+  `PostToolUse` (success-only; verified) NOR `PostToolUseFailure` for edit rejections:
+  Edit/Write user-level failures (old_string mismatch, file-not-read) are *returned* as
+  `tool_use_error` results, not thrown, and no post-event observes them. Verified with
+  sentinel files plus a firing `PreToolUse` control from the same settings file, across
+  three separate failure instances, and corroborated by binary inspection (the failure
+  dispatch sits in exception paths; its suppression set is empty). The hooks docs'
+  claim that `PostToolUseFailure` "fires after a tool call fails" is empirically false
+  for this failure class. Upstream status: the behavioral ask was already reported as
+  anthropics/claude-code#24908 and closed NOT_PLANNED (2026-03-12); our docs-mismatch
+  report was filed on owner request 2026-07-01 as anthropics/claude-code#72996. This
+  falsifies this plan's "codex confirmed the mechanism against current Claude Code
+  docs" line.
+- **A working variant was proven end-to-end.** `PostToolBatch` fires per tool batch and
+  its payload carries each call's `tool_response`, including the `<tool_use_error>`
+  marker; an in-script edit-family filter plus the ratified static message injected via
+  `hookSpecificOutput.additionalContext` worked live: Haiku quoted the injected reminder
+  verbatim immediately after a forced edit failure, and a clean-edit negative control
+  injected nothing. A POSIX pre-gate kept python off the per-batch path (~6.5 ms/batch
+  measured on a 100 KB payload), with python3/python fallback and silent degradation for
+  interpreter-less machines. Known limitation: Windows without Git Bash (PowerShell 5.1
+  hook fallback) cannot parse any such gate and would emit a per-batch error notice — a
+  posture shared by the toolkit's existing tripwire hook.
+- **Owner decision (2026-07-01): DROP.** The accumulated machinery — a hook running on
+  every tool batch, interpreter resolution, Windows caveats — outweighs the value of an
+  unmeasured mitigation for a rare, context-load-conditional failure mode. Artifact 1
+  does not ship. If Anthropic later fixes `PostToolUseFailure` to cover
+  `tool_use_error` results, the original clean matcher-scoped design becomes viable
+  again; reconsidering it is a fresh owner decision, not a standing instruction. (Treat
+  that fix as unlikely: the behavioral ask was declined once already — #24908.)
+- **Artifact 2 (completeness prose) is subsumed** by the guidance-condensation
+  direction: opt-in at most; unconditional inclusion is ruled out by the eval evidence
+  (weak-model-only benefit, ceiling harm, frontier placebo). Current status lives in
+  `.agents/state.md`.
