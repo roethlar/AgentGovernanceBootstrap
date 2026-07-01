@@ -41,8 +41,16 @@ owner decision (2026-07-01): only the shareable Serena config (`project.yml` + i
 `.gitignore`) is versioned (12b0434), while Serena's cache/memories/local settings stay
 excluded by `.serena/.gitignore` — consistent with the harness-local-store invariant,
 which bars treating such stores as durable repo memory, not versioning their config.
-Still open: stale `.bootstrap-tmp/` left over from 2026-06-27 (self-gitignored,
-invisible to `git status`, falsely signals a live bootstrap run).
+The stale `.bootstrap-tmp/` left over from 2026-06-27 is gone (verified absent
+2026-07-01); no live bootstrap run is signaled.
+
+**Guidance condensation: plan DRAFTED 2026-07-01, awaiting owner approval —
+`docs/superpowers/plans/2026-07-01-guidance-condensation.md`.** Functional cut of
+`templates/AGENTS.template.md` (keep behavioral contracts/facts/pointers; cut
+rationale, capability exhortation, and duplication), `templateVersion` bump to
+propagate via the update route, per-claim drop-list sign-off at the approval
+gate. Open owner picks live in the plan (S1 scope, S2 approval surface, G2
+completeness-general). No template/code touched yet.
 
 **Push:** stored git credential is STALE; gh token valid →
 `git -c credential.helper='!gh auth git-credential' push` (push policy here is `always`).
