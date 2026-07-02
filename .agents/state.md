@@ -3,7 +3,7 @@
 This file is the first place future agents should read for current repo state. Keep it
 short and update it when important repo facts change.
 
-## CURRENT FOCUS — START HERE (HANDOFF 2026-07-01)
+## CURRENT FOCUS — START HERE (HANDOFF 2026-07-02)
 
 **Model testing is CLOSED** (owner: expensive, diminishing returns), and the owner has
 additionally closed **end-to-end trials as a method** — future validation is mechanism
@@ -86,18 +86,43 @@ repo-specifics live in `.agents/repo-guidance.md` (extends-only, no overrides
 `discover.py` byte-compare (`agentsTemplate.byteIdentical`) carries
 reconciliation; refresh = replace whole + first-run carve-out. rtk and the
 whole token-efficiency bullet are OUT of the product (owner directives,
-test-guarded). `templateVersion` 2026-07-01.5. Suite 138/138.
+test-guarded). The template itself carries the constant
+`@.agents/repo-guidance.md` import line (same bytes everywhere, byte-compare
+unaffected; auto-injection where `@` is processed, visible pointer elsewhere);
+both shims are one-line `@AGENTS.md` adapters (owner-edited). `templateVersion`
+2026-07-01.6 (28d78e1). Suite 138/138.
 **NEXT ACTION: owner runs `/update-governance` here (plan slice 5)** — carve
 this repo's specifics into `.agents/repo-guidance.md` (mission detail, Active
 Sources, verification commands, remotes/canon-propagation, discretionary-rtk
-practice), replace `AGENTS.md` verbatim, update `CLAUDE.md` to also import
-the repo file. That run supersedes the out-of-band `f697bf9` content through
+practice), replace `AGENTS.md` verbatim, and reconcile `CLAUDE.md` toward the
+one-line shim (this repo's extra `@.agents/RTK.md` import is a repo-specific
+addition for that run to place). That run supersedes the out-of-band `f697bf9`
+content through
 the sanctioned path and is the end-to-end validation: discovery MUST flag the
 current mixed-content `AGENTS.md` (`byteIdentical` false); if it does not,
 the byte-compare failed — stop.
 
-Owner-gated follow-up, not started: a `procedures/` condensation pass (needs
-its own plan).
+**Verbosity sweep of the product: REPORT DELIVERED 2026-07-01, awaiting owner
+eval — no changes made.** Findings (IDs the owner replies with to execute):
+bootstrap.md — B1 intro invariant duplication, B2 Step 0 rationale, B3 Step 1
+rationale/triple-statement, B4 Step 3 rationale clause, B5 wrapper-intro
+justification, B6 hook design history, B7 custody/commit contract stated ~4×
+across bootstrap+migration → one home + pointers; migration.md — M1 evidence
+pointer, M2 rationale clauses, M3 Step 8 enumerates the pointed-at recipe;
+per-use files — P1 verification.md double scope-warning, P2 harvest.md
+sync-why, P3 file-to-dropbox intro, P4 file-bug-report dogfood-or-foreign
+paragraph, P5 manifest-schema rationale sentences; T1 AGENTS.template hook-trust
+trims (~30 words; fold into next version bump). Total ≈1,100 words (~1,500
+tokens) per-run. Flags: F1 owner-machine facts shipped in product (gitea LAN
+URL + `~/dev/` defaults in bootstrap.md Step 0 and file-to-dropbox.md); F2 the
+canonical GitHub/agent-harvest URLs are owner-specific but arguably toolkit
+canon — noted, no change proposed. Deliberately not cut: report-template
+discipline blocks, fresh-eyes prompt, recognition lists, quoting warning.
+Executing this sweep is the deferred `procedures/` condensation pass — on
+owner IDs, no separate plan needed beyond this recorded report.
+
+Owner-gated follow-up, not started: none beyond the sweep eval and the
+slice-5 dogfood run above.
 
 **Push:** stored git credential is STALE; gh token valid →
 `git -c credential.helper='!gh auth git-credential' push` (push policy here is `always`).
