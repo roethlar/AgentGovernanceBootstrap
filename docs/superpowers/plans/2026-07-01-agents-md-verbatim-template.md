@@ -98,9 +98,8 @@ it moot. If the run does NOT flag the file, slice 3 failed; stop.
   (**recommend**) vs extends-only (no overrides — but then this repo's earned
   discretionary-rtk stance has no legal home against the template's rtk
   bullet).
-- **O2 — RESOLVED by owner directive 2026-07-01: rtk removed from the product
-  entirely** (implemented same day, ahead of the other slices: template bullet
-  replaced with the brand-free compact-but-equivalent principle,
-  `templateVersion` 2026-07-01.3, test now asserts the shipped template
-  contains no `rtk` mention). This repo's own discretionary-rtk stance becomes
-  a `repo-guidance.md` fact when slice 5 carves it out.
+- **O2 — RESOLVED by owner directive 2026-07-01: the token-efficiency bullet
+  is removed from the template entirely** (implemented same day, ahead of the
+  other slices; `templateVersion` 2026-07-01.4; a test asserts the shipped
+  template contains no `rtk` mention). This repo's own discretionary-rtk
+  stance becomes a `repo-guidance.md` fact when slice 5 carves it out.

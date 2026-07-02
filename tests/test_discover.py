@@ -364,15 +364,14 @@ class TestPrimeInvariantsTemplate(unittest.TestCase):
                        "re-ground from AGENTS.md"):
             self.assertIn(phrase, head)
 
-    def test_token_efficiency_guidance_is_brand_free(self):
-        # Owner directive 2026-07-01: no rtk (or any tool-brand) references in
-        # the product. The generic compact-but-equivalent principle stays.
+    def test_template_has_no_rtk_references(self):
+        # Owner directive 2026-07-01: no rtk references in the product; the
+        # token-efficiency bullet was removed entirely (same day).
         with tempfile.TemporaryDirectory() as tmp:
             repo = fixtures.make_greenfield_repo(Path(tmp) / "repo")
             fixtures.run_discover(repo)
             tmpl = (repo / ".bootstrap-tmp" / "templates"
                     / "AGENTS.template.md").read_text(encoding="utf-8")
-        self.assertIn("compact-but-equivalent", tmpl)
         self.assertNotIn("rtk", tmpl.lower())
 
     def test_bootstrap_handoff_is_pointer(self):
