@@ -53,32 +53,29 @@ Step 2 discipline below.
 
 Under `.bootstrap-tmp/drafts/`, mirroring final paths:
 
-1. `AGENTS.md` from the template, carrying over the repo's battle-earned rules
-   (for example git-safety restrictions, checkpoint discipline) in generalized
-   wording. It must include the Bootstrap Handoff pointer from the template (the
-   resident pointer to the synced procedures); future runs route as `migration`
-   again and rely on the `templateVersion` stamp — not this section's presence —
-   to decide whether reconciliation is needed.
-   Verify every factual claim inside migrated content - module names,
-   paths, commands, file references - against current repo evidence before
-   writing it: migrate the rule, not its stale examples, and flag anything you
-   could not verify. A fresh authoritative file that launders stale facts is
-   worse than the old file it replaced.
-   **Portability sweep (reconciliation branch):** when the draft updates an
-   existing `AGENTS.md`, apply the portability test from the template's
-   governance-boundary invariants to every carried-forward line. A line true
-   only of this repo — a concrete source path, the repo's own name as a fact,
-   a verification command, restated current state — relocates to the
-   appropriate `.agents/` file, with a pointer left in `AGENTS.md`. The
-   relocations ride the same drafts and approval summary. This is the
-   sanctioned write moment for that cleanup; between runs it remains the
-   `drift` operator's job.
-2. `.agents/state.md` - current truth only: what is true now, active work,
+1. `AGENTS.md` as a **verbatim copy of the template** — never hand-composed,
+   no repo content added or carried into it. Future runs rely on the
+   byte-compare (`agentsTemplate.byteIdentical`) to decide whether replacement
+   is needed; any repo-specific line in `AGENTS.md` breaks that contract.
+2. `.agents/repo-guidance.md` from `repo-guidance.template.md`, holding
+   everything repo-specific the old governance carried: mission detail,
+   reading order, verification specifics, remotes, and earned practices
+   (git-safety restrictions, checkpoint discipline) in generalized wording. It
+   extends `AGENTS.md` and never overrides it — a genuine conflict is a defect
+   to flag, not a precedence to resolve. Verify every factual claim inside
+   migrated content - module names, paths, commands, file references - against
+   current repo evidence before writing it: migrate the rule, not its stale
+   examples, and flag anything you could not verify. A fresh authoritative
+   file that launders stale facts is worse than the old file it replaced.
+   This carve-out is the portability sweep: after it, `AGENTS.md` contains no
+   repo-specific line, and later refresh runs replace it whole without
+   judgment.
+3. `.agents/state.md` - current truth only: what is true now, active work,
    blockers, next action, verification commands. Do not import historical
    narrative.
-3. `.agents/decisions.md` - settled decisions, generalized so they make sense
+4. `.agents/decisions.md` - settled decisions, generalized so they make sense
    without chat or journal context. Cite superseded docs where relevant.
-4. `.agents/repo-map.json` and `.agents/artifact-manifest.json` from templates,
+5. `.agents/repo-map.json` and `.agents/artifact-manifest.json` from templates,
    with the confirmed verification command(s) recorded. Before recording any
    CI-derived command or "CI gates merges" claim, confirm the workflow file
    sits in a path its provider actually executes AND its branch triggers
@@ -94,8 +91,8 @@ Under `.bootstrap-tmp/drafts/`, mirroring final paths:
    committable). Local-only files are `ignored` (`git check-ignore` exits
    0) or `untracked`. Recording draft-time custody for a file the same
    commit will track bakes a falsehood into the manifest.
-5. Playbooks only where the scope tier justifies them.
-6. Only if this repo's governance contains rules earned from real, citable
+6. Playbooks only where the scope tier justifies them.
+7. Only if this repo's governance contains rules earned from real, citable
    incidents that other repos would benefit from: draft
    `.bootstrap-tmp/drafts/harvest-report.md` from the harvest template, and
    honor its discipline - the expected outcome is NO report, hard cap of

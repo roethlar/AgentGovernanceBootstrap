@@ -140,19 +140,20 @@ cannot get lazy on a large repo and you can.
   inventory, an already-bootstrapped repo in the standard layout (the
   inventory collapses to "leave / already-canonical" verdicts), and this
   toolkit's own dogfood run. **Reconciliation branch:** discovery's manifest
-  reports `agentsTemplate.reconcileRecommended`; when it is true (the repo's
-  `AGENTS.md` is unstamped or its `templateVersion` is behind
-  `.bootstrap-tmp/templates/AGENTS.template.md`, with `agentsTemplate.missingSections`
-  naming structure it lacks), the file predates the current template. Draft an
-  updated `AGENTS.md` under `.bootstrap-tmp/drafts/` using the reconciliation
-  discipline of `.bootstrap-tmp/procedures/migration.md` Step 2 (carry the
-  repo's earned rules forward in generalized wording; migrate the rule, not its
-  stale examples; verify every migrated fact against current repo evidence;
-  run Step 2's portability sweep over carried-forward lines),
-  adding the template sections the repo lacks - the Prime Invariants block, the
-  full operator set - so the wrapper and hook guarantees below point at sections
-  that exist. The drafted `AGENTS.md` goes through the approval summary like any
-  other change before it is copied.
+  reports `agentsTemplate.reconcileRecommended`, true whenever the repo's
+  `AGENTS.md` is not **byte-identical** to
+  `.bootstrap-tmp/templates/AGENTS.template.md` (`agentsTemplate.byteIdentical`
+  carries the decision; the stamp and `missingSections` fields are descriptive
+  leads only — they cannot see wording drift). Reconcile by replacement, never
+  by editing: (a) if `.agents/repo-guidance.md` does not exist, carve
+  everything repo-specific out of the existing `AGENTS.md` into a drafted
+  `.agents/repo-guidance.md` (start from
+  `.bootstrap-tmp/templates/repo-guidance.template.md`, follow the
+  `.bootstrap-tmp/procedures/migration.md` Step 2 discipline: generalized
+  wording, migrate the rule not its stale examples, verify every migrated fact
+  against current repo evidence); (b) draft `AGENTS.md` as a verbatim copy of
+  the current template under `.bootstrap-tmp/drafts/`. Both drafts go through
+  the approval summary like any other change before they are copied.
 - `greenfield` -> continue below.
 
 Every route also runs the operator command wrapper guarantee below.
@@ -288,8 +289,13 @@ the same single scoped commit.
    record verification as local-only and flag the dead CI file in the
    approval summary.
 4. Draft under `.bootstrap-tmp/drafts/`, mirroring final paths:
-   `AGENTS.md` (must include the Bootstrap Handoff pointer from the template),
-   `.agents/state.md`, `.agents/decisions.md`, `.agents/repo-map.json`,
+   `AGENTS.md` (a verbatim copy of `.bootstrap-tmp/templates/AGENTS.template.md`
+   — never hand-composed; repo content belongs in the next file),
+   `.agents/repo-guidance.md` (from
+   `.bootstrap-tmp/templates/repo-guidance.template.md`: mission detail,
+   reading order, the confirmed verification command, remotes; it extends
+   `AGENTS.md` and never overrides it), `.agents/state.md`,
+   `.agents/decisions.md`, `.agents/repo-map.json`,
    `.agents/artifact-manifest.json`, playbooks only if the scope tier justifies
    them. The toolkit ships reusable playbook templates under
    `.bootstrap-tmp/templates/playbooks/` (e.g. `reviewloop.md`, the two-agent

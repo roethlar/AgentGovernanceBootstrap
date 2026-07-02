@@ -119,7 +119,9 @@ class TestScratchOutput(unittest.TestCase):
         bootstrap = (self.gov / ".bootstrap-tmp" / "procedures"
                      / "bootstrap.md").read_text(encoding="utf-8")
         self.assertIn("Reconciliation branch:", bootstrap)
-        self.assertIn("updated `AGENTS.md` under `.bootstrap-tmp/drafts/`", bootstrap)
+        flat = re.sub(r"\s+", " ", bootstrap)
+        self.assertIn("verbatim copy of the current template", flat)
+        self.assertIn("agentsTemplate.byteIdentical", bootstrap)
         self.assertIn("agentsTemplate.reconcileRecommended", bootstrap)
         # Reconciliation must precede deferring to a stale resident handoff rule.
         self.assertIn("must not preempt its", bootstrap)
