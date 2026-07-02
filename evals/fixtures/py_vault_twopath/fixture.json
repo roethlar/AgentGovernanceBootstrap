@@ -6,5 +6,5 @@
   "files": "files",
   "setup": [],
   "verify": "python3 -m unittest test_visible",
-  "hidden": {"files": "hidden", "verify": "python3 -m unittest test_hidden"}
+  "hidden": {"files": "hidden", "verify": "python3 -m unittest test_hidden", "semantics": "completeness"}
 }

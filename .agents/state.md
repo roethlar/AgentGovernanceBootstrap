@@ -56,13 +56,11 @@ Adopted), reconciliation branch + portability sweep, `/update-governance`
 wrapper template, `operator:playbook` probe fixed, Python 3.9 floor documented,
 `templateVersion` now 2026-07-01.2. Suite 132/133 on py3.9.
 
-Known issue (owner decision pending): `py_vault_twopath` fails the
-discrimination gate — `tools/run_fixture.py` hard-codes the security truth
-table (hidden must PASS on buggy) while that fixture's hidden test encodes
-completeness semantics (fails on buggy/naive, passes on solution). One gate,
-two fixture classes; unhidden 2026-07-01 when a py3.9 import error that had
-been masking 84 tests was fixed (ad7e9e8). Eval workstream is closed, so the
-fix (e.g. per-fixture expected table in the manifest) awaits an owner go.
+FIXED 2026-07-01 (owner go): the discrimination gate now reads declared
+`hidden.semantics` from fixture.json (`security` default / `completeness`);
+`py_vault_twopath` declares completeness. Suite fully green: 136/136 on py3.9.
+(History: the mismatch had been masked by a py3.9 import error hiding 84
+tests, both fixed 2026-07-01.)
 
 Owner-gated follow-ups, not started: a dogfood self-application run (installs
 the `/update-governance` wrapper here, reconciles this repo's frozen

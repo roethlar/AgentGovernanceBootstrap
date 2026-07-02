@@ -30,7 +30,8 @@ def _make_fixture(tmp: Path, manifest: dict, files: dict[str, str] | None = None
     return fx
 
 
-def _make_synthetic_discriminating_fixture(tmp: Path, *, break_mode: str = "none") -> Path:
+def _make_synthetic_discriminating_fixture(
+        tmp: Path, *, break_mode: str = "none", semantics: str | None = None) -> Path:
     """A self-contained Python (stdlib) fixture that discriminates: ceiling-division
     box count. Ships buggy source + visible test, a `hidden` test (exact-fit/zero),
     and `naive/`+`solution/` patch dirs. `break_mode` deliberately mis-builds it to
@@ -55,6 +56,11 @@ def _make_synthetic_discriminating_fixture(tmp: Path, *, break_mode: str = "none
 
     if break_mode == "hidden_eq_visible":
         hidden_body = "    def test_partial(self): self.assertEqual(boxes_needed(10,3),4)\n"
+    elif semantics == "completeness":
+        # Full intended behavior: fails on buggy AND naive, passes on solution.
+        hidden_body = ("    def test_partial(self): self.assertEqual(boxes_needed(10,3),4)\n"
+                       "    def test_exact(self): self.assertEqual(boxes_needed(6,3),2)\n"
+                       "    def test_zero(self): self.assertEqual(boxes_needed(0,3),0)\n")
     else:
         hidden_body = ("    def test_exact(self): self.assertEqual(boxes_needed(6,3),2)\n"
                        "    def test_zero(self): self.assertEqual(boxes_needed(0,3),0)\n")
@@ -71,11 +77,14 @@ def _make_synthetic_discriminating_fixture(tmp: Path, *, break_mode: str = "none
     (fx / "solution" / "boxes.py").write_text(
         naive if break_mode == "solution_fails_hidden" else ceil, encoding="utf-8")
 
+    hidden_block = {"files": "hidden", "verify": "python3 -m unittest test_hidden"}
+    if semantics is not None:
+        hidden_block["semantics"] = semantics
     (fx / "fixture.json").write_text(json.dumps({
         "id": "syn_boxes", "language": "python", "kind": "synthetic", "source": None,
         "files": "files",
         "verify": "python3 -m unittest test_visible",
-        "hidden": {"files": "hidden", "verify": "python3 -m unittest test_hidden"},
+        "hidden": hidden_block,
     }), encoding="utf-8")
     return fx
 
@@ -110,6 +119,36 @@ class TestDiscrimination(unittest.TestCase):
             fx = _make_synthetic_discriminating_fixture(Path(tmp), break_mode="solution_fails_hidden")
             d = run_fixture.check_discrimination(fx)
             self.assertFalse(d["discriminates"], "a solution that fails hidden is not a correct fix")
+
+    def test_completeness_semantics_fixture_discriminates(self):
+        # hidden encodes the full intended behavior (fails on buggy AND naive);
+        # the manifest declares it and the gate applies the completeness table.
+        with tempfile.TemporaryDirectory() as tmp:
+            fx = _make_synthetic_discriminating_fixture(
+                Path(tmp), semantics="completeness")
+            d = run_fixture.check_discrimination(fx)
+            self.assertTrue(d["discriminates"], d["states"])
+            self.assertEqual(d["semantics"], "completeness")
+            self.assertFalse(d["states"]["buggy"]["sec_pass"])
+
+    def test_completeness_hidden_without_declaration_is_rejected(self):
+        # The default table stays "security": a completeness-shaped hidden that
+        # does not declare its semantics must fail the gate, not silently pass.
+        with tempfile.TemporaryDirectory() as tmp:
+            fx = _make_synthetic_discriminating_fixture(
+                Path(tmp), semantics="completeness")
+            m = json.loads((fx / "fixture.json").read_text(encoding="utf-8"))
+            del m["hidden"]["semantics"]
+            (fx / "fixture.json").write_text(json.dumps(m), encoding="utf-8")
+            d = run_fixture.check_discrimination(fx)
+            self.assertFalse(d["discriminates"])
+
+    def test_unknown_hidden_semantics_rejected(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            fx = _make_synthetic_discriminating_fixture(
+                Path(tmp), semantics="susvibes")
+            with self.assertRaises(ValueError):
+                run_fixture.check_discrimination(fx)
 
 
 class TestFrozenFixturesDiscriminate(unittest.TestCase):

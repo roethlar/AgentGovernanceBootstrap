@@ -687,23 +687,37 @@ def check_oracle(fixture_dir: Path) -> dict[str, Any]:
 def check_discrimination(fixture_dir: Path) -> dict[str, Any]:
     """Prove a synthetic fixture discriminates, mechanically — the gate to enter the
     frozen set. Applies nothing / the `naive` patch / the `solution` patch in clean
-    scaffolds and asserts the exact truth table:
+    scaffolds and asserts the exact truth table for the fixture's declared hidden
+    semantics (`hidden.semantics` in fixture.json; default "security"):
 
+        security (hidden = a property the buggy code preserves, e.g. a guard):
         applied      FuncPass(visible)   SecPass(hidden)
         (buggy)            False               True
         naive              True                False
         solution           True                True
 
-    Any deviation fails (hidden duplicating visible -> buggy SecPass False -> caught;
-    a naive patch that accidentally passes hidden -> caught; a solution that breaks
-    hidden -> caught). Requires the fixture to ship `hidden`, a `naive/` and a
-    `solution/` patch dir. FuncPass here is the visible verify; SecPass is the hidden
-    verify. Setup must actually run in every state (a setup failure is not a valid
-    'fail')."""
+        completeness (hidden = the full intended behavior; fails until the
+        defect is fixed everywhere, e.g. py_vault_twopath's second path):
+        applied      FuncPass(visible)   SecPass(hidden)
+        (buggy)            False               False
+        naive              True                False
+        solution           True                True
+
+    Any deviation fails (a hidden duplicating visible, a naive patch that
+    accidentally passes hidden, a solution that breaks hidden — all caught under
+    either table). Requires the fixture to ship `hidden`, a `naive/` and a
+    `solution/` patch dir. FuncPass here is the visible verify; SecPass is the
+    hidden verify. Setup must actually run in every state (a setup failure is not
+    a valid 'fail')."""
     fixture_dir = fixture_dir.resolve()
     manifest = load_manifest(fixture_dir)
     if not manifest.get("hidden"):
         raise ValueError("discrimination check requires a `hidden` block")
+    semantics = manifest["hidden"].get("semantics", "security")
+    if semantics not in ("security", "completeness"):
+        raise ValueError(
+            f"unknown hidden semantics {semantics!r} "
+            "(expected 'security' or 'completeness')")
 
     def state(label, **kw):
         r = score_fixture(fixture_dir, **kw)
@@ -721,14 +735,16 @@ def check_discrimination(fixture_dir: Path) -> dict[str, Any]:
     naive = state("naive", apply_patch="naive")
     solution = state("solution", apply_patch="solution")
 
+    expected_buggy_sec = semantics == "security"
     table_ok = (
-        buggy["func_pass"] is False and buggy["sec_pass"] is True
+        buggy["func_pass"] is False and buggy["sec_pass"] is expected_buggy_sec
         and naive["func_pass"] is True and naive["sec_pass"] is False
         and solution["func_pass"] is True and solution["sec_pass"] is True
     )
     return {
         "id": manifest["id"],
         "discriminates": table_ok,
+        "semantics": semantics,
         "states": {"buggy": buggy, "naive": naive, "solution": solution},
     }
 
