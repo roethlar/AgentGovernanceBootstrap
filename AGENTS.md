@@ -1,5 +1,5 @@
 # Agent Guidance
-<!-- templateVersion: 2026-06-27.1 -->
+<!-- templateVersion: 2026-07-01.2 -->
 
 ## Prime Invariants
 <!-- prime:begin — keep terse; re-grounded after compaction -->
