@@ -1,6 +1,10 @@
 # Route collapse, `/update-governance` refresh command, reconciliation portability sweep (+ Python floor, fixture fix)
 
-Status: DRAFT — awaits owner approval and the open picks below. No code touched.
+Status: APPROVED 2026-07-01. Owner picks: W2 = always fetch fresh from the
+canonical GitHub URL; W3 = do NOT hand-install the wrapper here — a dogfood
+self-application run (which doubles as slice C's smoke test) installs it into
+this repo through the wrapper guarantee and approval gate; B1 = yes, fix the
+`operator:playbook` probe false positive as its own commit within A1.
 
 Bundles four related pieces of work; slices land as separate scoped commits in
 the order listed. Slices A and B implement decisions already on record; C and D
@@ -96,9 +100,13 @@ A committed wrapper in target repos that triggers the existing manual flow
   extra template bump beyond A2's.
 - Tests: presence + pointer-shape test for the new wrapper template alongside
   the existing wrapper coverage; mutation-proven hermetically.
-- Post-landing smoke test: invoke the wrapper in this repo (dogfood
-  self-application start) far enough to confirm it syncs and reaches the
-  procedure, then stop before any drafting.
+- Smoke test (in-session, cheap): execute the wrapper's instructions manually —
+  `git ls-remote` the canonical URL, shallow-clone to scratch, confirm
+  `procedures/bootstrap.md` is present and current.
+- Install into this repo (W3): NOT hand-added. A subsequent dogfood
+  self-application run — itself the end-to-end test of the new flow — drafts
+  the missing wrapper here via the wrapper guarantee, through the approval
+  gate. That run is owner-initiated, outside this plan.
 
 ## D — Python floor + fixture fix
 
