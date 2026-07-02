@@ -34,6 +34,18 @@ Word-level compression stays rejected (2026-06-22 decision, ~2.7%). The
 out by the evidence — which reframes the old G1 question. Note the 2026-06-30 plan doc
 was codex-reviewed at v1 only; its prose sections were never re-reviewed at v2.
 
+**Hook interpreter fix: LANDED 2026-07-02** (plan closed with commit map:
+`docs/superpowers/plans/2026-07-02-hook-python3-windows-fallback.md`; decision
+Adopted in `.agents/decisions.md`). Harvest bug
+`ExchangeAdminWeb-hook-python3-discovery-2026-07-02`: bare `python3` in the
+shipped hook commands is a Store stub on stock Windows, so the AGENTS.md
+tripwire was silently inert there. Both hook templates (and this repo's
+mirrored `.claude/settings.json`) now use `py -3 … 2>/dev/null || python3 …`
+with braced `${CLAUDE_PROJECT_DIR}` for Claude; Windows scope is Git Bash
+(owner decision). Suite 138/138. Windows bite-proof still outstanding — rests
+on harness docs + the reporter's evidence until a Windows host confirms the
+reminder fires. Harvest bug report updated to fix-landed (owner go).
+
 **Housekeeping (2026-07-01):** `AGENTS.md.old` removed (41c3753; byte-identical
 recovery residue — live `AGENTS.md` was never damaged). Owner fixed the `CLAUDE.md`
 import typo (`RTTK.md` → `RTK.md`; landed in 12b0434). `.serena/` is kept tracked by

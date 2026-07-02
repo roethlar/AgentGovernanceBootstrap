@@ -36,8 +36,10 @@ live rule now owned elsewhere - archive it per the rule above: move it verbatim 
 
 ### 2026-07-02 — Shipped hook commands: `py -3 || python3` fallback chain; Windows scope is Git Bash
 
-Status: Active (plan, awaiting implementation go:
-`docs/superpowers/plans/2026-07-02-hook-python3-windows-fallback.md`).
+Status: Adopted 2026-07-02 (plan with commit map:
+`docs/superpowers/plans/2026-07-02-hook-python3-windows-fallback.md`; rule
+lives in the hook templates, the strengthened tripwire test, and the
+bootstrap procedure's hook-install step).
 
 Decision: shipped hook commands that invoke Python use the interpreter
 fallback chain `py -3 <script> 2>/dev/null || python3 <script>` — never bare

@@ -1,6 +1,9 @@
 # Hook templates: replace bare `python3` with a `py -3 || python3` fallback chain
 
-Status: DRAFT 2026-07-02, awaiting owner approval.
+Status: DONE 2026-07-02 (owner go same day, including the harvest-repo
+status follow-up). Suite 138/138 on the landed bytes; POSIX smoke green;
+Windows behavior rests on the harness docs + the reporter's evidence (see
+Assumptions).
 
 ## Why this plan exists
 
@@ -76,7 +79,7 @@ of an advisory, idempotent, exit-0 script; harmless.
 - S1 (docs): this plan + decision entry in `.agents/decisions.md`
   (Git-Bash-on-Windows scope for hook commands; interpreter fallback chain as
   the standing pattern for shipped hooks that invoke Python).
-  Verification: `git diff --check`. — commit:
+  Verification: `git diff --check`. — commit: 6cf7e60
 - S2 (code): apply the two template command edits; mirror
   `templates/hooks/claude/settings.json` into `.claude/settings.json`
   byte-identically (repo-guidance requires the copies not desync); strengthen
@@ -89,15 +92,18 @@ of an advisory, idempotent, exit-0 script; harmless.
   green. POSIX smoke: pipe the tripwire an AGENTS.md payload through the new
   command string under `sh` on this machine and confirm `additionalContext`
   appears. Verification: `python3 -m unittest discover -s tests -v`.
-  — commit:
+  — commit: 63b5db0 (guard proof run pre-commit: strengthened test FAILED on
+  the reverted templates, suite 138/138 after restore; smoke: fallback leg
+  emitted `additionalContext` for an AGENTS.md payload, silent for README)
 - S3 (docs/procedure): fix `procedures/bootstrap.md` — replace the line-243
   "portable" interpreter overclaim with the fallback-chain description and
   the Git Bash-on-Windows scope note; add a pointer from the Step 1 probe
   rationale if natural. Procedures ship to target repos, so run the suite.
   Verification: `python3 -m unittest discover -s tests -v` +
-  `git diff --check`. — commit:
+  `git diff --check`. — commit: 79783bb
 - S4 (docs): update `.agents/state.md`, fill this commit map, mark the plan
-  DONE. Verification: `git diff --check`. — commit:
+  DONE. Verification: `git diff --check`. — commit: the docs commit that
+  lands this text (a commit cannot name its own hash).
 
 ## Non-goals
 
