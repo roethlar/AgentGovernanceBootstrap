@@ -77,6 +77,25 @@ discipline should require a textual diff of invariant wording against the
 template, not only the section/stamp probe — a run judged "current" without
 one.
 
+**Verbatim-template redesign: product implementation LANDED 2026-07-01**
+(decision Adopted + plan with commit map:
+`docs/superpowers/plans/2026-07-01-agents-md-verbatim-template.md`).
+`AGENTS.md` in every bootstrapped repo is the template verbatim; all
+repo-specifics live in `.agents/repo-guidance.md` (extends-only, no overrides
+— conflicts are defects; the universality test gates template content);
+`discover.py` byte-compare (`agentsTemplate.byteIdentical`) carries
+reconciliation; refresh = replace whole + first-run carve-out. rtk and the
+whole token-efficiency bullet are OUT of the product (owner directives,
+test-guarded). `templateVersion` 2026-07-01.5. Suite 138/138.
+**NEXT ACTION: owner runs `/update-governance` here (plan slice 5)** — carve
+this repo's specifics into `.agents/repo-guidance.md` (mission detail, Active
+Sources, verification commands, remotes/canon-propagation, discretionary-rtk
+practice), replace `AGENTS.md` verbatim, update `CLAUDE.md` to also import
+the repo file. That run supersedes the out-of-band `f697bf9` content through
+the sanctioned path and is the end-to-end validation: discovery MUST flag the
+current mixed-content `AGENTS.md` (`byteIdentical` false); if it does not,
+the byte-compare failed — stop.
+
 Owner-gated follow-up, not started: a `procedures/` condensation pass (needs
 its own plan).
 

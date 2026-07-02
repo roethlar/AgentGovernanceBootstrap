@@ -1,8 +1,13 @@
 # AGENTS.md as verbatim template: pointer, byte-compare, wholesale replace
 
-Status: APPROVED 2026-07-01 — all picks settled (N1 default accepted; O1 and
-O2 by owner directive, see Open decisions). Implements the 2026-07-01
-verbatim-template decision (`.agents/decisions.md`).
+Status: IMPLEMENTED 2026-07-01 except slice 5 (all picks settled: N1 default
+accepted; O1 and O2 by owner directive, see Open decisions). Landed as:
+picks 920c953 · template/skeleton/shims 1f76859 (`templateVersion`
+2026-07-01.5) · byte-compare 4455a75→b332f9b · procedures 9a65dbb; rtk
+removal rode ahead as d4ea830/4455a75. Suite 138/138; every guard
+mutation-proven hermetically. **Remaining: slice 5** — the owner-initiated
+`/update-governance` run on this repo (carve-out + verbatim replacement),
+which is the end-to-end validation; then slice 6 closes the decision entry.
 
 ## Target state
 

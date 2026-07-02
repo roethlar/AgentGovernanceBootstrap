@@ -36,8 +36,21 @@ live rule now owned elsewhere - archive it per the rule above: move it verbatim 
 
 ### 2026-07-01 — AGENTS.md is the verbatim template, wholesale-replaced on update; repo-specifics live in one designated `.agents/` file
 
-Status: Active (owner decision 2026-07-01; implementation deferred to
-`docs/superpowers/plans/2026-07-01-agents-md-verbatim-template.md`).
+Status: Adopted 2026-07-01 — product implementation landed same day
+(plan with commit map:
+`docs/superpowers/plans/2026-07-01-agents-md-verbatim-template.md`): template
+pointer section + `templates/repo-guidance.template.md` + shim imports;
+`discover.py` `byteIdentical` carries `reconcileRecommended`; procedures
+reconcile by replacement with the repo-guidance carve-out on both routes.
+This repo's own carve-out happens in the next `/update-governance` run
+(the end-to-end validation). Settled with it (owner, same day): the repo
+file is **extends-only** — no override path, no citation machinery (token
+bloat); a genuine conflict is a defect (either the repo rule is stale or the
+template rule was not universal and must be cut from the product). The
+**universality test** — "if a repo could legitimately override it, it does
+not belong in the template" — is the admission bar for template content; the
+same-day removal of the rtk/token-efficiency bullet was its first
+application. Text below retained as rationale.
 
 Decision: In every bootstrapped repo — this toolkit included — `AGENTS.md` is
 **byte-identical to the shipped `templates/AGENTS.template.md`**. All
