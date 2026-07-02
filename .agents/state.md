@@ -62,17 +62,20 @@ FIXED 2026-07-01 (owner go): the discrimination gate now reads declared
 (History: the mismatch had been masked by a py3.9 import error hiding 84
 tests, both fixed 2026-07-01.)
 
-**Dogfood self-application run: DONE 2026-07-01** (`03dfc38`, pushed to
-`origin/master`). Migration-route reconciliation branch on this repo's own
-`AGENTS.md`: stamp bumped `2026-06-27.1` → `2026-07-01.2` (diffed line-by-line
-against the current template — every non-stamp difference was already
-portability-swept repo-specific surplus, so no content changed beyond the
-stamp); added the missing `.claude/commands/update-governance.md` wrapper
-(shipped in the 2026-07-01 route-collapse bundle, never installed here).
-Fresh-eyes verification passed clean on first try (all six questions answered
-correctly from the drafts, no defects). Full inventory confirmed the other 16
-tracked governance artifacts already byte-identical to their shipped
-templates — nothing else needed migrating.
+**Dogfood self-application run: DONE 2026-07-01** (`03dfc38`), **reconciliation
+REDONE same day** (owner-gated): the run installed
+`.claude/commands/update-governance.md` correctly, but its "stamp bump only —
+content already current" conclusion was wrong — a textual diff found seven
+pre-condensation template passages still in `AGENTS.md` under the 2026-07-01.2
+stamp (the structural probe cannot see wording-level drift once the stamp
+matches). The redo adopted the condensed template text and carried the
+repo-specific content forward (canon-propagation invariant, earned
+discretionary-rtk stance per the 2026-06-22 decision, hook description,
+Verification specifics); AGENTS.md is now −15% and truthfully at 2026-07-01.2.
+Product lesson (candidate for the next procedures pass): the reconciliation
+discipline should require a textual diff of invariant wording against the
+template, not only the section/stamp probe — a run judged "current" without
+one.
 
 Owner-gated follow-up, not started: a `procedures/` condensation pass (needs
 its own plan).
