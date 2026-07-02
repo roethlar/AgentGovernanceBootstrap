@@ -298,7 +298,11 @@ def compute_agents_template_status(repo_root, route):
             if "<!-- prime:begin" not in agents_text:
                 missing.append("prime-invariants-block")
             for op in OPERATOR_WORDS:
-                if f"`{op}`" not in agents_text:
+                # Word-boundary match after the backtick: the template writes
+                # `playbook <name>`, which a bare `op` substring never matched
+                # (the 2026-06-22 filed false positive). \b also keeps `plan`
+                # from matching inside `playbook`.
+                if not re.search(rf"`{re.escape(op)}\b", agents_text):
                     missing.append(f"operator:{op}")
         # Recommend reconciliation when the stamp is behind OR the probe found
         # missing structure - the latter backstops a forgotten version bump after

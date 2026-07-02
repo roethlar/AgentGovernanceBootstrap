@@ -574,6 +574,19 @@ class TestAgentsTemplateStatus(unittest.TestCase):
         fixtures._git(repo, "commit", "-q", "-m", "adopt standard layout")
         return fixtures.run_discover(repo)
 
+    def test_shipped_template_self_reports_no_missing_sections(self):
+        # The probe must accept the template's own operator wording: the
+        # template writes `playbook <name>`, which the old bare-backtick
+        # probe (`playbook`) never matched — the 2026-06-22 filed bug that
+        # wrongly recommended reconciling an already-current AGENTS.md.
+        tmpl = (fixtures.BOOTSTRAP_ROOT / "templates"
+                / "AGENTS.template.md").read_text(encoding="utf-8")
+        with tempfile.TemporaryDirectory() as tmp:
+            manifest = self._reconcile_repo(tmp, tmpl)
+        at = manifest["agentsTemplate"]
+        self.assertEqual(at["missingSections"], [])
+        self.assertFalse(at["reconcileRecommended"])
+
     def test_current_version_extracted_from_template(self):
         stamp = self._template_version()
         self.assertIsNotNone(
