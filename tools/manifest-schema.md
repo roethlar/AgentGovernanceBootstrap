@@ -33,12 +33,18 @@ name-match: a lead to verify, never a fact to record in durable guidance.
   - `targetVersion` (string or null): the same stamp read from the target
     repo's `AGENTS.md`; null when absent (the file predates versioned
     templates).
-  - `reconcileRecommended` (bool): true on the `migration` route when
-    `targetVersion` differs from `currentVersion` (including when absent) or
-    the section probe found missing structure. The reconciliation branch
-    updates `AGENTS.md` to the current template before the operator-wrapper
-    and hook guarantees run. Always false on greenfield, which drafts
-    `AGENTS.md` fresh.
+  - `byteIdentical` (bool): the target's `AGENTS.md` equals the toolkit's
+    current `templates/AGENTS.template.md`, exact bytes. The load-bearing
+    reconciliation signal (2026-07-01 verbatim-template decision): stamp and
+    section probes cannot see wording drift and a wrong stamp write
+    self-seals; byte-compare cannot be satisfied by anything except the
+    template itself.
+  - `reconcileRecommended` (bool): true on the `migration` route whenever
+    `byteIdentical` is false (any difference, including an absent file). The
+    reconciliation branch replaces `AGENTS.md` whole with the current
+    template — repo-specific content lives in `.agents/repo-guidance.md`,
+    never inline. Always false on greenfield, which installs the template
+    fresh.
   - `missingSections` (array of strings): mechanical probe of the target
     `AGENTS.md`, populated only on the `migration` route - tokens like
     `"prime-invariants-block"` and `"operator:playbook"` for structure the

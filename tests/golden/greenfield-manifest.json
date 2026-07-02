@@ -26,6 +26,7 @@
   "agentsTemplate": {
     "currentVersion": "<NORMALIZED>",
     "targetVersion": null,
+    "byteIdentical": false,
     "reconcileRecommended": false,
     "missingSections": []
   },

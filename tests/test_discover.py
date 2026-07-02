@@ -710,20 +710,35 @@ class TestAgentsTemplateStatus(unittest.TestCase):
         self.assertEqual(at["missingSections"], [])      # backstop silent
         self.assertTrue(at["reconcileRecommended"])       # version drives it
 
-    def test_reconcile_no_false_positive_when_current(self):
-        stamp = self._template_version()
-        ops = " ".join(f"`{op}`" for op in self.OPERATORS)
-        agents_md = (
-            f"# Agent Guidance\n<!-- templateVersion: {stamp} -->\n\n"
-            "## Prime Invariants\n<!-- prime:begin -->\n- Words first.\n"
-            "<!-- prime:end -->\n\n## Operator Requests\n" + ops + "\n")
+    def test_reconcile_no_false_positive_when_byte_identical(self):
+        # The only "current" AGENTS.md is the template verbatim (2026-07-01
+        # verbatim-template decision).
+        tmpl = (fixtures.BOOTSTRAP_ROOT / "templates"
+                / "AGENTS.template.md").read_text(encoding="utf-8")
         with tempfile.TemporaryDirectory() as tmp:
-            manifest = self._reconcile_repo(tmp, agents_md)
+            manifest = self._reconcile_repo(tmp, tmpl)
         self.assertEqual(manifest["route"], "migration")
         at = manifest["agentsTemplate"]
+        self.assertTrue(at["byteIdentical"])
         self.assertFalse(at["reconcileRecommended"])
-        self.assertEqual(at["targetVersion"], stamp)
         self.assertEqual(at["missingSections"], [])
+
+    def test_current_stamp_over_stale_wording_recommends_reconcile(self):
+        # THE 2026-07-01 dogfood incident, mechanically caught: a current stamp
+        # over drifted wording satisfied the stamp and section probes and
+        # self-sealed. Byte-compare must flag it.
+        tmpl = (fixtures.BOOTSTRAP_ROOT / "templates"
+                / "AGENTS.template.md").read_text(encoding="utf-8")
+        drifted = tmpl.replace(
+            "Words first.", "Words first, mostly.", 1)
+        self.assertNotEqual(drifted, tmpl)
+        with tempfile.TemporaryDirectory() as tmp:
+            manifest = self._reconcile_repo(tmp, drifted)
+        at = manifest["agentsTemplate"]
+        self.assertEqual(at["targetVersion"], self._template_version())
+        self.assertEqual(at["missingSections"], [])   # old probes see nothing
+        self.assertFalse(at["byteIdentical"])
+        self.assertTrue(at["reconcileRecommended"])   # byte-compare catches it
 
 
 class TestGitFailureSurfaced(unittest.TestCase):

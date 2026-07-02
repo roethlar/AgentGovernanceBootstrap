@@ -286,11 +286,14 @@ def compute_agents_template_status(repo_root, route):
     `missingSections` is a mechanical probe, populated only on the migration
     route (greenfield drafts AGENTS.md fresh, so a missing-list is not
     actionable there; a target with no AGENTS.md yields no probe). It is a
-    lead for reconciliation, not a durable fact."""
-    current = extract_template_version(
-        _read_text(BOOTSTRAP_REPO_ROOT, "templates/AGENTS.template.md"))
+    lead for reconciliation, not a durable fact. `byteIdentical` (target
+    AGENTS.md == the current template, exact bytes) carries the
+    reconciliation decision."""
+    template_text = _read_text(BOOTSTRAP_REPO_ROOT, "templates/AGENTS.template.md")
+    current = extract_template_version(template_text)
     agents_text = _read_text(repo_root, "AGENTS.md")
     target = extract_template_version(agents_text) if agents_text else None
+    identical = bool(agents_text) and agents_text == template_text
     missing = []
     reconcile = False
     if route == "migration":
@@ -304,13 +307,17 @@ def compute_agents_template_status(repo_root, route):
                 # from matching inside `playbook`.
                 if not re.search(rf"`{re.escape(op)}\b", agents_text):
                     missing.append(f"operator:{op}")
-        # Recommend reconciliation when the stamp is behind OR the probe found
-        # missing structure - the latter backstops a forgotten version bump after
-        # a structural template change (stamp unchanged but sections dropped).
-        reconcile = (current != target) or bool(missing)
+        # Byte-compare is the load-bearing signal (2026-07-01 verbatim-template
+        # decision): AGENTS.md is the template verbatim, so ANY difference —
+        # including an absent file — recommends replacement. The stamp and the
+        # section probe above remain as descriptive leads only; they cannot see
+        # wording drift and a wrong stamp write would self-seal (the 2026-07-01
+        # dogfood incident).
+        reconcile = not identical
     return {
         "currentVersion": current,
         "targetVersion": target,
+        "byteIdentical": identical,
         "reconcileRecommended": reconcile,
         "missingSections": missing,
     }
