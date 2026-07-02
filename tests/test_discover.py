@@ -112,12 +112,13 @@ class TestScratchOutput(unittest.TestCase):
                     "tools/discover.py", "tools/manifest-schema.md"):
             self.assertTrue((scratch / rel).is_file(), rel)
 
-    def test_update_route_has_reconciliation_step(self):
-        # The update route must reconcile a stale AGENTS.md to the current
-        # template before delegating to its handoff rule.
+    def test_migration_route_has_reconciliation_branch(self):
+        # The migration route must reconcile a stale AGENTS.md to the current
+        # template (single-route collapse, 2026-06-28).
         bootstrap = (self.gov / ".bootstrap-tmp" / "procedures"
                      / "bootstrap.md").read_text(encoding="utf-8")
-        self.assertIn("first reconcile the repo's `AGENTS.md`", bootstrap)
+        self.assertIn("Reconciliation branch:", bootstrap)
+        self.assertIn("updated `AGENTS.md` under `.bootstrap-tmp/drafts/`", bootstrap)
         self.assertIn("agentsTemplate.reconcileRecommended", bootstrap)
         # Reconciliation must precede deferring to a stale resident handoff rule.
         self.assertIn("must not preempt its", bootstrap)

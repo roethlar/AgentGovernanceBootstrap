@@ -146,7 +146,6 @@ AGENTS.md
 .agents/decisions.md
 .agents/repo-map.json
 .agents/artifact-manifest.json
-.agents/bootstrap.config.json
 .agents/playbooks/*.md
 ```
 

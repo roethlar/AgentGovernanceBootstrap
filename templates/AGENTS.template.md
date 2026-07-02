@@ -1,5 +1,5 @@
 # Agent Guidance
-<!-- templateVersion: 2026-07-01.1 -->
+<!-- templateVersion: 2026-07-01.2 -->
 
 ## Prime Invariants
 <!-- prime:begin — keep terse; re-grounded after compaction -->
@@ -74,9 +74,9 @@ scratch files as authority.
   References to the toolkit's own standard layout — `.agents/state.md`,
   `procedures/bootstrap.md`, operator names — are portable and allowed.
 - `AGENTS.md` is written only by a gated bootstrap or update run. The sanctioned
-  writers are exactly two, both through the approval gate: a greenfield/migration run
-  that drafts it, and the update route that reconciles a stale `AGENTS.md` against the
-  current template. Outside such a run no agent edits `AGENTS.md` — a repo-specific
+  writers are exactly two, both through the approval gate: a bootstrap run that
+  drafts it, and the migration route's reconciliation of a stale `AGENTS.md` against
+  the current template. Outside such a run no agent edits `AGENTS.md` — a repo-specific
   fact discovered mid-task goes to `.agents/`; a proposed `AGENTS.md` edit is out of
   bounds: question it, do not perform it.
 

@@ -23,6 +23,15 @@ are leads to verify, never facts to record.
 
 ## Step 1: Inventory
 
+This route serves every repo that already has governance, including one already
+on the standard `.agents/` layout (an earlier bootstrap, or this toolkit's own
+dogfood run). For an already-standard repo the inventory is small and its
+verdicts are mostly "leave / already-canonical" — run it anyway; thoroughness
+over route-guessing is the point of the single route. When discovery reports
+`agentsTemplate.reconcileRecommended`, the reconciliation branch
+(`procedures/bootstrap.md` Step 3) drafts the updated `AGENTS.md` using the
+Step 2 discipline below.
+
 1. Read every artifact listed under `governanceMarkers` in the manifest, plus any
    governance-like file you notice that discovery's name-matching missed.
 2. Fill in `.bootstrap-tmp/templates/governance-inventory.template.md` as
@@ -47,8 +56,9 @@ Under `.bootstrap-tmp/drafts/`, mirroring final paths:
 1. `AGENTS.md` from the template, carrying over the repo's battle-earned rules
    (for example git-safety restrictions, checkpoint discipline) in generalized
    wording. It must include the Bootstrap Handoff pointer from the template (the
-   resident pointer to the synced procedures); future runs route as `update` from
-   the standard `.agents/` layout markers, not from this section's presence.
+   resident pointer to the synced procedures); future runs route as `migration`
+   again and rely on the `templateVersion` stamp — not this section's presence —
+   to decide whether reconciliation is needed.
    Verify every factual claim inside migrated content - module names,
    paths, commands, file references - against current repo evidence before
    writing it: migrate the rule, not its stale examples, and flag anything you

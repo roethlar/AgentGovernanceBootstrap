@@ -39,7 +39,6 @@ AGENTS.md
 .agents/decisions.md
 .agents/repo-map.json
 .agents/artifact-manifest.json
-.agents/bootstrap.config.json
 .agents/playbooks/*.md
 ```
 
@@ -80,8 +79,8 @@ Open a fresh agent session in the target repo and paste one line:
 Read <path-to-this-repo>/procedures/bootstrap.md and follow it.
 ```
 
-The agent runs discovery itself, follows the computed route (greenfield,
-migration, or update), drafts under `.bootstrap-tmp/drafts/`, and presents a
+The agent runs discovery itself, follows the computed route (greenfield or
+migration), drafts under `.bootstrap-tmp/drafts/`, and presents a
 plain-English approval summary before any tracked file changes.
 
 The procedure keeps itself current: every run starts by syncing the toolkit
