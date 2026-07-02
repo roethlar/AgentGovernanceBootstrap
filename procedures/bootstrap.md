@@ -171,8 +171,11 @@ present, nothing to do."
    Do this even when the harness you are running in has no command-file mechanism
    of its own - the wrappers are for the repo, not for your current session. Skip
    this section only if the toolkit ships no wrapper template for any harness.
-2. For each shipped harness, check whether a wrapper exists for each operator
-   word. Draft any that are missing under `.bootstrap-tmp/drafts/` mirroring the
+2. For each shipped harness, check whether a wrapper exists for each template
+   shipped in that harness's directory — the operator words plus any
+   non-operator entry points (e.g. `update-governance`, which refreshes the
+   repo's governance from the toolkit and is a wrapper-only command, not an
+   `AGENTS.md` operator). Draft any that are missing under `.bootstrap-tmp/drafts/` mirroring the
    final path (for Claude Code, `.bootstrap-tmp/drafts/.claude/commands/<name>.md`),
    copied from the template set. Each wrapper is a one-paragraph pointer to the
    relevant `AGENTS.md` section - never a copy of it. If the section a wrapper

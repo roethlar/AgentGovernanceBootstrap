@@ -551,6 +551,33 @@ class TestHookTemplates(unittest.TestCase):
         self.assertEqual(len(bodies), 1, "tripwire script copies have desynced")
 
 
+class TestCommandWrapperTemplates(unittest.TestCase):
+    """The shipped wrapper set: the six operator words plus the wrapper-only
+    update-governance entry point (the wrapper guarantee is keyed to the
+    shipped template directory, not to the operator vocabulary)."""
+
+    BASE = fixtures.BOOTSTRAP_ROOT / "templates" / "commands" / "claude"
+
+    def test_wrapper_set_covers_operators_and_update_governance(self):
+        shipped = {p.stem for p in self.BASE.glob("*.md")}
+        for op in ("catchup", "handoff", "drift", "decision", "plan",
+                   "playbook"):
+            self.assertIn(op, shipped)
+        self.assertIn("update-governance", shipped)
+
+    def test_update_governance_wrapper_is_portable_pointer(self):
+        text = (self.BASE / "update-governance.md").read_text(encoding="utf-8")
+        # Anchored to the canonical remote, not a machine-local toolkit path.
+        self.assertIn(
+            "https://github.com/roethlar/AgentGovernanceBootstrap.git", text)
+        self.assertIn("procedures/bootstrap.md", text)
+        self.assertNotIn("/Users/", text)
+        self.assertNotIn("/home/", text)
+        # A pointer that defers to the synced procedure, never a copy of it.
+        self.assertIn("only a pointer", text)
+        self.assertLess(len(text), 2000)
+
+
 class TestAgentsTemplateStatus(unittest.TestCase):
     """Slice 1: discovery stamps the current template version and, on the
     migration route, flags an AGENTS.md that is behind the current template."""
