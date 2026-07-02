@@ -99,8 +99,12 @@ cannot get lazy on a large repo and you can.
    "Microsoft Store": Windows ships App Execution Alias stubs named
    `python`/`python3` that sit on PATH but only open the Store, so a
    `python3` on PATH does not imply a usable interpreter. Use the first
-   candidate that prints a real version. If every probe fails, Python is
-   missing — help the human install it first.
+   candidate that prints a real version. The script's supported floor is
+   Python 3.9, so a stock macOS `python3` suffices; only if a probed
+   interpreter is older than that floor, also probe versioned names
+   (`python3.14`, `python3.13`, ...) — Homebrew and pyenv install those
+   without touching `python3`. If every probe fails, Python is missing —
+   help the human install it first.
 4. If `.bootstrap-tmp/repo-discovery-manifest.json` is missing, run:
    `<probed-python> <script> <target-repo-root>`
 5. If the manifest exists, compare its `git.commit` to current `HEAD`

@@ -57,6 +57,12 @@ On Windows prefer `py -3 tools/discover.py ...`: a `python3` found on PATH is
 often the Microsoft Store stub, which prints "Python was not found" even
 though the real launcher works fine.
 
+The supported floor is Python 3.9 (the macOS system interpreter), and the
+toolkit's product code stays within it. Homebrew installs newer versions
+under versioned names (`python3.14`) that a plain `python3` never resolves
+to; nothing in the toolkit requires them, but if a task ever needs a newer
+interpreter, probe the versioned names explicitly.
+
 Then start the agent in the target repo with:
 
 ```text

@@ -96,7 +96,8 @@ python3 tools/discover.py <path-to-target-repo>
 ```
 
 (on Windows prefer `py -3` — a `python3` on PATH is often the Microsoft
-Store stub, not a real interpreter)
+Store stub, not a real interpreter; supported floor is Python 3.9, and the
+toolkit's own code stays within it — the macOS system interpreter is enough)
 
 - then start the agent in the target repo with:
 
