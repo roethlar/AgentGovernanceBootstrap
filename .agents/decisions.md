@@ -34,6 +34,36 @@ live rule now owned elsewhere - archive it per the rule above: move it verbatim 
 
 ## Decisions
 
+### 2026-07-02 — AGENTS.template.md ships reflowed: no hard line-wraps; future template edits preserve this
+
+Status: Adopted 2026-07-02 (plan with commit map:
+`docs/superpowers/plans/2026-07-02-template-reflow.md`), stamp `2026-07-02.1`.
+
+Decision: the body of `templates/AGENTS.template.md` is written one line per
+paragraph or bullet — no hard line-wrapping. Future template edits preserve
+this format; re-wrapping is a regression. Scope is the verbatim-installed
+template only: `repo-guidance.template.md`, shims, and `procedures/*` stay
+wrapped (they are hand-edited in target repos or in this repo, where wrapped
+lines keep diffs reviewable).
+
+Rationale: the 2026-07-01 verbatim-template decision removed every consumer
+of wrapping in target repos — the installed `AGENTS.md` is never hand-edited,
+reconciles by byte-compare + replace-whole (no hunk diffs), and is read raw
+by models. Wrapping's only remaining effect is a per-session token tax: each
+wrapped continuation line spends a newline plus indent. Measured 2026-07-02
+via the token-counting API (`claude-opus-4-8` tokenizer): 3,873 → 3,700
+tokens, a lossless −4.5% per session in every governed repo. Accepted cost:
+template-source diffs in this toolkit repo become paragraph-blob diffs.
+Consistent with the 2026-06-22 rejection of word-level compression (~2.7%):
+that trade risked meaning for tokens and was declined; this one changes no
+words.
+
+The same version bump executes T1 of the 2026-07-01 verbosity-sweep report
+(Session Startup hook-trust trim, ~26 words of rationale clauses; behavioral
+contract unchanged) — owner go 2026-07-02 covered folding it in, so the
+governed fleet reconciles once, not twice. The remaining sweep findings stay
+pending owner IDs.
+
 ### 2026-07-01 — AGENTS.md is the verbatim template, wholesale-replaced on update; repo-specifics live in one designated `.agents/` file
 
 Status: Adopted 2026-07-01 — product implementation landed same day
