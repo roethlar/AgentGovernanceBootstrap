@@ -110,12 +110,16 @@ plus this repo's `@.agents/RTK.md` import (the repo-specific addition, kept
 in the shim so Claude Code still loads it). `.agents/repo-map.json` and
 `.agents/artifact-manifest.json` updated to record the new file. This
 supersedes the out-of-band `f697bf9` content through the sanctioned path.
-**NEXT ACTION: plan slice 6 (bookkeeping)** — close the 2026-07-01
-verbatim-template decision entry and the plan's Status line with this run's
-commit hash. Flagged, unresolved: `.agents/RTK.md` says "Always prefix shell
-commands with rtk" while the earned practice (2026-06-22 decision) is
-discretionary per-command use — owner decides which wording wins, then fix
-the lower-authority file.
+Slice 5 landed as 35b5436; slice 6 (bookkeeping) done same day: the
+2026-07-01 verbatim-template decision entry closed with the hash and archived
+to `docs/history/decisions-archive.md`, plan Status closed. The
+verbatim-template plan is fully complete.
+**NEXT: awaiting owner input on two queued items** — (1) the verbosity-sweep
+B*/M*/P* finding IDs below; (2) flagged conflict: `.agents/RTK.md` says
+"Always prefix shell commands with rtk" while the earned practice (2026-06-22
+decision, restated in `.agents/repo-guidance.md`) is discretionary
+per-command use — owner decides which wording wins, then fix the
+lower-authority file.
 
 **Verbosity sweep of the product: REPORT DELIVERED 2026-07-01, awaiting owner
 eval — no changes made.** Findings (IDs the owner replies with to execute):
@@ -140,8 +144,9 @@ owner IDs, no separate plan needed beyond this recorded report.
 Owner-gated follow-up, not started: none beyond the sweep eval and the
 slice-5 dogfood run above.
 
-**Push:** stored git credential is STALE; gh token valid →
-`git -c credential.helper='!gh auth git-credential' push` (push policy here is `always`).
+**Push:** plain `git push` works again (verified 2026-07-02; the earlier
+stale-credential workaround via `gh auth git-credential` is no longer needed).
+Push policy here is `always`.
 
 (The `## Next` eval entries below are superseded history — see this block for current truth.)
 
