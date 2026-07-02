@@ -1,7 +1,8 @@
 # Reflow AGENTS.template.md (drop hard line-wraps) + T1 hook-trust trim
 
-Status: Approved by owner 2026-07-02 (explicit go on the measured proposal).
-Slices below; commit map filled as they land.
+Status: DONE 2026-07-02 (approved by owner same day, explicit go on the
+measured proposal). Final measurement with T1 folded in: 3,873 → 3,652 tokens
+(−5.7%). Suite 138/138 on the landed template.
 
 ## Why this plan exists
 
@@ -45,15 +46,17 @@ own harness; never run another harness's commands or bypass the gate).
 ## Slices
 
 - S1 (docs): this plan + decision entry in `.agents/decisions.md`.
-  Verification: `git diff --check`. — commit: (fill)
+  Verification: `git diff --check`. — commit: 3a9a02b
 - S2 (code): replace `templates/AGENTS.template.md` with the reflowed text;
   apply the T1 hook-trust trim; bump `templateVersion` to `2026-07-02.1`
   (dotted sub-version keeps the same-day-collision test guard meaningful);
-  delete the scratch `templates/Reflowed AGENTS.template.md`.
-  Verification: `python3 -m unittest discover -s tests -v`. — commit: (fill)
-- S3 (docs): update `.agents/state.md` (slice-5 note: the run installs the
-  reflowed `2026-07-02.1` bytes); fill this commit map.
-  Verification: `git diff --check`. — commit: (fill)
+  delete the scratch `templates/Reflowed AGENTS.template.md`. Landed check:
+  word-level diff vs HEAD showed only the stamp + T1 words changed.
+  Verification: `python3 -m unittest discover -s tests -v` → 138/138 OK.
+  — commit: 125c991
+- S3 (docs): update `.agents/state.md` (reflow landed; T1 executed) and fill
+  this commit map. Verification: `git diff --check`. — commit: the docs
+  commit that lands this text (a commit cannot name its own hash).
 
 ## T1 wording
 

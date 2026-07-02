@@ -90,7 +90,14 @@ test-guarded). The template itself carries the constant
 `@.agents/repo-guidance.md` import line (same bytes everywhere, byte-compare
 unaffected; auto-injection where `@` is processed, visible pointer elsewhere);
 both shims are one-line `@AGENTS.md` adapters (owner-edited). `templateVersion`
-2026-07-01.6 (28d78e1). Suite 138/138.
+2026-07-02.1 (125c991). Suite 138/138.
+**Template reflow: LANDED 2026-07-02** (decision Adopted in `.agents/decisions.md`;
+plan closed: `docs/superpowers/plans/2026-07-02-template-reflow.md`).
+`AGENTS.template.md` body is now one line per paragraph/bullet — no hard
+line-wraps; future template edits must not re-wrap. Lossless; folded with the
+sweep's T1 hook-trust trim into the same bump: 3,873 → 3,652 tokens (−5.7%,
+`count_tokens`, claude-opus-4-8 tokenizer). Scope is the verbatim template
+only (`repo-guidance.template.md`, shims, procedures stay wrapped).
 **NEXT ACTION: owner runs `/update-governance` here (plan slice 5)** — carve
 this repo's specifics into `.agents/repo-guidance.md` (mission detail, Active
 Sources, verification commands, remotes/canon-propagation, discretionary-rtk
@@ -112,8 +119,9 @@ pointer, M2 rationale clauses, M3 Step 8 enumerates the pointed-at recipe;
 per-use files — P1 verification.md double scope-warning, P2 harvest.md
 sync-why, P3 file-to-dropbox intro, P4 file-bug-report dogfood-or-foreign
 paragraph, P5 manifest-schema rationale sentences; T1 AGENTS.template hook-trust
-trims (~30 words; fold into next version bump). Total ≈1,100 words (~1,500
-tokens) per-run. Flags: F1 owner-machine facts shipped in product (gitea LAN
+trims — **T1 EXECUTED 2026-07-02** (folded into the template-reflow bump
+`2026-07-02.1`, 125c991); the B*/M*/P* findings still await owner IDs.
+Total ≈1,100 words (~1,500 tokens) per-run. Flags: F1 owner-machine facts shipped in product (gitea LAN
 URL + `~/dev/` defaults in bootstrap.md Step 0 and file-to-dropbox.md); F2 the
 canonical GitHub/agent-harvest URLs are owner-specific but arguably toolkit
 canon — noted, no change proposed. Deliberately not cut: report-template
