@@ -64,6 +64,15 @@ Under `.bootstrap-tmp/drafts/`, mirroring final paths:
    writing it: migrate the rule, not its stale examples, and flag anything you
    could not verify. A fresh authoritative file that launders stale facts is
    worse than the old file it replaced.
+   **Portability sweep (reconciliation branch):** when the draft updates an
+   existing `AGENTS.md`, apply the portability test from the template's
+   governance-boundary invariants to every carried-forward line. A line true
+   only of this repo — a concrete source path, the repo's own name as a fact,
+   a verification command, restated current state — relocates to the
+   appropriate `.agents/` file, with a pointer left in `AGENTS.md`. The
+   relocations ride the same drafts and approval summary. This is the
+   sanctioned write moment for that cleanup; between runs it remains the
+   `drift` operator's job.
 2. `.agents/state.md` - current truth only: what is true now, active work,
    blockers, next action, verification commands. Do not import historical
    narrative.

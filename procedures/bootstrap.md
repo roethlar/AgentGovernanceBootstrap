@@ -143,7 +143,8 @@ cannot get lazy on a large repo and you can.
   updated `AGENTS.md` under `.bootstrap-tmp/drafts/` using the reconciliation
   discipline of `.bootstrap-tmp/procedures/migration.md` Step 2 (carry the
   repo's earned rules forward in generalized wording; migrate the rule, not its
-  stale examples; verify every migrated fact against current repo evidence),
+  stale examples; verify every migrated fact against current repo evidence;
+  run Step 2's portability sweep over carried-forward lines),
   adding the template sections the repo lacks - the Prime Invariants block, the
   full operator set - so the wrapper and hook guarantees below point at sections
   that exist. The drafted `AGENTS.md` goes through the approval summary like any
