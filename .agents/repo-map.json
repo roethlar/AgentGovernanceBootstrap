@@ -65,6 +65,8 @@
   "guidance_paths": [
     "AGENTS.md",
     "CLAUDE.md",
+    ".agents/repo-guidance.md",
+    ".agents/push-policy.md",
     ".agents/state.md",
     ".agents/decisions.md",
     ".agents/repo-map.json",
@@ -83,6 +85,7 @@
     "2026-06-21: the repo's own self-application was brought current with the product — added a CLAUDE.md shim, committed .claude/commands/ operator wrappers and a .claude/settings.json re-ground hook, rewrote AGENTS.md to the product shape (Prime Invariants, Universal Invariants, Operator Requests, Session Startup), and archived closed decisions into docs/history/decisions-archive.md.",
     "No suspected misplaced CI or branch mismatches were flagged.",
     "2026-06-22: closed the update-route template-reconciliation gap. Added a templateVersion stamp to AGENTS.template.md (and this repo's AGENTS.md), an agentsTemplate manifest block in discover.py that flags a stale/unstamped target AGENTS.md on the update route, a reconciliation step in procedures/bootstrap.md Step 3, and a wrapper/hook guard against narrowing artifacts to fit a stale file. See the 2026-06-22 decision.",
-    "2026-06-22: trimmed the per-session guidance tax. Collapsed the AGENTS.md/template Bootstrap Handoff section to a conditional pointer to the synced procedures (~600 tokens/session off AGENTS.md; procedures/bootstrap.md is now the single canonical home), and sharpened the token-efficiency invariant (rtk as a discretionary per-command proxy, not an auto-rewrite hook; compact-but-equivalent working). See the 2026-06-22 decision."
+    "2026-06-22: trimmed the per-session guidance tax. Collapsed the AGENTS.md/template Bootstrap Handoff section to a conditional pointer to the synced procedures (~600 tokens/session off AGENTS.md; procedures/bootstrap.md is now the single canonical home), and sharpened the token-efficiency invariant (rtk as a discretionary per-command proxy, not an auto-rewrite hook; compact-but-equivalent working). See the 2026-06-22 decision.",
+    "2026-07-02: /update-governance carve-out (verbatim-template decision, 2026-07-01): AGENTS.md is now a byte-identical copy of templates/AGENTS.template.md; all repo-specific guidance (mission detail, reading order, verification commands, remotes, earned practices) moved to .agents/repo-guidance.md; CLAUDE.md reduced to the one-line shim plus this repo's @.agents/RTK.md import. fact_bearing_paths above predates later template additions (repo-guidance/push-policy/bug-report templates, the update-governance wrapper template, agents-md-tripwire.py, the file-bug-report/file-to-dropbox procedures) and is due a refresh pass."
   ]
 }
