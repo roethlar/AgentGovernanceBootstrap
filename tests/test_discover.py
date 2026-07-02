@@ -367,22 +367,23 @@ class TestPrimeInvariantsTemplate(unittest.TestCase):
                        "re-ground from AGENTS.md"):
             self.assertIn(phrase, head)
 
-    def test_template_points_at_repo_guidance_and_shims_import_it(self):
-        # Verbatim-template design (2026-07-01 decision): the template names
-        # .agents/repo-guidance.md as the extends-only home for repo rules,
-        # and the harness shims surface that file alongside AGENTS.md.
+    def test_template_imports_repo_guidance_and_shims_stay_single_pointer(self):
+        # Verbatim-template design (2026-07-01 decision): the template itself
+        # carries the constant @ import of .agents/repo-guidance.md (same
+        # bytes in every repo, so byte-compare is unaffected; auto-injection
+        # on import-processing harnesses, a visible pointer everywhere else).
+        # Shims stay single-pointer adapters — the import must NOT be
+        # duplicated there (one canonical injection point).
         tmpl = (fixtures.BOOTSTRAP_ROOT / "templates"
                 / "AGENTS.template.md").read_text(encoding="utf-8")
         self.assertIn("## Repo-Specific Guidance", tmpl)
-        self.assertIn("`.agents/repo-guidance.md`", tmpl)
+        self.assertIn("\n@.agents/repo-guidance.md\n", tmpl)
         self.assertIn("extends this file and never overrides it",
                       re.sub(r"\s+", " ", tmpl))
         claude = (fixtures.BOOTSTRAP_ROOT / "templates" / "shims"
                   / "CLAUDE.template.md").read_text(encoding="utf-8")
-        self.assertIn("@.agents/repo-guidance.md", claude)
-        gemini = (fixtures.BOOTSTRAP_ROOT / "templates" / "shims"
-                  / "GEMINI.template.md").read_text(encoding="utf-8")
-        self.assertIn(".agents/repo-guidance.md", gemini)
+        self.assertIn("@AGENTS.md", claude)
+        self.assertNotIn("@.agents/repo-guidance.md", claude)
         skeleton = (fixtures.BOOTSTRAP_ROOT / "templates"
                     / "repo-guidance.template.md").read_text(encoding="utf-8")
         self.assertIn("never overrides it", skeleton)

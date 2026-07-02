@@ -1,8 +1,6 @@
 # Repo-Specific Guidance
-<!-- Extends AGENTS.md (the verbatim toolkit template); never overrides it.
-     If a rule here genuinely conflicts with AGENTS.md, that is a defect to
-     flag, not a precedence to resolve. Keep this file small: rules and
-     pointers, not state (state lives in .agents/state.md). -->
+<!-- Extends AGENTS.md; never overrides it. Rules and pointers only — state
+     lives in .agents/state.md. -->
 
 ## Mission Detail
 <!-- What this repo is for, beyond the template's generic mission. -->

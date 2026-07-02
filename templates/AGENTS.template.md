@@ -1,5 +1,5 @@
 # Agent Guidance
-<!-- templateVersion: 2026-07-01.5 -->
+<!-- templateVersion: 2026-07-01.6 -->
 
 ## Prime Invariants
 <!-- prime:begin — keep terse; re-grounded after compaction -->
@@ -26,12 +26,12 @@ scratch files as authority.
 
 ## Repo-Specific Guidance
 
-This file is the toolkit template, verbatim: a governance refresh replaces it
-whole, and no agent hand-edits it. Everything specific to this repo — mission
-detail, reading order, verification specifics, remotes, earned practices —
-lives in `.agents/repo-guidance.md`, which extends this file and never
-overrides it. If the two genuinely conflict, apply the flag-conflicts
-invariant (Universal Invariants) rather than treating either as precedent.
+@.agents/repo-guidance.md
+
+Repo-specific rules live in `.agents/repo-guidance.md`, imported above (read
+it directly if your harness does not process `@` imports). It extends this
+file and never overrides it — flag any genuine conflict. This file is the
+toolkit template, replaced whole on governance refresh; no agent hand-edits it.
 
 ## Universal Invariants
 
