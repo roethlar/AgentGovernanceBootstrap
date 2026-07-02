@@ -77,7 +77,14 @@ by a future self-application run.
 
 ### 2026-06-28 — Collapse the update route into migration; route detection is not load-bearing
 
-Status: Active (decision settled; implementation deferred to a plan).
+Status: Adopted 2026-07-01. Implemented per
+`docs/superpowers/plans/2026-07-01-route-collapse-refresh-and-portability-sweep.md`:
+`compute_route()` is single-route (commit 07ceb09), the reconciliation branch
+lives in `procedures/bootstrap.md` Step 3 with `procedures/migration.md` naming
+the already-canonical and dogfood cases, and `bootstrap.config.json` left the
+documented layout (README, design doc, repo-map template) with `templateVersion`
+bumped to 2026-07-01.2 (commit a48790d). Text below retained as rationale until
+archived.
 
 Decision: The `update` route collapses into the `migration` route. One route
 then handles every repo that already has governance — a foreign governance
@@ -246,7 +253,10 @@ Exercises the 2026-06-25 governance-boundary boundary (repo-specifics in
 
 ### 2026-06-27 — Dogfood / self-application is a named case of the update route (docs handrail, no detection mechanism)
 
-Status: Active
+Status: Active, as amended by the 2026-06-28 collapse (Adopted 2026-07-01): the
+dogfood case is now a named in-place case of the single `migration` route; the
+"update route" wording below is the pre-collapse record. The anti-stop handrail
+is unchanged.
 
 Decision: Running the bootstrap procedure against this toolkit repo itself is a
 **dogfood / self-application run**. It takes the existing `update` route and runs
@@ -840,14 +850,16 @@ binary exist-and-committed → change-nothing, with no version/staleness check �
 even though the 2026-06-22 update-route decision added `templateVersion` stamping
 and reconciliation for `AGENTS.md`. The same staleness logic was not extended to
 the command wrappers, so a repo can carry current `AGENTS.md` guidance behind
-outdated wrappers and the update route will not notice.
+outdated wrappers and the migration route's reconciliation branch will not
+notice. (Reworded 2026-07-01 to the single route per the adopted 2026-06-28
+collapse; substance unchanged.)
 
-Options: (a) extend version-aware reconciliation to wrappers on the update route —
-detect a wrapper that predates the current template and propose an update through
-the normal approval summary, never a silent overwrite; (b) leave wrappers as
-exist→skip.
+Options: (a) extend version-aware reconciliation to wrappers in the migration
+route's reconciliation branch — detect a wrapper that predates the current
+template and propose an update through the normal approval summary, never a
+silent overwrite; (b) leave wrappers as exist→skip.
 
-Recommendation: (a), scoped narrowly to update-route wrapper reconciliation,
+Recommendation: (a), scoped narrowly to wrapper reconciliation in that branch,
 following the existing `AGENTS.md` reconciliation precedent. Consistency fix for
 work already shipped, not new surface.
 
@@ -890,7 +902,7 @@ mechanizable (they need semantic judgment) and stay the `drift` operator's job.
 
 Options: (a) build a standalone `.agents/playbooks/governance-lint.md` (+ a small
 Python checker) covering freshness + pointer/section/stamp resolution, run
-on-demand and recommended by the update route's reconciliation step — not a
+on-demand and recommended by the migration route's reconciliation branch — not a
 blocking gate; (b) fold the mechanical freshness check into the existing `drift`
 operator without a new playbook; (c) YAGNI — leave it.
 
@@ -905,9 +917,10 @@ originally proposed would be.
 
 Owner decision 2026-06-22: option (a) — standalone
 `.agents/playbooks/governance-lint.md` plus a small checker, run on-demand and
-recommended (not gated) by the update route; evidence-citation sufficiency stays
-an explicit non-goal (the `drift` operator's job). Still Open: not yet
-implemented. Next step is a `plan` for the checker.
+recommended (not gated) by the migration route's reconciliation branch
+(reworded 2026-07-01 per the adopted route collapse); evidence-citation
+sufficiency stays an explicit non-goal (the `drift` operator's job). Still
+Open: not yet implemented. Next step is a `plan` for the checker.
 
 ### Open: foreign-model governance validation
 
