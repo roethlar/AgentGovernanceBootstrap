@@ -5,6 +5,8 @@ These exercise the language-agnostic scoring core hermetically (source=None fixt
 with inline files and trivial verify commands), so no real source repo or toolchain is
 needed to prove the scorer classifies pass/fail and short-circuits on setup failure.
 """
+from __future__ import annotations
+
 import json
 import os
 import sys
