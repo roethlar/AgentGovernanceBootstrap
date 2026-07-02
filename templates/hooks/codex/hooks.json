@@ -6,7 +6,7 @@
     ],
     "PreToolUse": [
       { "matcher": "apply_patch|Edit|Write",
-        "hooks": [ { "type": "command", "command": "python3 \"$(git rev-parse --show-toplevel)/.codex/agents-md-tripwire.py\"" } ] }
+        "hooks": [ { "type": "command", "command": "py -3 \"$(git rev-parse --show-toplevel)/.codex/agents-md-tripwire.py\" 2>/dev/null || python3 \"$(git rev-parse --show-toplevel)/.codex/agents-md-tripwire.py\"" } ] }
     ]
   }
 }
