@@ -26,8 +26,16 @@
   "agentsTemplate": {
     "currentVersion": "<NORMALIZED>",
     "targetVersion": null,
-    "reconcileRecommended": false,
-    "missingSections": []
+    "reconcileRecommended": true,
+    "missingSections": [
+      "prime-invariants-block",
+      "operator:catchup",
+      "operator:handoff",
+      "operator:drift",
+      "operator:decision",
+      "operator:plan",
+      "operator:playbook"
+    ]
   },
   "bootstrapRepoPath": "<BOOTSTRAP_REPO>",
   "harvestRepoPath": "<NORMALIZED>",

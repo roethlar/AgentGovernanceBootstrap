@@ -135,17 +135,13 @@ ROUTE_BLOCKS = {
     ),
     "migration": (
         "Discovery found an existing governance system (see \"Existing\n"
-        "Governance\" in the review packet). Follow\n"
-        "`.bootstrap-tmp/procedures/migration.md`."
-    ),
-    "update": (
-        "This repo already uses the standard `.agents/` layout. First check\n"
+        "Governance\" in the review packet). First check\n"
         "`agentsTemplate.reconcileRecommended` in the manifest: when true, this\n"
         "repo's `AGENTS.md` is behind the current template (see\n"
         "`agentsTemplate.missingSections`) - reconcile it to the template per\n"
-        "`.bootstrap-tmp/procedures/bootstrap.md` (Step 3, update route) before\n"
-        "anything else. Then read `AGENTS.md` and follow its bootstrap handoff\n"
-        "rule; if it has none, follow `.bootstrap-tmp/procedures/migration.md`."
+        "`.bootstrap-tmp/procedures/bootstrap.md` (Step 3, reconciliation\n"
+        "branch) as part of the route. Follow\n"
+        "`.bootstrap-tmp/procedures/migration.md`."
     ),
 }
 
@@ -250,15 +246,12 @@ def is_useful_read(rel_path):
 
 
 def compute_route(governance_markers):
-    # "update" requires the standard layout specifically. A bare .agents/ dir
-    # can predate this process (e.g., Antigravity workspace skills) and must
-    # route as migration, not update.
-    standard = {".agents/state.md", ".agents/bootstrap.config.json"}
-    if any(p.lower() in standard for p in governance_markers):
-        return "update"
-    if governance_markers:
-        return "migration"
-    return "greenfield"
+    # One route handles every repo that already has governance (2026-06-28
+    # decision): the former update-vs-migration "is this repo already ours"
+    # detection was never load-bearing, and its ownership signals were weak
+    # provenance. Reconciling a stale AGENTS.md is a branch *within* the
+    # migration route, driven by the agentsTemplate block, not by routing.
+    return "migration" if governance_markers else "greenfield"
 
 
 def _read_text(repo_root, rel):
@@ -270,8 +263,8 @@ def _read_text(repo_root, rel):
 
 # Operator vocabulary the current template advertises. A target AGENTS.md that
 # omits any of these (or the Prime Invariants block) predates the current
-# template; the update route must reconcile it before the wrapper/hook
-# guarantees point at sections that do not exist yet.
+# template; the migration route's reconciliation branch must update it before
+# the wrapper/hook guarantees point at sections that do not exist yet.
 OPERATOR_WORDS = ("catchup", "handoff", "drift", "decision", "plan", "playbook")
 
 
@@ -286,19 +279,21 @@ def extract_template_version(text):
 
 
 def compute_agents_template_status(repo_root, route):
-    """Compare the target's AGENTS.md against the current template so the update
-    route can reconcile a stale file instead of narrowing artifacts to fit it.
+    """Compare the target's AGENTS.md against the current template so the
+    migration route's reconciliation branch can update a stale file instead of
+    narrowing artifacts to fit it.
 
-    `missingSections` is a mechanical probe, populated only on the update route
-    (greenfield/migration draft AGENTS.md fresh, so a missing-list is not
-    actionable there). It is a lead for reconciliation, not a durable fact."""
+    `missingSections` is a mechanical probe, populated only on the migration
+    route (greenfield drafts AGENTS.md fresh, so a missing-list is not
+    actionable there; a target with no AGENTS.md yields no probe). It is a
+    lead for reconciliation, not a durable fact."""
     current = extract_template_version(
         _read_text(BOOTSTRAP_REPO_ROOT, "templates/AGENTS.template.md"))
     agents_text = _read_text(repo_root, "AGENTS.md")
     target = extract_template_version(agents_text) if agents_text else None
     missing = []
     reconcile = False
-    if route == "update":
+    if route == "migration":
         if agents_text:
             if "<!-- prime:begin" not in agents_text:
                 missing.append("prime-invariants-block")

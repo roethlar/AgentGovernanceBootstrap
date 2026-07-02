@@ -399,7 +399,7 @@ class TestPrimeInvariantsTemplate(unittest.TestCase):
 class TestUpdateRouteHeuristic(unittest.TestCase):
     def test_agents_dir_without_standard_layout_routes_migration(self):
         # The Blit case: a pre-existing .agents/ (e.g., workspace skills)
-        # that is NOT this process's standard layout must not route "update".
+        # routes migration like any other governance (single-route, 2026-06-28).
         with tempfile.TemporaryDirectory() as tmp:
             repo = fixtures.make_governance_repo(Path(tmp) / "repo")
             skills = repo / ".agents" / "skills"
@@ -410,7 +410,9 @@ class TestUpdateRouteHeuristic(unittest.TestCase):
             manifest = fixtures.run_discover(repo)
             self.assertEqual(manifest["route"], "migration")
 
-    def test_standard_layout_routes_update(self):
+    def test_standard_layout_routes_migration(self):
+        # Post-collapse (2026-06-28): the standard layout is governance like any
+        # other; there is no separate "update" route to detect.
         with tempfile.TemporaryDirectory() as tmp:
             repo = fixtures.make_governance_repo(Path(tmp) / "repo")
             agents = repo / ".agents"
@@ -419,7 +421,7 @@ class TestUpdateRouteHeuristic(unittest.TestCase):
             fixtures._git(repo, "add", "-A")
             fixtures._git(repo, "commit", "-q", "-m", "adopt standard layout")
             manifest = fixtures.run_discover(repo)
-            self.assertEqual(manifest["route"], "update")
+            self.assertEqual(manifest["route"], "migration")
 
 
 class TestHookTemplates(unittest.TestCase):
@@ -550,7 +552,7 @@ class TestHookTemplates(unittest.TestCase):
 
 class TestAgentsTemplateStatus(unittest.TestCase):
     """Slice 1: discovery stamps the current template version and, on the
-    update route, flags an AGENTS.md that is behind the current template."""
+    migration route, flags an AGENTS.md that is behind the current template."""
 
     OPERATORS = ("catchup", "handoff", "drift", "decision", "plan", "playbook")
 
@@ -560,9 +562,9 @@ class TestAgentsTemplateStatus(unittest.TestCase):
         m = re.search(r"<!--\s*templateVersion:\s*(\S+)\s*-->", text)
         return m.group(1) if m else None
 
-    def _update_repo(self, tmp, agents_md):
-        """Governance repo + standard `.agents/` layout (routes update), with a
-        chosen AGENTS.md body."""
+    def _reconcile_repo(self, tmp, agents_md):
+        """Governance repo + standard `.agents/` layout (routes migration; the
+        reconciliation branch applies), with a chosen AGENTS.md body."""
         repo = fixtures.make_governance_repo(Path(tmp) / "repo")
         (repo / "AGENTS.md").write_text(agents_md, encoding="utf-8")
         (repo / ".agents").mkdir()
@@ -581,42 +583,42 @@ class TestAgentsTemplateStatus(unittest.TestCase):
             manifest = fixtures.run_discover(repo)
         self.assertEqual(manifest["agentsTemplate"]["currentVersion"], stamp)
 
-    def test_update_route_flags_stale_unstamped_agents(self):
+    def test_reconcile_flags_stale_unstamped_agents(self):
         with tempfile.TemporaryDirectory() as tmp:
-            manifest = self._update_repo(
+            manifest = self._reconcile_repo(
                 tmp, "# Agent contract\n\nRead docs/STATE.md first.\n")
-        self.assertEqual(manifest["route"], "update")
+        self.assertEqual(manifest["route"], "migration")
         at = manifest["agentsTemplate"]
         self.assertTrue(at["reconcileRecommended"])
         self.assertIsNone(at["targetVersion"])
         self.assertIn("prime-invariants-block", at["missingSections"])
         self.assertIn("operator:playbook", at["missingSections"])
 
-    def test_update_start_here_points_at_reconciliation(self):
+    def test_migration_start_here_points_at_reconciliation(self):
         with tempfile.TemporaryDirectory() as tmp:
-            manifest = self._update_repo(
+            manifest = self._reconcile_repo(
                 tmp, "# Agent contract\n\nRead docs/STATE.md first.\n")
-            self.assertEqual(manifest["route"], "update")
+            self.assertEqual(manifest["route"], "migration")
             start_here = (Path(tmp) / "repo" / ".bootstrap-tmp"
                           / "START-HERE.md").read_text(encoding="utf-8")
         self.assertIn("reconcileRecommended", start_here)
-        self.assertIn("Step 3, update route", start_here)
+        self.assertIn("Step 3, reconciliation", start_here)
 
-    def test_update_route_flags_missing_section_despite_matching_stamp(self):
+    def test_reconcile_flags_missing_section_despite_matching_stamp(self):
         # Backstop: stamp matches the toolkit but a probed section is absent
         # (forgotten bump after a structural change) -> still recommend reconcile.
         stamp = self._template_version()
         agents_md = (f"# Agent Guidance\n<!-- templateVersion: {stamp} -->\n\n"
                      "## Notes\nNo Prime Invariants block, no operators.\n")
         with tempfile.TemporaryDirectory() as tmp:
-            manifest = self._update_repo(tmp, agents_md)
-        self.assertEqual(manifest["route"], "update")
+            manifest = self._reconcile_repo(tmp, agents_md)
+        self.assertEqual(manifest["route"], "migration")
         at = manifest["agentsTemplate"]
         self.assertEqual(at["targetVersion"], stamp)        # stamp matches
         self.assertTrue(at["reconcileRecommended"])         # but backstop fires
         self.assertIn("prime-invariants-block", at["missingSections"])
 
-    def test_update_route_reconciles_stale_stamp_when_sections_present(self):
+    def test_reconcile_stale_stamp_when_sections_present(self):
         # A same-day second structural change carries a dotted sub-version
         # (e.g. 2026-06-25 -> 2026-06-25.2). A target reconciled against the
         # earlier same-day stamp has every probed *section* present, so the
@@ -640,14 +642,14 @@ class TestAgentsTemplateStatus(unittest.TestCase):
             "## Prime Invariants\n<!-- prime:begin -->\n- Words first.\n"
             "<!-- prime:end -->\n\n## Operator Requests\n" + ops + "\n")
         with tempfile.TemporaryDirectory() as tmp:
-            manifest = self._update_repo(tmp, agents_md)
+            manifest = self._reconcile_repo(tmp, agents_md)
         at = manifest["agentsTemplate"]
         self.assertEqual(at["targetVersion"], stale)
         self.assertEqual(at["currentVersion"], current)
         self.assertEqual(at["missingSections"], [])      # backstop silent
         self.assertTrue(at["reconcileRecommended"])       # version drives it
 
-    def test_update_route_no_false_positive_when_current(self):
+    def test_reconcile_no_false_positive_when_current(self):
         stamp = self._template_version()
         ops = " ".join(f"`{op}`" for op in self.OPERATORS)
         agents_md = (
@@ -655,8 +657,8 @@ class TestAgentsTemplateStatus(unittest.TestCase):
             "## Prime Invariants\n<!-- prime:begin -->\n- Words first.\n"
             "<!-- prime:end -->\n\n## Operator Requests\n" + ops + "\n")
         with tempfile.TemporaryDirectory() as tmp:
-            manifest = self._update_repo(tmp, agents_md)
-        self.assertEqual(manifest["route"], "update")
+            manifest = self._reconcile_repo(tmp, agents_md)
+        self.assertEqual(manifest["route"], "migration")
         at = manifest["agentsTemplate"]
         self.assertFalse(at["reconcileRecommended"])
         self.assertEqual(at["targetVersion"], stamp)
