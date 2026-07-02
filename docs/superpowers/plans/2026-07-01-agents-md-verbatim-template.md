@@ -1,7 +1,8 @@
 # AGENTS.md as verbatim template: pointer, byte-compare, wholesale replace
 
-Status: DRAFT — awaits owner approval and the open picks below. No code touched.
-Implements the 2026-07-01 verbatim-template decision (`.agents/decisions.md`).
+Status: APPROVED 2026-07-01 — all picks settled (N1 default accepted; O1 and
+O2 by owner directive, see Open decisions). Implements the 2026-07-01
+verbatim-template decision (`.agents/decisions.md`).
 
 ## Target state
 
@@ -90,14 +91,15 @@ it moot. If the run does NOT flag the file, slice 3 failed; stop.
 
 ## Open decisions (owner)
 
-- **N1 — repo file name:** `.agents/repo-guidance.md` (**recommend**) vs
-  another name.
-- **O1 — precedence rule:** repo-guidance may sharpen or override non-Prime
-  template rules only when citing the recorded decision that earned it;
-  Prime Invariants never overridden; unexplained conflicts get flagged
-  (**recommend**) vs extends-only (no overrides — but then this repo's earned
-  discretionary-rtk stance has no legal home against the template's rtk
-  bullet).
+- **N1 — RESOLVED (default accepted): `.agents/repo-guidance.md`.**
+- **O1 — RESOLVED by owner directive 2026-07-01: extends-only, no citation
+  machinery** (citations are token bloat). `repo-guidance.md` never overrides
+  the template; a genuine conflict is a **defect**, not a precedence question —
+  either the repo rule is stale, or the template rule was not universal and
+  must be cut from the product. The **universality test** ("if a repo could
+  legitimately override it, it doesn't belong in the template") is the
+  admission bar for all future template content; the rtk-bullet removal (O2)
+  was its first application.
 - **O2 — RESOLVED by owner directive 2026-07-01: the token-efficiency bullet
   is removed from the template entirely** (implemented same day, ahead of the
   other slices; `templateVersion` 2026-07-01.4; a test asserts the shipped
