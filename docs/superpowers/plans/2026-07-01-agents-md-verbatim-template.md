@@ -98,10 +98,9 @@ it moot. If the run does NOT flag the file, slice 3 failed; stop.
   (**recommend**) vs extends-only (no overrides — but then this repo's earned
   discretionary-rtk stance has no legal home against the template's rtk
   bullet).
-- **O2 — template rtk bullet drift:** the template's current "Prefix shell
-  commands with `rtk`…" bullet contradicts the recorded 2026-06-22 decision
-  (discretionary per-command, no blanket prefix, no auto-rewrite hook).
-  Options: align the template bullet to the decision in slice 1
-  (**recommend** — the decision is the recorded intent and the template
-  drifted from it; one test at `tests/test_discover.py:374` updates in
-  lockstep) vs leave and let repos override via O1.
+- **O2 — RESOLVED by owner directive 2026-07-01: rtk removed from the product
+  entirely** (implemented same day, ahead of the other slices: template bullet
+  replaced with the brand-free compact-but-equivalent principle,
+  `templateVersion` 2026-07-01.3, test now asserts the shipped template
+  contains no `rtk` mention). This repo's own discretionary-rtk stance becomes
+  a `repo-guidance.md` fact when slice 5 carves it out.

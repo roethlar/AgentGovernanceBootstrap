@@ -364,16 +364,16 @@ class TestPrimeInvariantsTemplate(unittest.TestCase):
                        "re-ground from AGENTS.md"):
             self.assertIn(phrase, head)
 
-    def test_rtk_guidance_prefix_with_escape_hatch(self):
-        # Token-efficiency nudge: prefix shell commands with rtk, with an
-        # escape hatch to run raw / `rtk proxy` when exact output is needed.
+    def test_token_efficiency_guidance_is_brand_free(self):
+        # Owner directive 2026-07-01: no rtk (or any tool-brand) references in
+        # the product. The generic compact-but-equivalent principle stays.
         with tempfile.TemporaryDirectory() as tmp:
             repo = fixtures.make_greenfield_repo(Path(tmp) / "repo")
             fixtures.run_discover(repo)
             tmpl = (repo / ".bootstrap-tmp" / "templates"
                     / "AGENTS.template.md").read_text(encoding="utf-8")
-        self.assertIn("Prefix shell commands with `rtk`", tmpl)
-        self.assertIn("rtk proxy", tmpl)
+        self.assertIn("compact-but-equivalent", tmpl)
+        self.assertNotIn("rtk", tmpl.lower())
 
     def test_bootstrap_handoff_is_pointer(self):
         # Bootstrap Handoff is a conditional pointer to the synced procedures, not

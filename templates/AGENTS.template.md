@@ -1,5 +1,5 @@
 # Agent Guidance
-<!-- templateVersion: 2026-07-01.2 -->
+<!-- templateVersion: 2026-07-01.3 -->
 
 ## Prime Invariants
 <!-- prime:begin — keep terse; re-grounded after compaction -->
@@ -62,9 +62,9 @@ scratch files as authority.
   is a stall. After a few consecutive stalled cycles (state the threshold you are using;
   default ~2-3), stop and surface to a human. A long run that banks a delta each cycle
   is healthy and must not be capped on duration or turn count.
-- Prefix shell commands with `rtk` (`rtk git status`, `rtk pytest`) to cut context use;
-  unfiltered commands pass through unchanged. Escape hatch: when you need exact output or
-  will cite it as evidence, run raw or `rtk proxy <cmd>`.
+- Work token-efficiently; prefer compact-but-equivalent: targeted reads over
+  whole-file dumps, scoped searches, and no re-reading of unchanged files. Never
+  let a lossy filter stand between you and output you will cite as evidence.
 - `AGENTS.md` is governance only — it must be portable. The test: would this line still
   be true and useful if copied unchanged into an unrelated repo? Process, invariants,
   and operator definitions pass. Anything true only of *this* repo — a concrete source

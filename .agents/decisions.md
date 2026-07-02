@@ -728,7 +728,12 @@ decision stays Active for the wrapper guarantee itself.
 
 ### 2026-06-22 - Trim the per-session guidance tax: Bootstrap Handoff pointer; rtk discretionary, not a hook
 
-Status: Active
+Status: Active, as amended 2026-07-01 (owner directive): all `rtk` references
+are removed from the product — the template's token-efficiency invariant is
+brand-free (compact-but-equivalent principle only), guarded by a test that the
+shipped template contains no `rtk` mention. The discretionary-not-a-hook
+stance below remains this repo's own recorded practice (a repo-guidance fact,
+not product text). The Bootstrap Handoff pointer clause is unaffected.
 
 Decision:
 `CLAUDE.md` `@`-imports the whole `AGENTS.md` every session, so `AGENTS.md` length
