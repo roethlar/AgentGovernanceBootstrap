@@ -34,6 +34,42 @@ live rule now owned elsewhere - archive it per the rule above: move it verbatim 
 
 ## Decisions
 
+### 2026-07-01 — Governance refresh entry point; portability sweep in reconciliation; Python 3.9 floor
+
+Status: Active (implemented same day; plan:
+`docs/superpowers/plans/2026-07-01-route-collapse-refresh-and-portability-sweep.md`).
+
+Three durable rules landed alongside the route-collapse adoption (see the
+Adopted 2026-06-28 entry below):
+
+- **`update-governance` is a wrapper-only entry point** shipped at
+  `templates/commands/claude/update-governance.md`: verify the canonical
+  remote, shallow-clone fresh to scratch, follow the synced
+  `procedures/bootstrap.md`. It is not an `AGENTS.md` operator and adds no
+  write authority — every change still passes the approval gate. The wrapper
+  guarantee is keyed to the shipped template directory
+  (`templates/commands/<harness>/`), not to the operator vocabulary, so
+  non-operator wrappers join it without editing governance. The toolkit repo
+  itself receives the wrapper only via a dogfood self-application run (owner
+  pick, 2026-07-01) — that run doubles as the end-to-end test of the flow.
+- **The reconciliation branch runs a portability sweep** (full statement:
+  `procedures/migration.md` Step 2): every carried-forward `AGENTS.md` line
+  faces the portability test; repo-specifics relocate to `.agents/` with
+  pointers, through the same approval summary. This implements, for every
+  refresh run, the retroactive cleanup the 2026-06-25 boundary decision
+  deferred; a dedicated one-shot cleanup pass is no longer needed for repos
+  that refresh. Mid-task relocation remains the `drift` operator's job.
+- **Python 3.9 is the supported floor** for the toolkit's product code
+  (README / docs/usage.md); below-floor probes fall through to versioned
+  interpreter names (`procedures/bootstrap.md` step 3). Earned by a real
+  incident: `tests/test_run_fixture.py` used PEP 604 syntax, failed to import
+  on the macOS system 3.9, and silently hid 84 tests behind one import error
+  (fixed 2026-07-01, commit ad7e9e8).
+
+Also fixed under the same plan: the `operator:playbook` probe false positive
+(bug filed 2026-06-22) — the probe now word-boundary-matches, guarded by a test
+that the shipped template self-reports zero missing sections.
+
 ### 2026-07-01 — Functional cut of the product template; completeness prose deferred entirely
 
 Status: Active (implemented same day; `templateVersion` 2026-07-01.1).

@@ -1,10 +1,14 @@
 # Route collapse, `/update-governance` refresh command, reconciliation portability sweep (+ Python floor, fixture fix)
 
-Status: APPROVED 2026-07-01. Owner picks: W2 = always fetch fresh from the
+Status: DONE 2026-07-01. Owner picks: W2 = always fetch fresh from the
 canonical GitHub URL; W3 = do NOT hand-install the wrapper here — a dogfood
-self-application run (which doubles as slice C's smoke test) installs it into
+self-application run (which doubles as the end-to-end test) installs it into
 this repo through the wrapper guarantee and approval gate; B1 = yes, fix the
 `operator:playbook` probe false positive as its own commit within A1.
+Landed as: D2 ad7e9e8 · A1 07ceb09 · B1 5120ee4 · A2 a48790d · A3 e6f8316 ·
+B 294ad5d · C 7b8a8fc · D1 c7551be. Suite 132/133 throughout — the 1 failure
+is the pre-existing `py_vault_twopath` discrimination-gate mismatch (eval
+workstream; unhidden by D2; owner decision pending, see `.agents/state.md`).
 
 Bundles four related pieces of work; slices land as separate scoped commits in
 the order listed. Slices A and B implement decisions already on record; C and D

@@ -44,15 +44,30 @@ which bars treating such stores as durable repo memory, not versioning their con
 The stale `.bootstrap-tmp/` left over from 2026-06-27 is gone (verified absent
 2026-07-01); no live bootstrap run is signaled.
 
-**Guidance condensation: LANDED 2026-07-01** (270814d; decision recorded in
+**Guidance condensation: LANDED 2026-07-01** (270814d; decision in
 `.agents/decisions.md`, plan closed:
 `docs/superpowers/plans/2026-07-01-guidance-condensation.md`). Template −20%
-words, `templateVersion` 2026-07-01.1, suite at baseline. `completeness-general`
-deferred entirely. Known follow-ups, both owner-gated and not started: a
-`procedures/` condensation pass (deferred by S1, needs its own plan), and
-reconciling this repo's own frozen `AGENTS.md` via a self-application run.
-Known baseline issue: `tests/test_run_fixture.py` fails to import on Python 3.9
-(PEP 604 syntax) — pre-existing, unrelated to the cut, unfixed.
+words. `completeness-general` deferred entirely.
+
+**Route-collapse bundle: LANDED 2026-07-01** (plan closed with commit map:
+`docs/superpowers/plans/2026-07-01-route-collapse-refresh-and-portability-sweep.md`;
+decisions recorded). Single migration route (update collapsed, 2026-06-28
+Adopted), reconciliation branch + portability sweep, `/update-governance`
+wrapper template, `operator:playbook` probe fixed, Python 3.9 floor documented,
+`templateVersion` now 2026-07-01.2. Suite 132/133 on py3.9.
+
+Known issue (owner decision pending): `py_vault_twopath` fails the
+discrimination gate — `tools/run_fixture.py` hard-codes the security truth
+table (hidden must PASS on buggy) while that fixture's hidden test encodes
+completeness semantics (fails on buggy/naive, passes on solution). One gate,
+two fixture classes; unhidden 2026-07-01 when a py3.9 import error that had
+been masking 84 tests was fixed (ad7e9e8). Eval workstream is closed, so the
+fix (e.g. per-fixture expected table in the manifest) awaits an owner go.
+
+Owner-gated follow-ups, not started: a dogfood self-application run (installs
+the `/update-governance` wrapper here, reconciles this repo's frozen
+`AGENTS.md` to 2026-07-01.2, and end-to-end-tests the refresh flow — the
+natural next session); a `procedures/` condensation pass (needs its own plan).
 
 **Push:** stored git credential is STALE; gh token valid →
 `git -c credential.helper='!gh auth git-credential' push` (push policy here is `always`).
