@@ -1,5 +1,5 @@
 # Agent Guidance
-<!-- templateVersion: 2026-07-01.4 -->
+<!-- templateVersion: 2026-07-01.5 -->
 
 ## Prime Invariants
 <!-- prime:begin — keep terse; re-grounded after compaction -->
@@ -23,6 +23,15 @@ These outrank everything below. After a context compaction, re-read this block f
 Turn the human's plain-English request into working, validated changes that fit this
 repo. Do not expand scope without approval. Do not treat unreviewed docs or generated
 scratch files as authority.
+
+## Repo-Specific Guidance
+
+This file is the toolkit template, verbatim: a governance refresh replaces it
+whole, and no agent hand-edits it. Everything specific to this repo — mission
+detail, reading order, verification specifics, remotes, earned practices —
+lives in `.agents/repo-guidance.md`, which extends this file and never
+overrides it. If the two genuinely conflict, apply the flag-conflicts
+invariant (Universal Invariants) rather than treating either as precedent.
 
 ## Universal Invariants
 
@@ -66,16 +75,18 @@ scratch files as authority.
   be true and useful if copied unchanged into an unrelated repo? Process, invariants,
   and operator definitions pass. Anything true only of *this* repo — a concrete source
   path, the repo's own name as a fact, its verification commands, a restatement of
-  current state or the decisions queue — fails and lives in `.agents/` (`state.md`,
-  `decisions.md`, `repo-map.json`), with `AGENTS.md` pointing to it, never restating it.
+  current state or the decisions queue — fails and lives in `.agents/`
+  (`repo-guidance.md`, `state.md`, `decisions.md`, `repo-map.json`), with
+  `AGENTS.md` pointing to it, never restating it.
   References to the toolkit's own standard layout — `.agents/state.md`,
   `procedures/bootstrap.md`, operator names — are portable and allowed.
-- `AGENTS.md` is written only by a gated bootstrap or update run. The sanctioned
-  writers are exactly two, both through the approval gate: a bootstrap run that
-  drafts it, and the migration route's reconciliation of a stale `AGENTS.md` against
-  the current template. Outside such a run no agent edits `AGENTS.md` — a repo-specific
-  fact discovered mid-task goes to `.agents/`; a proposed `AGENTS.md` edit is out of
-  bounds: question it, do not perform it.
+- `AGENTS.md` is written only by a gated bootstrap or update run, and only as the
+  toolkit template verbatim: a bootstrap run installs it; a refresh run replaces it
+  whole with the current template — both through the approval gate, never
+  hand-composed or partially edited. Outside such a run no agent edits `AGENTS.md` —
+  durable repo-specific rules go to `.agents/repo-guidance.md` and facts to the other
+  `.agents/` files; a proposed `AGENTS.md` edit is out of bounds: question it, do not
+  perform it.
 
 ## Bootstrap Handoff
 
@@ -90,8 +101,9 @@ When no `.bootstrap-tmp/` exists, there is nothing to do here.
 
 If `.bootstrap-tmp/` does not exist:
 
-1. Read `AGENTS.md`, `.agents/state.md` if present, and relevant `.agents/` files before
-   making changes; note any untracked or ignored agent-control files that affect the task.
+1. Read `AGENTS.md`, `.agents/repo-guidance.md`, and `.agents/state.md` if present,
+   plus relevant `.agents/` files, before making changes; note any untracked or
+   ignored agent-control files that affect the task.
 2. Hook trust: this repo may ship session-start / post-compaction re-ground hooks. Many
    harnesses keep committed hooks inert until the workspace is trusted on this machine —
    a one-time, uncommittable step. If your harness gates hooks and they are untrusted,
@@ -103,11 +115,13 @@ If `.bootstrap-tmp/` does not exist:
 
 1. Human request.
 2. `AGENTS.md`.
-3. `.agents/state.md` for current active work and blockers.
-4. `.agents/decisions.md` for durable decisions and supersessions.
-5. Approved `.agents/playbooks/*`.
-6. Current code, tests, and CI as evidence for behavior.
-7. Existing docs, only when consistent with current repo evidence.
+3. `.agents/repo-guidance.md` for repo-specific rules (extends `AGENTS.md`, never
+   overrides it).
+4. `.agents/state.md` for current active work and blockers.
+5. `.agents/decisions.md` for durable decisions and supersessions.
+6. Approved `.agents/playbooks/*`.
+7. Current code, tests, and CI as evidence for behavior.
+8. Existing docs, only when consistent with current repo evidence.
 
 When sources disagree, apply the flag-conflicts invariant (Universal Invariants): surface
 the conflict and fix the lower-authority source, or ask which should win.

@@ -106,6 +106,7 @@ class TestScratchOutput(unittest.TestCase):
         for rel in ("procedures/bootstrap.md", "procedures/migration.md",
                     "procedures/verification.md", "procedures/harvest.md",
                     "templates/AGENTS.template.md",
+                    "templates/repo-guidance.template.md",
                     "templates/governance-inventory.template.md",
                     "templates/harvest-report.template.md",
                     "templates/shims/CLAUDE.template.md",
@@ -363,6 +364,26 @@ class TestPrimeInvariantsTemplate(unittest.TestCase):
                        "Commit each slice as it lands",
                        "re-ground from AGENTS.md"):
             self.assertIn(phrase, head)
+
+    def test_template_points_at_repo_guidance_and_shims_import_it(self):
+        # Verbatim-template design (2026-07-01 decision): the template names
+        # .agents/repo-guidance.md as the extends-only home for repo rules,
+        # and the harness shims surface that file alongside AGENTS.md.
+        tmpl = (fixtures.BOOTSTRAP_ROOT / "templates"
+                / "AGENTS.template.md").read_text(encoding="utf-8")
+        self.assertIn("## Repo-Specific Guidance", tmpl)
+        self.assertIn("`.agents/repo-guidance.md`", tmpl)
+        self.assertIn("extends this file and never overrides it",
+                      re.sub(r"\s+", " ", tmpl))
+        claude = (fixtures.BOOTSTRAP_ROOT / "templates" / "shims"
+                  / "CLAUDE.template.md").read_text(encoding="utf-8")
+        self.assertIn("@.agents/repo-guidance.md", claude)
+        gemini = (fixtures.BOOTSTRAP_ROOT / "templates" / "shims"
+                  / "GEMINI.template.md").read_text(encoding="utf-8")
+        self.assertIn(".agents/repo-guidance.md", gemini)
+        skeleton = (fixtures.BOOTSTRAP_ROOT / "templates"
+                    / "repo-guidance.template.md").read_text(encoding="utf-8")
+        self.assertIn("never overrides it", skeleton)
 
     def test_template_has_no_rtk_references(self):
         # Owner directive 2026-07-01: no rtk references in the product; the
