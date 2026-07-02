@@ -1,9 +1,12 @@
 # Condense the product guidance (functional cut)
 
-Status: APPROVED 2026-07-01 (owner picks: S1 = template only; S2 = full
-per-claim accounting table at the gate; G2 = defer completeness-general
-entirely). Slice 2 still lands only after the owner approves the accounting
-table / drop list. No template/procedure/code touched yet.
+Status: DONE 2026-07-01 (owner picks: S1 = template only; S2 = full per-claim
+accounting table at the gate; G2 = defer completeness-general entirely). The
+owner approved the full drop list plus a small residual pass (Session Startup
+trim, canonical-location/anti-enumeration merge, transient-wording
+generalization, Verification bullet merge). Landed in 270814d: 13,355 → 10,623
+bytes (−20% words), stamp `2026-07-01.1` (dotted sub-version required by the
+same-day-collision test guard). Decision recorded in `.agents/decisions.md`.
 Scope: the **product** (`templates/AGENTS.template.md` first; procedures are an
 owner scope pick, S1). Explicitly **not** this repo's own `AGENTS.md` (frozen
 instance; reconciled only by a later deliberate self-application run, per the

@@ -44,13 +44,15 @@ which bars treating such stores as durable repo memory, not versioning their con
 The stale `.bootstrap-tmp/` left over from 2026-06-27 is gone (verified absent
 2026-07-01); no live bootstrap run is signaled.
 
-**Guidance condensation: plan DRAFTED 2026-07-01, awaiting owner approval —
-`docs/superpowers/plans/2026-07-01-guidance-condensation.md`.** Functional cut of
-`templates/AGENTS.template.md` (keep behavioral contracts/facts/pointers; cut
-rationale, capability exhortation, and duplication), `templateVersion` bump to
-propagate via the update route, per-claim drop-list sign-off at the approval
-gate. Open owner picks live in the plan (S1 scope, S2 approval surface, G2
-completeness-general). No template/code touched yet.
+**Guidance condensation: LANDED 2026-07-01** (270814d; decision recorded in
+`.agents/decisions.md`, plan closed:
+`docs/superpowers/plans/2026-07-01-guidance-condensation.md`). Template −20%
+words, `templateVersion` 2026-07-01.1, suite at baseline. `completeness-general`
+deferred entirely. Known follow-ups, both owner-gated and not started: a
+`procedures/` condensation pass (deferred by S1, needs its own plan), and
+reconciling this repo's own frozen `AGENTS.md` via a self-application run.
+Known baseline issue: `tests/test_run_fixture.py` fails to import on Python 3.9
+(PEP 604 syntax) — pre-existing, unrelated to the cut, unfixed.
 
 **Push:** stored git credential is STALE; gh token valid →
 `git -c credential.helper='!gh auth git-credential' push` (push policy here is `always`).

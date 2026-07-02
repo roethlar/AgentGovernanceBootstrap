@@ -34,6 +34,47 @@ live rule now owned elsewhere - archive it per the rule above: move it verbatim 
 
 ## Decisions
 
+### 2026-07-01 — Functional cut of the product template; completeness prose deferred entirely
+
+Status: Active (implemented same day; `templateVersion` 2026-07-01.1).
+
+Decision: `templates/AGENTS.template.md` underwent a **functional cut** — every
+clause classified as behavioral contract, fact/pointer, or definition was kept
+(surviving claims keep full-sentence wording); rationale clauses, worked
+examples, and same-altitude duplication were removed. The largest single change
+applies the 2026-06-24 dedup decision: the `drift` operator no longer restates
+the portability test and its Flag/Allow lists — it points to the
+governance-boundary invariants, which keep the single full statement. Session
+Startup was reduced to its two load-bearing steps (read state before changes;
+hook trust). Result: 13,355 → 10,623 bytes, 1,993 → 1,587 words (−20%),
+roughly 600–700 tokens saved per session in every bootstrapped repo.
+Owner signed off a full per-claim accounting with an explicit drop list at the
+approval gate; plan and drop list:
+`docs/superpowers/plans/2026-07-01-guidance-condensation.md`.
+
+Also settled: **`completeness-general` prose is deferred entirely** — not
+shipped in any form (not even opt-in). Eval evidence: weak-model-only benefit,
+one ceiling harm, null on strong harnesses. The profile remains in
+`evals/governance_profiles/` as a candidate; any future ship is a fresh owner
+decision. This closes the former G1/G2 question from the 2026-06-30
+hook-and-prose plan.
+
+Earned by the closed eval workstream's conclusion (guidance prose is
+placebo-to-harmful on strong models; the per-session size of the injected
+template is a recurring tax) and by the owner's 2026-06-30 direction to make
+the existing guidance more token-efficient. Notably, the cut found **no
+capability-exhortation prose in the template** — the removed mass was rationale
+and duplication — consistent with the 2026-06-22 density audit.
+
+Relationship: complements, does not supersede, 2026-06-22 (word-level
+compression stays rejected; this cut removes whole non-normative clauses, never
+squeezes surviving wording) and applies 2026-06-24 (one full statement,
+pointers elsewhere) inside the template. Exercises the 2026-06-22/25.2 stamp
+machinery (dotted sub-version, enforced by test). Scope: template only —
+`procedures/` condensation was explicitly deferred (owner pick S1) and needs
+its own plan; this repo's own `AGENTS.md` is a frozen instance reconciled only
+by a future self-application run.
+
 ### 2026-06-28 — Collapse the update route into migration; route detection is not load-bearing
 
 Status: Active (decision settled; implementation deferred to a plan).
