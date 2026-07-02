@@ -34,6 +34,30 @@ live rule now owned elsewhere - archive it per the rule above: move it verbatim 
 
 ## Decisions
 
+### 2026-07-02 — Shipped hook commands: `py -3 || python3` fallback chain; Windows scope is Git Bash
+
+Status: Active (plan, awaiting implementation go:
+`docs/superpowers/plans/2026-07-02-hook-python3-windows-fallback.md`).
+
+Decision: shipped hook commands that invoke Python use the interpreter
+fallback chain `py -3 <script> 2>/dev/null || python3 <script>` — never bare
+`python3` — mirroring the bootstrap procedure's Step 1 probe order. On
+Windows the supported execution path is Git Bash (owner, 2026-07-02: Git for
+Windows is already a Claude Code requirement, so PowerShell-only Windows
+hosts are out of scope for hook commands). Claude Code hook commands
+reference the project root as braced `${CLAUDE_PROJECT_DIR}` (substituted by
+the harness itself, shell-independent), not unbraced shell expansion.
+
+Rationale: harvest bug
+`bugs/ExchangeAdminWeb-hook-python3-discovery-2026-07-02.md`
+(roethlar/agent-harvest) — on stock Windows, `python3` on PATH is a Microsoft
+Store stub, so the AGENTS.md tripwire ran the stub and was silently inert;
+the discovery probe was hardened against this exact pitfall
+(`procedures/bootstrap.md` Step 1) but the hook templates were not. Harness
+facts per Claude Code hooks docs (checked 2026-07-02): Windows shell-form
+hooks run in Git Bash if installed, else PowerShell; no OS-conditional hook
+mechanism exists, so one committed command string must serve all machines.
+
 ### 2026-07-02 — AGENTS.template.md ships reflowed: no hard line-wraps; future template edits preserve this
 
 Status: Adopted 2026-07-02 (plan with commit map:
