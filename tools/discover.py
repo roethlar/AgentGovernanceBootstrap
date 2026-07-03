@@ -77,6 +77,11 @@ GOVERNANCE_MARKER_PATTERNS = [
     "decisions.md", "docs/decisions.md", "review.md", ".review/*",
     "docs/agent/*",
 ]
+# Harness-local state a session writes for itself; never durable governance,
+# whatever its custody. Compared case-insensitively against the full rel path.
+MACHINE_LOCAL_STATE_NAMES = {
+    ".claude/settings.local.json",
+}
 ALWAYS_SUGGESTED_PATTERNS = [
     "readme*", "docs/*", "plan.md", "plans.md", "roadmap.md", "todo.md",
     "changelog*", "contributing*", "architecture*", "design*", "security*",
@@ -668,7 +673,15 @@ def discover(repo_arg, coverage_cap=2000):
     ci_branch_mismatches = check_ci_branch_triggers(
         repo_root, ci_markers + suspected_ci, branch)
     agent_markers = match_paths(all_paths, AGENT_MARKER_PATTERNS)
-    governance_markers = match_paths(all_paths, GOVERNANCE_MARKER_PATTERNS)
+    # Routing consumes only durable governance: git-ignored paths are
+    # machine-local by definition (the custody rules already treat ignored as
+    # local-only), and known harness-local state files cannot flip the route
+    # even when untracked (bugs/incident_june-claude-local-only-false-migration
+    # -2026-06-24). agentMarkers stays unfiltered — it is informational.
+    durable_paths = [r["path"] for r in records
+                     if r["source"] != "ignored"
+                     and r["path"].lower() not in MACHINE_LOCAL_STATE_NAMES]
+    governance_markers = match_paths(durable_paths, GOVERNANCE_MARKER_PATTERNS)
     route = compute_route(governance_markers)
     agents_template = compute_agents_template_status(repo_root, route)
 

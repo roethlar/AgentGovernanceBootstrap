@@ -306,6 +306,57 @@ class TestIgnoredDirectoryAnnotation(unittest.TestCase):
             self.assertNotIn("cannot be committed as-is", packet)
 
 
+class TestRouteDurableGovernanceOnly(unittest.TestCase):
+    """The false-migration report (bugs/incident_june-claude-local-only-
+    false-migration-2026-06-24): git-ignored paths and known harness-local
+    state files must not count as governance for routing. A repo whose only
+    `.claude/` content is a session's own settings.local.json has nothing to
+    migrate."""
+
+    def test_ignored_claude_state_only_routes_greenfield(self):
+        # the report's reproduction: the sole pattern match is git-ignored
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = _make_repo(Path(tmp) / "repo", {
+                "README.md": "# x\n",
+                ".gitignore": ".claude/\n",
+            })
+            fixtures._write(repo, ".claude/settings.local.json", "{}\n")
+            manifest = fixtures.run_discover(repo)
+            self.assertEqual(manifest["governanceMarkers"], [])
+            self.assertEqual(manifest["route"], "greenfield")
+
+    def test_untracked_settings_local_only_routes_greenfield(self):
+        # no ignore rule at all (no global ignore on this machine): the file
+        # is untracked but still machine-local state, not governance
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = _make_repo(Path(tmp) / "repo", {"README.md": "# x\n"})
+            fixtures._write(repo, ".claude/settings.local.json", "{}\n")
+            manifest = fixtures.run_discover(repo)
+            self.assertEqual(manifest["governanceMarkers"], [])
+            self.assertEqual(manifest["route"], "greenfield")
+
+    def test_tracked_claude_commands_still_route_migration(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = _make_repo(Path(tmp) / "repo", {
+                "README.md": "# x\n",
+                ".claude/commands/catchup.md": "ptr\n",
+            })
+            manifest = fixtures.run_discover(repo)
+            self.assertIn(".claude/commands/catchup.md",
+                          manifest["governanceMarkers"])
+            self.assertEqual(manifest["route"], "migration")
+
+    def test_untracked_agents_md_still_routes_migration(self):
+        # untracked-but-not-ignored real governance (mid-adoption repo) must
+        # keep routing to migration; only ignored/machine-local is filtered
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = _make_repo(Path(tmp) / "repo", {"README.md": "# x\n"})
+            fixtures._write(repo, "AGENTS.md", "# Agent contract\n")
+            manifest = fixtures.run_discover(repo)
+            self.assertIn("AGENTS.md", manifest["governanceMarkers"])
+            self.assertEqual(manifest["route"], "migration")
+
+
 class TestNonGitTarget(unittest.TestCase):
     """Finding 1 from the Send-MailMessageV2 pilot: a non-git target must
     never list files as tracked - that is a git-custody claim git cannot
