@@ -1,6 +1,8 @@
 # Fix the open bug reports in the agent-harvest dropbox
 
-Status: DRAFT 2026-07-02 — awaiting owner approval before S2 (code) lands.
+Status: DONE 2026-07-02 (owner go same day). Commit map: S1 5776739 (+ line-ref
+fixup 1b22000 after merging the other session's hook-fix commits), S2 879bf93,
+S3 c05dc31, S4 the docs commit landing this text. Suite 142/142 after S2 and S3.
 
 ## Why this plan exists
 
@@ -49,7 +51,7 @@ or this one. That is a pending-verification note, not work this plan can execute
 
 ## Slices
 
-- S1 (docs): this plan. Verification: `git diff --check`. — commit: (fill)
+- S1 (docs): this plan. Verification: `git diff --check`. — commit: 5776739
 - S2 (code): route fix for the false-migration bug. Two changes, each covering
   a case the other misses:
   1. Compute `governance_markers` from tracked + untracked paths only — paths
@@ -72,7 +74,7 @@ or this one. That is a pending-verification note, not work this plan can execute
   - tracked `AGENTS.md` → still `migration`.
   Guard proof per the Verification invariant: revert the fix on a throwaway
   copy, confirm the new tests fail, restore, confirm the full suite passes.
-  Verification: `python3 -m unittest discover -s tests -v`. — commit: (fill)
+  Verification: `python3 -m unittest discover -s tests -v`. — commit: 879bf93
 - S3 (procedures): reword shim drafting to the all-harnesses pattern, per the
   report's proposed fix. In `bootstrap.md` step 5 and `migration.md` Step 4
   item 1: loop over every harness the toolkit ships a
@@ -84,14 +86,15 @@ or this one. That is a pending-verification note, not work this plan can execute
   in" for exactly two residual calls: whether the *current* harness needs a
   best-effort no-template shim, and native-AGENTS.md-reader judgment.
   Procedures are copied content, so verification is the full suite:
-  `python3 -m unittest discover -s tests -v`. — commit: (fill)
+  `python3 -m unittest discover -s tests -v`. — commit: c05dc31
 - S4 (docs): closeout records. Add triage lines to `harvest/processed.md`
   (extending its ledger to bug reports, which currently have no triage ledger):
   the duplication report as resolved-by-prior-work (2026-07-02.1 reflow /
   condensation, bite-proof passes), and — once S2/S3 land — the false-migration
   and shim-scoping reports as fixed with their commit hashes. Note in
   `.agents/state.md`: hook-python3 Windows bite-proof still pending a Windows
-  host. Verification: `git diff --check`. — commit: (fill)
+  host. Verification: `git diff --check`. — commit: the docs commit landing
+  this text (a commit cannot name its own hash).
 
 One report per commit (Git Safety): S2 and S3 each close exactly one report.
 

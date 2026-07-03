@@ -34,6 +34,18 @@ Word-level compression stays rejected (2026-06-22 decision, ~2.7%). The
 out by the evidence — which reframes the old G1 question. Note the 2026-06-30 plan doc
 was codex-reviewed at v1 only; its prose sections were never re-reviewed at v2.
 
+**Open-bug-reports sweep: DONE 2026-07-02** (owner go; plan closed with commit
+map: `docs/superpowers/plans/2026-07-02-open-bug-reports-sweep.md`). All six
+dropbox `bugs/` reports are triaged; the ledger is the new "Processed Bug
+Reports" section in `harvest/processed.md`. Fixed this sweep: false-migration
+routing (879bf93 — discover.py governance markers skip git-ignored paths and
+`.claude/settings.local.json`; 4 new tests, suite 142/142, guard-proven) and
+shim harness scoping (c05dc31 — bootstrap step 5 + migration Step 4 draft or
+refresh every shipped shim template, not just the current harness's). The
+template-invariant-duplication report was resolved by the earlier
+condensation/reflow work; its bite-proof passes. Only open thread: the
+hook-python3 Windows bite-proof (next block).
+
 **Hook interpreter fix: LANDED 2026-07-02** (plan closed with commit map:
 `docs/superpowers/plans/2026-07-02-hook-python3-windows-fallback.md`; decision
 Adopted in `.agents/decisions.md`). Harvest bug
