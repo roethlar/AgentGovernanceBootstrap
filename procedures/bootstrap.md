@@ -316,14 +316,18 @@ the same single scoped commit.
    `ignored` (`git check-ignore` exits 0) or `untracked`. Recording
    draft-time custody for a file the same commit will track bakes a
    falsehood into the manifest.
-5. Draft the harness shim (harnesses that read `AGENTS.md` natively —
-   Codex-family and many newer tools — need none; judge from self-knowledge
-   of the harness you are running in) for the harness you are running in, from
-   `.bootstrap-tmp/templates/shims/` when one exists for it; otherwise write a
-   minimal pointer shim from self-knowledge and label it "best-effort" in the
-   approval summary. Then run the "Operator command wrappers (all routes)"
-   section above: draft any missing wrappers and the `.gitignore` edit that
-   makes them committable.
+5. Draft harness shims. Shims are portable repo artifacts in the same class
+   as the operator wrappers — for the repo, not your current session — so
+   cover every harness the toolkit ships a shim template for under
+   `.bootstrap-tmp/templates/shims/`: draft any missing shim and refresh any
+   present one that has drifted from its template, regardless of which
+   harness you are running in. Self-knowledge covers only the current
+   harness's residual case: if it lacks a shipped template and does not read
+   `AGENTS.md` natively (Codex-family and many newer tools need no shim),
+   write a minimal pointer shim from self-knowledge and label it
+   "best-effort" in the approval summary. Then run the "Operator command
+   wrappers (all routes)" section above: draft any missing wrappers and the
+   `.gitignore` edit that makes them committable.
 6. Staleness recheck: before writing the approval summary, compare current
    `git status --short` with the manifest's recorded status. If the working tree
    materially changed (files added, deleted, or heavily edited), re-run discovery

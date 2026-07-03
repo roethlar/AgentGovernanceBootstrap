@@ -107,11 +107,14 @@ only after approval.
 
 ## Step 4: Harness shims and commands
 
-1. Harnesses that read `AGENTS.md` natively — Codex-family and many newer
-   tools — need no shim; judge from self-knowledge of the harness you are
-   running in. For harnesses that do not, draft the shim from
-   `.bootstrap-tmp/templates/shims/`; for harnesses without a template, write a
-   minimal pointer shim from self-knowledge and label it best-effort.
+1. Draft or refresh a shim for every harness the toolkit ships a template
+   for under `.bootstrap-tmp/templates/shims/`, regardless of which harness
+   you are running in — shims are portable repo artifacts in the same class
+   as the operator wrappers below, serving whichever harness a future session
+   runs. Self-knowledge covers only the current harness's residual case: if
+   it lacks a shipped template and does not read `AGENTS.md` natively
+   (Codex-family and many newer tools need no shim), write a minimal pointer
+   shim from self-knowledge and label it best-effort.
 2. Run the "Operator command wrappers (all routes)" section in
    `.bootstrap-tmp/procedures/bootstrap.md`: audit the trigger vocabulary
    (catchup, handoff, drift, decision, plan, playbook), draft any missing
