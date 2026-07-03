@@ -17,6 +17,7 @@ One line per triaged report from the dropbox's `bugs/` folder (dropbox files
 are append-only, so triage state lives here, not in the reports):
 `<report filename stem> - <one-phrase outcome>`
 
+- AgentGovernanceBootstrap-playbook-probe-2026-06-22 - fixed 2026-07-01 under the route-collapse plan: `operator:playbook` probe now word-boundary-matches, guarded by a test that the shipped template self-reports zero missing sections (see the 2026-07-01 decision entry)
 - headroom-authority-boundary-overreach-2026-06-23 - folded into `.agents/decisions.md` (2026-06-23 entry citing the report)
 - headroom-harness-artifact-overproduction-2026-06-23 - folded into `.agents/decisions.md` (2026-06-23 entry citing the report)
 - incident_june-claude-local-only-false-migration-2026-06-24 - fixed 2026-07-02: discover.py routing consumes only durable governance — git-ignored paths and `.claude/settings.local.json` no longer count (879bf93, 4 new tests)
