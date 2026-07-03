@@ -138,12 +138,18 @@ Slice 5 landed as 35b5436; slice 6 (bookkeeping) done same day: the
 2026-07-01 verbatim-template decision entry closed with the hash and archived
 to `docs/history/decisions-archive.md`, plan Status closed. The
 verbatim-template plan is fully complete.
-**NEXT: awaiting owner input on two queued items** — (1) the verbosity-sweep
-B*/M*/P* finding IDs below; (2) flagged conflict: `.agents/RTK.md` says
-"Always prefix shell commands with rtk" while the earned practice (2026-06-22
-decision, restated in `.agents/repo-guidance.md`) is discretionary
-per-command use — owner decides which wording wins, then fix the
-lower-authority file.
+**NEXT: awaiting owner input on one queued item** — the verbosity-sweep
+B*/M*/P* finding IDs below.
+
+**RTK wording conflict: RESOLVED 2026-07-03 (owner ruling).** `.agents/RTK.md`
+ships with the RTK app itself — it is a third-party artifact this repo never
+edits; its "always prefix" wording is not this repo's governance. The product
+carries NO rtk references (confirmed by grep over `templates/`, `procedures/`,
+`tools/`; test-guarded), and `.agents/repo-guidance.md` now carries none
+either — its Earned Practices bullet keeps the generic
+discretionary-filter-proxy practice with the rtk example and the RTK.md
+import mention removed. The `CLAUDE.md` `@.agents/RTK.md` import stays (it is
+how Claude Code loads the app's own usage doc, not governance).
 
 **Verbosity sweep of the product: REPORT DELIVERED 2026-07-01, awaiting owner
 eval — no changes made.** Findings (IDs the owner replies with to execute):
