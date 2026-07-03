@@ -19,7 +19,7 @@ items remain actionable:
    and `compute_route` returns `migration` on any non-empty marker set
    (line 248–254).
 2. **`ai-rpg-engine-shim-harness-scoping-2026-07-02` — still live.**
-   `procedures/bootstrap.md` step 5 (lines 313–318) and `procedures/migration.md`
+   `procedures/bootstrap.md` step 5 (lines 319–324) and `procedures/migration.md`
    Step 4 item 1 (lines 110–114) scope shim drafting to "the harness you are
    running in," so shims for other harnesses with shipped templates
    (`templates/shims/CLAUDE.template.md`, `GEMINI.template.md`) are never drafted
