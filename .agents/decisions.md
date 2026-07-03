@@ -34,6 +34,50 @@ live rule now owned elsewhere - archive it per the rule above: move it verbatim 
 
 ## Decisions
 
+### 2026-07-03 — Subdir-scoped bootstrap is not a supported mode; monorepo probe finding closed as not-applicable
+
+Status: Active (this entry is the canonical home of the rule; the closed Open
+finding is archived verbatim in `docs/history/decisions-archive.md` in this
+same change; no code change).
+
+Decision: the toolkit is pointed only at a governance root — the directory
+that owns an `AGENTS.md` + `.agents/` set, normally the repo root.
+Subdir-scoped bootstrap (running the toolkit against a subdirectory of a
+governed repo to give that subtree its own governance) is not a supported
+mode. The 2026-06-22 Open finding "route/verification probes match literal
+`package.json` against repo-relative paths (monorepo subdir miss)" is closed
+as not-applicable: the probe mismatch only bites on a subdir-scoped run,
+which no supported path produces.
+
+Rationale: the 2026-07-01 verbatim-template decision makes nested governance
+waste by construction — `AGENTS.md` is byte-identical in every governed repo,
+so a per-subtree copy duplicates the same bytes and adds a second
+reconciliation surface carrying zero content. Per-subtree facts that genuinely
+differ (e.g. backend vs frontend verification commands) already have a home
+inside the single `.agents/` set: path-conditional rules in
+`.agents/repo-guidance.md` and per-path entries in `.agents/repo-map.json`.
+Splitting state or decisions per subtree would violate the
+one-discoverable-current-state-entry-point invariant. Real-world nested
+per-directory `AGENTS.md` layouts exist (observed 2026-07-03 in the `agentrq`
+repo: `backend/` and `frontend/` each carry their own `AGENTS.md` plus a
+`@AGENTS.md` shim), but they are evidence about content-bearing `AGENTS.md`
+systems and do not transfer to this toolkit, whose `AGENTS.md` carries no
+repo-specific content.
+
+Deferred, not decided: the don't-own-the-root scenario — a team owning only a
+subtree of a large monorepo, unable to write files at the top level. The
+natural handling would be pointing the toolkit at that subtree and treating it
+as the governance root (one `AGENTS.md`, one `.agents/`, all paths relative to
+it), not nested governance. No pilot or request has hit this; supporting it is
+deferred until real demand and would be a fresh decision.
+
+Decision-locus note, recorded for whenever this reopens: if scoped runs were
+ever supported, the scope decision belongs to the human at kickoff (where the
+tool is pointed is the decision); discovery only surfaces candidate-boundary
+evidence as leads; the model proposes a layout through the approval summary.
+Consistent with the route-collapse finding (Adopted 2026-07-01) that
+mechanical detection is not load-bearing in this toolkit.
+
 ### 2026-07-02 — Shipped hook commands: `py -3 || python3` fallback chain; Windows scope is Git Bash
 
 Status: Adopted 2026-07-02 (plan with commit map:
@@ -903,27 +947,12 @@ These are assessed findings the owner chose to record for a future decision
 rather than implement now. The process is unchanged until one is adopted. Each
 states the verified evidence, the options, and the standing recommendation.
 
-The following six were assessed on 2026-06-22 from three external repo
+The following were assessed on 2026-06-22 from three external repo
 reviews (DeepSeek, GPT-5.5, Grok) read against current repo evidence. The
 reviews' other suggestions were rejected as scope-inflating or already covered
 and are not recorded. Recommendation order below is the suggested implementation
-sequence.
-
-### Open: route/verification probes match literal `package.json` against repo-relative paths (monorepo subdir miss)
-
-Evidence: `tools/discover.py` tests membership of the literal `"package.json"` in
-the path set, but paths are stored repo-relative (`relative_to(repo_root)`), so a
-subdir-scoped run on e.g. `packages/api/` yields `packages/api/package.json`,
-which never matches — silently losing verification-command detection for the
-scoped case.
-
-Precondition: confirm whether subdir-scoped bootstrap is a supported mode. If it
-is not a real path, this does not bite and should be closed as not-applicable
-rather than fixed.
-
-Recommendation: resolve the precondition first. If scoped runs are supported,
-match by basename / suffix instead of literal full-path membership. Lower
-priority than the two above.
+sequence. (The batch's monorepo-subdir probe finding was closed 2026-07-03 as
+not-applicable — see that decision above and the archive.)
 
 ### Open: hook-merge strategy is underspecified in the procedure
 
@@ -1028,7 +1057,7 @@ the guidance). Not yet designed or decided — surfaced 2026-06-22, undecided.
 The following two were assessed on 2026-06-23 from bug reports filed to the
 `agent-harvest` dropbox during a `headroom` (chopratejas/headroom) dogfood
 migration run, read against current repo evidence. They are appended at the end of
-the queue; the implementation sequence of the seven items above is unchanged.
+the queue; the implementation sequence of the items above is unchanged.
 
 ### Open: the authority/scope boundary has no stated precedence over the content-quality invariants
 

@@ -1031,3 +1031,26 @@ stamp stays for reporting; byte-compare carries the decision). The 2026-07-01
 portability-sweep rule (earlier entry, this file) is refined from
 "relocate line-by-line during reconciliation" to "carve out once at first
 migration; thereafter the file is replaced whole."
+
+### Open: route/verification probes match literal `package.json` against repo-relative paths (monorepo subdir miss)
+
+Status: Closed 2026-07-03 as not-applicable — the precondition resolved
+against: subdir-scoped bootstrap is not a supported mode (see the 2026-07-03
+"Subdir-scoped bootstrap is not a supported mode" decision in
+`.agents/decisions.md`). The probe mismatch only bites on a subdir-scoped
+run, which no supported path produces; no code change. Original entry
+retained verbatim below.
+
+Evidence: `tools/discover.py` tests membership of the literal `"package.json"` in
+the path set, but paths are stored repo-relative (`relative_to(repo_root)`), so a
+subdir-scoped run on e.g. `packages/api/` yields `packages/api/package.json`,
+which never matches — silently losing verification-command detection for the
+scoped case.
+
+Precondition: confirm whether subdir-scoped bootstrap is a supported mode. If it
+is not a real path, this does not bite and should be closed as not-applicable
+rather than fixed.
+
+Recommendation: resolve the precondition first. If scoped runs are supported,
+match by basename / suffix instead of literal full-path membership. Lower
+priority than the two above.
