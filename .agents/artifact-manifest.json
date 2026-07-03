@@ -1,17 +1,27 @@
 {
   "validated_against": {
-    "commit": "d9e616faf2f28cdc0d305bc2099dd747a5173175",
-    "date": "2026-06-21"
+    "commit": "ca53e7186cb218ae1b0e56399adbf1d566dda38e",
+    "date": "2026-07-02"
   },
   "artifacts": [
     {
       "path": "AGENTS.md",
-      "purpose": "Canonical agent guidance: Prime Invariants, mission, universal and repo-specific invariants, Bootstrap Handoff, Session Startup, Active Sources, Source of Truth, Operator Requests, verification, git safety, final response",
+      "purpose": "Canonical agent guidance, a verbatim byte-identical copy of templates/AGENTS.template.md; replaced whole on governance refresh, never hand-edited. Repo-specific content lives in .agents/repo-guidance.md, which it imports.",
+      "custody": "tracked"
+    },
+    {
+      "path": ".agents/repo-guidance.md",
+      "purpose": "All repo-specific guidance carved out of AGENTS.md on 2026-07-02: mission detail, reading order, verification commands, remotes and canon-propagation, earned practices. Extends AGENTS.md, never overrides it.",
+      "custody": "tracked"
+    },
+    {
+      "path": ".agents/push-policy.md",
+      "purpose": "Repo push policy consulted after every commit (see AGENTS.md Prime Invariants)",
       "custody": "tracked"
     },
     {
       "path": "CLAUDE.md",
-      "purpose": "Thin Claude Code shim that @imports AGENTS.md so the harness (and the re-ground hook) reach the canonical guidance and Prime Invariants",
+      "purpose": "One-line Claude Code shim (@AGENTS.md) plus this repo's @.agents/RTK.md import, so the harness (and the re-ground hook) reach the canonical guidance and Prime Invariants",
       "custody": "tracked"
     },
     {

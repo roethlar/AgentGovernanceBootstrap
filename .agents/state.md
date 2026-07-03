@@ -34,6 +34,18 @@ Word-level compression stays rejected (2026-06-22 decision, ~2.7%). The
 out by the evidence — which reframes the old G1 question. Note the 2026-06-30 plan doc
 was codex-reviewed at v1 only; its prose sections were never re-reviewed at v2.
 
+**Hook interpreter fix: LANDED 2026-07-02** (plan closed with commit map:
+`docs/superpowers/plans/2026-07-02-hook-python3-windows-fallback.md`; decision
+Adopted in `.agents/decisions.md`). Harvest bug
+`ExchangeAdminWeb-hook-python3-discovery-2026-07-02`: bare `python3` in the
+shipped hook commands is a Store stub on stock Windows, so the AGENTS.md
+tripwire was silently inert there. Both hook templates (and this repo's
+mirrored `.claude/settings.json`) now use `py -3 … 2>/dev/null || python3 …`
+with braced `${CLAUDE_PROJECT_DIR}` for Claude; Windows scope is Git Bash
+(owner decision). Suite 138/138. Windows bite-proof still outstanding — rests
+on harness docs + the reporter's evidence until a Windows host confirms the
+reminder fires. Harvest bug report updated to fix-landed (owner go).
+
 **Housekeeping (2026-07-01):** `AGENTS.md.old` removed (41c3753; byte-identical
 recovery residue — live `AGENTS.md` was never damaged). Owner fixed the `CLAUDE.md`
 import typo (`RTTK.md` → `RTK.md`; landed in 12b0434). `.serena/` is kept tracked by
@@ -98,16 +110,28 @@ line-wraps; future template edits must not re-wrap. Lossless; folded with the
 sweep's T1 hook-trust trim into the same bump: 3,873 → 3,652 tokens (−5.7%,
 `count_tokens`, claude-opus-4-8 tokenizer). Scope is the verbatim template
 only (`repo-guidance.template.md`, shims, procedures stay wrapped).
-**NEXT ACTION: owner runs `/update-governance` here (plan slice 5)** — carve
-this repo's specifics into `.agents/repo-guidance.md` (mission detail, Active
-Sources, verification commands, remotes/canon-propagation, discretionary-rtk
-practice), replace `AGENTS.md` verbatim, and reconcile `CLAUDE.md` toward the
-one-line shim (this repo's extra `@.agents/RTK.md` import is a repo-specific
-addition for that run to place). That run supersedes the out-of-band `f697bf9`
-content through
-the sanctioned path and is the end-to-end validation: discovery MUST flag the
-current mixed-content `AGENTS.md` (`byteIdentical` false); if it does not,
-the byte-compare failed — stop.
+**Slice 5 DONE 2026-07-02: `/update-governance` dogfood run on this repo.**
+Discovery correctly flagged the mixed-content `AGENTS.md` (`byteIdentical`
+false, stamp 2026-07-01.2 vs template 2026-07-02.1) — the end-to-end
+validation the plan required. The run carved this repo's specifics into
+`.agents/repo-guidance.md` (mission detail, reading order, verification
+commands, remotes/canon-propagation, discretionary-rtk practice, hook
+description), replaced `AGENTS.md` with the template verbatim (post-copy
+`cmp` proven byte-identical), and reduced `CLAUDE.md` to the one-line shim
+plus this repo's `@.agents/RTK.md` import (the repo-specific addition, kept
+in the shim so Claude Code still loads it). `.agents/repo-map.json` and
+`.agents/artifact-manifest.json` updated to record the new file. This
+supersedes the out-of-band `f697bf9` content through the sanctioned path.
+Slice 5 landed as 35b5436; slice 6 (bookkeeping) done same day: the
+2026-07-01 verbatim-template decision entry closed with the hash and archived
+to `docs/history/decisions-archive.md`, plan Status closed. The
+verbatim-template plan is fully complete.
+**NEXT: awaiting owner input on two queued items** — (1) the verbosity-sweep
+B*/M*/P* finding IDs below; (2) flagged conflict: `.agents/RTK.md` says
+"Always prefix shell commands with rtk" while the earned practice (2026-06-22
+decision, restated in `.agents/repo-guidance.md`) is discretionary
+per-command use — owner decides which wording wins, then fix the
+lower-authority file.
 
 **Verbosity sweep of the product: REPORT DELIVERED 2026-07-01, awaiting owner
 eval — no changes made.** Findings (IDs the owner replies with to execute):
@@ -132,8 +156,9 @@ owner IDs, no separate plan needed beyond this recorded report.
 Owner-gated follow-up, not started: none beyond the sweep eval and the
 slice-5 dogfood run above.
 
-**Push:** stored git credential is STALE; gh token valid →
-`git -c credential.helper='!gh auth git-credential' push` (push policy here is `always`).
+**Push:** plain `git push` works again (verified 2026-07-02; the earlier
+stale-credential workaround via `gh auth git-credential` is no longer needed).
+Push policy here is `always`.
 
 (The `## Next` eval entries below are superseded history — see this block for current truth.)
 
@@ -142,7 +167,7 @@ slice-5 dogfood run above.
 - AgentGovernanceBootstrap is the source for the portable governance/bootstrap process.
 - It supplies `tools/discover.py`, the procedures in `procedures/`, drafting templates in `templates/`, and supporting docs.
 - The toolkit supports three routes (greenfield, migration, update) and has been pilot-validated on external repos (roon-controller, vela, Blit) plus self.
-- Governance for this repo itself is in `AGENTS.md` (Prime Invariants, universal and repo-specific rules, operator vocabulary, and pointers) plus this `.agents/` layout (state and decisions).
+- Governance for this repo itself: `AGENTS.md` is a verbatim copy of `templates/AGENTS.template.md` (Prime Invariants, universal invariants, operator vocabulary — replaced whole on governance refresh, never hand-edited); everything repo-specific lives in `.agents/repo-guidance.md` (since the 2026-07-02 carve-out) plus this `.agents/` layout (state and decisions).
 - 2026-06-21: this repo's own governance was brought current with the product it ships (it had intentionally lagged since 2026-06-20). The self-application added a `CLAUDE.md` shim (`@AGENTS.md`), committed `.claude/commands/` wrappers for the full operator set (`catchup`, `handoff`, `drift`, `decision`, `plan`, `playbook`), and a committed `.claude/settings.json` re-ground hook (fires on context compaction, points back to AGENTS.md). `AGENTS.md` was rewritten to the product shape: a `## Prime Invariants` block, a `## Universal Invariants` section, `## Operator Requests`, a `## Session Startup` trust note, and an updated `## Bootstrap Handoff` that audits wrappers and re-ground hooks. (`.claude/settings.local.json` stays machine-local and untracked.)
 - 2026-06-21: the load-bearing-invariant enforcement work landed and is recorded as Adopted — a lean Prime Invariants block plus per-harness re-ground hooks (`templates/hooks/<harness>/`) that fire on compaction, with tests and a design spec (`docs/superpowers/specs/2026-06-21-invariant-reground-reinjection-design.md`). This resolved the last item that had been deferred to this re-run.
 - 2026-06-22: closed the update-route template-reconciliation gap. `AGENTS.md` files now carry a `<!-- templateVersion -->` stamp; discovery records an `agentsTemplate` manifest block (current/target version, `reconcileRecommended`, `missingSections`) and, on the update route, the toolkit reconciles a stale or unstamped `AGENTS.md` to the current template before running the wrapper/hook guarantees. Wrapper/hook guidance treats a missing target section as a staleness signal to reconcile, not a cue to narrow the artifact. See the 2026-06-22 decision in `.agents/decisions.md`.
@@ -498,11 +523,12 @@ slice-5 dogfood run above.
 
 - Changes that touch `tools/discover.py`, `tests/`, or any content under `templates/` or `procedures/` that the discover script copies into target repos: run `python3 -m unittest discover -s tests -v`.
 - Documentation-only changes (no effect on setup, commands, runtime behavior, generated files, or user-visible behavior): run `git diff --check`.
-- See `AGENTS.md` Verification section and `.agents/repo-map.json` for the policy that applies to future agents.
+- See `.agents/repo-guidance.md` (Verification) and `.agents/repo-map.json` for the policy that applies to future agents; `AGENTS.md` carries only the generic verification rules.
 
 ## Active Sources
 
 - `AGENTS.md`
+- `.agents/repo-guidance.md`
 - `.agents/state.md`
 - `.agents/decisions.md`
 - `README.md`

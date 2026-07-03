@@ -1,13 +1,18 @@
 # AGENTS.md as verbatim template: pointer, byte-compare, wholesale replace
 
-Status: IMPLEMENTED 2026-07-01 except slice 5 (all picks settled: N1 default
-accepted; O1 and O2 by owner directive, see Open decisions). Landed as:
-picks 920c953 · template/skeleton/shims 1f76859 (`templateVersion`
+Status: CLOSED 2026-07-02 — all slices complete (all picks settled: N1
+default accepted; O1 and O2 by owner directive, see Open decisions). Landed
+as: picks 920c953 · template/skeleton/shims 1f76859 (`templateVersion`
 2026-07-01.5) · byte-compare 4455a75→b332f9b · procedures 9a65dbb; rtk
 removal rode ahead as d4ea830/4455a75. Suite 138/138; every guard
-mutation-proven hermetically. **Remaining: slice 5** — the owner-initiated
-`/update-governance` run on this repo (carve-out + verbatim replacement),
-which is the end-to-end validation; then slice 6 closes the decision entry.
+mutation-proven hermetically. **Slice 5 landed 2026-07-02 as 35b5436** (the
+owner-initiated `/update-governance` dogfood run: carve-out into
+`.agents/repo-guidance.md` + verbatim replacement + one-line-shim `CLAUDE.md`
+with the `@.agents/RTK.md` import retained; the end-to-end validation passed
+— discovery flagged the mixed file via `byteIdentical: false`, and the
+installed `AGENTS.md` is byte-identical to the template). Slice 6
+(bookkeeping) closed the decision entry — archived to
+`docs/history/decisions-archive.md` — and this Status.
 
 ## Target state
 

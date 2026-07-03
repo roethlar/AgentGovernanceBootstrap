@@ -240,9 +240,15 @@ with the steady state "already present, nothing to do."
    PowerShell; verified on macOS, Windows best-effort until tested); it is delivered
    by a single-quoted `echo`, so if you ever edit its text keep it ASCII and free of
    any apostrophe/single quote — one would close the quoting and silently break the
-   hook. The tripwire command invokes `python3` on the shipped script via a portable
-   repo-root resolution (no baked path); keep the script byte-identical across the
-   harnesses that ship it. If a hook config already exists at a target path, merge
+   hook. The tripwire command resolves the repo root portably (no baked path) and
+   invokes the shipped script through an interpreter fallback chain — `py -3 …
+   2>/dev/null || python3 …` — because on stock Windows a bare `python3` on PATH
+   is a Store stub that runs nothing (the same pitfall the Step 1 probe guards
+   against; the chain mirrors its order). The supported Windows execution path is
+   Git Bash: Claude Code runs shell-form hooks there when it is installed, and Git
+   for Windows is already a Claude Code requirement; PowerShell-only Windows hosts
+   are out of scope for hook commands (2026-07-02 decision). Keep the script
+   byte-identical across the harnesses that ship it. If a hook config already exists at a target path, merge
    the toolkit's hooks into it rather than replacing the file — a repo may already
    have other hooks, and `.claude/settings.json` also holds permissions, env, and
    model settings. If a safe merge is not possible, stop and ask. Only write a config

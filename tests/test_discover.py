@@ -527,10 +527,18 @@ class TestHookTemplates(unittest.TestCase):
                 entry = entries[0]
                 self.assertEqual(entry.get("matcher"), matcher, rel)
                 command = entry["hooks"][0]["command"]
-                # The script is invoked by the toolkit's baseline interpreter,
-                # via a portable repo-root resolution (not an absolute path).
-                self.assertIn("python3", command, rel)
+                # Interpreter fallback chain (2026-07-02 decision): `py -3`
+                # first (the Windows launcher; on stock Windows a bare
+                # `python3` is a Store stub that runs nothing), `python3` as
+                # the POSIX fallback. Bare `python3` leaves the hook silently
+                # inert on Windows.
+                self.assertIn("py -3 ", command, rel)
+                self.assertIn(" || python3 ", command, rel)
                 self.assertIn("agents-md-tripwire.py", command, rel)
+                if rel.startswith("claude/"):
+                    # Braced form is substituted by Claude Code itself before
+                    # any shell sees it — shell-independent path resolution.
+                    self.assertIn("${CLAUDE_PROJECT_DIR}", command, rel)
                 # The script ships alongside the config.
                 self.assertTrue(
                     (hooks / Path(rel).parent / "agents-md-tripwire.py").is_file(),

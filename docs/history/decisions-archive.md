@@ -965,3 +965,69 @@ whether to collapse the update route into migration (cf. the 2026-06-22 "update
 route reconciles a stale AGENTS.md" decision) than as shipping a routing marker.
 No next step is committed yet; this supersedes the "next step is a plan" line
 above.
+
+---
+
+### 2026-07-01 — AGENTS.md is the verbatim template, wholesale-replaced on update; repo-specifics live in one designated `.agents/` file
+
+Status: Closed 2026-07-02 (Adopted 2026-07-01) — product implementation
+landed 2026-07-01 (plan with commit map:
+`docs/superpowers/plans/2026-07-01-agents-md-verbatim-template.md`): template
+pointer section + `templates/repo-guidance.template.md` + shim imports;
+`discover.py` `byteIdentical` carries `reconcileRecommended`; procedures
+reconcile by replacement with the repo-guidance carve-out on both routes.
+This repo's own carve-out landed 2026-07-02 via the `/update-governance`
+dogfood run (commit 35b5436) — the end-to-end validation passed: discovery
+flagged the mixed-content file, the carve-out + verbatim replacement went
+through the approval gate, and the installed `AGENTS.md` is byte-identical
+to the template. Settled with it (owner, same day): the repo
+file is **extends-only** — no override path, no citation machinery (token
+bloat); a genuine conflict is a defect (either the repo rule is stale or the
+template rule was not universal and must be cut from the product). The
+**universality test** — "if a repo could legitimately override it, it does
+not belong in the template" — is the admission bar for template content; the
+same-day removal of the rtk/token-efficiency bullet was its first
+application. Text below retained as rationale.
+
+Decision: In every bootstrapped repo — this toolkit included — `AGENTS.md` is
+**byte-identical to the shipped `templates/AGENTS.template.md`**. All
+repo-specific guidance (mission detail, active sources, verification
+specifics, earned rule variants, remotes/push facts) lives in one designated
+repo-specific file under `.agents/` that a template-owned pointer names.
+Consequences:
+
+- **Update = wholesale replacement.** A refresh run replaces `AGENTS.md` with
+  the current template and touches nothing in `.agents/`. No carry-forward
+  judgment, no hunk-walking, no stamp reasoning.
+- **Drift detection = byte-compare.** Discovery compares the target's
+  `AGENTS.md` against the current template; any difference recommends
+  reconciliation. The `templateVersion` stamp becomes informational — the
+  byte-compare is the load-bearing signal and is judgment-free.
+- **Repo content enters `AGENTS.md` never.** First bootstrap/migration carves
+  existing repo-specific guidance into the designated `.agents/` file; the
+  portability sweep becomes that carve-out, run once, mechanical thereafter.
+
+Earned by the 2026-07-01 incident chain, which showed the mixed-content design
+fails twice over: (1) the dogfood self-application run stamped this repo's
+`AGENTS.md` `2026-07-01.2` while seven pre-condensation template passages
+remained — the stamp + structural-probe signals cannot see wording drift, and
+a wrong stamp write self-seals (every later run reads "current"); (2) the
+correction was then applied outside the sanctioned write path (`f697bf9`),
+violating write-authority — mixed content invites exactly such judgment
+edits. Separating template from repo content removes the judgment from the
+loop entirely: the same mechanism-over-prose conclusion the eval workstream
+reached for model guidance, applied to our own procedures.
+
+Relationship: operationalizes the 2026-06-25 governance-boundary decision,
+which recorded the portable/repo-specific *boundary* but not the
+wholesale-replaceability rationale or the designated-file mechanism (the
+owner's intent, stated at the time, had not been captured — this entry closes
+that gap). Supersedes the 2026-06-25 scope-guard deferral of "retroactive
+cleanup of already-bootstrapped repos" for any repo that refreshes (the
+replacement run performs the cleanup), and supersedes this repo's own
+`AGENTS.md` self-exemption parenthetical (removed when the file is replaced).
+Simplifies, does not remove, the 2026-06-22 `templateVersion` machinery (the
+stamp stays for reporting; byte-compare carries the decision). The 2026-07-01
+portability-sweep rule (earlier entry, this file) is refined from
+"relocate line-by-line during reconciliation" to "carve out once at first
+migration; thereafter the file is replaced whole."
