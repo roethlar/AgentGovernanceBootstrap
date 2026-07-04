@@ -1,6 +1,9 @@
 # Fix the four valid findings from the 2026-07-03 codex review
 
-Status: DRAFT 2026-07-03, awaiting owner go. Source: independent codex review
+Status: DONE 2026-07-03 (owner go same session). Commit map: plan `8c2deec`,
+F1 `0e8497a`, F2 `e5a0da3`, F3 `e71cb85`, F4 `472144b`. Suite 144 OK
+(2 pre-existing skips) on the landed bytes; F4 guard proof ran (fix reverted
+→ hung-probe test errors; restored → green); `git diff --check` clean. Source: independent codex review
 (codex-cli 0.142.5, headless, read-only) over the day's diff
 `ba4e23f..ed7e3ad`; all four findings verified against the files before
 planning. A grep sweep for stale wording (`optional playbook`, `scope tier
