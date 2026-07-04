@@ -61,8 +61,8 @@ enter the commit and must not be listed as committed.>
 - `.agents/decisions.md`
 - `.agents/repo-map.json`
 - `.agents/artifact-manifest.json`
-- `.agents/playbooks/<name>.md` — one per shipped playbook template; installed
-  unconditionally on every route, never a question (list each actual file)
+- `.agents/playbooks/<name>.md` (one per shipped playbook template; list each
+  actual file)
 
 ### Local-only (gitignored, copied but never committed)
 

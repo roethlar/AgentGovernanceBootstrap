@@ -91,9 +91,8 @@ Under `.bootstrap-tmp/drafts/`, mirroring final paths:
    committable). Local-only files are `ignored` (`git check-ignore` exits
    0) or `untracked`. Recording draft-time custody for a file the same
    commit will track bakes a falsehood into the manifest.
-6. Playbooks: install every shipped playbook template, unconditionally —
-   never a choice or an approval question. The canonical rule lives in
-   `procedures/bootstrap.md` Step 4; do not duplicate it here.
+6. Playbooks are part of the drafted set; see `procedures/bootstrap.md`
+   Step 4.
 7. Only if this repo's governance contains rules earned from real, citable
    incidents that other repos would benefit from: draft
    `.bootstrap-tmp/drafts/harvest-report.md` from the harvest template, and

@@ -176,11 +176,7 @@ durable files:
 Do not exceed the recommended tier without explaining the risk that justifies extra
 process.
 
-Playbook installation is outside the tier recommendation entirely: every playbook
-template the toolkit ships is installed on every run, unconditionally — the same
-standing guarantee as operator wrappers and hooks. It is never a choice, a
-recommendation, or an approval question, at any tier; an existing playbook at the
-final path is never silently overwritten.
+Shipped playbook templates are part of the standard drafted set at every tier.
 
 ## Verification Defaults
 
