@@ -27,7 +27,7 @@ def _python3_works() -> bool:
             ["python3", "-c", "print('ok')"],
             capture_output=True, text=True, timeout=30,
         )
-    except OSError:
+    except (OSError, subprocess.TimeoutExpired):
         return False
     return p.returncode == 0 and p.stdout.strip() == "ok"
 
