@@ -302,16 +302,17 @@ the same single scoped commit.
    reading order, the confirmed verification command, remotes; it extends
    `AGENTS.md` and never overrides it), `.agents/state.md`,
    `.agents/decisions.md`, `.agents/repo-map.json`,
-   `.agents/artifact-manifest.json`. Playbooks are never drafted or installed
-   at the agent's discretion — whether the repo will need one is a
-   future-needs judgment the agent must not make. Instead, the approval
-   summary's Playbooks section lists every template shipped under
+   `.agents/artifact-manifest.json`, and `.agents/playbooks/<name>.md` for
+   every playbook template shipped under
    `.bootstrap-tmp/templates/playbooks/` (enumerate the directory; e.g.
-   `reviewloop.md`, the two-agent review loop) and the owner names which to
-   install in the approval reply — default none. Install exactly the
-   owner-selected ones into `.agents/playbooks/<name>.md` (invoked later via
-   the `playbook` operator); they join the Committed list and the single
-   scoped commit. Set every
+   `reviewloop.md`, the two-agent review loop). Playbook installation is
+   unconditional on every route — the same standing guarantee as operator
+   wrappers and hooks: never a choice, a recommendation, or an approval
+   question, and never gated on scope tier or judged repo need. A playbook
+   already present at its final path is left as-is (never silently
+   overwritten); the rest are drafted, join the Committed list, and land in
+   the single scoped commit (invoked later via the `playbook` operator). Set
+   every
    `custody` value in the artifact manifest to the custody
    the file will have once the approval commit lands, proven by git query —
    never from path convention. Files on the summary's Committed list are

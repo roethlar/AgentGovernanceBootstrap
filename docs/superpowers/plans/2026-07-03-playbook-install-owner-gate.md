@@ -1,13 +1,21 @@
 # Playbook installation: owner choice at the approval gate, never agent discretion
 
-Status: DONE 2026-07-03 (owner directive same day: "the model cannot assess
-future needs. nothing is up to the discretion of the model. document, plan,
-and execute that change" — the directive covers documentation, plan, and
-execution in one go). Commit map: decision `0e48bda`, plan `441996e`,
+Status: DONE 2026-07-03, then SUPERSEDED the same day. The owner-question
+mechanism this plan shipped was corrected within hours: the first live run
+that presented the Playbooks approval question showed the owner never wanted
+a question — playbooks now install unconditionally on every route, like
+wrappers and hooks. See the superseding decision "Playbooks install
+unconditionally on every run" in `.agents/decisions.md` (this plan's original
+decision entry is archived verbatim in
+`docs/history/decisions-archive.md`). The problem statement below (agent
+discretion via "scope tier justifies" is wrong) remains valid; only the
+resolution changed. Original commit map: decision `0e48bda`, plan `441996e`,
 implementation `24449e1`. Suite on the landed bytes: 142 tests, 12 failures +
 4 errors, all in `test_run_fixture.py` plus the hook-tripwire test —
 byte-identical result on the pre-change tree (stash-verified), so
-pre-existing on this Windows host and unrelated; `git diff --check` clean.
+pre-existing on this Windows host and unrelated; `git diff --check` clean
+(the Windows suite issue was fixed the same day under
+`2026-07-03-test-suite-python3-windows.md`).
 
 ## Why this plan exists
 

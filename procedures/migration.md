@@ -91,8 +91,8 @@ Under `.bootstrap-tmp/drafts/`, mirroring final paths:
    committable). Local-only files are `ignored` (`git check-ignore` exits
    0) or `untracked`. Recording draft-time custody for a file the same
    commit will track bakes a falsehood into the manifest.
-6. Playbooks: never at agent discretion — owner-selected via the approval
-   summary's Playbooks section. The canonical rule lives in
+6. Playbooks: install every shipped playbook template, unconditionally —
+   never a choice or an approval question. The canonical rule lives in
    `procedures/bootstrap.md` Step 4; do not duplicate it here.
 7. Only if this repo's governance contains rules earned from real, citable
    incidents that other repos would benefit from: draft
