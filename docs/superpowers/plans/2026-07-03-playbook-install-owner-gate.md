@@ -1,9 +1,13 @@
 # Playbook installation: owner choice at the approval gate, never agent discretion
 
-Status: DRAFT 2026-07-03 (owner directive same day: "the model cannot assess
+Status: DONE 2026-07-03 (owner directive same day: "the model cannot assess
 future needs. nothing is up to the discretion of the model. document, plan,
 and execute that change" — the directive covers documentation, plan, and
-execution in one go).
+execution in one go). Commit map: decision `0e48bda`, plan `441996e`,
+implementation `24449e1`. Suite on the landed bytes: 142 tests, 12 failures +
+4 errors, all in `test_run_fixture.py` plus the hook-tripwire test —
+byte-identical result on the pre-change tree (stash-verified), so
+pre-existing on this Windows host and unrelated; `git diff --check` clean.
 
 ## Why this plan exists
 
