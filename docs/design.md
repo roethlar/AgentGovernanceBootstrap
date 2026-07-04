@@ -164,19 +164,18 @@ current state.
 ## Guidance Scope
 
 The approval summary should recommend a scope tier before asking the human to approve
-durable files:
+durable files. Every tier starts from the standard drafted set — `AGENTS.md`, the
+`.agents/` files, and the shipped playbooks; the tiers describe what a repo warrants
+beyond it:
 
-- Tier 1: small or personal repo. Prefer `AGENTS.md`, `.agents/state.md`, decisions, repo
-  map, and artifact manifest only.
+- Tier 1: small or personal repo. The standard drafted set and nothing more.
 - Tier 2: active project with releases, users, or meaningful operational risk. Add plan
   templates where they prevent drift.
 - Tier 3: multi-component or operationally sensitive repo. Consider harness adapters,
-  CI/check wrappers, or review workflow files.
+  CI/check wrappers, or area-specific review workflow files.
 
 Do not exceed the recommended tier without explaining the risk that justifies extra
 process.
-
-Shipped playbook templates are part of the standard drafted set at every tier.
 
 ## Verification Defaults
 
@@ -219,9 +218,9 @@ Generated guidance should define a small trigger vocabulary in plain language:
 Harness-specific command files may wrap these procedures, but they should point back to
 canonical repo guidance instead of duplicating it.
 
-Multi-agent review workflows can be useful for high-risk repos, but they are not a
-default bootstrap output. If proposed, they should preserve one accountable coding owner
-and keep reviewer output as evidence until accepted.
+Multi-agent review workflows — the shipped `reviewloop` playbook, or repo-specific ones —
+should preserve one accountable coding owner and keep reviewer output as evidence until
+accepted.
 
 ## Prompt-Injection Boundary
 
