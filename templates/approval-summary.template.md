@@ -99,6 +99,26 @@ To change it, reply with a number when you approve:
 
 <Do NOT pre-select or infer the option from prior decisions, context, or the decisions log. Write the default (4) here and wait for the owner's answer at approval time. The owner's reply to the approval question is the only valid source for this choice.>
 
+## Playbooks
+
+The toolkit ships these reusable playbook templates; none will be installed
+unless you name them when you approve:
+
+<List every template found under `.bootstrap-tmp/templates/playbooks/` — one
+line each, `<name> — <one-line purpose read from the template>`. Enumerate the
+directory mechanically; never hardcode or omit a shipped template.>
+
+To install one or more, reply with the name(s) when you approve; each lands at
+`.agents/playbooks/<name>.md`, joins the Committed list and the single scoped
+commit, and is invoked later via the `playbook` operator.
+
+<Do NOT recommend, pre-select, or infer this choice from the scope tier, prior
+decisions, context, or the decisions log — whether a repo will need a playbook
+is a future-needs judgment the agent must not make. Write the full list, state
+the default (none), and wait for the owner's answer at approval time. The
+owner's reply to the approval question is the only valid source for this
+choice.>
+
 ## Risks, Limitations, Or Open Questions
 
 <List unresolved questions, inferred facts, stale evidence, unread areas, or decisions

@@ -169,12 +169,17 @@ durable files:
 - Tier 1: small or personal repo. Prefer `AGENTS.md`, `.agents/state.md`, decisions, repo
   map, and artifact manifest only.
 - Tier 2: active project with releases, users, or meaningful operational risk. Add plan
-  templates or playbooks where they prevent drift.
+  templates where they prevent drift.
 - Tier 3: multi-component or operationally sensitive repo. Consider harness adapters,
-  CI/check wrappers, area-specific playbooks, or review workflow files.
+  CI/check wrappers, or review workflow files.
 
 Do not exceed the recommended tier without explaining the risk that justifies extra
 process.
+
+Playbook installation is outside the tier recommendation: the approval summary's
+Playbooks section lists every shipped playbook template and the owner names which to
+install at approval time (default none). Whether a repo will need a playbook is a
+future-needs judgment the agent must not make, at any tier.
 
 ## Verification Defaults
 
