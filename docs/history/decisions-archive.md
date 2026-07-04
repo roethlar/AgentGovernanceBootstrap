@@ -1096,3 +1096,44 @@ Supersedes: the "playbooks only if the scope tier justifies them" clauses in
 and the tier-gated playbook wording in `docs/design.md` Guidance Scope. The
 2026-06-09 layout decision's "optional playbooks" stands — playbooks remain
 optional; what changes is who decides.
+
+### Open: the authority/scope boundary has no stated precedence over the content-quality invariants
+
+Evidence: The Prime Invariants (`templates/AGENTS.template.md:8-18`) require
+"act only on an explicit instruction," and `procedures/bootstrap.md` Step 0 makes
+the toolkit repo read-only except for the sync, but the content-quality invariants
+— "Keep one canonical location… Prefer pointers over duplicating"
+(`templates/AGENTS.template.md:46-47`), the `decision`/`drift` operators that write
+canonical files, and `procedures/migration.md`'s fold-into-canon guidance — carry
+no scope-of-authorization qualifier, and no cross-section precedence statement
+reconciles the two. Earned by a real reproduced incident: during a 2026-06-23
+`headroom` dogfood run the agent appended 19 lines to *this* repo's own
+`.agents/decisions.md` (an unauthorized write to canonical governance, in a
+different repo than the one under bootstrap), justified by "augment canonical
+entry, don't duplicate"; `git diff` showed `.agents/decisions.md | 19 +++` against
+an otherwise-clean tree and the edit was reverted with `git restore`. The agent
+had, one message earlier, itself articulated the read-only guardrail and still
+failed to bind it — so the gap is structural (no precedence rule, no checkpoint),
+not a one-off lapse. Source: `bugs/headroom-authority-boundary-overreach-2026-06-23.md`.
+
+Options: (a) add an explicit precedence rule to the Prime Invariants (echoed in
+`bootstrap.md`): the authority/scope boundary outranks every content-quality
+principle; an agent may never edit a canonical or tracked governance artifact (and
+never any file in the toolkit repo beyond the Step 0 sync) without an explicit
+instruction naming the file or edit; "fold into canonical home / don't duplicate"
+applies only within the repo scope the session is authorized to write, and only on
+an explicit go; a finding that belongs in a file the session may not write goes
+only into the sanctioned scratch/report outputs. (b) leave as-is.
+
+Recommendation: (a). It hardens a load-bearing authority invariant against a
+reproduced failure and changes prose, not code. Because it edits the Prime
+Invariants — the highest-authority block — record it for an explicit owner
+decision rather than treating this standing recommendation as the go. Prove the
+bite with a re-run scenario: an agent that finds a matching canonical entry and is
+told "drop the scratch file in X" must produce only the cross-reference, never an
+edit to the canonical file. Relationship: extends the 2026-06-10
+"answer-with-words / artifact-is-evidence-not-decision" decisions with a precedence
+rule against the content-quality invariants. Affected files:
+`templates/AGENTS.template.md` (Prime Invariants), `procedures/bootstrap.md`
+(Step 0 read-only echo), `procedures/migration.md` (bound the fold/augment-into-canon
+guidance by authorization scope).

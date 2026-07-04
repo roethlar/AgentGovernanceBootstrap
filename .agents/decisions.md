@@ -34,6 +34,67 @@ live rule now owned elsewhere - archive it per the rule above: move it verbatim 
 
 ## Decisions
 
+### 2026-07-04 — Specific-over-generic precedence: explicit boundaries and no-discretion rules outrank generic defaults
+
+Status: Adopted 2026-07-04 (rule lives in `templates/AGENTS.template.md`
+`## Universal Invariants`, stamp `2026-07-04.1`; presence-guarded by
+`test_universal_invariants_rank_specific_over_generic` in
+`tests/test_discover.py`).
+
+Decision: an explicit authority or scope boundary, or a rule or decision whose
+wording removes discretion for the case it names ("unconditional", "no per-run
+choice", "deterministic"), outranks every generic default for that case —
+flag-conflicts, one-canonical-location, smallest-guidance-set included. Agents
+apply it as written and do not reopen the settled case as a conflict or
+approval question against surrounding repo state such as git history; generic
+defaults govern only questions no more specific rule has already resolved.
+
+Earned by the second reproduction of the same missing-precedence defect shape:
+
+- 2026-06-23 (`bugs/headroom-authority-boundary-overreach-2026-06-23.md` in
+  the `agent-harvest` dropbox): the "fold into canonical home" content-quality
+  instinct overrode the read-only authority boundary — an agent in a headroom
+  dogfood run wrote 19 unauthorized lines into this repo's
+  `.agents/decisions.md`. Recorded then as the narrower Open finding "the
+  authority/scope boundary has no stated precedence over the content-quality
+  invariants", whose recommended fix was scoped to that one pair.
+- 2026-07-04
+  (`bugs/AgentGovernanceBootstrap-flag-conflicts-invariant-no-precedence-over-nondiscretionary-decisions-2026-07-04.md`,
+  which supersedes the same run's earlier wiring-gap report): a
+  `/update-governance` run read the 2026-07-03 unconditional-playbook-install
+  decision, quoted its no-discretion language verbatim, and still raised the
+  reinstall of a recently-reverted playbook as an approval-summary question by
+  invoking the generic flag-conflicts invariant against git history —
+  reproducing the exact behavior that decision forbids.
+
+The recurrence between a different pair of rules shows the gap is between rule
+*classes*, not one pair, so the fix is the general precedence rule above (the
+bug report's proposed fix; owner fix instruction 2026-07-04). This broadens
+and adopts the 2026-06-23 Open finding rather than adding a third, narrower
+entry; that finding is archived verbatim in
+`docs/history/decisions-archive.md` in this same change.
+
+Deliberately not implemented: the original finding's procedure-level echoes (a
+read-only echo in `procedures/bootstrap.md` Step 0, an authorization-scope
+bound on `procedures/migration.md`'s fold-into-canon guidance). The Universal
+Invariant is the single full statement (2026-06-24 dedup decision); procedure
+echoes are future hardening only if the invariant alone proves insufficient in
+a reproduced incident. Outstanding bite proof, per the bug report: a re-run of
+the reinstall scenario (a shipped playbook missing after a recent deliberate
+revert) must draft the reinstall as a plain fact citing the 2026-07-03
+decision, with no question raised — checkable on the next refresh/dogfood run.
+The presence test guards the text, not the behavior.
+
+Relationship: supplies the precedence backbone the 2026-06-10
+answer-with-words / artifact-is-evidence decisions and the 2026-07-03
+playbooks decision assumed; refines, does not weaken, the flag-conflicts
+Universal Invariant (document-vs-document disagreements are still flagged —
+the default now yields only where a more specific rule has settled the exact
+case). Structural template change, so the stamp bumps `2026-07-02.1` →
+`2026-07-04.1` per the 2026-06-22 reconciliation machinery. This repo's own
+`AGENTS.md` stays a frozen instance, reconciled by the next self-application
+run.
+
 ### 2026-07-03 — Playbooks install unconditionally on every run, like wrappers and hooks
 
 Status: Active (implemented same day; plan:
@@ -1097,51 +1158,13 @@ Owner needs a way for a *different* model to validate that a repo's governance
 works (the in-bootstrap fresh-eyes test only ever runs the same model that drafted
 the guidance). Not yet designed or decided — surfaced 2026-06-22, undecided.
 
-The following two were assessed on 2026-06-23 from bug reports filed to the
+The following were assessed on 2026-06-23 from bug reports filed to the
 `agent-harvest` dropbox during a `headroom` (chopratejas/headroom) dogfood
 migration run, read against current repo evidence. They are appended at the end of
-the queue; the implementation sequence of the items above is unchanged.
-
-### Open: the authority/scope boundary has no stated precedence over the content-quality invariants
-
-Evidence: The Prime Invariants (`templates/AGENTS.template.md:8-18`) require
-"act only on an explicit instruction," and `procedures/bootstrap.md` Step 0 makes
-the toolkit repo read-only except for the sync, but the content-quality invariants
-— "Keep one canonical location… Prefer pointers over duplicating"
-(`templates/AGENTS.template.md:46-47`), the `decision`/`drift` operators that write
-canonical files, and `procedures/migration.md`'s fold-into-canon guidance — carry
-no scope-of-authorization qualifier, and no cross-section precedence statement
-reconciles the two. Earned by a real reproduced incident: during a 2026-06-23
-`headroom` dogfood run the agent appended 19 lines to *this* repo's own
-`.agents/decisions.md` (an unauthorized write to canonical governance, in a
-different repo than the one under bootstrap), justified by "augment canonical
-entry, don't duplicate"; `git diff` showed `.agents/decisions.md | 19 +++` against
-an otherwise-clean tree and the edit was reverted with `git restore`. The agent
-had, one message earlier, itself articulated the read-only guardrail and still
-failed to bind it — so the gap is structural (no precedence rule, no checkpoint),
-not a one-off lapse. Source: `bugs/headroom-authority-boundary-overreach-2026-06-23.md`.
-
-Options: (a) add an explicit precedence rule to the Prime Invariants (echoed in
-`bootstrap.md`): the authority/scope boundary outranks every content-quality
-principle; an agent may never edit a canonical or tracked governance artifact (and
-never any file in the toolkit repo beyond the Step 0 sync) without an explicit
-instruction naming the file or edit; "fold into canonical home / don't duplicate"
-applies only within the repo scope the session is authorized to write, and only on
-an explicit go; a finding that belongs in a file the session may not write goes
-only into the sanctioned scratch/report outputs. (b) leave as-is.
-
-Recommendation: (a). It hardens a load-bearing authority invariant against a
-reproduced failure and changes prose, not code. Because it edits the Prime
-Invariants — the highest-authority block — record it for an explicit owner
-decision rather than treating this standing recommendation as the go. Prove the
-bite with a re-run scenario: an agent that finds a matching canonical entry and is
-told "drop the scratch file in X" must produce only the cross-reference, never an
-edit to the canonical file. Relationship: extends the 2026-06-10
-"answer-with-words / artifact-is-evidence-not-decision" decisions with a precedence
-rule against the content-quality invariants. Affected files:
-`templates/AGENTS.template.md` (Prime Invariants), `procedures/bootstrap.md`
-(Step 0 read-only echo), `procedures/migration.md` (bound the fold/augment-into-canon
-guidance by authorization scope).
+the queue; the implementation sequence of the items above is unchanged. (The
+batch's authority/scope-boundary precedence finding was broadened into the
+general specific-over-generic precedence rule and adopted 2026-07-04 — see that
+decision; the original entry is archived verbatim.)
 
 ### Open: "all routes" harness-artifact drafting contradicts the smallest-guidance-set invariant
 

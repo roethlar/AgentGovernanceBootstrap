@@ -449,6 +449,22 @@ class TestPrimeInvariantsTemplate(unittest.TestCase):
                     / "AGENTS.template.md").read_text(encoding="utf-8")
         self.assertNotIn("rtk", tmpl.lower())
 
+    def test_universal_invariants_rank_specific_over_generic(self):
+        # 2026-07-04 decision (harvest bug: flag-conflicts had no stated
+        # precedence against a rule that removes discretion): an explicit
+        # authority/scope boundary or no-discretion rule outranks the generic
+        # defaults for the case it names, and the settled case is not reopened
+        # as a conflict/approval question against git history. Guards the
+        # invariant against a future condensation pass dropping it.
+        tmpl = (fixtures.BOOTSTRAP_ROOT / "templates"
+                / "AGENTS.template.md").read_text(encoding="utf-8")
+        section = tmpl[tmpl.index("## Universal Invariants"):]
+        section = section[:section.index("\n## ", 1)]
+        self.assertIn("Specific over generic", section)
+        self.assertIn("no per-run choice", section)
+        self.assertIn("git history", section)
+        self.assertIn("no more specific rule has already resolved", section)
+
     def test_bootstrap_handoff_is_pointer(self):
         # Bootstrap Handoff is a conditional pointer to the synced procedures, not
         # a re-embedded copy of the steps (which would re-tax every session and

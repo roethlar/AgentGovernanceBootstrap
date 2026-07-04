@@ -13,6 +13,21 @@ ceiling; the strong-harness gap is an attention lapse at edit-failure/re-author,
 mechanism problem) live in `evals/swebench-pro/PLAN-funcpass-2026-06-30.md`. The long
 SWE-bench-Pro `## Next` history below is SUPERSEDED — read THIS block.
 
+**Specific-over-generic precedence invariant: LANDED 2026-07-04** (fix of the
+latest `agent-harvest` bug report, on the owner's explicit fix instruction;
+decision Adopted in `.agents/decisions.md`). New Universal Invariant in
+`templates/AGENTS.template.md`: an explicit authority/scope boundary, or a
+rule/decision whose wording removes discretion for the case it names
+("unconditional", "no per-run choice", "deterministic"), outranks the generic
+flag-conflicts / content-quality defaults for that case, and git history is
+not grounds to reopen a settled case. Stamp `2026-07-04.1`; presence test
+added and guard-proven; suite green (145 tests, 2 platform skips). The
+2026-06-23 authority-boundary Open finding was broadened into this decision
+and archived verbatim. Outstanding: the behavioral bite-proof (next
+refresh/dogfood run must draft the reviewloop reinstall as plain fact, no
+question raised), and the dropbox bug-file status update, which awaits an
+owner go.
+
 **Edit-failure refocus hook: DROPPED (owner, 2026-07-01) — do not resurrect without a
 new owner decision.** A Haiku smoke test falsified the planned mechanism: Claude Code
 2.1.198 fires neither `PostToolUse` nor `PostToolUseFailure` for edit rejections
