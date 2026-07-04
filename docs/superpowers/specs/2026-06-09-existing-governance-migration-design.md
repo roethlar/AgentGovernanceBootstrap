@@ -168,7 +168,9 @@ Executed by the in-repo agent when governance markers exist:
 3. **Draft the standard layout** under `.bootstrap-tmp/drafts/`, mirroring final
    paths: `AGENTS.md` (now containing the bootstrap handoff rule),
    `.agents/state.md`, `.agents/decisions.md`, `.agents/repo-map.json`,
-   `.agents/artifact-manifest.json`, playbooks as the scope tier justifies.
+   `.agents/artifact-manifest.json`, and every shipped playbook (amended
+   2026-07-03 per the playbooks decision in `.agents/decisions.md`; originally
+   "as the scope tier justifies").
 4. **Migrate content, generalized** — current state into `state.md`; settled
    decisions into `decisions.md`; battle-earned behavioral rules (e.g., Blit's
    git-safety and checkpoint sections) into the new `AGENTS.md`. Transient chat
