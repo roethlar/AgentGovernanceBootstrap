@@ -550,7 +550,10 @@ artifact classes. The `gh api` PUT path was verified end-to-end against
 
 ### 2026-06-09 - Migrate to the standard .agents/ layout for all bootstrapped repos
 
-Status: Active
+Status: Active, as amended 2026-07-03: playbooks are part of the standard
+layout, no longer optional — every shipped playbook template installs on
+every run (see the 2026-07-03 playbooks decision above). The original
+wording below is retained.
 
 Decision:
 Every bootstrapped repo converges on the same `.agents/` layout (AGENTS.md + .agents/state.md, .agents/decisions.md, repo-map.json, artifact-manifest.json, optional playbooks). Existing governance systems are migrated into it via inventory (migrate/supersede/leave verdicts), not left as parallel canon. Old governance files (when they stay) receive a short supersession banner at the top pointing to the replacement; content is retained as history.
@@ -1048,8 +1051,11 @@ Evidence: `AGENTS.md` advertises `.agents/playbooks/*` as an authority slot and 
 `playbook <name>` operator. The toolkit already ships a playbook template
 (`templates/playbooks/reviewloop.md`, a two-agent review loop installable into a
 target repo), but this repo's own `.agents/playbooks/` directory does not yet
-exist — so governance-lint would be the first playbook authored as a self-audit
-and the first one installed into this repo, not the first use of the mechanism.
+exist — so governance-lint would be the first playbook authored as a self-audit,
+not the first use of the mechanism. (Amended 2026-07-03: `reviewloop.md` now
+installs on any refresh/dogfood run per the playbooks decision, so
+governance-lint would not necessarily be the first playbook *installed* here;
+it remains the first self-audit playbook authored.)
 Three doc-health checks are mechanizable
 against existing structures: (1) **state freshness** — `.agents/repo-map.json`
 carries a structured `validated_against: {commit, date}`; compare it against the
