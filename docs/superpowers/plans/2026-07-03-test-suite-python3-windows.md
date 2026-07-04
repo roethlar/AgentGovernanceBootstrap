@@ -1,6 +1,10 @@
 # Test suite: interpreter-portable `python3` on Windows Store-stub hosts
 
-Status: DRAFT 2026-07-03 (owner go same session: "plan and fix").
+Status: DONE 2026-07-03 (owner go same session: "plan and fix"). Commit map:
+plan `71343a6`, fix `b0b24cf`. Suite on the landed bytes: 142 tests, OK
+(2 pre-existing skips) on this Windows 11 host under `py -3` from Git Bash —
+down from 12 failures + 4 errors; `git diff --check` clean. POSIX not re-run
+this session (shim is probe-gated; expected no-op).
 
 ## Why this plan exists
 
