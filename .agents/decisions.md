@@ -34,40 +34,42 @@ live rule now owned elsewhere - archive it per the rule above: move it verbatim 
 
 ## Decisions
 
-### 2026-07-03 — Playbook installation is an owner choice at the approval gate, never agent discretion
+### 2026-07-03 — Playbooks install unconditionally on every run, like wrappers and hooks
 
 Status: Active (implemented same day; plan:
-`docs/superpowers/plans/2026-07-03-playbook-install-owner-gate.md`).
+`docs/superpowers/plans/2026-07-03-playbook-install-owner-gate.md`, as
+corrected by its supersession note).
 
-Decision: whether a target repo receives any shipped playbook (e.g.
-`templates/playbooks/reviewloop.md`) is decided by the owner at the approval
-gate, never by the agent. The prior rule — "playbooks only if the scope tier
-justifies them" / "install one when the repo's work calls for it" — delegated
-the install decision to agent judgment about the repo's future needs, which
-the model cannot assess (owner directive, 2026-07-03: nothing about which
-durable artifacts a repo receives is up to the model's discretion).
-`templates/approval-summary.template.md` gains a Playbooks section that lists
-every playbook template shipped under `.bootstrap-tmp/templates/playbooks/`
-with a one-line purpose and asks the owner at approval time which to install;
-the default is none, and the agent may not pre-select or infer the answer from
-the scope tier, the decisions log, or other context — the owner's approval-time
-reply is the only valid source. Owner-selected playbooks are installed into
-`.agents/playbooks/<name>.md` and join the single scoped commit; the scope
-tier remains a stated recommendation in the summary but no longer carries the
-playbook decision.
+Decision: every playbook template shipped under
+`.bootstrap-tmp/templates/playbooks/` is installed into
+`.agents/playbooks/<name>.md` on every route, unconditionally — the same
+standing-guarantee class as operator wrappers and hooks (2026-06-18). There is
+no approval-summary question, no default, no per-run choice, and no tier
+gating: installation is deterministic. A playbook already present at its final
+path is never silently overwritten (same rule as committed wrappers);
+installed playbooks join the Committed list and the single scoped commit like
+every other drafted artifact.
 
-Earned by a live gap (2026-07-03): the reviewloop playbook was silently absent
-from a bootstrapped repo (Powershell-Token-Killer) because the run's agent
-judged the scope tier did not justify it — the owner had no visibility that a
-shipped playbook existed to decline. Mirrors the Push Policy precedent
-(2026-06-27): a repo-specific choice is presented as standardized options at
-the gate and answered by the owner, not inferred.
+Supersedes, same-day, the "playbook installation is an owner choice at the
+approval gate" entry (archived verbatim in
+`docs/history/decisions-archive.md`). The no-discretion principle that entry
+recorded stands unchanged — the model cannot assess a repo's future needs, and
+"playbooks only if the scope tier justifies them" was wrong — but the
+mechanism was also wrong: it removed the agent's discretion by inserting a
+per-run owner question, which the owner never asked for. The first live run
+that hit the gate produced exactly the friction it should not have (owner,
+2026-07-03: "there are no options. everything is installed every time").
+Discretion is removed by determinism, not by asking. Consequence, stated
+plainly: a playbook deleted from a target repo reappears on the next refresh
+run (install-when-missing is unconditional); the durable opt-out is removing
+the template from the toolkit itself. Never-overwrite protects owner-modified
+playbooks, not deletions.
 
-Supersedes: the "playbooks only if the scope tier justifies them" clauses in
-`procedures/bootstrap.md` Step 4 and `procedures/migration.md` Step 2 item 6,
-and the tier-gated playbook wording in `docs/design.md` Guidance Scope. The
-2026-06-09 layout decision's "optional playbooks" stands — playbooks remain
-optional; what changes is who decides.
+Relationship: extends the 2026-06-18 standing-guarantee decision to the
+playbook artifact class. Amends the 2026-06-09 layout decision's "optional
+playbooks" wording: every shipped playbook lands at install time. The Push
+Policy approval-time question (2026-06-27) is unaffected: that is
+configuration the owner chose to be asked about, not installation.
 
 ### 2026-07-03 — Subdir-scoped bootstrap is not a supported mode; monorepo probe finding closed as not-applicable
 

@@ -1054,3 +1054,45 @@ rather than fixed.
 Recommendation: resolve the precondition first. If scoped runs are supported,
 match by basename / suffix instead of literal full-path membership. Lower
 priority than the two above.
+
+---
+
+Rotated 2026-07-03: the following same-day entry was superseded within hours by
+"Playbooks install unconditionally on every run, like wrappers and hooks" in
+`.agents/decisions.md` — the no-discretion principle survived; the owner-question
+mechanism did not. Wording preserved verbatim.
+
+### 2026-07-03 — Playbook installation is an owner choice at the approval gate, never agent discretion
+
+Status: Superseded 2026-07-03 (same day) by "Playbooks install unconditionally
+on every run, like wrappers and hooks" in `.agents/decisions.md`.
+
+Decision: whether a target repo receives any shipped playbook (e.g.
+`templates/playbooks/reviewloop.md`) is decided by the owner at the approval
+gate, never by the agent. The prior rule — "playbooks only if the scope tier
+justifies them" / "install one when the repo's work calls for it" — delegated
+the install decision to agent judgment about the repo's future needs, which
+the model cannot assess (owner directive, 2026-07-03: nothing about which
+durable artifacts a repo receives is up to the model's discretion).
+`templates/approval-summary.template.md` gains a Playbooks section that lists
+every playbook template shipped under `.bootstrap-tmp/templates/playbooks/`
+with a one-line purpose and asks the owner at approval time which to install;
+the default is none, and the agent may not pre-select or infer the answer from
+the scope tier, the decisions log, or other context — the owner's approval-time
+reply is the only valid source. Owner-selected playbooks are installed into
+`.agents/playbooks/<name>.md` and join the single scoped commit; the scope
+tier remains a stated recommendation in the summary but no longer carries the
+playbook decision.
+
+Earned by a live gap (2026-07-03): the reviewloop playbook was silently absent
+from a bootstrapped repo (Powershell-Token-Killer) because the run's agent
+judged the scope tier did not justify it — the owner had no visibility that a
+shipped playbook existed to decline. Mirrors the Push Policy precedent
+(2026-06-27): a repo-specific choice is presented as standardized options at
+the gate and answered by the owner, not inferred.
+
+Supersedes: the "playbooks only if the scope tier justifies them" clauses in
+`procedures/bootstrap.md` Step 4 and `procedures/migration.md` Step 2 item 6,
+and the tier-gated playbook wording in `docs/design.md` Guidance Scope. The
+2026-06-09 layout decision's "optional playbooks" stands — playbooks remain
+optional; what changes is who decides.
