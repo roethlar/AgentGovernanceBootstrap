@@ -17,6 +17,15 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "tools"))
 import run_fixture  # noqa: E402
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import _pyshim  # noqa: E402
+
+
+def setUpModule():
+    # Fixture verify commands declare `python3`; on Windows Store-stub hosts
+    # that alias runs nothing (exit 9009), so shim it to sys.executable.
+    _pyshim.ensure_python3()
+
 
 def _make_fixture(tmp: Path, manifest: dict, files: dict[str, str] | None = None) -> Path:
     fx = tmp / "fx"
@@ -745,7 +754,7 @@ class TestGovernanceHooks(unittest.TestCase):
         import subprocess
         full_env = dict(os.environ)
         full_env.update(env)
-        p = subprocess.run(["python3", str(script)], input=json.dumps(stdin_obj),
+        p = subprocess.run([sys.executable, str(script)], input=json.dumps(stdin_obj),
                            capture_output=True, text=True, env=full_env)
         out = p.stdout.strip()
         return (json.loads(out) if out else None), p.returncode
@@ -1097,7 +1106,9 @@ class TestPolyglotFixture(unittest.TestCase):
             fx = json.loads((o / "fixture.json").read_text())
             self.assertEqual(fx["language"], "python")
             self.assertIn(".meta", fx["source"]["exclude"])
-            self.assertTrue(fx["source"]["copy_dir"].endswith("/practice/foo"))
+            # copy_dir is a host-local native path (consumed via Path());
+            # normalize separators so the assertion holds on Windows too.
+            self.assertTrue(fx["source"]["copy_dir"].replace(os.sep, "/").endswith("/practice/foo"))
             prompt = (o / "PROMPT.md").read_text(encoding="utf-8")
             self.assertIn("Implement foo so it returns 42.", prompt)  # instructions
             self.assertIn("foo.py", prompt)                            # names the solution file

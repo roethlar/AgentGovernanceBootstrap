@@ -606,7 +606,7 @@ class TestHookTemplates(unittest.TestCase):
 
         def run(payload):
             p = subprocess.run(
-                ["python3", str(script)], input=json.dumps(payload),
+                [sys.executable, str(script)], input=json.dumps(payload),
                 capture_output=True, text=True)
             self.assertEqual(p.returncode, 0)         # never exit 2 / block
             return p.stdout

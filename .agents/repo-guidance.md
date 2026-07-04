@@ -28,6 +28,10 @@ For changes to `tools/discover.py`, `tests/`, or `templates/`/`procedures/` cont
 python3 -m unittest discover -s tests -v
 ```
 
+On Windows run it from Git Bash as `py -3 -m unittest discover -s tests -v`
+(stock `python3` on PATH is the Microsoft Store stub); the suite self-shims
+`python3` for the subprocesses its fixtures spawn (`tests/_pyshim.py`).
+
 For documentation-only changes, run `git diff --check`.
 
 The original PowerShell helper is retired to `docs/history/agent-bootstrap-discover.ps1` (2026-06-10, after the Blit pilot). It is a historical record; do not modify or resurrect it.
