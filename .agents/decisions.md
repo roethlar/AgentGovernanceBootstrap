@@ -1198,3 +1198,71 @@ priority than the medium-severity authority gap above. This intersects the
 2026-06-18 "operator command wrappers are a standing guarantee on every route"
 decision (which stays Active): the reconciliation must not weaken the wrapper
 guarantee, only label non-evidenced artifacts as optional in the summary.
+
+The following two were recorded 2026-07-06 on the owner's explicit instruction
+("just add these as open items"). They are owner-surfaced product gaps, not yet
+designed or decided.
+
+### Open: the `reviewloop` playbook hard-requires git branches; it should not
+
+Evidence: `templates/playbooks/reviewloop.md` makes a per-finding git branch a
+load-bearing requirement of the loop, not a repo-configurable choice. The atomic
+unit is stated as "**one finding ↔ one branch ↔ one verdict**" (`:38`); the
+per-finding flow opens with "Finish the fix on a per-finding branch
+`fix/<id>-<slug>`" (`:124`); the reviewer dispatch pins "the reviewed branch
+**head SHA**" and merge-base (`:127-130`); accepted/reopened/invalid actions are
+all phrased in branch terms (`:156-163`); and both the finding-doc template
+(`**Branch**:`, `:211`) and the status index (a `Branch` column, `:270-273`)
+bake a branch in. This collides with this repo's own 2026-06-10
+"One-item-per-commit discipline" decision, which settled that "**Whether work
+happens on a branch is repo policy, not this rule**" — the playbook removes the
+per-repo discretion that decision reserves. Owner (2026-07-06): the playbook
+"demands git branches. it should not."
+
+Options: (a) re-express the atomic unit as "one finding ↔ one reviewable
+change ↔ one verdict" and make the branch one *permitted* isolation mechanism
+among others (branch, worktree, or a single commit on the working branch),
+deferring the choice to repo policy the way the commit-discipline decision does;
+the pinned base/head SHA contract (which needs only two commits, not a branch)
+and the reviewer's own disposable worktree stay unchanged. (b) keep branches as
+the documented default but add an explicit "no-branch" knob. (c) leave as-is.
+
+Recommendation: (a) — it aligns the playbook with the repo's existing
+branch-is-repo-policy decision and keeps the actual review discipline (pinned
+SHAs, guard proof, recorded fail-closed verdict) intact, since none of it
+depends on a branch existing. Playbook-template change only; no `discover.py`
+surface. A `plan` should confirm the SHA-pinning and worktree language survives
+the rewording before implementation.
+
+### Open: a fast-update route/command for docs-only refreshes without a full update or migration
+
+Evidence: discovery currently computes two routes — `greenfield` and
+`migration` (the former `update` route was collapsed into `migration`,
+Adopted 2026-07-01; `compute_route()` returns `"migration" if
+governance_markers else "greenfield"`, `tools/discover.py:253-259`). Every
+already-governed repo therefore takes the one heavy path: full discovery, an
+inventory/reconciliation pass, the fresh-eyes check, and the approval summary
+(`procedures/bootstrap.md` Step 3; `procedures/migration.md`). There is no
+lightweight path for the common case of "just refresh the docs" — updating
+`README.md`, `docs/*`, or other non-governance prose — without paying for the
+whole reconciliation ceremony. Owner (2026-07-06): "we need a fast-update
+option to update docs without doing a full update or migration." Naming is
+open ("route? command? option? no fucking clue what you want to call it").
+
+Open questions for the design (not yet decided):
+- **Shape** — a third `compute_route()` route, a standalone operator/command
+  wrapper (like `update-governance`), or a documented fast-path *mode* within
+  the existing route. Note the standing repo lean that route *detection* is not
+  load-bearing (2026-06-28 collapse, Adopted 2026-07-01), which argues against a
+  new detected route and toward a command/mode.
+- **Scope boundary** — what "docs" means precisely, and how the fast path
+  refuses (or escalates) when a requested change touches governance
+  (`AGENTS.md`, `.agents/*`, templates, `discover.py`) rather than plain docs.
+  The docs-only verification carve-out already exists as a concept
+  (`git diff --check` vs. the full test suite) and could anchor the boundary.
+- **Gate** — whether a docs-only fast path still routes through the approval
+  summary or uses a lighter confirmation, given the smaller blast radius.
+
+Recommendation: none yet — recorded for a future decision, then a `plan`. The
+most likely fit given the no-load-bearing-detection stance is a command/mode
+rather than a fourth detected route, but that is a design call for the owner.
