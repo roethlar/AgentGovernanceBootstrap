@@ -1,5 +1,0 @@
-{
-  "description": "Completeness-steering guidance: fix the same flaw on every path, not just the one the test names. Targets the cross-harness 'incomplete patch' gap.",
-  "concat": [{"to": "AGENTS.md", "parts": ["profile:_parts/completeness.snippet.md"]}],
-  "copies": [{"from": "templates/shims/CLAUDE.template.md", "to": "CLAUDE.md"}]
-}

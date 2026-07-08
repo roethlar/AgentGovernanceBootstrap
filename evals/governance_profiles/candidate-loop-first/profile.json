@@ -1,9 +1,0 @@
-{
-  "description": "current-template governance plus the loop-first additions under evaluation (authorized-execution mode, change loop, completion report). Not yet in templates/ — promoted only if trials show a gain.",
-  "concat": [
-    {"to": "AGENTS.md", "parts": ["repo:templates/AGENTS.template.md", "profile:_parts/loop-first.snippet.md"]}
-  ],
-  "copies": [
-    {"from": "templates/shims/CLAUDE.template.md", "to": "CLAUDE.md"}
-  ]
-}

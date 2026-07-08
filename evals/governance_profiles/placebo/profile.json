@@ -1,9 +1,0 @@
-{
-  "description": "current-template governance plus a length-matched, security-neutral filler section. Confound control: if security-fix beats placebo on SecPass, the effect is the security content, not the extra context length.",
-  "concat": [
-    {"to": "AGENTS.md", "parts": ["repo:templates/AGENTS.template.md", "profile:_parts/placebo.snippet.md"]}
-  ],
-  "copies": [
-    {"from": "templates/shims/CLAUDE.template.md", "to": "CLAUDE.md"}
-  ]
-}

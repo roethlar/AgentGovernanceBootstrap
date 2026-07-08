@@ -1,7 +1,0 @@
-{
-  "description": "Governance the toolkit ships today, generated from the product templates (single source of truth; not this repo's own AGENTS.md).",
-  "copies": [
-    {"from": "templates/AGENTS.template.md", "to": "AGENTS.md"},
-    {"from": "templates/shims/CLAUDE.template.md", "to": "CLAUDE.md"}
-  ]
-}

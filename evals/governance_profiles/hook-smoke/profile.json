@@ -1,3 +1,0 @@
-{
-  "description": "Minimal hook-installing profile for Phase 0 S4/S7: a .claude/settings.json whose PreToolUse hook appends to the external AGB_HOOK_SENTINEL when it fires. Used to exercise hooks_present/supported/fired; not a treatment arm."
-}

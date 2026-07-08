@@ -1,5 +1,0 @@
-{
-  "description": "Generalized completeness guidance (no answer-encoding): fix the underlying defect everywhere it genuinely occurs, and nowhere else. The portable product candidate; contrast with the bespoke, answer-encoding completeness-prose.",
-  "concat": [{"to": "AGENTS.md", "parts": ["profile:_parts/completeness-general.snippet.md"]}],
-  "copies": [{"from": "templates/shims/CLAUDE.template.md", "to": "CLAUDE.md"}]
-}

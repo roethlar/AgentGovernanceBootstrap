@@ -1,1 +1,0 @@
-{"description": "Governance arm: a PreToolUse hook that refuses edits to protected paths (visible tests, runner config, governance files) and edits that weaken assertions, forcing the agent to fix the source."}
