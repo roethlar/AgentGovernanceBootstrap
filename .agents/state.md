@@ -5,6 +5,24 @@ short and update it when important repo facts change.
 
 ## CURRENT FOCUS — START HERE (HANDOFF 2026-07-02)
 
+**Greenfield v2 draft: LANDED 2026-07-08 (owner-directed) — new `v2/` tree at repo
+root; it does NOT govern this repo and does NOT touch the live product.** The owner
+asked for a from-scratch rebuild of the toolkit's spirit, sized for Fable/Opus-class
+agents. Shape: a ≤400-word constitution (353 actual, budget checker-enforced) + one
+repo context file (≤700 words) + state/decisions + on-demand operators; **no
+discovery script** (`v2/procedures/install.md` is a prompt — the installing agent is
+the discovery tool); the only code is `v2/tools/check.py` (checksum drift detection
+via `.agents/governance.json`, word-budget enforcement, dead-pointer checks — in v2
+this supersedes the tripwire hook). Verified: simulated install in session
+scratchpad with every guard proven (tamper→FAIL, restore→clean, over-budget→FAIL,
+broken-pointer→FAIL); v1 suite untouched and green (145 tests). **One deliberate
+policy change, flagged for owner decision: v2 Law 2 gates on risk
+(reversibility/blast radius), not v1's plan-gate-on-all-code.** Read `v2/README.md`
+first — rationale, departures, honest risks. Relationship to the guidance-condensation
+live direction (2026-07-01, below): v2 is the maximal form of that cut. Open owner
+decision: pilot v2 on one low-stakes repo, iterate, or discard; no canon switch
+without a pilot per its README.
+
 **Model testing is CLOSED** (owner: expensive, diminishing returns), and the owner has
 additionally closed **end-to-end trials as a method** — future validation is mechanism
 smoke tests and real-world dogfood incidents, not factorials. **Nothing is running.**
