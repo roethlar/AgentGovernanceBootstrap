@@ -1,7 +1,8 @@
 # Zero-based consolidation: every piece justifies its existence or leaves
 
-Status: Draft 2026-07-08 — under cross-harness review (reviewloop, codex), then
-owner approval. No product change lands before the owner approves this plan.
+Status: Reviewed 2026-07-08 — codex accepted at r4 (reviewed_sha `ddcec13`,
+zero findings; full trail in the Review log). Awaiting owner approval. No
+product change lands before the owner approves this plan.
 Supersedes `2026-07-08-field-audit-hardening.md` (narrower same-day draft;
 its field-audit evidence base and its state-lifecycle/write-rule slices carry
 forward into this plan).
@@ -433,3 +434,8 @@ Each with the incident/evidence citations above:
   stages judgment drafts, procedure makes the single commit; standalone:
   script commits as before), dirty-tree refusal explicitly scoped to the
   script's own target paths.
+- r4 (2026-07-08, codex-cli 0.142.5, reviewed_sha `ddcec13`): **accepted**,
+  zero findings. Commit boundary confirmed unambiguous in both modes; final
+  sweep clean. Consensus reached; per the reviewloop discipline, an accepted
+  verdict is not implementation authority — implementation awaits the
+  owner's approval of this plan.
