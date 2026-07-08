@@ -1,11 +1,10 @@
 # Zero-based consolidation: every piece justifies its existence or leaves
 
-Status: Reviewed 2026-07-08 — codex accepted at r8 (reviewed_sha `068cbbe`,
-zero findings; eight-round trail in the Review log, covering the base plan
-and every owner amendment: multi-harness verify-once parity, public issues
-with the redaction rule, vela-first rollout, and the full evals scrap). All
-open questions resolved. **Awaiting owner approval.** No product change
-lands before the owner approves this plan.
+Status: APPROVED 2026-07-08 (owner) — implementation in progress. Codex
+accepted at r8 (reviewed_sha `068cbbe`, zero findings; eight-round trail in
+the Review log covering the base plan and every owner amendment). Slices
+land in order, one commit each, suite green per slice; commit map recorded
+here as slices complete.
 Supersedes `2026-07-08-field-audit-hardening.md` (narrower same-day draft;
 its field-audit evidence base and its state-lifecycle/write-rule slices carry
 forward into this plan).
