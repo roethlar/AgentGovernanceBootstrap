@@ -663,16 +663,19 @@ class TestCommandWrapperTemplates(unittest.TestCase):
             self.assertIn(op, shipped)
         self.assertIn("update-governance", shipped)
 
-    def test_update_governance_wrapper_is_portable_pointer(self):
+    def test_update_governance_wrapper_invokes_refresh_script(self):
         text = (self.BASE / "update-governance.md").read_text(encoding="utf-8")
-        # Anchored to the canonical remote, not a machine-local toolkit path.
+        # Anchored to the canonical remote for self-provisioning.
         self.assertIn(
             "https://github.com/roethlar/AgentGovernanceBootstrap.git", text)
+        # The mechanical refresh is the script, not a hand-followed procedure.
+        self.assertIn("tools/refresh.py", text)
+        # Flags route to the owner; a foreign AGENTS.md routes to bootstrap.
+        self.assertIn("FLAG", text)
         self.assertIn("procedures/bootstrap.md", text)
         self.assertNotIn("/Users/", text)
         self.assertNotIn("/home/", text)
-        # A pointer that defers to the synced procedure, never a copy of it.
-        self.assertIn("only a pointer", text)
+        self.assertIn("no write authority", text)
         self.assertLess(len(text), 2000)
 
 

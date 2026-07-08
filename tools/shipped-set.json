@@ -1,0 +1,165 @@
+{
+  "comment": "The toolkit's shipped artifact set. tools/refresh.py reconciles a governed repo to exactly this set. Classes: replace-whole (byte-exact copy of the template, replaced only when the existing file matches a current or formerly-shipped template version - anything else is flagged, never overwritten); replace-if-unmodified (missing = install; matches a formerly-shipped version = update to current; anything else = owner-modified, flagged, never overwritten); retired (formerly-shipped target paths removed only when they match a formerly-shipped version, otherwise flagged). All matching is newline-normalized (CRLF -> LF) sha256. formerly[] lists normalized hashes of every version ever shipped, from git history.",
+  "artifacts": [
+    {
+      "source": "templates/AGENTS.template.md",
+      "target": "AGENTS.md",
+      "class": "replace-whole",
+      "formerly": [
+        "510cedf000a4a35540f536894d26351842c3a7bee9e561659358afbeabfac5ae",
+        "09526ef29a7081dbc87480e67a8eb6d11253955a355eafd7e126fe5e5230b990",
+        "9c1d9d9c943524d898eeff6f4747ab41b1e8d02349982de660855c2c483fc444",
+        "94a1ebeefa5f7082f7bc62e328d61ceb4c55fc1af7f447daa99b0aa9737ca207",
+        "7caa66b122e4364b46ec30002bad71c1502ffc9316b1f7b1739f88a182cf96cd",
+        "c20f0019640a144e989a7a81b7c5097c9b3712dcceec6aadd605ed014daf8ed1",
+        "994647bcf08a1af5e13cfc4cd0473a1cabc8c395bbd58da706f699b31a525a3c",
+        "31f6867684bd50c2cb6eab28687d2e9a7db147a69aae4b5f7bfb898a4ed670b0",
+        "2b19f30188014876108f8a8244de6194ce8a10bb1d45058082bb40d114f5ab19",
+        "412aa58afafbbdaf727cec7ce0de4ecd3a65ffaee942942bc06ed6488fd9d821",
+        "f5bc0ded202757aaf00f4170d20636b133c8ffadd260775fba0427b502743164",
+        "23aef59e6e37cd350a9b77916d0cc7feeb8b4656b6ac0dbad912c1b41cabfed0",
+        "8aff5079c4fbe3cc3210d1ad749299c16d6138c3c49923ee750005cd3d546174",
+        "21db6a3a9ebdc77be8d2a9b65cbdc2d88615164376ed9fa0e6f4a51ff8fe2447",
+        "995788419308287b13c451f655798138bcd3ca3e972e40d5888f5ef4907e6eb1",
+        "6f786f0a582afbf0d3b8168f7c0d97f51c16e11f33624d02769a135b8aa649c9",
+        "50eda10b73d04e4aabcb128178f725db494d81f97ab8c7d25252337b8116556a",
+        "f9448063ea9dd1f2ba1e572e8e252db230de7bbe632551023dc4b44ba6b07f92",
+        "7d6ebc0f8976a4b865b6556043ff1248f36de0091ed163dd62e62e12b4716bf3",
+        "56501856537b46f5bbb77f6ad51e7e50d5e26efd3d9ea5a7ae3243694ee62d9c",
+        "a961e01cfc288ebf0938b7c5079d8f3e9aeae28b86ba4b19487bde9b96646a0d",
+        "9eacc971ae3e71c6bca7ae40b1567833119b3380c58a1cebc94a95122db03876",
+        "12151277af278067a675a050621508b303d4721e81e0f71ad3174dbacbd61c27",
+        "b787628e0561de022235ad0f2b6409088720b82ccc83cbbb130e89659a084fd2",
+        "4e6b84715c3d382477a66c5eb3239bfdc21ef4b5c131cfebb6f272b1e12fab15",
+        "ccf44dbb421d8faed8461a56e0afb3706fbf9a8bbec3f56f90f8c493fb7648c7",
+        "54db9dec1437f4debfaaec4700bf8ce550d08259039b4d5c719730181783ea9a",
+        "218388dc483b2bc9dc4a838131bfe145222e90ebaeb2a9d6ca8d3b4ecce38d4c",
+        "8fb65de4fab632e57347ac7fbc6a37f244abb5f41ccb66ecf1ffa386576e6f90",
+        "75acdd068aba4589bce190c5a257a408774440cfba2c8cd5199d54f4f06aaab8",
+        "800a965c25ac28a10a165599d4902f2ee93c83eb88a700b63ec2bcee62bb85ae",
+        "9d92de415cf119de29f1eefd86b4adacd5a96356d4557f80088b6540572ecb3b",
+        "478ef09da8ccc213196062988da6c5887ec16763721e4adf1932b76945c5fda5",
+        "c48d648879b29fcae88fa69834a008f74596fb8ff3428d0f7cf861c8d1dc7257",
+        "86966ad6a5aa3c60d042e8fc3c3900dccfa199d4d9ef709995af39811cc871cc",
+        "1161cf284f7122b5fe0cbfae000129c24075ee7cc9ecbc7a2a13868fa30f8c47",
+        "2d4fdaafbf27125eb6ad0715718ce1652550ebf5f456ca37a9e5757e09c03fcb",
+        "1caae805f8427ad477848ed4ee642975f1d9bd0cfc35977fca7ff8182433fdd6",
+        "b27435a2e9e61b92f57c2e9e5339900a6ef8c12c85a5dccb7dfec057563a8cda",
+        "fb41f1f3f4ead4c23a2e71d0ba04e28817243d7524eb310d18cca45aa402ba0b"
+      ]
+    },
+    {
+      "source": "templates/shims/CLAUDE.template.md",
+      "target": "CLAUDE.md",
+      "class": "replace-if-unmodified",
+      "formerly": [
+        "918b1c90559355ef78f33fdf3562f2b021ef8bdfd8a5c8415e5decd44934de55",
+        "04214ad4d1c9fda3e2c11b4fd0fae6f059c302751a11956f818d199e910999f3",
+        "8bea8752e596fec22c25e27d81748e8a307a7544f99c01d006274c3dfd013f8a"
+      ]
+    },
+    {
+      "source": "templates/shims/GEMINI.template.md",
+      "target": "GEMINI.md",
+      "class": "replace-if-unmodified",
+      "formerly": [
+        "918b1c90559355ef78f33fdf3562f2b021ef8bdfd8a5c8415e5decd44934de55",
+        "30bd521b505a07f399d8b3a8f7d455c49c33a1405711dc4d00feb3bfac8eb102",
+        "ba2ba831a62079adfbb4a4d005e9c961346a2be33e3b6d110e711497c506bfe2"
+      ]
+    },
+    {
+      "source": "templates/commands/claude/catchup.md",
+      "target": ".claude/commands/catchup.md",
+      "class": "replace-if-unmodified",
+      "formerly": [
+        "7420230497bb6e75dacfd9f1328f9034c0151b828f1dd8d03883f9de9f9161a9",
+        "ae600ab5da21acdb5e1fcf5beb06d35c38e30596f46f060d9e5b0e4957487e35"
+      ]
+    },
+    {
+      "source": "templates/commands/claude/decision.md",
+      "target": ".claude/commands/decision.md",
+      "class": "replace-if-unmodified",
+      "formerly": [
+        "c6d68a38c857890e2fd313dc0448bba0d894f7c39a3cea5a557c424d4da49105"
+      ]
+    },
+    {
+      "source": "templates/commands/claude/drift.md",
+      "target": ".claude/commands/drift.md",
+      "class": "replace-if-unmodified",
+      "formerly": [
+        "322bed67010ed0b829ea34633e8bcba54ee125820b0a41719bc78ab9d01bc5a5"
+      ]
+    },
+    {
+      "source": "templates/commands/claude/handoff.md",
+      "target": ".claude/commands/handoff.md",
+      "class": "replace-if-unmodified",
+      "formerly": [
+        "c8e3da533eb92abc6aacf995fe4e2fbc231ad10a4ca1fabcc1d98f6c236f5a99"
+      ]
+    },
+    {
+      "source": "templates/commands/claude/plan.md",
+      "target": ".claude/commands/plan.md",
+      "class": "replace-if-unmodified",
+      "formerly": [
+        "7eeca1e480fafcb6b9618f2c11225584f253c7e1d19258d9d3073a4ff556630c"
+      ]
+    },
+    {
+      "source": "templates/commands/claude/playbook.md",
+      "target": ".claude/commands/playbook.md",
+      "class": "replace-if-unmodified",
+      "formerly": [
+        "68bc100abb6836af03bf4fd57ee07a639c3b30b1284e044ae6e66c180a7dc774"
+      ]
+    },
+    {
+      "source": "templates/commands/claude/update-governance.md",
+      "target": ".claude/commands/update-governance.md",
+      "class": "replace-if-unmodified",
+      "formerly": [
+        "bc11013e02545070fb37bedee4e0cfa5112628bfcd9ae26194dcab2c1d2ec954"
+      ]
+    },
+    {
+      "source": "templates/playbooks/reviewloop.md",
+      "target": ".agents/playbooks/reviewloop.md",
+      "class": "replace-if-unmodified",
+      "formerly": [
+        "80fcabf996af6afe911ff9678c03d8f6ef6f14cc31d61a47f248f5670e0662c4",
+        "82b45743f4a9ce9fe9631db053541711628e18f87328953a2c658d51c3157c7e",
+        "20b3b308da346ff05f7ed85bd5b81f3d262986cd3b14592b84ad61ab00608c00"
+      ]
+    },
+    {
+      "source": "templates/hooks/claude/settings.json",
+      "target": ".claude/settings.json",
+      "class": "replace-if-unmodified",
+      "formerly": [
+        "10cbb3bd2c3967bb43d204b3db93c587f695b8c16cd842de4e7f8c011649ab94",
+        "033e5394ad9cf77fe739efc283f168500a377f742391042c128ef35941a2bd9e",
+        "53e7ea1debc550f31b312d67d81dbcfb4e62c5b7915202aad061317839770f84",
+        "f2fae64cf284776af135405c048a2925256c70e899f6048fb44d855979d3183c"
+      ]
+    },
+    {
+      "source": "templates/hooks/claude/agents-md-tripwire.py",
+      "target": ".claude/agents-md-tripwire.py",
+      "class": "replace-if-unmodified",
+      "formerly": [
+        "cdf2662f113d97b53ac8108d8a0a878bfcefb7ed6d86e22a8638f8d157bdeb4e"
+      ]
+    }
+  ],
+  "retired": [],
+  "machine_local_exclusions": {
+    ".claude": [".claude/settings.local.json"],
+    ".codex": [],
+    ".gemini": [],
+    ".grok": []
+  }
+}
