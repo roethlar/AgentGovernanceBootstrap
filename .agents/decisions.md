@@ -34,6 +34,109 @@ live rule now owned elsewhere - archive it per the rule above: move it verbatim 
 
 ## Decisions
 
+### 2026-07-08 — Zero-based consolidation: every product piece justifies its existence or leaves
+
+Status: Active (implemented same day; plan with eight-round codex review
+trail: `docs/superpowers/plans/2026-07-08-zero-based-consolidation.md`;
+owner approval 2026-07-08).
+
+The owner commissioned a zero-based review — every piece justifies itself on
+the incident ledger and a five-repo field audit (Blit_v2, vela,
+Powershell-Token-Killer, ai-rpg-engine, ExchangeAdminWeb; evidence anchors in
+the plan) or is removed/replaced. The field audits established that the core
+loop works (handoffs demonstrably resumed across sessions and machines,
+decisions and pauses honored, reviewloop caught real pre-ship bugs) and that
+the recurring failures cluster where no operator or write rule existed.
+
+What changed, and what each change supersedes or amends:
+
+- **Steady-state refresh is `tools/refresh.py`** — pull-based, per-repo, no
+  registry: reconcile-to-shipped-set (`tools/shipped-set.json`) with
+  newline-normalized matching, `replace-whole` for `AGENTS.md` gated on a
+  known-template match, `replace-if-unmodified` for shims/wrappers/playbooks/
+  hook settings (missing ⇒ install; matches a formerly-shipped version ⇒
+  update; else flag, never overwrite), a `retired` list so toolkit-side
+  removal actually propagates (empty formerly-hashes = always flag, never
+  machine-delete — protects generated files), gitignore-aware committability
+  with the blanket adapter-dir repair, dirty-tree refusal scoped to its own
+  targets, `--stage-only` for the bootstrap single-commit contract, and the
+  toolkit sha in the commit message as provenance. Rationale on record: sync-
+  to-exact-set is the documented agent failure mode (the 2026-07-01 dogfood
+  "content already current" miss; wrappers narrowed to fit stale files;
+  deletions resurrecting). This supersedes the mechanical half of the
+  agent-run refresh flow, the 2026-06-22 templateVersion-stamp decision (the
+  stamp is removed; byte-compare + commit-message provenance replace it), and
+  strengthens the 2026-06-18 never-overwrite rule (`replace-if-unmodified`:
+  byte-match against formerly-shipped versions proves non-modification, so
+  provably-unmodified stale artifacts now update instead of rotting). The
+  2026-07-03 playbooks decision is **preserved in full** (unconditional
+  install; target-repo deletion still reinstalls; opt-out = remove the
+  template from the toolkit — which now actually propagates).
+- **Discovery is a live checklist, not a script** — `tools/discover.py` and
+  its manifest/schema/golden machinery deleted (three of the seven ledger
+  bugs were its own defects; a frontier agent re-derives its outputs).
+  Salvaged knowledge lives in `procedures/bootstrap.md`: the Windows
+  Store-stub probe order, ignore-aware governance detection, the
+  CI-executability rule. Supersedes the script half of the 2026-06-09/10
+  kickoff decision; the single-session kickoff, Step 0 sync, and evidence
+  rule stand. The `.bootstrap-tmp` handoff pack dies with its generator; the
+  self-ignored `drafts/` custody convention survives in the procedure.
+- **The JSON layer is retired** — `repo-map.json` / `artifact-manifest.json`
+  templates deleted; both on the retired list (flag-only). Field evidence:
+  frozen and wrong in every audited repo while the prose files stayed
+  accurate; custody is proven live by git at the approval gate. The
+  verification command's single canonical home is
+  `.agents/repo-guidance.md` (Verification). Amends the 2026-06-09
+  standard-layout decision (layout no longer includes the JSON files).
+- **Hooks narrowed to the Claude compaction re-ground behind a per-harness
+  verify-once gate** — the sole shipped hook; the AGENTS.md pre-edit
+  tripwire is retired everywhere (advisory; per-edit process spawn; silently
+  inert on stock Windows for weeks with no degradation — the strongest
+  not-load-bearing evidence on record; the write boundary is now refresh's
+  byte-verify-and-repair), as are the never-verified grok/agy configs and
+  the codex config (session_start registered but never observed firing —
+  2026-07-08 live check negative). Ledger + structural rationale (a
+  compaction failure can only be mitigated from outside the context):
+  `docs/harness-capabilities.md`, the durable per-harness capability record.
+  Amends the 2026-06-21 per-harness re-ground decision (per-harness retained,
+  now evidence-gated); supersedes L2 of the 2026-06-25 boundary decision (L1
+  prose stays, L3 is refresh repair); moots the 2026-07-02 hook-interpreter
+  decision (the survivor is a plain echo). Codex/gemini/grok adapters and
+  non-Claude wrappers re-enter only on a recorded positive live check.
+- **Feedback is GitHub issues on this repo** (public; hard no-PII/secrets
+  redaction rule in the issue templates; agents file only on an explicit
+  owner go; offline fallback = in-repo note). Supersedes the transport half
+  of the 2026-06-09 harvest decision and the 2026-06-22 dropbox/bug-report
+  decisions; the harvest discipline (incident-earned, max three,
+  no-report-is-normal) is retained verbatim in
+  `.github/ISSUE_TEMPLATE/`. `harvest/processed.md` archived; open/closed
+  issues are the queue and ledger. The `agent-harvest` repo awaits owner
+  archiving.
+- **The evals workstream is scrapped** — `evals/` and the instrument deleted
+  (owner: delete, not archive; git history preserves). Amends the 2026-07-01
+  functional-cut decision's completeness-general-as-candidate clause (the
+  profile is deleted; revival needs a fresh decision). Salvage:
+  `docs/harness-capabilities.md`.
+- **Template redline** — `templates/AGENTS.template.md` cut to 1,503 words
+  (Bootstrap Handoff, Mission-as-section, stamp, pointer bullet, merged
+  durable-writing bullets); write-authority one sentence; `handoff` gains
+  the field-earned rules (verbatim rotation to
+  `docs/history/state-archive.md`; volatile facts `as of <commit>`; counts
+  pointed-to; machine-local facts labeled or omitted; parked items
+  re-verified); Session Startup gains the read-only clone-freshness check
+  (never blocks). Scope tiers deleted from the approval summary (conditioned
+  nothing anywhere).
+- **Standing rule: no shipped rule without provenance** — a template rule is
+  added, kept, or changed only with a decisions entry citing its earning
+  incident; every kept line was cross-checked this run (zero lines lacked
+  provenance). With the discover-era presence tests retired, this process
+  rule — not CI grep — is what guards template content.
+
+Procedures consolidated to one `procedures/bootstrap.md` (1,913 words, from
+5,198 over two files; `verification.md` unchanged; the three dropbox
+transport procedures deleted). Rollout: vela first (owner pick), remaining
+repos on owner go; refresh flags route back as issues.
+
 ### 2026-07-04 — Specific-over-generic precedence: explicit boundaries and no-discretion rules outrank generic defaults
 
 Status: Adopted 2026-07-04 (rule lives in `templates/AGENTS.template.md`
@@ -97,7 +200,9 @@ run.
 
 ### 2026-07-03 — Playbooks install unconditionally on every run, like wrappers and hooks
 
-Status: Active (implemented same day; plan:
+Status: Active
+
+> Amended 2026-07-08 (zero-based consolidation — see the 2026-07-08 entry): preserved in full; installation is now `tools/refresh.py`'s replace-if-unmodified class, and toolkit-side template removal now propagates via the retired list. (implemented same day; plan:
 `docs/superpowers/plans/2026-07-03-playbook-install-owner-gate.md`, as
 corrected by its supersession note).
 
@@ -178,7 +283,9 @@ mechanical detection is not load-bearing in this toolkit.
 
 ### 2026-07-02 — Shipped hook commands: `py -3 || python3` fallback chain; Windows scope is Git Bash
 
-Status: Adopted 2026-07-02 (plan with commit map:
+Status: Adopted 2026-07-02
+
+> Amended 2026-07-08 (zero-based consolidation — see the 2026-07-08 entry): mooted — the sole surviving shipped hook is a plain inline echo; no shipped hook invokes an interpreter. (plan with commit map:
 `docs/superpowers/plans/2026-07-02-hook-python3-windows-fallback.md`; rule
 lives in the hook templates, the strengthened tripwire test, and the
 bootstrap procedure's hook-install step).
@@ -234,7 +341,9 @@ pending owner IDs.
 
 ### 2026-07-01 — Governance refresh entry point; portability sweep in reconciliation; Python 3.9 floor
 
-Status: Active (implemented same day; plan:
+Status: Active
+
+> Amended 2026-07-08 (zero-based consolidation — see the 2026-07-08 entry): the update-governance wrapper now invokes `tools/refresh.py` (the mechanical refresh); the bootstrap procedure remains the judgment path. The 3.9 floor stands and now covers refresh.py. (implemented same day; plan:
 `docs/superpowers/plans/2026-07-01-route-collapse-refresh-and-portability-sweep.md`).
 
 Three durable rules landed alongside the route-collapse adoption (see the
@@ -311,7 +420,9 @@ by a future self-application run.
 
 ### 2026-06-28 — Collapse the update route into migration; route detection is not load-bearing
 
-Status: Adopted 2026-07-01. Implemented per
+Status: Adopted 2026-07-01.
+
+> Amended 2026-07-08 (zero-based consolidation — see the 2026-07-08 entry): carried further — the two procedures are consolidated into one `procedures/bootstrap.md` with the migration inventory as a conditional step; mechanical reconciliation moved to refresh.py. Implemented per
 `docs/superpowers/plans/2026-07-01-route-collapse-refresh-and-portability-sweep.md`:
 `compute_route()` is single-route (commit 07ceb09), the reconciliation branch
 lives in `procedures/bootstrap.md` Step 3 with `procedures/migration.md` naming
@@ -573,6 +684,8 @@ smallest-guidance-set invariants.
 
 Status: Active
 
+> Amended 2026-07-08 (zero-based consolidation — see the 2026-07-08 entry): superseded — defects are filed as GitHub issues on this repo (`.github/ISSUE_TEMPLATE/toolkit-defect.md`), owner-gated, redacted; the dropbox transport is retired.
+
 Decision: The shared `agent-harvest` dropbox (canonical on GitHub at
 `roethlar/agent-harvest`) stores not only harvested governance rules but also bug
 reports for defects in the AgentGovernanceBootstrap product itself — its code or
@@ -611,7 +724,9 @@ artifact classes. The `gh api` PUT path was verified end-to-end against
 
 ### 2026-06-09 - Migrate to the standard .agents/ layout for all bootstrapped repos
 
-Status: Active, as amended 2026-07-03: playbooks are part of the standard
+Status: Active, as amended 2026-07-03
+
+> Amended 2026-07-08 (zero-based consolidation — see the 2026-07-08 entry): the standard layout no longer includes `repo-map.json` / `artifact-manifest.json` (retired, flag-only on refresh); the verification command's canonical home is `.agents/repo-guidance.md`.: playbooks are part of the standard
 layout, no longer optional — every shipped playbook template installs on
 every run (see the 2026-07-03 playbooks decision above). The original
 wording below is retained.
@@ -629,6 +744,8 @@ The prior two-stage PowerShell architecture (historical record only in `docs/his
 
 Status: Active
 
+> Amended 2026-07-08 (zero-based consolidation — see the 2026-07-08 entry): transport superseded — harvest rules are filed as GitHub issues (`.github/ISSUE_TEMPLATE/harvest-rule.md`); the discipline (incident-earned, max three, no-report-is-normal, owner-gated publish) is retained verbatim there.
+
 Decision:
 During a migration the agent may (rarely) record generalizable governance rules in a harvest report, under strict limits: expected outcome is no report; an idea qualifies only if earned by a real citable incident, not already covered by templates, useful to other repos, and at most three ideas total; never a "nothing found" file. Delivery: write append-only as a new dated file in the `agent-harvest` dropbox via the shared transport recipe (`procedures/file-to-dropbox.md`), which any session may publish to only with an explicit owner go; otherwise fall back to `.agents/harvest.md` in the target. Harvest reports are never delivered into the canonical bootstrap repo itself. (Supersedes the earlier "standing authorization" auto-push: as of 2026-06-22 every dropbox publish — harvest report or bug report — asks before pushing, so the two paths share one transport and one gate.)
 
@@ -641,6 +758,8 @@ Earlier ideas of richer or automatic harvesting.
 ### 2026-06-09/10 - Single-session kickoff with Python discovery; self-healing freshness
 
 Status: Active
+
+> Amended 2026-07-08 (zero-based consolidation — see the 2026-07-08 entry): the discovery script is retired; discovery is a live checklist in the consolidated procedure. The single-session kickoff, Step 0 sync, and self-healing freshness principles stand.
 
 Decision:
 The agent runs discovery (`tools/discover.py`) as Step 1 inside the kickoff session. The script is kept because it guarantees completeness on large repos without model-dependent laziness. A stale or missing manifest causes automatic re-run (self-healing). The only refusal case is a sandboxed environment that literally cannot execute the script. Every bootstrap run begins with a cwd-independent sync of the bootstrap toolkit from GitHub (the canonical remote), using the LAN gitea mirror as a faster fetch source when reachable, via `git -C`, `ls-remote` liveness, and `--ff-only` merge to GitHub's head; offline or diverged clones proceed with a plain-English flag and never block.
@@ -810,6 +929,8 @@ The pre-pilot procedures and templates.
 
 Status: Active
 
+> Amended 2026-07-08 (zero-based consolidation — see the 2026-07-08 entry): the guarantee's mechanism is now refresh.py's replace-if-unmodified class, which strengthens never-overwrite: a provably-unmodified stale wrapper updates; an owner-modified one is flagged, never touched.
+
 Decision:
 On every route (greenfield, migration, update), the process audits the operator
 vocabulary (`catchup`, `handoff`, `drift`, `decision`, `plan`, `playbook`) and, on a harness
@@ -848,6 +969,8 @@ The deferred "Command wrappers are created only on the migration route"
 ### 2026-06-22 - Update route reconciles a stale AGENTS.md; templateVersion stamp detects drift
 
 Status: Active
+
+> Amended 2026-07-08 (zero-based consolidation — see the 2026-07-08 entry): superseded — the stamp is removed; refresh.py's newline-normalized compare against known template versions carries the decision, and the refresh commit message records the toolkit sha as provenance.
 
 Decision:
 Bootstrapped repos carry a `<!-- templateVersion: YYYY-MM-DD -->` stamp at the
@@ -972,7 +1095,9 @@ touch; the revert-the-fix discipline if a test guards the stamp).
 
 ### 2026-06-25 - AGENTS.md governance boundary: portable + write-authority, enforced in three layers
 
-Status: Adopted 2026-06-25. The two boundary invariants landed as bullets in
+Status: Adopted 2026-06-25.
+
+> Amended 2026-07-08 (zero-based consolidation — see the 2026-07-08 entry): L2 (the advisory tripwire) is retired on ledger evidence (silently inert on stock Windows, nothing degraded); L1 (the invariants) stands; L3 is now refresh.py's byte-verify-and-repair. The two boundary invariants landed as bullets in
 `templates/AGENTS.template.md` `## Universal Invariants` (portability — "would this
 line survive being copied unchanged into an unrelated repo?"; and write-authority —
 "AGENTS.md is written only by a gated bootstrap or update run"); the `drift` operator
@@ -1057,6 +1182,8 @@ not-applicable — see that decision above and the archive.)
 
 ### Open: hook-merge strategy is underspecified in the procedure
 
+> Amended 2026-07-08 (zero-based consolidation — see the 2026-07-08 entry): mooted — hooks are no longer agent-merged; refresh.py installs the single shipped settings file replace-if-unmodified and flags anything owner-modified. Recommend closing at next sweep.
+
 Evidence: `procedures/bootstrap.md` "Hook install & trust" says to merge the
 re-ground hook into an existing config "rather than replacing the file" and to
 "stop and ask" if a safe merge is not possible, but specifies no merge algorithm
@@ -1071,6 +1198,8 @@ Recommendation: (a). Docs-only change to one procedure section; no plan required
 under the invariants. Reduces an ambiguous agent judgment to a stated rule.
 
 ### Open: committed operator wrappers are skipped without a staleness check
+
+> Amended 2026-07-08 (zero-based consolidation — see the 2026-07-08 entry): resolved — replace-if-unmodified updates a wrapper that byte-matches any formerly-shipped version and flags owner-modified ones. Recommend closing at next sweep.
 
 Evidence: `procedures/bootstrap.md` step 4 of "Operator command wrappers" does a
 binary exist-and-committed → change-nothing, with no version/staleness check —
@@ -1107,6 +1236,8 @@ Recommendation: a one-line judgment call for the owner. (a) removes the
 agent-judged escape hatch cheaply; (c) is a compromise. Low effort either way.
 
 ### Open: a `governance-lint` self-audit playbook (mechanical checks only)
+
+> Amended 2026-07-08 (zero-based consolidation — see the 2026-07-08 entry): its named substrate (repo-map.json `guidance_paths`/`validated_against`, discover.py helpers) was deleted; if ever built it walks `.agents/` live. Owner disposition pending: close as obsolete or re-scope.
 
 Evidence: `AGENTS.md` advertises `.agents/playbooks/*` as an authority slot and a
 `playbook <name>` operator. The toolkit already ships a playbook template
@@ -1235,6 +1366,8 @@ surface. A `plan` should confirm the SHA-pinning and worktree language survives
 the rewording before implementation.
 
 ### Open: a fast-update route/command for docs-only refreshes without a full update or migration
+
+> Amended 2026-07-08 (zero-based consolidation — see the 2026-07-08 entry): resolved — `tools/refresh.py` is exactly this: the mechanical refresh path, seconds, no agent ceremony. Recommend closing at next sweep.
 
 Evidence: discovery currently computes two routes — `greenfield` and
 `migration` (the former `update` route was collapsed into `migration`,

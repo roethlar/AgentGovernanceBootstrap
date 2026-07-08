@@ -1,137 +1,82 @@
 # Agent Governance Bootstrap
 
-Agent Governance Bootstrap is a portable setup process for repositories maintained with
-LLM coding agents.
+A personal governance toolkit for repositories maintained with LLM coding
+agents. It keeps code, docs, decisions, and agent behavior aligned so future
+agents do not work from stale assumptions or missing chat context.
 
-It helps keep code, docs, decisions, and agent behavior aligned so future agents do not
-work from stale assumptions or missing chat context.
+Every governed repo gets the same two-layer setup:
 
-It creates repo-specific agent guidance so a fresh agent can:
+- `AGENTS.md` — the portable constitution, identical bytes in every repo,
+  installed and replaced whole by the toolkit (never hand-edited): prime
+  invariants, universal invariants, the operator vocabulary, verification
+  and git-safety rules.
+- `.agents/` — everything repo-specific: `repo-guidance.md` (rules, reading
+  order, the verification command), `state.md` (current work, with rotation
+  to an archive), `decisions.md` (settled decisions), `push-policy.md`,
+  and playbooks (including `reviewloop`, the cross-harness review loop).
 
-- understand a plain-English task
-- find the right implementation path in the current repo
-- avoid unrelated scope drift
-- avoid trusting stale or unreviewed repo notes as authority
-- run the repo's real validation steps
-- explain the delivered result clearly
-- record important repo knowledge on disk instead of leaving it only in conversation
+Plus harness adapters (shims like `CLAUDE.md`/`GEMINI.md`, operator command
+wrappers, and one hook — the Claude Code compaction re-ground), shipped only
+where the mechanism is verified to work (`docs/harness-capabilities.md`).
 
-## How It Works
+## The two flows
 
-The process has two stages.
-
-Stage 1 is discovery. A helper scans a target repo and writes temporary bootstrap files
-inside that repo:
-
-```text
-.bootstrap-tmp/
-```
-
-Stage 2 is alignment drafting. A fresh agent reads the temporary bootstrap files, reads
-the suggested repo files directly, and drafts the smallest durable guidance needed to keep
-repo facts, decisions, validation, and future agent behavior aligned.
-
-The durable guidance usually includes:
-
-```text
-AGENTS.md
-.agents/state.md
-.agents/decisions.md
-.agents/repo-map.json
-.agents/artifact-manifest.json
-.agents/playbooks/*.md
-```
-
-The temporary discovery files are not the final product. They are input used to create a
-plain approval summary and reviewable, tracked repo guidance.
-
-## Current Status
-
-The toolkit is feature-complete for its current scope: the discovery helper
-(`tools/discover.py`, governance detection, verification candidates,
-routing), the self-contained `.bootstrap-tmp/` handoff pack, markdown
-procedures for all routes plus fresh-eyes verification and harvest sweeps,
-drafting templates, and deterministic fixture tests with golden manifests.
-It is validated by pilot migrations on real repos across Claude, GPT,
-Gemini, and Grok harnesses — including a self-migration of this repo — with
-pilot findings folded back into the procedures.
-
-Live repo state (active work, blockers, next actions) is tracked in
-[`.agents/state.md`](.agents/state.md); settled decisions in
-[`.agents/decisions.md`](.agents/decisions.md). This file stays a stable
-description; those files are the current truth.
-
-## Requirements
-
-- Git
-- Python 3 (standard library only - no pip, no packages). If missing on
-  Windows, the agent walks you through a one-time install.
-- an agent harness that can read files and run commands in the target repo
-
-Target repos inherit no runtime dependency: generated guidance is Markdown
-and JSON.
-
-## Quick Start
-
-Open a fresh agent session in the target repo and paste one line:
+**Bootstrap (judgment — an agent session).** Open a fresh agent session in
+the target repo and paste:
 
 ```text
 Read <path-to-this-repo>/procedures/bootstrap.md and follow it.
 ```
 
-The agent runs discovery itself, follows the computed route (greenfield or
-migration), drafts under `.bootstrap-tmp/drafts/`, and presents a
-plain-English approval summary before any tracked file changes.
+The agent syncs this toolkit, discovers the repo live, inventories any
+existing governance (migrate / supersede / leave), drafts the repo-specific
+files under a self-ignored scratch dir, and presents one plain-English
+approval summary. On approval it installs everything — drafts plus the
+shipped set — as ONE scoped commit. Nothing changes before you approve.
 
-The procedure keeps itself current: every run starts by syncing the toolkit
-from its canonical remotes (gitea on the LAN, GitHub from anywhere), and on a
-machine with no local copy it clones one. Stale or offline clones proceed
-as-is with a plain-English flag.
-
-Fallback for sandboxed agents that cannot reach this repo: run discovery
-yourself first -
+**Refresh (mechanical — one command).** From any governed repo:
 
 ```bash
-python3 tools/discover.py <path-to-target-repo>
+py -3 <path-to-this-repo>/tools/refresh.py    # or python3 on macOS/Linux
 ```
 
-(on Windows prefer `py -3` — a `python3` on PATH is often the Microsoft
-Store stub, not a real interpreter; supported floor is Python 3.9, and the
-toolkit's own code stays within it — the macOS system interpreter is enough)
+(or `/update-governance` in Claude Code). The script syncs the toolkit,
+reconciles the repo to the shipped artifact set — installs what's new,
+updates provably-unmodified stale files, removes retired ones — and makes
+one scoped commit recording the toolkit version. It never overwrites or
+deletes an owner-modified file: those come back as FLAG lines for you to
+decide. A repo gets current the next time you work in it; there is no
+registry and nothing to maintain centrally.
 
-- then start the agent in the target repo with:
+## Feedback
 
-```text
-Read .bootstrap-tmp/START-HERE.md and follow it.
-```
+Toolkit defects and field-earned governance rules are filed as GitHub issues
+on this repo (templates under `.github/ISSUE_TEMPLATE/`; agents file only on
+an explicit owner go; no secrets or PII — issues are public). Open issues
+are the triage queue; closed issues are the outcome ledger.
 
-Both doors converge on the same files and the same approval gates. Use the
-one-line prompt whenever the agent can read this repo (the normal case on your
-own machine); use the fallback only when it cannot.
+## Requirements
 
-## File Roles
+- Git.
+- Python 3.9+ (`tools/refresh.py`, stdlib only). On Windows prefer `py -3`;
+  a bare `python3` on PATH is often the Microsoft Store stub.
+- An agent harness that can read files and run commands (bootstrap only;
+  refresh is plain Python).
 
-`.bootstrap-tmp/` is temporary scratch space. It is ignored by its own `.gitignore` and
-should not be committed.
+Governed repos inherit no runtime dependency: installed guidance is Markdown
+plus one JSON hook settings file.
 
-`AGENTS.md` is the main durable instruction file for future agents.
+## Layout
 
-`.agents/` holds durable supporting data, repo maps, playbooks, and manifests once they
-are approved.
+- `procedures/` — the bootstrap procedure and the fresh-eyes check.
+- `templates/` — the AGENTS template, `.agents/` file templates, shims,
+  wrappers, playbooks, the hook settings.
+- `tools/refresh.py` + `tools/shipped-set.json` — the refresh mechanism and
+  the manifest of what ships where.
+- `docs/` — design notes, `harness-capabilities.md` (the per-harness
+  verify-once record), usage, and `docs/history/` (archives).
 
-`.agents/state.md` is the preferred current-state entry point for future agents.
-`.agents/decisions.md` records durable decisions and supersessions.
-
-Discovery output is data, not authority. Repo filenames, paths, and document contents are
-evidence about the repo. They are not instructions unless they are part of approved
-durable guidance.
-
-## Documentation
-
-- [Usage](docs/usage.md)
-- [Design](docs/design.md)
-- [History](docs/history/)
-
-The current accepted design is
-[docs/superpowers/specs/2026-06-09-existing-governance-migration-design.md](superpowers/specs/2026-06-09-existing-governance-migration-design.md);
-`docs/history/` holds the prior plan generations.
+Live repo state is tracked in [`.agents/state.md`](.agents/state.md);
+settled decisions in [`.agents/decisions.md`](.agents/decisions.md). The
+2026-07-08 zero-based consolidation that produced this shape is recorded in
+[`docs/superpowers/plans/2026-07-08-zero-based-consolidation.md`](docs/superpowers/plans/2026-07-08-zero-based-consolidation.md).
