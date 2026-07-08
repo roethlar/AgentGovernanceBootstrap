@@ -1,10 +1,11 @@
 # Zero-based consolidation: every piece justifies its existence or leaves
 
-Status: Draft 2026-07-08 — codex accepted the base plan at r4 (`ddcec13`,
-zero findings); post-r4 owner amendments (multi-harness parity, public
-issues + redaction rule, vela-first rollout) are under codex re-review (r5).
-Awaiting that verdict, then owner approval. No product change lands before
-the owner approves this plan.
+Status: Reviewed 2026-07-08 — codex accepted at r8 (reviewed_sha `068cbbe`,
+zero findings; eight-round trail in the Review log, covering the base plan
+and every owner amendment: multi-harness verify-once parity, public issues
+with the redaction rule, vela-first rollout, and the full evals scrap). All
+open questions resolved. **Awaiting owner approval.** No product change
+lands before the owner approves this plan.
 Supersedes `2026-07-08-field-audit-hardening.md` (narrower same-day draft;
 its field-audit evidence base and its state-lifecycle/write-rule slices carry
 forward into this plan).
@@ -529,6 +530,11 @@ Each with the incident/evidence citations above:
   seed-input scoping; the bullet now matches (seed input + durable home for
   live-check outcomes; the gate's evidence is the live checks). The
   state-rotation fix confirmed resolved.
+- r8 (2026-07-08, codex-cli 0.142.5, reviewed_sha `068cbbe`): **accepted**,
+  zero findings. r7's wording fix confirmed; final sweep clean. Consensus
+  reached across the full plan including all owner amendments; per the
+  reviewloop discipline, an accepted verdict is not implementation
+  authority — implementation awaits the owner's approval of this plan.
 - Post-r4 owner amendments (2026-07-08), re-reviewed in r5: (a)
   multi-harness parity — the gitignore repair stated harness-neutrally
   across all adapter dirs; the re-ground hook and operator wrappers ship
