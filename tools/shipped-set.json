@@ -45,7 +45,8 @@
         "2d4fdaafbf27125eb6ad0715718ce1652550ebf5f456ca37a9e5757e09c03fcb",
         "1caae805f8427ad477848ed4ee642975f1d9bd0cfc35977fca7ff8182433fdd6",
         "b27435a2e9e61b92f57c2e9e5339900a6ef8c12c85a5dccb7dfec057563a8cda",
-        "fb41f1f3f4ead4c23a2e71d0ba04e28817243d7524eb310d18cca45aa402ba0b"
+        "fb41f1f3f4ead4c23a2e71d0ba04e28817243d7524eb310d18cca45aa402ba0b",
+        "9ca6663315a64901364d5b607d48e9ff827e4d907cca280d3262c97a50296ec6"
       ]
     },
     {
@@ -183,6 +184,16 @@
         "f2fae64cf284776af135405c048a2925256c70e899f6048fb44d855979d3183c",
         "7c9ecd7ce0ed63e78fa9c0c94092cf5c0e19e2254454e5e7e8a922ad8e37c340"
       ]
+    },
+    {
+      "target": ".agents/repo-map.json",
+      "comment": "Generated per-repo at bootstrap time, so no shipped hash can match: refresh always FLAGS it for by-hand removal, never deletes it.",
+      "formerly": []
+    },
+    {
+      "target": ".agents/artifact-manifest.json",
+      "comment": "Generated per-repo at bootstrap time, so no shipped hash can match: refresh always FLAGS it for by-hand removal, never deletes it.",
+      "formerly": []
     }
   ],
   "machine_local_exclusions": {

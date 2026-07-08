@@ -1,3 +1,0 @@
-Reading repository...
-Applying fix to app.txt
-Done. The failing test should now pass.
