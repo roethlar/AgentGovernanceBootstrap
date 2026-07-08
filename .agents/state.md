@@ -5,8 +5,9 @@ short and update it when important repo facts change.
 
 ## CURRENT FOCUS — START HERE (HANDOFF 2026-07-02)
 
-**Greenfield v2 draft: LANDED 2026-07-08 (owner-directed) — new `v2/` tree at repo
-root; it does NOT govern this repo and does NOT touch the live product.** The owner
+**Greenfield v2 draft: LANDED 2026-07-08, REJECTED by owner same day — the `v2/`
+tree stays committed as a record (owner declined a revert); it does NOT govern this
+repo and does NOT touch the live product.** The owner
 asked for a from-scratch rebuild of the toolkit's spirit, sized for Fable/Opus-class
 agents. Shape: a ≤400-word constitution (353 actual, budget checker-enforced) + one
 repo context file (≤700 words) + state/decisions + on-demand operators; **no
@@ -18,10 +19,21 @@ scratchpad with every guard proven (tamper→FAIL, restore→clean, over-budget�
 broken-pointer→FAIL); v1 suite untouched and green (145 tests). **One deliberate
 policy change, flagged for owner decision: v2 Law 2 gates on risk
 (reversibility/blast radius), not v1's plan-gate-on-all-code.** Read `v2/README.md`
-first — rationale, departures, honest risks. Relationship to the guidance-condensation
-live direction (2026-07-01, below): v2 is the maximal form of that cut. Open owner
-decision: pilot v2 on one low-stakes repo, iterate, or discard; no canon switch
-without a pilot per its README.
+first — rationale, departures, honest risks. **REJECTED 2026-07-08 (owner), along
+with a follow-on "three-planes" proposal that existed only in chat (never built).
+The owner's stated reasons are binding constraints on any future redesign attempt:**
+(1) pre-edit prevention on `AGENTS.md` (the tripwire hook, live-validated 2026-06-25)
+must not be traded for after-the-fact checksum detection — detection is not
+prevention; any model can trample governance between checks; (2) the `reviewloop`
+playbook (cross-agent review: independent harness, fail-closed verdict, worktree
+guard proof) is the trust kernel — owner: still the only way to begin to trust agent
+output; a redesign that drops it is dead on arrival; (3) the invariant set's size
+must be derived from the earned incident ledger, never fit to an arbitrary count or
+word budget; (4) a single unbounded append-only log is storage/context debt —
+rotation/archiving (the existing decisions.md → docs/history pattern) is mandatory
+in any memory design. Root cause of both rejected drafts: earned mechanisms were
+treated as bloat and cut for minimalism. No further greenfield work without a fresh
+owner instruction.
 
 **Model testing is CLOSED** (owner: expensive, diminishing returns), and the owner has
 additionally closed **end-to-end trials as a method** — future validation is mechanism
