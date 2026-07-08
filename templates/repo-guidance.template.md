@@ -9,7 +9,9 @@
 <!-- The files an agent should treat as the active baseline, in order. -->
 
 ## Verification
-<!-- The concrete verification command(s) and any repo-specific rules. -->
+<!-- The canonical home for the repo's verification command(s) and any
+     repo-specific verification rules. Other files point here; never copy
+     the command or dated result counts elsewhere. -->
 
 ## Remotes & Sync
 <!-- Canonical remote, mirrors, sync specifics. Push policy stays in

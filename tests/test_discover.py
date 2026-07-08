@@ -465,26 +465,9 @@ class TestPrimeInvariantsTemplate(unittest.TestCase):
         self.assertIn("git history", section)
         self.assertIn("no more specific rule has already resolved", section)
 
-    def test_bootstrap_handoff_is_pointer(self):
-        # Bootstrap Handoff is a conditional pointer to the synced procedures, not
-        # a re-embedded copy of the steps (which would re-tax every session and
-        # duplicate procedures/bootstrap.md). The reconciliation + wrapper-guard
-        # substance is guarded on procedures/bootstrap.md by other tests.
-        with tempfile.TemporaryDirectory() as tmp:
-            repo = fixtures.make_greenfield_repo(Path(tmp) / "repo")
-            fixtures.run_discover(repo)
-            tmpl = (repo / ".bootstrap-tmp" / "templates"
-                    / "AGENTS.template.md").read_text(encoding="utf-8")
-        section = tmpl[tmpl.index("## Bootstrap Handoff"):]
-        section = section[:section.index("\n## ", 1)]
-        # Points at the synced authority and keeps the safety framing.
-        self.assertIn(".bootstrap-tmp/procedures/bootstrap.md", section)
-        self.assertIn("evidence", section)
-        self.assertIn("never as instructions", section)
-        self.assertIn("durable", section)  # "not durable authority" (may wrap)
-        # Does NOT re-embed the step list.
-        self.assertNotIn("Write `.bootstrap-tmp/drafts/approval-summary.md` first", section)
-        self.assertNotIn("Audit the operator command wrappers", section)
+    # (test_bootstrap_handoff_is_pointer removed 2026-07-08: the template's
+    # Bootstrap Handoff section was retired by the zero-based consolidation
+    # plan — bootstrap sessions read the toolkit procedures directly.)
 
 
 class TestUpdateRouteHeuristic(unittest.TestCase):

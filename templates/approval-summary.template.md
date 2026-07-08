@@ -2,8 +2,8 @@
 
 <Altitude: everything above the Existing Governance Inventory must fit on one
 screen - short paragraphs, no exhaustive detail; the inventory is the only
-section that may run long. Always state the scope tier. For migration runs,
-include the inventory inline; never just point at another file.>
+section that may run long. For migration runs, include the inventory inline;
+never just point at another file.>
 
 ## Recommendation
 
@@ -19,11 +19,6 @@ Then add one sentence explaining why.
 custody conflict, an ignore-rule question, a scope choice - the recommendation
 must not be `Approve`. Use `Do not approve yet` or `Approve after edits` until
 the owner has settled it.>
-
-## Recommended Scope
-
-<Tier 1 / Tier 2 / Tier 3, with one sentence explaining why this repo needs that much
-process and no more.>
 
 ## What The Repo Appears To Be
 
@@ -54,32 +49,34 @@ a human approval question.>
 on its final path - never by assumption. A path the repo gitignores cannot
 enter the commit and must not be listed as committed.>
 
-### Committed (tracked)
+### Committed — judgment drafts (copied from `.bootstrap-tmp/drafts/` on approval)
 
-- `AGENTS.md`
+- `.agents/repo-guidance.md`
 - `.agents/state.md`
 - `.agents/decisions.md`
-- `.agents/repo-map.json`
-- `.agents/artifact-manifest.json`
-- `.agents/playbooks/<name>.md` (one per shipped playbook template; list each
-  actual file)
+- `.agents/push-policy.md`
+- <migration runs: supersession banners on superseded files>
+
+### Committed — shipped set (installed by `tools/refresh.py --stage-only`)
+
+<List what the refresh script's plan will install here: `AGENTS.md`, harness
+shims, operator wrappers, playbooks, hook settings — run the script's report
+or enumerate `tools/shipped-set.json`. These files are never drafted or
+hand-copied; the script is their single installer.>
 
 ### Local-only (gitignored, copied but never committed)
 
-<Files whose final paths an ignore rule covers - harness directories like
-`.claude/` often are. Write "None" when the list is empty. If keeping one of
-these tracked seems important, raise the ignore rule as a question instead;
-never plan a silent `git add -f`.>
-
-<For migration runs, extend these lists with the harness shim (for example
-`CLAUDE.md`), the governance inventory, supersession banners on superseded
-files, and the harvest report if one was drafted.>
+<Files whose final paths an ignore rule covers. The refresh script repairs a
+known blanket harness-dir ignore itself; anything else it flags. Write
+"None" when the list is empty. If keeping one of these tracked seems
+important, raise the ignore rule as a question instead; never plan a silent
+`git add -f`.>
 
 <State the exact commit message that will be used. Approving this summary
-authorizes copying the files above and making that ONE scoped commit
-(exactly the Committed list, never `git add -A`, never `git add -f`).
-Nothing is pushed yet; the push policy written by this run governs all
-subsequent commits.>
+authorizes copying the judgment drafts, running the refresh install, and
+making ONE scoped commit covering both groups (exactly the lists above,
+never `git add -A`, never `git add -f`). Nothing is pushed yet; the push
+policy written by this run governs all subsequent commits.>
 
 <Non-git targets: there is no commit to authorize yet. Ask here whether to
 `git init` and include the scoped first commit (see bootstrap.md, "If the
