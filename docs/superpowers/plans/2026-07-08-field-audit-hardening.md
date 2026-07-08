@@ -1,7 +1,8 @@
 # Field-audit hardening: state lifecycle, write rules, and toolkit correctness
 
-Status: Draft 2026-07-08 — under cross-harness review (reviewloop, codex), then
-owner approval. No product change lands before the owner approves this plan.
+Status: Reviewed 2026-07-08 — codex accepted at r3 (reviewed_sha `6a88d87`,
+zero findings; full trail in the Review log below). Awaiting owner approval.
+No product change lands before the owner approves this plan.
 
 ## Why this plan exists
 
@@ -294,3 +295,9 @@ here accordingly. No behavior change to either suite.
   with an explicit precedence chain (`--origin-url` from the procedure →
   bootstrap clone's `origin` remote → shipped default + approval-summary
   flag).
+- r3 (2026-07-08, codex-cli 0.142.5, reviewed_sha `6a88d87`): **accepted**,
+  zero findings. Reviewer confirmed the r2 finding resolved (every rung of
+  the precedence chain implementable with data that exists at that point in
+  the flow) and found no new material defects. Consensus reached; per the
+  reviewloop discipline, an accepted verdict is not implementation authority —
+  implementation awaits the owner's approval of this plan.
