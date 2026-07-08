@@ -1,8 +1,10 @@
 # Zero-based consolidation: every piece justifies its existence or leaves
 
-Status: Reviewed 2026-07-08 — codex accepted at r4 (reviewed_sha `ddcec13`,
-zero findings; full trail in the Review log). Awaiting owner approval. No
-product change lands before the owner approves this plan.
+Status: Draft 2026-07-08 — codex accepted the base plan at r4 (`ddcec13`,
+zero findings); post-r4 owner amendments (multi-harness parity, public
+issues + redaction rule, vela-first rollout) are under codex re-review (r5).
+Awaiting that verdict, then owner approval. No product change lands before
+the owner approves this plan.
 Supersedes `2026-07-08-field-audit-hardening.md` (narrower same-day draft;
 its field-audit evidence base and its state-lifecycle/write-rule slices carry
 forward into this plan).
@@ -63,8 +65,12 @@ approval gate, not silently retained.
 ## What the product becomes
 
 The template set + one bootstrap/migration procedure + `tools/refresh.py` +
-the reviewloop playbook + one shipped hook (the Claude compaction re-ground)
-+ a GitHub-issues feedback convention. Steady-state
+the reviewloop playbook + the compaction re-ground hook (per harness, where
+verified to fire) + a GitHub-issues feedback convention. The architecture
+stays harness-neutral by construction: all durable truth lives in
+`AGENTS.md` + `.agents/`, which every harness reads (codex loads `AGENTS.md`
+natively with no shim); harness-specific files are pure adapters, shipped
+per harness behind a verify-once gate. Steady-state
 maintenance is one command run in whatever repo you are standing in. Agent
 sessions are for judgment only: first bootstrap, migration inventory, and
 repo-guidance changes.
@@ -105,11 +111,13 @@ registry, no central state: run it while standing in a governed repo.
     raw byte-matching would false-flag unmodified files on either side.
     Tests include a CRLF-checkout fixture.
   - **Committability, per shipped path** (carrying forward the 2026-06-10
-    gitignore-aware custody rule and the 2026-06-18 repair): `refresh.py`
-    runs `git check-ignore` on each target path before staging; a path
-    ignored by the known blanket pattern (`.claude/` ignored wholesale) gets
-    the established narrow repair — drop the blanket rule, add
-    `.claude/settings.local.json` — with the `.gitignore` edit included in
+    gitignore-aware custody rule and the 2026-06-18 repair, stated
+    harness-neutrally): `refresh.py` runs `git check-ignore` on each target
+    path before staging; a path ignored by a known blanket
+    harness-adapter-dir pattern (`.claude/`, `.codex/`, `.gemini/`,
+    `.grok/` ignored wholesale) gets the established narrow repair — drop
+    the blanket rule, add that harness's machine-local exclusions (e.g.
+    `.claude/settings.local.json`) — with the `.gitignore` edit included in
     the same scoped commit; a path ignored by any rule the script does not
     recognize is **flagged and skipped**; `git add -f` is never used.
 - **Repo-owned files are never touched**: `.agents/state.md`,
@@ -206,18 +214,31 @@ Target: ~65 lines / ~1,100 words. Same four Prime Invariants.
 
 ### Slice 3 — hooks: one survivor, the rest retired
 
-**Kept — the Claude Code compaction re-ground hook**, as the sole shipped
-hook (owner decision 2026-07-08, on reconsideration). Its provenance is
-structural, recorded so this is never re-litigated: the failure mode it
-guards — loss of in-context rules at compaction — cannot be mitigated from
-inside the context, because every prose anchor (including the Prime
-Invariants' own re-read line) degrades *with* the context being compacted;
-a hook fires from outside, after the event, which is the only mechanism
-shape that survives it. Cost is one injected line per compaction event; it
-was validated to fire when built (2026-06-21). The shipped
-`.claude/settings.json` shrinks to this single entry and ships
-`replace-if-unmodified`. One hook-trust line survives in the template's
-Session Startup (trimmed, not the current two-step section).
+**Kept — the compaction re-ground hook, per-harness behind a verify-once
+gate** (owner decisions 2026-07-08: keep the hook on reconsideration; the
+toolkit is multi-harness — codex is as important as Claude Code, gemini/
+antigravity and grok situational). Its provenance is structural, recorded so
+this is never re-litigated: the failure mode it guards — loss of in-context
+rules at compaction — cannot be mitigated from inside the context, because
+every prose anchor (including the Prime Invariants' own re-read line)
+degrades *with* the context being compacted; a hook fires from outside,
+after the event, which is the only mechanism shape that survives it. Cost is
+one injected line per compaction event. The shipping rule is the evidence
+rule applied per harness: **ship the re-ground adapter for each harness
+whose event mechanism is verified live, once, during implementation** —
+Claude Code is already verified (2026-06-21); codex, gemini/antigravity, and
+grok each get a one-time live check (does the harness fire a
+session-start/compaction event from a repo-level config?); ship where it
+fires, record the negative where it does not. The shipped
+`.claude/settings.json` shrinks to this single entry; every surviving hook
+config ships `replace-if-unmodified`. One hook-trust line survives in the
+template's Session Startup (trimmed, not the current two-step section).
+The same verify-once gate applies to **operator wrappers** on harnesses
+that support repo-level command files (Claude's `.claude/commands/` is
+verified today; codex/gemini equivalents are checked during implementation
+and added to the shipped set where they work — the operators themselves
+remain harness-neutral prose in `AGENTS.md` and work by being spoken on any
+harness).
 
 **Retired — everything else in the class**: the AGENTS.md pre-edit tripwire
 on every harness (advisory, a process spawn on every edit in every repo, and
@@ -297,6 +318,12 @@ commit covering both groups. Dangling references (the
   qualifying rule from a target-repo session, draft the issue body, present
   it, and file with `gh issue create -R <toolkit-repo>` **only on an
   explicit owner go**; offline or no-go ⇒ the existing in-repo fallback note.
+- **Issues are public** (owner decision 2026-07-08: repo stays public). The
+  filing convention and both issue templates therefore carry a redaction
+  rule: **no PII or sensitive information in issue bodies** — no secrets,
+  tokens, credentials, private hostnames/IPs, or personal data; evidence is
+  cited by repo-relative path and commit hash, never by pasting sensitive
+  content. The pre-filing owner-go presentation includes a redaction check.
 - Retirements: the `agent-harvest` dropbox repo (owner archives it),
   `harvest.config.json`, and `harvest/processed.md` (open/closed issues are
   the triage ledger; the existing processed.md is archived verbatim to
@@ -331,11 +358,13 @@ being patched first.
 
 ### Slice 9 — validation rollout (owner-gated per repo)
 
-After approval and landing, run `refresh.py` against one low-stakes deployed
-repo first, verify the reconcile report (adds the new template, removes the
-JSON files/hooks, flags anything modified), then the remaining four on the
-owner's go. This is the removal-semantics bite-proof on real repos; findings
-route back as issues.
+After approval and landing, run `refresh.py` against **vela first** (owner
+decision 2026-07-08: it is the actively-worked repo — it gets current
+tooling first and the owner is present to catch any problem immediately).
+Verify the reconcile report (adds the new template, removes the JSON
+files/retired hooks, flags anything owner-modified), then the remaining four
+repos on the owner's go. This is the removal-semantics bite-proof on real
+repos; findings route back as issues.
 
 ## Decisions to record in `.agents/decisions.md` on implementation
 
@@ -388,9 +417,13 @@ Each with the incident/evidence citations above:
 
 ## Open questions for the owner (at approval)
 
-1. Issues public (repo stays public) or repo flips private?
-2. Eval instrument: move under `evals/` or delete outright?
-3. Rollout order for slice 9 (which repo first)?
+1. ~~Issues public or private?~~ **Resolved (owner, 2026-07-08): public,
+   with the no-PII/sensitive-info redaction rule now in slice 6.**
+2. Eval instrument: move under `evals/` or delete outright? (Still open —
+   context: this is the closed measurement workstream's harness code, no
+   product function; see slice 7.)
+3. ~~Rollout order?~~ **Resolved (owner, 2026-07-08): vela first** (slice 9
+   updated).
 
 ## Review log
 
@@ -436,6 +469,11 @@ Each with the incident/evidence citations above:
   script's own target paths.
 - r4 (2026-07-08, codex-cli 0.142.5, reviewed_sha `ddcec13`): **accepted**,
   zero findings. Commit boundary confirmed unambiguous in both modes; final
-  sweep clean. Consensus reached; per the reviewloop discipline, an accepted
-  verdict is not implementation authority — implementation awaits the
-  owner's approval of this plan.
+  sweep clean.
+- Post-r4 owner amendments (2026-07-08), re-reviewed in r5: (a)
+  multi-harness parity — the gitignore repair stated harness-neutrally
+  across all adapter dirs; the re-ground hook and operator wrappers ship
+  per-harness behind a verify-once gate (codex as important as Claude;
+  gemini/antigravity and grok situational); (b) issues public + the
+  no-PII/sensitive-info redaction rule in slice 6 and the templates; (c)
+  rollout order: vela first (slice 9).
