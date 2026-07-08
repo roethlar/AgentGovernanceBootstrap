@@ -1,4 +1,9 @@
-# Processed Harvest Reports
+# Processed Harvest Reports (ARCHIVED 2026-07-08)
+
+> This ledger is closed. The dropbox feedback channel was replaced by GitHub
+> issues on this repo (zero-based consolidation, 2026-07-08): open issues are
+> the triage queue, closed issues the outcome record. This file is the
+> verbatim archive of everything triaged through the dropbox era.
 
 One line per report already folded into templates or procedures:
 `<repo name> - <report date> - <one-phrase outcome>`
