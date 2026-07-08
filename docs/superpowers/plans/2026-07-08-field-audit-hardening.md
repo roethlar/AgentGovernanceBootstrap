@@ -186,22 +186,32 @@ a falsified basis moves the item into `## Blockers` with the new evidence.
 
 ### Slice 7 — portability: owner constants out of shipped files
 
-- **Toolkit origin URL, end to end.** Today `tools/bootstrap-origin.json`
+- **Toolkit canonical URL, end to end.** Today `tools/bootstrap-origin.json`
   records only `bootstrapRepoPath` (a local path — `tools/discover.py:595-597`
-  writes it, `:29-30` reads it), wrappers are copied verbatim
-  (`procedures/bootstrap.md` wrapper section), and
-  `tests/test_discover.py:666-670` pins the hardcoded GitHub URL. The slice
-  therefore changes all four pieces together: (a) `discover.py` additionally
-  records `bootstrapOriginUrl` — the URL of the remote the Step 0 sync used
-  (`git -C <bootstrap-repo> remote get-url <synced-remote>`), falling back to
-  the toolkit's canonical GitHub URL when no remote is resolvable — in
+  writes it, `:29-30` reads it), Step 0 syncs via **raw URLs** without naming
+  or persisting a remote (`procedures/bootstrap.md:51-58`), wrappers are
+  copied verbatim, and `tests/test_discover.py:666-670` pins the hardcoded
+  GitHub URL. Two corrections drive the design: the sync mechanics give
+  discover.py no "synced remote" to query, and the per-run sync *source* is
+  the wrong value anyway — a run that fetched from the LAN mirror because
+  GitHub was down must still bake the **canonical** URL into the wrapper, not
+  the mirror. So the recorded value is `toolkitCanonicalUrl`, resolved by
+  `discover.py` with an explicit precedence chain: (1) a new `--origin-url`
+  argument — `procedures/bootstrap.md` Step 1's discovery invocation passes
+  the canonical URL Step 0 already names as canonical (one line added to the
+  procedure); (2) absent that, the bootstrap clone's `origin` remote URL
+  (`git -C <bootstrap-repo> remote get-url origin`); (3) absent both, the
+  field is written with the shipped default URL and the approval summary
+  flags that the wrapper URL is a default the owner should confirm. The
+  pieces: (a) `discover.py` records `toolkitCanonicalUrl` in
   `bootstrap-origin.json` and the manifest; (b)
   `templates/commands/claude/update-governance.md` carries a
   `<toolkit-origin-url>` placeholder; (c) the wrapper-install step in
-  `procedures/bootstrap.md` fills the placeholder from the recorded origin at
+  `procedures/bootstrap.md` fills the placeholder from the recorded value at
   draft time (verbatim copy for every other wrapper is unchanged); (d) the
-  hardcoded-URL test is replaced by two: the shipped template contains the
-  placeholder and no `roethlar` URL; the fill step produces a resolvable URL.
+  hardcoded-URL test is replaced by tests that the shipped template contains
+  the placeholder and no owner username, plus unit tests for each rung of the
+  precedence chain.
 - `procedures/file-to-dropbox.md`: the dropbox slug (`roethlar/agent-harvest`)
   moves into `harvest.config.json` as a `dropboxRepo` key beside the existing
   `harvestRepoPath`. Consumer sweep in the same slice: `docs/usage.md`'s
@@ -275,3 +285,12 @@ here accordingly. No behavior change to either suite.
     **accepted**; folded into 6a/6b.
   - MEDIUM / `harvest.config.json` consumer sweep — **accepted**; folded into
     slice 7.
+- r2 (2026-07-08, codex-cli 0.142.5, reviewed_sha `40257b5`): **reopened**,
+  1 finding. Slice 3's never-block revision accepted (the contested framing
+  resolved in the coder's favor). Remaining HIGH: the revised slice 7 still
+  named a `<synced-remote>` that Step 0's raw-URL sync never creates, and the
+  per-run sync source is the wrong semantic when a mirror serves the fetch —
+  **accepted**; slice 7 rewritten around a recorded `toolkitCanonicalUrl`
+  with an explicit precedence chain (`--origin-url` from the procedure →
+  bootstrap clone's `origin` remote → shipped default + approval-summary
+  flag).
