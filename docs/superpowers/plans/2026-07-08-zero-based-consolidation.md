@@ -346,11 +346,24 @@ is removed. Git history preserves every line; any future revival starts from
 a checkout and a fresh decision.
 
 **One salvage before deletion**: `evals/harness-capabilities.md` relocates
-to `docs/harness-capabilities.md` — it is verified per-harness fact, not
-eval apparatus (bare `AGENTS.md` inert in Claude Code headless / the
-`@AGENTS.md` shim load-bearing; codex loads `AGENTS.md` natively, no shim;
-which hook events fire where; Stop-hooks Claude-only), and it is the
-evidence base for slice 3's per-harness verify-once checks.
+to `docs/harness-capabilities.md` — verified per-harness fact worth keeping
+(bare `AGENTS.md` inert in Claude Code headless / the `@AGENTS.md` shim
+load-bearing; codex loads `AGENTS.md` natively, no shim; Stop-hooks
+Claude-only). Scope stated honestly: the file is **seed input** for slice
+3's verify-once gate, not its evidence — it records some facts at global
+hook scope and marks codex SessionStart unconfirmed, whereas the gate
+requires fresh repo-level live checks per harness. On relocation the file
+is retitled as the durable per-harness capability record, its eval-plan
+framing dropped, and slice 3's live-check outcomes (positive and negative)
+are recorded into it — it becomes the single home for verified harness
+facts going forward.
+
+This repo's own `.agents/state.md` still points sessions at eval files this
+slice deletes (e.g. the current-focus reference to
+`evals/swebench-pro/PLAN-funcpass-2026-06-30.md`); in the same change, the
+superseded eval entries rotate verbatim to `docs/history/state-archive.md`
+— the first live application of slice 2's rotation rule — so the state
+entry point carries no pointers to deleted files.
 
 Supersession recorded with this slice: the 2026-07-01 condensation
 decision's clause keeping `completeness-general` in
@@ -498,6 +511,16 @@ Each with the incident/evidence citations above:
   verify-once gate); a leftover public-vs-private owner question in slice 6
   contradicted the resolved decision (removed); the test list named only the
   `.claude/` blanket-ignore repair (now one case per adapter dir).
+- r6 (2026-07-08, codex-cli 0.142.5, reviewed_sha `2d048f8`): **reopened**,
+  2 findings on the evals-scrap delta, both accepted — this repo's
+  `.agents/state.md` pointed at files the slice deletes (its superseded
+  eval entries now rotate to the state archive in the same change, the
+  first live use of the rotation rule); and the harness-capabilities
+  salvage was overstated as the verify-once gate's "evidence base" (now
+  scoped as seed input; the gate's evidence is slice 3's fresh repo-level
+  live checks, recorded into the relocated file). r5's three findings
+  confirmed resolved; the completeness-general supersession confirmed
+  accurate.
 - Post-r4 owner amendments (2026-07-08), re-reviewed in r5: (a)
   multi-harness parity — the gitignore repair stated harness-neutrally
   across all adapter dirs; the re-ground hook and operator wrappers ship
