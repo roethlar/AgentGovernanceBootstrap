@@ -145,17 +145,46 @@
         "53e7ea1debc550f31b312d67d81dbcfb4e62c5b7915202aad061317839770f84",
         "f2fae64cf284776af135405c048a2925256c70e899f6048fb44d855979d3183c"
       ]
-    },
+    }
+  ],
+  "retired": [
     {
-      "source": "templates/hooks/claude/agents-md-tripwire.py",
       "target": ".claude/agents-md-tripwire.py",
-      "class": "replace-if-unmodified",
       "formerly": [
         "cdf2662f113d97b53ac8108d8a0a878bfcefb7ed6d86e22a8638f8d157bdeb4e"
       ]
+    },
+    {
+      "target": ".codex/hooks.json",
+      "formerly": [
+        "4173da747a86d191c119d5da7283a11b5aa5b317486a0067e0eef08134fd8d76",
+        "9895cbd9520b5a5989628c2d0eb3a74fd0bdfb99137da434843a2d93cc0bbf0e",
+        "53e7ea1debc550f31b312d67d81dbcfb4e62c5b7915202aad061317839770f84",
+        "f2fae64cf284776af135405c048a2925256c70e899f6048fb44d855979d3183c"
+      ]
+    },
+    {
+      "target": ".codex/agents-md-tripwire.py",
+      "formerly": [
+        "cdf2662f113d97b53ac8108d8a0a878bfcefb7ed6d86e22a8638f8d157bdeb4e"
+      ]
+    },
+    {
+      "target": ".grok/hooks/reground.json",
+      "formerly": [
+        "d05553c336961e3906e3e60d91671719e4de4491526efb6c85c089af4270ab84",
+        "f79c84fffd21f076de6857504ed09a1d68908d85521d2ee273353ca9412fe7d9"
+      ]
+    },
+    {
+      "target": ".agents/hooks.json",
+      "formerly": [
+        "53e7ea1debc550f31b312d67d81dbcfb4e62c5b7915202aad061317839770f84",
+        "f2fae64cf284776af135405c048a2925256c70e899f6048fb44d855979d3183c",
+        "7c9ecd7ce0ed63e78fa9c0c94092cf5c0e19e2254454e5e7e8a922ad8e37c340"
+      ]
     }
   ],
-  "retired": [],
   "machine_local_exclusions": {
     ".claude": [".claude/settings.local.json"],
     ".codex": [],

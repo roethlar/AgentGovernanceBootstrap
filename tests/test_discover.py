@@ -508,128 +508,46 @@ class TestHookTemplates(unittest.TestCase):
         "Invariants block. Treat AGENTS.md, not this message, as authoritative.'"
     )
 
-    # rel -> (harness event key, expected matcher value or None for no matcher)
-    HOOK_SCHEMA = {
-        "claude/settings.json": ("SessionStart", "compact"),
-        "codex/hooks.json": ("SessionStart", "compact"),
-        "agy/hooks.json": ("SessionStart", "compact"),
-        "grok/hooks/reground.json": ("PostCompact", None),
-    }
-
-    def test_hook_configs_present_copied_and_portable(self):
-        with tempfile.TemporaryDirectory() as tmp:
-            repo = fixtures.make_greenfield_repo(Path(tmp) / "repo")
-            fixtures.run_discover(repo)
-            hooks = repo / ".bootstrap-tmp" / "templates" / "hooks"
-
-            commands = set()
-            for rel, (event, matcher) in self.HOOK_SCHEMA.items():
-                path = hooks / rel
-                self.assertTrue(path.is_file(), rel)
-                txt = path.read_text(encoding="utf-8")
-                # PORTABILITY PRINCIPLE (applies to EVERY hook command in the
-                # file, re-ground or otherwise): a hook must not bake a
-                # machine-specific path or a developer-checkout token. It MAY use
-                # an interpreter (python3) and MAY resolve the repo root the
-                # portable way (`$CLAUDE_PROJECT_DIR`, `git rev-parse
-                # --show-toplevel`) — those travel across clone, move, and
-                # machine. We assert the property (no absolute/user path), not a
-                # banned shape, so a new portable script hook passes without a
-                # per-category exception.
-                self.assertNotIn("__REPO_ROOT__", txt, rel)
-                self.assertNotIn("/Users/", txt, rel)
-                self.assertNotIn("/home/", txt, rel)
-                # Config must be loadable JSON.
-                cfg = json.loads(txt)
-
-                # The re-ground entry is still locked exactly: same event,
-                # matcher, and byte-identical canonical command across every
-                # harness. This is the cross-harness desync guard, unrelated to
-                # the echo-vs-script question.
-                entry = cfg["hooks"][event][0]
-                if matcher is None:
-                    self.assertNotIn("matcher", entry, rel)
-                else:
-                    self.assertEqual(entry.get("matcher"), matcher, rel)
-                command = entry["hooks"][0]["command"]
-                self.assertEqual(command, self.CANONICAL_COMMAND, rel)
-                commands.add(command)
-            # All four harnesses must ship the identical re-ground copy.
-            self.assertEqual(len(commands), 1)
-
-    # Harnesses that ship the AGENTS.md pre-edit tripwire (layer 2). Grok/agy
-    # have no pre-edit interception, so they are intentionally absent.
-    TRIPWIRE_SCHEMA = {
-        "claude/settings.json": "Edit|Write|MultiEdit",
-        "codex/hooks.json": "apply_patch|Edit|Write",
-    }
-
-    def test_tripwire_hook_present_advisory_and_portable(self):
-        with tempfile.TemporaryDirectory() as tmp:
-            repo = fixtures.make_greenfield_repo(Path(tmp) / "repo")
-            fixtures.run_discover(repo)
-            hooks = repo / ".bootstrap-tmp" / "templates" / "hooks"
-            for rel, matcher in self.TRIPWIRE_SCHEMA.items():
-                txt = (hooks / rel).read_text(encoding="utf-8")
-                cfg = json.loads(txt)
-                entries = cfg["hooks"].get("PreToolUse")
-                self.assertTrue(entries, f"{rel}: no PreToolUse tripwire")
-                entry = entries[0]
-                self.assertEqual(entry.get("matcher"), matcher, rel)
-                command = entry["hooks"][0]["command"]
-                # Interpreter fallback chain (2026-07-02 decision): `py -3`
-                # first (the Windows launcher; on stock Windows a bare
-                # `python3` is a Store stub that runs nothing), `python3` as
-                # the POSIX fallback. Bare `python3` leaves the hook silently
-                # inert on Windows.
-                self.assertIn("py -3 ", command, rel)
-                self.assertIn(" || python3 ", command, rel)
-                self.assertIn("agents-md-tripwire.py", command, rel)
-                if rel.startswith("claude/"):
-                    # Braced form is substituted by Claude Code itself before
-                    # any shell sees it — shell-independent path resolution.
-                    self.assertIn("${CLAUDE_PROJECT_DIR}", command, rel)
-                # The script ships alongside the config.
-                self.assertTrue(
-                    (hooks / Path(rel).parent / "agents-md-tripwire.py").is_file(),
-                    f"{rel}: tripwire script missing")
-
-    def test_tripwire_script_fires_on_agents_md_only_and_never_blocks(self):
-        # The one canonical script body, shipped per-harness. Exercise it
-        # directly: it must emit additionalContext (advisory) for an AGENTS.md
-        # target in EITHER harness's stdin shape, stay silent otherwise, and
-        # never emit a blocking decision.
-        import subprocess
-        script = (fixtures.BOOTSTRAP_ROOT / "templates" / "hooks"
-                  / "claude" / "agents-md-tripwire.py")
-
-        def run(payload):
-            p = subprocess.run(
-                [sys.executable, str(script)], input=json.dumps(payload),
-                capture_output=True, text=True)
-            self.assertEqual(p.returncode, 0)         # never exit 2 / block
-            return p.stdout
-
-        # CC shape: file_path
-        out = run({"tool_input": {"file_path": "/x/AGENTS.md"}})
-        self.assertIn("additionalContext", out)
-        self.assertNotIn("permissionDecision", out)   # advisory, not a gate
-        # Codex shape: path inside the patch body (command)
-        out = run({"tool_input": {
-            "command": "*** Update File: AGENTS.md\n+x"}})
-        self.assertIn("additionalContext", out)
-        # Non-AGENTS.md edits: silent in both shapes.
-        self.assertEqual(run({"tool_input": {"file_path": "/x/README.md"}}), "")
-        self.assertEqual(
-            run({"tool_input": {"command": "*** Update File: README.md"}}), "")
-
-    def test_tripwire_script_identical_across_harnesses(self):
-        # One canonical body; the per-harness copies must not desync.
+    def test_single_shipped_hook_is_the_claude_compaction_reground(self):
+        # 2026-07-08 zero-based consolidation: exactly one hook ships — the
+        # Claude Code compaction re-ground. The tripwire (advisory, per-edit
+        # process spawn, silently inert on stock Windows for weeks with no
+        # degradation) and the never-verified codex/grok/agy configs are
+        # retired; refresh.py's byte-verify-and-repair owns the AGENTS.md
+        # write boundary. Other harnesses re-enter only behind the
+        # verify-once gate (a live check that the event actually fires).
         base = fixtures.BOOTSTRAP_ROOT / "templates" / "hooks"
-        bodies = {
-            (base / h / "agents-md-tripwire.py").read_text(encoding="utf-8")
-            for h in ("claude", "codex")}
-        self.assertEqual(len(bodies), 1, "tripwire script copies have desynced")
+        shipped = sorted(p.relative_to(base).as_posix()
+                         for p in base.rglob("*") if p.is_file())
+        self.assertEqual(shipped, ["claude/settings.json"])
+
+        txt = (base / "claude" / "settings.json").read_text(encoding="utf-8")
+        # Portability principle: no machine-specific path or checkout token.
+        self.assertNotIn("__REPO_ROOT__", txt)
+        self.assertNotIn("/Users/", txt)
+        self.assertNotIn("/home/", txt)
+        cfg = json.loads(txt)
+        self.assertEqual(list(cfg["hooks"].keys()), ["SessionStart"])
+        entry = cfg["hooks"]["SessionStart"][0]
+        self.assertEqual(entry.get("matcher"), "compact")
+        self.assertEqual(entry["hooks"][0]["command"], self.CANONICAL_COMMAND)
+
+    def test_shipped_set_retires_the_dead_hook_class(self):
+        # Every retired hook path carries at least one formerly-shipped hash
+        # so refresh.py can remove unmodified copies from deployed repos and
+        # will flag (never delete) modified ones.
+        shipped = json.loads(
+            (fixtures.BOOTSTRAP_ROOT / "tools" / "shipped-set.json")
+            .read_text(encoding="utf-8"))
+        retired = {r["target"]: r for r in shipped["retired"]}
+        for path in (".claude/agents-md-tripwire.py", ".codex/hooks.json",
+                     ".codex/agents-md-tripwire.py", ".grok/hooks/reground.json",
+                     ".agents/hooks.json"):
+            self.assertIn(path, retired)
+            self.assertTrue(retired[path]["formerly"], path)
+        # And no retired artifact is still listed as shipped.
+        targets = {a["target"] for a in shipped["artifacts"]}
+        self.assertFalse(targets & set(retired))
 
 
 class TestCommandWrapperTemplates(unittest.TestCase):
