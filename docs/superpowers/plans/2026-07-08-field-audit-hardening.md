@@ -1,8 +1,11 @@
 # Field-audit hardening: state lifecycle, write rules, and toolkit correctness
 
-Status: Reviewed 2026-07-08 — codex accepted at r3 (reviewed_sha `6a88d87`,
-zero findings; full trail in the Review log below). Awaiting owner approval.
-No product change lands before the owner approves this plan.
+Status: Superseded 2026-07-08 (owner direction, same day) by
+`2026-07-08-zero-based-consolidation.md` — the owner rejected this plan's
+conservative scope and commissioned a zero-based redesign; its field-audit
+evidence and its state-lifecycle/write-rule slices carry forward there. This
+plan was codex-reviewed to acceptance (r3, `6a88d87`) but never
+owner-approved; retained for the review trail.
 
 ## Why this plan exists
 
