@@ -94,9 +94,23 @@ registry, no central state: run it while standing in a governed repo.
     preserving exactly what the 2026-06-18/2026-07-03 decisions protect:
     owner modifications.
   - `retired`: explicit list of formerly-shipped target paths, each with the
-    byte-hash(es) of the shipped version(s); **remove only when the file
-    byte-matches a formerly-shipped version, otherwise leave it and flag** —
-    a modified file is never deleted by machine.
+    hash(es) of the shipped version(s); **remove only when the file matches a
+    formerly-shipped version, otherwise leave it and flag** — a modified file
+    is never deleted by machine.
+  - **All content matching and all shipped-version hashes are
+    newline-normalized** (`\r\n` → `\n` before compare/hash) — the same
+    tolerance the old byte-compare carried accidentally and load-bearingly:
+    the fleet spans autocrlf Windows checkouts and LF Unix checkouts, and
+    raw byte-matching would false-flag unmodified files on either side.
+    Tests include a CRLF-checkout fixture.
+  - **Committability, per shipped path** (carrying forward the 2026-06-10
+    gitignore-aware custody rule and the 2026-06-18 repair): `refresh.py`
+    runs `git check-ignore` on each target path before staging; a path
+    ignored by the known blanket pattern (`.claude/` ignored wholesale) gets
+    the established narrow repair — drop the blanket rule, add
+    `.claude/settings.local.json` — with the `.gitignore` edit included in
+    the same scoped commit; a path ignored by any rule the script does not
+    recognize is **flagged and skipped**; `git add -f` is never used.
 - **Repo-owned files are never touched**: `.agents/state.md`,
   `.agents/decisions.md`, `.agents/repo-guidance.md`,
   `.agents/push-policy.md`, plans, review trails, archives. Division of
@@ -119,8 +133,10 @@ registry, no central state: run it while standing in a governed repo.
   agent drafts the judgment artifacts, and after approval `refresh.py`
   performs the mechanical set install (see slice 5).
 - Tests: reconcile add/update/remove, never-overwrite, modified-retired-file
-  flagged not deleted, byte-exact AGENTS.md, dirty-tree refusal, idempotence,
-  offline sync fallback. All guard-proven.
+  flagged not deleted, byte-exact (newline-normalized) AGENTS.md, CRLF
+  checkout fixture, blanket-`.claude/`-ignore repair, unrecognized-ignore
+  flag-and-skip, no-force-add, dirty-tree refusal, idempotence, offline sync
+  fallback. All guard-proven.
 
 Why a script and not the agent, on the record: refresh is
 synchronize-to-an-exact-set, the documented agent failure mode — a dogfood
@@ -225,10 +241,16 @@ never touched.
   home is `repo-guidance.md`.
 - `.bootstrap-tmp/` as a copied handoff pack dies (no discover output, no
   START-HERE, no sandboxed fallback flow — the agent must be able to read
-  the toolkit clone). The **drafts directory survives**: bootstrap sessions
-  still draft under a self-ignored `.bootstrap-tmp/drafts/` mirroring final
-  paths, reviewed via the approval summary, copied on approval — the custody
-  spine is unchanged.
+  the toolkit clone). The **drafts directory survives, scoped to
+  judgment artifacts only**: bootstrap sessions draft the repo-owned files
+  (`repo-guidance.md`, `state.md`, `decisions.md`, `push-policy.md`, plus
+  migration supersession banners) under a self-ignored
+  `.bootstrap-tmp/drafts/` mirroring final paths, reviewed via the approval
+  summary, copied on approval. Shipped-set artifacts (`AGENTS.md`, shims,
+  wrappers, playbooks, the hook settings) are **never drafted** — they have
+  exactly one installer, `refresh.py`, so the `replace-if-unmodified`
+  protections cannot be bypassed by a draft copy. The custody spine is
+  unchanged.
 
 ### Slice 5 — procedures consolidated
 
@@ -237,14 +259,19 @@ procedure (~2,500 words, from ~5,200) with the migration inventory as a
 conditional section. Survives: Step 0 toolkit sync; a live-discovery
 checklist (replacing the script: enumerate governance artifacts via
 `git ls-files` + the ignore-aware rule; identify the verification command
-from repo evidence; the CI-executability rule); the drafting set — now
-explicitly `AGENTS.md`, `.agents/repo-guidance.md`, `state.md`,
-`decisions.md`, **`push-policy.md`** (the never-drafted hole, fixed), shims,
-wrappers, playbooks; the plain-English approval summary; the custody proof;
-the one-scoped-commit contract; fresh-eyes (`procedures/verification.md`,
-migrations only, unchanged); the push-policy consult. The mechanical install
-after approval is delegated to `refresh.py` (one recipe, no drift between
-bootstrap-install and refresh-install). Dangling references (the
+from repo evidence; the CI-executability rule); the drafting set — the
+**judgment artifacts only**: `.agents/repo-guidance.md`, `state.md`,
+`decisions.md`, **`push-policy.md`** (the never-drafted hole, fixed), and
+migration supersession banners; the plain-English approval summary, which
+lists both the judgment drafts to be copied **and** the shipped set
+`refresh.py` will install, so the owner approves one complete picture; the
+custody proof; the one-scoped-commit contract covering both groups;
+fresh-eyes (`procedures/verification.md`, migrations only, unchanged); the
+push-policy consult. `AGENTS.md`, shims, wrappers, playbooks, and the hook
+settings are not drafted and not hand-copied — on approval the procedure
+invokes `refresh.py`, the single installer for shipped artifacts (one
+recipe, no drift between bootstrap-install and refresh-install, no bypass of
+the replace-if-unmodified protections). Dangling references (the
 "bootstrap.md Step 4" pointer) die with the rewrite. Deleted outright:
 `procedures/harvest.md`, `procedures/file-bug-report.md`,
 `procedures/file-to-dropbox.md`.
@@ -377,3 +404,16 @@ Each with the incident/evidence citations above:
   Same revision also introduces the `replace-if-unmodified` class
   (superseding install-if-missing) so provably-unmodified stale artifacts
   update instead of rotting.
+- r2 (2026-07-08, codex-cli 0.142.5, reviewed_sha `67f7931`): **reopened**,
+  3 findings, all accepted:
+  - HIGH: slice 5's drafting set still listed shipped artifacts, leaving two
+    installers — fixed: drafts are judgment artifacts only; shipped files
+    have exactly one installer (`refresh.py`); the approval summary presents
+    both groups; slice 4's drafts-dir wording scoped to match.
+  - HIGH: `refresh.py` omitted the gitignore-aware committability rule —
+    added: per-path `check-ignore`, the established blanket-`.claude/`
+    narrow repair in the same commit, flag-and-skip for unrecognized ignore
+    rules, never `git add -f`. With tests.
+  - MEDIUM: raw byte-hashes break across the autocrlf fleet — all matching
+    and hashes are now specified newline-normalized (the load-bearing
+    tolerance the old byte-compare carried), with a CRLF fixture test.
