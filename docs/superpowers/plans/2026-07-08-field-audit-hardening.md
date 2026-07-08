@@ -116,10 +116,15 @@ Added to `templates/state.template.md` header comments and enforced by the
 ### Slice 3 — clone-freshness check in Session Startup
 
 `templates/AGENTS.template.md` Session Startup gains one step: before trusting
-`.agents/state.md`, compare the clone against its canonical remote
-(`git fetch --dry-run` / `git ls-remote` + local ref compare); if the clone is
-behind or diverged, say so and treat state.md as potentially stale. Kept to one
-sentence — this is the cheapest fix for failure pattern 5.
+`.agents/state.md`, compare the clone against its canonical remote with a
+**read-only liveness check** (`git ls-remote <canonical-remote> HEAD` against
+the local tracking ref — the same query class the bootstrap kickoff sync
+already performs without a per-run go; no fetch, no merge, nothing written
+anywhere). **Never block:** offline, unreachable, or permission-denied ⇒
+proceed immediately and carry a one-line "clone freshness unverified" caveat;
+behind/diverged ⇒ say so and treat state.md as potentially stale. This is a
+read, not an outward-facing action — it publishes nothing — but the never-block
+semantics are part of the template text, not left to interpretation.
 
 ### Slice 4 — one home for verification; staleness tripwire for the JSON layer
 
@@ -152,11 +157,16 @@ a falsified basis moves the item into `## Blockers` with the new evidence.
     drafted set) and to `templates/approval-summary.template.md`'s Committed
     list; add `.agents/repo-guidance.md` to that Committed list; fix
     `procedures/migration.md:94`'s dangling "bootstrap.md Step 4" reference.
+    Consumer sweep in the same slice: `templates/repo-map.template.json`
+    `guidance_paths` gains `.agents/repo-guidance.md` and
+    `.agents/push-policy.md` (golden manifests and any asserting tests updated
+    — `guidance_paths` is the recorded golden file list for mechanical
+    governance checks).
 6b. Doc drift: `docs/usage.md` routes section (two routes, not three);
     canonical-remote wording aligned across README/usage (GitHub canonical,
     gitea a mirror); README broken spec link (`superpowers/...` →
-    `docs/superpowers/...`); README/design.md drafted-set lists gain
-    `repo-guidance.md`.
+    `docs/superpowers/...`); README/design.md drafted-set lists gain both
+    `repo-guidance.md` and `push-policy.md`.
 6c. START-HERE precedence: `tools/discover.py` START-HERE text gains the
     reconcile carve-out (a resident AGENTS.md handoff rule wins *unless*
     `reconcileRecommended` is set — currently stated unconditionally, opposite
@@ -164,21 +174,42 @@ a falsified basis moves the item into `## Blockers` with the new evidence.
 6d. `byteIdentical` honesty: `tools/manifest-schema.md` (and any "exact bytes"
     wording) corrected to state the compare is newline-normalized by design —
     the tolerance is load-bearing across autocrlf checkouts. Behavior unchanged.
-6e. Dead code: remove `run_git` (zero call sites) and the no-op
-    `--coverage-cap` flag; fix the CI branch-trigger heuristic conflating
-    `push` and `pull_request` branch filters (PR-only workflows are currently
+6e. Dead/misleading code: remove `run_git` (zero call sites); remove the
+    `coverage` / `--coverage-cap` machinery — not a literal no-op (it flips
+    the manifest's `coverage.status` label) but a **misleading** one: the
+    label can read "truncated" while nothing is ever truncated, and no
+    procedure or template consumes the field. Removal updates
+    `tools/manifest-schema.md`, the golden manifests, and any asserting
+    tests. Fix the CI branch-trigger heuristic conflating `push` and
+    `pull_request` branch filters (PR-only workflows are currently
     false-flagged "likely inactive"). With tests.
 
 ### Slice 7 — portability: owner constants out of shipped files
 
-- `templates/commands/claude/update-governance.md`: the toolkit URL becomes a
-  draft-time placeholder filled from the origin the bootstrap run actually
-  synced from (recorded in `tools/bootstrap-origin.json`), so target repos stop
-  committing the owner's GitHub username.
+- **Toolkit origin URL, end to end.** Today `tools/bootstrap-origin.json`
+  records only `bootstrapRepoPath` (a local path — `tools/discover.py:595-597`
+  writes it, `:29-30` reads it), wrappers are copied verbatim
+  (`procedures/bootstrap.md` wrapper section), and
+  `tests/test_discover.py:666-670` pins the hardcoded GitHub URL. The slice
+  therefore changes all four pieces together: (a) `discover.py` additionally
+  records `bootstrapOriginUrl` — the URL of the remote the Step 0 sync used
+  (`git -C <bootstrap-repo> remote get-url <synced-remote>`), falling back to
+  the toolkit's canonical GitHub URL when no remote is resolvable — in
+  `bootstrap-origin.json` and the manifest; (b)
+  `templates/commands/claude/update-governance.md` carries a
+  `<toolkit-origin-url>` placeholder; (c) the wrapper-install step in
+  `procedures/bootstrap.md` fills the placeholder from the recorded origin at
+  draft time (verbatim copy for every other wrapper is unchanged); (d) the
+  hardcoded-URL test is replaced by two: the shipped template contains the
+  placeholder and no `roethlar` URL; the fill step produces a resolvable URL.
 - `procedures/file-to-dropbox.md`: the dropbox slug (`roethlar/agent-harvest`)
-  moves into `harvest.config.json` (which already carries the local path); the
-  procedure reads it from there and treats a missing config as "no dropbox —
-  use the in-repo fallback".
+  moves into `harvest.config.json` as a `dropboxRepo` key beside the existing
+  `harvestRepoPath`. Consumer sweep in the same slice: `docs/usage.md`'s
+  config example, `tools/manifest-schema.md`'s config documentation, and
+  `tools/discover.py`'s config reader all learn the new key. A config with no
+  `dropboxRepo` (or no config at all) ⇒ no remote dropbox — use the in-repo
+  fallback the procedure already defines; no hardcoded slug remains as a
+  silent default.
 - `procedures/bootstrap.md` Step 0 / `docs/usage.md`: the LAN gitea URL and
   `~/dev` defaults are marked owner-local examples or moved to an owner-local
   note; the GitHub URL stays (it is the toolkit's real canonical remote).
@@ -193,11 +224,12 @@ here accordingly. No behavior change to either suite.
 
 ## Verification
 
-- Slices 1–6c, 6e, 8: `py -3 -m unittest discover -s tests -v` (Git Bash) green
-  before each commit claim; every new test guard-proven (revert → fail →
-  restore → pass).
-- Slices 6b, 6d, 7 (docs/procedures): `git diff --check`; plus a manual
-  read-through of each changed procedure step in sequence.
+- Slices 1–6c, 6e, 7, 8: `py -3 -m unittest discover -s tests -v` (Git Bash)
+  green before each commit claim; every new test guard-proven (revert → fail →
+  restore → pass). Slice 7 changes shipped `templates/`/`procedures/` content
+  and `tools/discover.py`, so it is suite-verified, not diff-checked.
+- Slices 6b, 6d (docs-only): `git diff --check`; plus a manual read-through of
+  each changed procedure step in sequence.
 - Template slices: the shipped template's self-report stays zero missing
   sections (existing test), stamp bumped once to `2026-07-08.1`.
 
@@ -224,4 +256,22 @@ here accordingly. No behavior change to either suite.
 
 ## Review log
 
-- r1 (2026-07-08, codex): pending.
+- r1 (2026-07-08, codex-cli 0.142.5, reviewed_sha `c6795da`): **reopened**,
+  5 findings. Dispositions:
+  - HIGH / Slice 7 placeholder mechanism unworkable as named + under-verified —
+    **accepted**; slice 7 rewritten end-to-end (origin URL recorded by
+    discover.py, placeholder fill in the wrapper-install step, test replaced,
+    suite verification).
+  - HIGH / Slice 3 startup network check — **accepted in substance, framing
+    contested**: a read-only `git ls-remote` is not an "outward-facing action"
+    (the bootstrap kickoff sync performs the same query class without a
+    per-run go), so no Prime Invariant conflict is conceded; but the plan had
+    not specified offline/degraded behavior, which could stall restricted
+    sessions. Never-block semantics are now written into the slice.
+  - MEDIUM / `--coverage-cap` mislabeled a no-op — **accepted**; it flips a
+    manifest label (misleading, unconsumed) rather than doing nothing; slice
+    6e rewritten with schema/golden/test consequences.
+  - MEDIUM / drafted-set consumers (`guidance_paths`, README/design lists) —
+    **accepted**; folded into 6a/6b.
+  - MEDIUM / `harvest.config.json` consumer sweep — **accepted**; folded into
+    slice 7.
