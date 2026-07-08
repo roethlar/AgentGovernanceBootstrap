@@ -335,14 +335,29 @@ commit covering both groups. Dangling references (the
   toolkit-side drafting aids, never installed into target repos — no
   retired-list entries needed).
 
-### Slice 7 — eval instrument leaves the product tree
+### Slice 7 — the eval workstream is scrapped entirely
 
-`tools/run_fixture.py`, `tools/drivers.py`, `tools/polyglot_fixture.py`, and
-`tests/test_run_fixture.py` (1,231 lines) move under `evals/` with a
-README line marking the workstream closed (owner may choose deletion instead
-— git history preserves either way). The product suite becomes the refresh.py
-tests plus the surviving structural template tests; the 12 prose-pin
-phrase-guard tests are deleted, not moved.
+Owner decision 2026-07-08: delete, don't archive. The whole `evals/`
+directory (results, test plans, pre-registration, SWE-bench pilots,
+governance profiles, `aggregate.py`/`calibrate.py`/`run_trials.py`) plus the
+instrument in the product tree (`tools/run_fixture.py`, `tools/drivers.py`,
+`tools/polyglot_fixture.py`, `tests/test_run_fixture.py`, 1,231 test lines)
+is removed. Git history preserves every line; any future revival starts from
+a checkout and a fresh decision.
+
+**One salvage before deletion**: `evals/harness-capabilities.md` relocates
+to `docs/harness-capabilities.md` — it is verified per-harness fact, not
+eval apparatus (bare `AGENTS.md` inert in Claude Code headless / the
+`@AGENTS.md` shim load-bearing; codex loads `AGENTS.md` natively, no shim;
+which hook events fire where; Stop-hooks Claude-only), and it is the
+evidence base for slice 3's per-harness verify-once checks.
+
+Supersession recorded with this slice: the 2026-07-01 condensation
+decision's clause keeping `completeness-general` in
+`evals/governance_profiles/` "as a candidate" — the profile is deleted with
+the workstream. The product suite becomes the refresh.py tests plus the
+surviving structural template tests; the 12 prose-pin phrase-guard tests
+are deleted, not moved.
 
 ### Slice 8 — this repo's documentation (not product)
 
@@ -401,6 +416,11 @@ Each with the incident/evidence citations above:
   follow-up; the harvest *discipline* (rare, incident-earned, max three,
   no-report-is-normal, owner-gated publish) is retained verbatim in the
   issue templates.
+- **Evals scrapped** — amends the 2026-07-01 condensation decision's
+  completeness-general-as-candidate clause (profile deleted with the
+  workstream; revival requires a fresh decision from git history); the
+  salvaged `docs/harness-capabilities.md` is named as the evidence source
+  for the per-harness verify-once gate.
 - **Verification's canonical home** (`.agents/repo-guidance.md`); **state
   rotation + write rules**; **the no-rule-without-provenance standing rule**.
 
@@ -421,9 +441,9 @@ Each with the incident/evidence citations above:
 
 1. ~~Issues public or private?~~ **Resolved (owner, 2026-07-08): public,
    with the no-PII/sensitive-info redaction rule now in slice 6.**
-2. Eval instrument: move under `evals/` or delete outright? (Still open —
-   context: this is the closed measurement workstream's harness code, no
-   product function; see slice 7.)
+2. ~~Eval instrument: move or delete?~~ **Resolved (owner, 2026-07-08):
+   the entire evals workstream is scrapped — deleted, not archived, with
+   one salvage (`harness-capabilities.md` → `docs/`); slice 7 rewritten.**
 3. ~~Rollout order?~~ **Resolved (owner, 2026-07-08): vela first** (slice 9
    updated).
 
