@@ -149,7 +149,8 @@ registry, no central state: run it while standing in a governed repo.
   performs the mechanical set install (see slice 5).
 - Tests: reconcile add/update/remove, never-overwrite, modified-retired-file
   flagged not deleted, byte-exact (newline-normalized) AGENTS.md, CRLF
-  checkout fixture, blanket-`.claude/`-ignore repair, unrecognized-ignore
+  checkout fixture, blanket-adapter-dir ignore repair (one case per adapter
+  dir: `.claude/`, `.codex/`, `.gemini/`, `.grok/`), unrecognized-ignore
   flag-and-skip, no-force-add, dirty-tree refusal scoped to own target
   paths, `--stage-only` (stages without committing; pre-staged foreign paths
   untouched), idempotence, offline sync fallback. All guard-proven.
@@ -333,8 +334,6 @@ commit covering both groups. Dangling references (the
   `.github/ISSUE_TEMPLATE/` files and the originals deleted (they were
   toolkit-side drafting aids, never installed into target repos — no
   retired-list entries needed).
-- Owner decision at approval: leave this repo public (issues public) or flip
-  it private.
 
 ### Slice 7 — eval instrument leaves the product tree
 
@@ -380,12 +379,15 @@ Each with the incident/evidence citations above:
   now actually propagates as deletion. The `replace-if-unmodified` class is
   recorded as a strengthening of the 2026-06-18 never-overwrite rule
   (byte-match against formerly-shipped versions proves non-modification).
-- **Hooks narrowed to the Claude compaction re-ground** — amends the
-  2026-06-21 per-harness re-ground decision (per-harness → Claude-only, with
-  the structural outside-the-context rationale recorded); supersedes the
-  tripwire layer (L2) of the 2026-06-25 boundary decision (L1 prose stays,
-  L3 becomes `refresh.py` repair); moots the 2026-07-02 hook-interpreter
-  decision (the surviving hook is a plain echo, no interpreter).
+- **Hooks narrowed to the compaction re-ground, shipped per-harness behind
+  a verify-once gate** — amends the 2026-06-21 per-harness re-ground
+  decision (per-harness retained, now evidence-gated: Claude verified
+  2026-06-21; codex/gemini/grok ship only after their one-time live check
+  passes, with negatives recorded; the structural outside-the-context
+  rationale recorded); supersedes the tripwire layer (L2) of the 2026-06-25
+  boundary decision (L1 prose stays, L3 becomes `refresh.py` repair); moots
+  the 2026-07-02 hook-interpreter decision (the surviving hook is a plain
+  echo, no interpreter).
 - **Discovery-by-checklist** — supersedes the script half of the
   2026-06-09/10 kickoff decision; the single-session kickoff itself stands.
 - **JSON layer retired** — amends the 2026-06-09 standard-layout decision
@@ -470,6 +472,12 @@ Each with the incident/evidence citations above:
 - r4 (2026-07-08, codex-cli 0.142.5, reviewed_sha `ddcec13`): **accepted**,
   zero findings. Commit boundary confirmed unambiguous in both modes; final
   sweep clean.
+- r5 (2026-07-08, codex-cli 0.142.5, reviewed_sha `df99fa3`): **reopened**,
+  3 findings on the post-r4 delta, all accepted — the decisions-to-record
+  hook entry still said "Claude-only" (now states the per-harness
+  verify-once gate); a leftover public-vs-private owner question in slice 6
+  contradicted the resolved decision (removed); the test list named only the
+  `.claude/` blanket-ignore repair (now one case per adapter dir).
 - Post-r4 owner amendments (2026-07-08), re-reviewed in r5: (a)
   multi-harness parity — the gitignore repair stated harness-neutrally
   across all adapter dirs; the re-ground hook and operator wrappers ship
