@@ -62,7 +62,8 @@ approval gate, not silently retained.
 ## What the product becomes
 
 The template set + one bootstrap/migration procedure + `tools/refresh.py` +
-the reviewloop playbook + a GitHub-issues feedback convention. Steady-state
+the reviewloop playbook + one shipped hook (the Claude compaction re-ground)
++ a GitHub-issues feedback convention. Steady-state
 maintenance is one command run in whatever repo you are standing in. Agent
 sessions are for judgment only: first bootstrap, migration inventory, and
 repo-guidance changes.
@@ -84,16 +85,27 @@ registry, no central state: run it while standing in a governed repo.
 - **Shipped set**: a manifest in the toolkit, `tools/shipped-set.json`, maps
   each shipped artifact to its target path and class:
   - `replace-whole`: `AGENTS.md` (byte-exact copy of the template);
-  - `install-if-missing`: shims (`CLAUDE.md`, `GEMINI.md`, …), operator
-    wrappers, playbooks — never overwrite an existing file (preserves
-    owner-modified copies, the existing rule);
+  - `replace-if-unmodified`: shims (`CLAUDE.md`, `GEMINI.md`, …), operator
+    wrappers, playbooks, `.claude/settings.json` — missing ⇒ install;
+    byte-matches any formerly-shipped version ⇒ provably unmodified, update
+    to the current shipped version; anything else ⇒ owner-modified: **flag,
+    never overwrite**. This strengthens the old install-if-missing rule
+    (which could never update a provably-unmodified stale wrapper) while
+    preserving exactly what the 2026-06-18/2026-07-03 decisions protect:
+    owner modifications.
   - `retired`: explicit list of formerly-shipped target paths, each with the
     byte-hash(es) of the shipped version(s); **remove only when the file
     byte-matches a formerly-shipped version, otherwise leave it and flag** —
     a modified file is never deleted by machine.
 - **Repo-owned files are never touched**: `.agents/state.md`,
   `.agents/decisions.md`, `.agents/repo-guidance.md`,
-  `.agents/push-policy.md`, plans, review trails, archives.
+  `.agents/push-policy.md`, plans, review trails, archives. Division of
+  labor with first bootstrap, stated plainly: `refresh.py` installs the
+  **shipped set only**; the approved judgment drafts (the repo-owned
+  `.agents/` files) are copied from `.bootstrap-tmp/drafts/` to their final
+  paths by the bootstrap procedure's existing copy-on-approval step — the
+  script's never-touch contract and the bootstrap install are disjoint by
+  construction, and both land in the same single scoped bootstrap commit.
 - **Safety**: refuse to run over uncommitted changes on any path it would
   touch; idempotent (second run is a no-op); prints a report of
   added/updated/removed/flagged.
@@ -125,7 +137,8 @@ Current: 97 lines / ~1,660 words loaded into every session of every repo.
 Target: ~65 lines / ~1,100 words. Same four Prime Invariants.
 
 - **Cut**: the `## Bootstrap Handoff` section (`.bootstrap-tmp/` routing dies
-  with slice 4); Session Startup's hook-trust step (hooks die in slice 3);
+  with slice 4); Session Startup's hook-trust step shrinks to one line
+  (naming the single surviving compaction hook; the gate-respect rule stays);
   the `templateVersion` stamp (provenance moves to the refresh commit
   message); `## Mission` as a section (its one real rule — no scope expansion
   without approval — moves into the Prime Invariants); the
@@ -167,19 +180,32 @@ Target: ~65 lines / ~1,100 words. Same four Prime Invariants.
   `repo-guidance.template.md` Verification comment notes it is the canonical
   home; `decisions.template.md` unchanged; `push-policy` template unchanged.
 
-### Slice 3 — hooks retired as a shipped artifact class
+### Slice 3 — hooks: one survivor, the rest retired
 
-Delete `templates/hooks/` (all four harnesses, tripwire script included) and
-the hook-install steps from the procedures. Rationale on the record: the
-tripwire is advisory, costs a process spawn on every edit in every repo, and
-was silently inert on stock Windows for weeks with no degradation — its job
-(protect `AGENTS.md` from hand-edits) transfers to `refresh.py`'s
-byte-verify-and-repair. The re-ground echo goes with the class (unproven
-benefit; the Prime Invariants block keeps its own re-ground anchor text).
-The grok/agy configs were never shown to fire. Retired entries go into
-`shipped-set.json` so deployed repos shed the files on their next refresh
-(byte-match rule protects any owner-modified `settings.json`; a shipped
-settings file with owner additions is flagged, not deleted).
+**Kept — the Claude Code compaction re-ground hook**, as the sole shipped
+hook (owner decision 2026-07-08, on reconsideration). Its provenance is
+structural, recorded so this is never re-litigated: the failure mode it
+guards — loss of in-context rules at compaction — cannot be mitigated from
+inside the context, because every prose anchor (including the Prime
+Invariants' own re-read line) degrades *with* the context being compacted;
+a hook fires from outside, after the event, which is the only mechanism
+shape that survives it. Cost is one injected line per compaction event; it
+was validated to fire when built (2026-06-21). The shipped
+`.claude/settings.json` shrinks to this single entry and ships
+`replace-if-unmodified`. One hook-trust line survives in the template's
+Session Startup (trimmed, not the current two-step section).
+
+**Retired — everything else in the class**: the AGENTS.md pre-edit tripwire
+on every harness (advisory, a process spawn on every edit in every repo, and
+silently inert on stock Windows for weeks with no degradation — its job
+transfers to `refresh.py`'s byte-verify-and-repair), the tripwire script
+file, and the grok/agy hook configs (never shown to fire — shipped config
+with no evidence behind it). Retired entries go into `shipped-set.json` so
+deployed repos shed the files on their next refresh; prior shipped
+`settings.json` versions (re-ground + tripwire) are in the
+formerly-shipped hash list, so an unmodified one updates to the new
+single-hook file, while an owner-modified one (e.g. Blit_v2's) is flagged,
+never touched.
 
 ### Slice 4 — discovery and the JSON layer retired
 
@@ -238,7 +264,11 @@ bootstrap-install and refresh-install). Dangling references (the
   `harvest.config.json`, and `harvest/processed.md` (open/closed issues are
   the triage ledger; the existing processed.md is archived verbatim to
   `docs/history/`). The sweep operator becomes "read open issues, decide
-  each, close with a reason."
+  each, close with a reason." `templates/bug-report.template.md` and
+  `templates/harvest-report.template.md` are adapted into the two
+  `.github/ISSUE_TEMPLATE/` files and the originals deleted (they were
+  toolkit-side drafting aids, never installed into target repos — no
+  retired-list entries needed).
 - Owner decision at approval: leave this repo public (issues public) or flip
   it private.
 
@@ -272,18 +302,39 @@ route back as issues.
 
 ## Decisions to record in `.agents/decisions.md` on implementation
 
-Each with the incident/evidence citations above: refresh-by-script +
-shipped-set reconciliation (supersedes the mechanical half of the agent-run
-refresh flow; the 2026-07-03 unconditional-playbook decision's intent is
-preserved and now script-enforced, and its deleted-playbooks-resurrect
-consequence is replaced by retired-list semantics); hooks retired (supersedes
-the tripwire layer of the 2026-06-25 boundary decision — L1 prose and the
-new mechanical repair remain — and moots the 2026-07-02 hook-interpreter
-decision); discovery-by-checklist (supersedes the script half of the
-2026-06-09/10 kickoff decision; the single-session kickoff itself stands);
-JSON layer retired; feedback-via-issues (supersedes the 2026-06-22 dropbox
-decisions and the transport follow-up); verification's canonical home;
-state rotation + write rules; the no-rule-without-provenance standing rule.
+Each with the incident/evidence citations above:
+
+- **Refresh-by-script + shipped-set reconciliation** — supersedes the
+  mechanical half of the agent-run refresh flow and the 2026-06-22
+  templateVersion-stamp decision. The 2026-07-03 unconditional-playbook
+  decision is **preserved in full**: shipped playbooks still install on
+  every run, a target-repo deletion still reinstalls, and the durable
+  opt-out is still removing the template from the toolkit — retired-list
+  semantics add only the previously-missing half, that toolkit-side removal
+  now actually propagates as deletion. The `replace-if-unmodified` class is
+  recorded as a strengthening of the 2026-06-18 never-overwrite rule
+  (byte-match against formerly-shipped versions proves non-modification).
+- **Hooks narrowed to the Claude compaction re-ground** — amends the
+  2026-06-21 per-harness re-ground decision (per-harness → Claude-only, with
+  the structural outside-the-context rationale recorded); supersedes the
+  tripwire layer (L2) of the 2026-06-25 boundary decision (L1 prose stays,
+  L3 becomes `refresh.py` repair); moots the 2026-07-02 hook-interpreter
+  decision (the surviving hook is a plain echo, no interpreter).
+- **Discovery-by-checklist** — supersedes the script half of the
+  2026-06-09/10 kickoff decision; the single-session kickoff itself stands.
+- **JSON layer retired** — amends the 2026-06-09 standard-layout decision
+  (layout no longer includes `repo-map.json` / `artifact-manifest.json`);
+  the open `governance-lint` queue entry, which depends on repo-map fields
+  and discover.py helpers, gets a dated amendment and routes to the owner
+  for close-as-obsolete or re-scope.
+- **Feedback-via-issues** — supersedes the transport half of the 2026-06-09
+  harvest decision (dropbox delivery, `harvest/processed.md` sweep ledger)
+  and the 2026-06-22 dropbox/bug-report decisions with their transport
+  follow-up; the harvest *discipline* (rare, incident-earned, max three,
+  no-report-is-normal, owner-gated publish) is retained verbatim in the
+  issue templates.
+- **Verification's canonical home** (`.agents/repo-guidance.md`); **state
+  rotation + write rules**; **the no-rule-without-provenance standing rule**.
 
 ## Verification
 
@@ -306,4 +357,23 @@ state rotation + write rules; the no-rule-without-provenance standing rule.
 
 ## Review log
 
-- r1 (2026-07-08, codex): pending.
+- r1 (2026-07-08, codex-cli 0.142.5, reviewed_sha `0239cd5`): **reopened**,
+  5 findings, all accepted:
+  - HIGH: refresh.py's never-touch contract contradicted the first-bootstrap
+    delegation — fixed with the explicit division of labor (procedure copies
+    approved judgment drafts; script installs shipped set only; one commit).
+  - MEDIUM: hook supersession omitted the original 2026-06-21 re-ground
+    decision — now amended rather than superseded, because the owner
+    (2026-07-08, on reconsideration) kept the compaction re-ground hook as
+    the sole shipped hook; slice 3 rewritten accordingly.
+  - MEDIUM: the 2026-06-09 harvest decision and the two report templates
+    lacked disposition — added to supersessions and slice 6.
+  - MEDIUM: the 2026-06-09 layout decision and the open governance-lint
+    entry still referenced the JSON layer/discover.py — dispositions added.
+  - MEDIUM: the playbook supersession wording wrongly implied retired-list
+    semantics replace the deletion-resurrection consequence — corrected: the
+    2026-07-03 decision is preserved in full; retired-list adds only
+    toolkit-side removal propagation.
+  Same revision also introduces the `replace-if-unmodified` class
+  (superseding install-if-missing) so provably-unmodified stale artifacts
+  update instead of rotting.
