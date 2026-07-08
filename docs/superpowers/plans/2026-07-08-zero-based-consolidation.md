@@ -432,8 +432,10 @@ Each with the incident/evidence citations above:
 - **Evals scrapped** — amends the 2026-07-01 condensation decision's
   completeness-general-as-candidate clause (profile deleted with the
   workstream; revival requires a fresh decision from git history); the
-  salvaged `docs/harness-capabilities.md` is named as the evidence source
-  for the per-harness verify-once gate.
+  salvaged `docs/harness-capabilities.md` is recorded as **seed input** to
+  the per-harness verify-once gate and as the durable home where slice 3's
+  fresh repo-level live-check outcomes land — the gate's evidence is those
+  live checks, never the salvaged file's pre-existing global-scope facts.
 - **Verification's canonical home** (`.agents/repo-guidance.md`); **state
   rotation + write rules**; **the no-rule-without-provenance standing rule**.
 
@@ -521,6 +523,12 @@ Each with the incident/evidence citations above:
   live checks, recorded into the relocated file). r5's three findings
   confirmed resolved; the completeness-general supersession confirmed
   accurate.
+- r7 (2026-07-08, codex-cli 0.142.5, reviewed_sha `027831b`): **reopened**,
+  1 finding, accepted — the decisions-to-record bullet still called the
+  salvaged file the gate's "evidence source", contradicting slice 7's
+  seed-input scoping; the bullet now matches (seed input + durable home for
+  live-check outcomes; the gate's evidence is the live checks). The
+  state-rotation fix confirmed resolved.
 - Post-r4 owner amendments (2026-07-08), re-reviewed in r5: (a)
   multi-harness parity — the gitignore repair stated harness-neutrally
   across all adapter dirs; the re-ground hook and operator wrappers ship
