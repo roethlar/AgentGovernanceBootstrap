@@ -123,10 +123,16 @@ registry, no central state: run it while standing in a governed repo.
 - **Safety**: refuse to run over uncommitted changes on any path it would
   touch; idempotent (second run is a no-op); prints a report of
   added/updated/removed/flagged.
-- **Commit**: stages exactly the reconciled paths, one scoped commit whose
-  message records the toolkit commit hash it synced to (this replaces the
-  `templateVersion` stamp as provenance). It does not push; it prints the
-  repo's push policy as a reminder.
+- **Commit — two modes.** Default (standalone refresh): stages exactly the
+  reconciled paths and makes one scoped commit whose message records the
+  toolkit commit hash it synced to (this replaces the `templateVersion`
+  stamp as provenance). `--stage-only` (the first-bootstrap mode): stages
+  the reconciled paths and stops — the bootstrap procedure then copies and
+  stages the approved judgment drafts and makes the **single scoped commit
+  covering both groups**, exactly as the approval summary announced. The
+  dirty-tree refusal is scoped to the paths `refresh.py` itself would touch,
+  so pre-staged judgment drafts never trip it. Neither mode pushes; the
+  script prints the repo's push policy as a reminder.
 - `templates/commands/claude/update-governance.md` is rewritten to invoke
   the script (the wrapper keeps its hardcoded toolkit URL — personal-toolkit
   decision, owner 2026-07-08). First bootstrap also uses the script: the
@@ -135,8 +141,9 @@ registry, no central state: run it while standing in a governed repo.
 - Tests: reconcile add/update/remove, never-overwrite, modified-retired-file
   flagged not deleted, byte-exact (newline-normalized) AGENTS.md, CRLF
   checkout fixture, blanket-`.claude/`-ignore repair, unrecognized-ignore
-  flag-and-skip, no-force-add, dirty-tree refusal, idempotence, offline sync
-  fallback. All guard-proven.
+  flag-and-skip, no-force-add, dirty-tree refusal scoped to own target
+  paths, `--stage-only` (stages without committing; pre-staged foreign paths
+  untouched), idempotence, offline sync fallback. All guard-proven.
 
 Why a script and not the agent, on the record: refresh is
 synchronize-to-an-exact-set, the documented agent failure mode — a dogfood
@@ -269,9 +276,11 @@ custody proof; the one-scoped-commit contract covering both groups;
 fresh-eyes (`procedures/verification.md`, migrations only, unchanged); the
 push-policy consult. `AGENTS.md`, shims, wrappers, playbooks, and the hook
 settings are not drafted and not hand-copied — on approval the procedure
-invokes `refresh.py`, the single installer for shipped artifacts (one
-recipe, no drift between bootstrap-install and refresh-install, no bypass of
-the replace-if-unmodified protections). Dangling references (the
+invokes `refresh.py --stage-only`, the single installer for shipped
+artifacts (one recipe, no drift between bootstrap-install and
+refresh-install, no bypass of the replace-if-unmodified protections), then
+copies and stages the approved judgment drafts and makes the one scoped
+commit covering both groups. Dangling references (the
 "bootstrap.md Step 4" pointer) die with the rewrite. Deleted outright:
 `procedures/harvest.md`, `procedures/file-bug-report.md`,
 `procedures/file-to-dropbox.md`.
@@ -417,3 +426,10 @@ Each with the incident/evidence citations above:
   - MEDIUM: raw byte-hashes break across the autocrlf fleet — all matching
     and hashes are now specified newline-normalized (the load-bearing
     tolerance the old byte-compare carried), with a CRLF fixture test.
+- r3 (2026-07-08, codex-cli 0.142.5, reviewed_sha `3fc6448`): **reopened**,
+  1 finding, accepted: refresh.py's auto-commit was incompatible with the
+  one-scoped-commit-covering-both-groups bootstrap contract — fixed with a
+  `--stage-only` mode (bootstrap: script stages shipped set, procedure
+  stages judgment drafts, procedure makes the single commit; standalone:
+  script commits as before), dirty-tree refusal explicitly scoped to the
+  script's own target paths.
