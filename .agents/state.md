@@ -22,25 +22,6 @@ machine-local facts are labeled or omitted.
 
 ## Next
 
-- **Smoother bootstrap/refresh entry — proposal on the table, awaiting the
-  owner's go and a command name** (discussed 2026-07-09; no decision entry,
-  no plan, no code yet). The shape: (1) launcher shims `bin/agb` +
-  `bin/agb.cmd` (POSIX sh / Windows cmd only — no PowerShell) that embed the
-  documented interpreter-probe order, resolve the toolkit root from their
-  own location, and exec `tools/refresh.py`, plus a one-time per-machine
-  PATH step; (2) a `bootstrap` operator skill + wrapper added to the shipped
-  set (no machine paths — anchored on the canonical GitHub URL like the
-  `update-governance` wrapper; self-guards when `.agents/repo-guidance.md`
-  already exists); (3) refresh's closing output points at `/bootstrap`
-  whenever the judgment layer is missing or `AGENTS.md` flags foreign.
-  Owner-set constraints: must not assume Claude, PowerShell, a remembered
-  path, or a remembered interpreter. Related owner attestation (stated
-  2026-07-09, **not yet a decision entry** — record on go): the owner never
-  hand-edits `AGENTS.md`; in this fleet an unmatched `AGENTS.md` is
-  old-generator output to relocate, never owner edits. Deferred option if
-  the EAW carve-out grates: fingerprint-gated preserve-then-replace for
-  legacy `AGENTS.md` (old file preserved under `docs/history/`, template
-  installed, only when toolkit fingerprints are present).
 - **ExchangeAdminWeb**, the last legacy rollout repo, deferred by the owner
   to **2026-07-20** (re-affirmed 2026-07-09): run `tools/refresh.py`,
   resolve FLAG lines; oldest instance — 2026-06-22-era template, no
@@ -49,8 +30,9 @@ machine-local facts are labeled or omitted.
 - qbit-mobile (fleet context, 2026-07-09): refresh at toolkit `319324e`
   installed the shipped set and flagged its legacy `AGENTS.md`; the owner is
   running the bootstrap carve-out there — the first live exercise of the
-  legacy-flag path. Not this repo's work item; friction observed there fed
-  the smoother-entry proposal above.
+  legacy-flag path. Not this repo's work item; friction observed there fed a
+  smoother-entry proposal, declined by the owner 2026-07-09 (rotated
+  verbatim to `docs/history/state-archive.md`).
 - Owner, at leisure: archive the `agent-harvest` dropbox repo (re-verified
   still unarchived 2026-07-09 via `gh repo view --json isArchived`).
 - Drift-sweep candidate, advisory only: the always-on lint reports dead-path

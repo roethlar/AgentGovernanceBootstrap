@@ -4,6 +4,33 @@ Landed or superseded `.agents/state.md` entries, rotated here verbatim at
 handoff per the state-rotation rule (first applied 2026-07-08). Newest
 rotation first; entries are never edited after rotation.
 
+## Rotated 2026-07-09 (fourth rotation, mid-session on owner decision) — smoother-entry proposal declined
+
+Disposition: declined by the owner 2026-07-09 (answer: "no"). Per its own
+terms nothing was recorded: no decision entry, no plan, no code. The related
+owner attestation (never hand-edits `AGENTS.md`) was record-on-go and
+therefore remains unrecorded; the deferred fingerprint-gated option lapses
+with the proposal. Entry rotated verbatim from `.agents/state.md` ## Next:
+
+- **Smoother bootstrap/refresh entry — proposal on the table, awaiting the
+  owner's go and a command name** (discussed 2026-07-09; no decision entry,
+  no plan, no code yet). The shape: (1) launcher shims `bin/agb` +
+  `bin/agb.cmd` (POSIX sh / Windows cmd only — no PowerShell) that embed the
+  documented interpreter-probe order, resolve the toolkit root from their
+  own location, and exec `tools/refresh.py`, plus a one-time per-machine
+  PATH step; (2) a `bootstrap` operator skill + wrapper added to the shipped
+  set (no machine paths — anchored on the canonical GitHub URL like the
+  `update-governance` wrapper; self-guards when `.agents/repo-guidance.md`
+  already exists); (3) refresh's closing output points at `/bootstrap`
+  whenever the judgment layer is missing or `AGENTS.md` flags foreign.
+  Owner-set constraints: must not assume Claude, PowerShell, a remembered
+  path, or a remembered interpreter. Related owner attestation (stated
+  2026-07-09, **not yet a decision entry** — record on go): the owner never
+  hand-edits `AGENTS.md`; in this fleet an unmatched `AGENTS.md` is
+  old-generator output to relocate, never owner edits. Deferred option if
+  the EAW carve-out grates: fingerprint-gated preserve-then-replace for
+  legacy `AGENTS.md` (old file preserved under `docs/history/`, template
+  installed, only when toolkit fingerprints are present).
 ## Rotated 2026-07-09 (third rotation, mid-session on owner decision) — issue #1 closed on GitHub
 
 Disposition: explicit owner go received 2026-07-09; the issue was commented
