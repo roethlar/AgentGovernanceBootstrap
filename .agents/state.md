@@ -17,18 +17,25 @@ machine-local facts are labeled or omitted.
   `tools/refresh.py`/`shipped-set.json` + reviewloop + one hook + GitHub
   issues feedback. This repo refreshed itself with its own script (commit
   `d5ae8b3` + flag cleanup `6f08a67`).
-- **Rollout: vela DONE 2026-07-08** — refresh commit `88be803` + JSON-carve
-  commit `1b014e9` in `../vela`, both LOCAL there (vela push policy: ask;
-  machine-local (this box): owner pushes).
+- **Rollout status (2026-07-08):** vela DONE (`88be803` + carve `1b014e9`);
+  Blit_v2 DONE (`c92797e` + follow-up `100e2ff` — tripwire block also removed
+  from its owner settings.json since it invoked the deleted script; NOTE
+  machine-local (this box): Blit's local master was 2 commits behind GitHub
+  canon, so these two commits **diverge from `github/master`** — owner call:
+  say the word to rebase them onto canon, or reconcile on your next pull);
+  ai-rpg-engine DONE (clone fast-forwarded 75 commits to canon `3d2cc87`
+  first, then refresh `97f55fd` + follow-up `38cc4b2`; CLAUDE.md normalized —
+  it differed only by a trailing newline). All rollout commits are LOCAL in
+  their repos; every push policy there requires the owner.
 
 ## Next
 
-- Rollout to the remaining governed repos **on owner go**, one at a time:
-  Blit_v2, Powershell-Token-Killer, ai-rpg-engine, ExchangeAdminWeb — run
-  `tools/refresh.py` in each, resolve its FLAG lines (expect: owner-modified
-  settings.json in Blit_v2 flagged; JSON-layer carve like vela's where
-  repo-map.json holds the verification commands; EAW is oldest and will see
-  the largest template jump). Findings route back as GitHub issues.
+- Rollout of the last two repos, deferred by the owner (2026-07-08):
+  **Powershell-Token-Killer** when the owner's active work there quiets, and
+  **ExchangeAdminWeb** after vacation (work-specific). Same recipe: run
+  `tools/refresh.py`, resolve FLAG lines (EAW is oldest — 2026-06-22-era
+  template, no repo-guidance.md yet, so it likely needs the bootstrap
+  procedure's carve-out rather than a bare refresh).
 - Owner, at leisure: archive the `agent-harvest` dropbox repo (feedback is
   issues now); disposition for the `governance-lint` Open entry
   (`.agents/decisions.md` — close as obsolete or re-scope).
