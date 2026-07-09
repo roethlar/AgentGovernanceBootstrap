@@ -218,6 +218,23 @@ def _lintable_repo_path(tok: str) -> bool:
     return "/" in tok
 
 
+def _deletion_commit(target_repo, tok, _cache):
+    """Short hash of the commit that deleted `tok`, or None. Git is the
+    no-maintenance evidence that a missing path is historical rather than a
+    typo: a deliberate deletion always left a commit behind, a typo never
+    did (owner direction, 2026-07-09 — no allowlists, consult history,
+    print the note). Any failure (never tracked, shallow clone, not a git
+    repo) returns None and the caller keeps the loud warning: degradation
+    is toward loud, never toward silent-wrong."""
+    key = tok.rstrip("/")
+    if key not in _cache:
+        proc = git(target_repo, "log", "--diff-filter=D", "--format=%h",
+                   "-1", "--", key, check=False)
+        out = proc.stdout.strip().splitlines() if proc.returncode == 0 else []
+        _cache[key] = out[0].strip() if out else None
+    return _cache[key]
+
+
 def lint_governance(target_repo: Path) -> list:
     """Read-only hygiene checks over the repo-authored governance prose
     (`.agents/*.md` — NOT `AGENTS.md`, whose text is the byte-verified
@@ -227,6 +244,7 @@ def lint_governance(target_repo: Path) -> list:
     existing touchpoint stay true."""
     findings = []
     files = []
+    deleted_cache = {}
     agents_dir = target_repo / ".agents"
     if agents_dir.is_dir():
         files += sorted(agents_dir.glob("*.md"))
@@ -244,7 +262,11 @@ def lint_governance(target_repo: Path) -> list:
             if tok.rstrip("/") in LINT_EXEMPT_PATHS:
                 continue
             if not (target_repo / tok.rstrip("/")).exists():
-                findings.append((rel, "references missing path `{}`".format(tok)))
+                dh = _deletion_commit(target_repo, tok, deleted_cache)
+                if dh:
+                    findings.append((rel, "historical: `{}` - deleted in {}".format(tok, dh), "note"))
+                else:
+                    findings.append((rel, "references missing path `{}`".format(tok), "warn"))
         if f.name == "decisions.md":
             entries = list(re.finditer(r"^### (.+)$", text, re.M))
             for i, em in enumerate(entries):
@@ -252,7 +274,7 @@ def lint_governance(target_repo: Path) -> list:
                 seg = text[em.end():end]
                 sm = re.search(r"^Status:\s*(\w+)", seg, re.M)
                 if sm and sm.group(1) in ("Adopted", "Superseded"):
-                    findings.append((rel, "closed decision awaiting archive: {}".format(em.group(1)[:70])))
+                    findings.append((rel, "closed decision awaiting archive: {}".format(em.group(1)[:70]), "warn"))
     return findings
 
 
@@ -355,8 +377,8 @@ def main(argv=None) -> int:
 
     print("governance refresh against toolkit {}".format(toolkit_sha))
     print(summarize(plan, sync_note))
-    for rel, msg in lint_governance(target):
-        print("  LINT {}: {}".format(rel, msg))
+    for rel, msg, kind in lint_governance(target):
+        print("  {} {}: {}".format("NOTE" if kind == "note" else "LINT", rel, msg))
     if changed and args.stage_only:
         print("  (staged only - the bootstrap procedure makes the single scoped commit)")
     policy = target / ".agents" / "push-policy.md"

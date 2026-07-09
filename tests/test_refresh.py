@@ -337,6 +337,52 @@ class RefreshTests(unittest.TestCase):
         self.assertIn("LINT .agents/state.md: references missing path `.agents/repo-map.json`", proc.stdout)
         self.assertIn("references missing path `docs/plan.md`", proc.stdout)
 
+    def test_lint_notes_git_vouched_deletion_instead_of_warning(self):
+        # Owner direction 2026-07-09: verbatim historical records name
+        # retired substrate forever; when git holds the deletion commit the
+        # line is a NOTE carrying that provenance, not a warning. Paths git
+        # never tracked keep the loud LINT line - a typo never left a
+        # deletion commit, so the check stays typo-safe with no allowlist.
+        (self.target / "tools").mkdir()
+        (self.target / "tools" / "old-tool.py").write_text("x\n", newline="\n")
+        commit_all(self.target, "add old tool")
+        run_git(self.target, "rm", "-q", "tools/old-tool.py")
+        run_git(self.target, "commit", "-q", "-m", "retire old tool")
+        short = run_git(self.target, "log", "--diff-filter=D", "--format=%h",
+                        "-1", "--", "tools/old-tool.py").strip()
+        ag = self.target / ".agents"
+        ag.mkdir()
+        (ag / "decisions.md").write_text(
+            "# D\n\nWe retired `tools/old-tool.py`; `docs/never-was.md` never existed.\n",
+            newline="\n")
+        commit_all(self.target, "decision naming retired tool")
+        proc = refresh(self.toolkit, self.target)
+        self.assertEqual(proc.returncode, 0)
+        self.assertIn(
+            "NOTE .agents/decisions.md: historical: `tools/old-tool.py` - deleted in {}".format(short),
+            proc.stdout)
+        self.assertNotIn("missing path `tools/old-tool.py`", proc.stdout)
+        self.assertIn(
+            "LINT .agents/decisions.md: references missing path `docs/never-was.md`",
+            proc.stdout)
+
+    def test_lint_notes_deleted_directory_mentioned_with_trailing_slash(self):
+        d = self.target / "drafts"
+        d.mkdir()
+        (d / "a.md").write_text("x\n", newline="\n")
+        commit_all(self.target, "add drafts")
+        run_git(self.target, "rm", "-q", "-r", "drafts")
+        run_git(self.target, "commit", "-q", "-m", "retire drafts")
+        ag = self.target / ".agents"
+        ag.mkdir()
+        (ag / "state.md").write_text(
+            "Scratch lived in `drafts/` back then.\n", newline="\n")
+        commit_all(self.target, "state naming retired dir")
+        proc = refresh(self.toolkit, self.target)
+        self.assertEqual(proc.returncode, 0)
+        self.assertIn("NOTE .agents/state.md: historical: `drafts/` - deleted in ", proc.stdout)
+        self.assertNotIn("LINT .agents/state.md", proc.stdout)
+
     def test_lint_skips_existing_commands_urls_and_placeholders(self):
         ag = self.target / ".agents"
         ag.mkdir()
