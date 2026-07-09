@@ -26,14 +26,16 @@ machine-local facts are labeled or omitted.
 
 ## Next
 
-- **Smoother bootstrap/refresh entry — need still open, shape unknown**
-  (owner, 2026-07-09: "I still need something here, just not sure what
-  yet"). The specific 2026-07-09 shim/skill/pointer proposal was declined
-  and is archived verbatim in `docs/history/state-archive.md`; the owner
-  constraints from that discussion still stand (must not assume Claude,
-  PowerShell, a remembered path, or a remembered interpreter). No design
-  work until the owner names a direction; meanwhile capture any fresh
-  entry-friction observations here as they occur.
+- **Smoother bootstrap/refresh entry — direction named (owner, 2026-07-09);
+  plan drafted, awaiting owner go:**
+  `docs/superpowers/plans/2026-07-09-refresh-bootstrap-offer.md`. The
+  direction: the refresh output that matters is an unmissable notice that a
+  core file was NOT replaced, for any reason; the notice resolves to "run
+  bootstrap," and refresh offers to run bootstrap with a harness chosen from
+  those installed at that moment. The owner constraints still stand (must
+  not assume Claude, PowerShell, a remembered path, or a remembered
+  interpreter); the earlier declined shim/skill/pointer proposal stays
+  declined and archived verbatim in `docs/history/state-archive.md`.
 - **ExchangeAdminWeb**, the last legacy rollout repo, deferred by the owner
   to **2026-07-20** (re-affirmed 2026-07-09): run `tools/refresh.py`,
   resolve FLAG lines; oldest instance — 2026-06-22-era template, no
@@ -63,6 +65,7 @@ machine-local facts are labeled or omitted.
 - `.agents/decisions.md`
 - `docs/superpowers/plans/2026-07-09-refresh-newline-equivalence.md`
 - `docs/superpowers/plans/2026-07-09-git-aware-dead-path-lint.md`
+- `docs/superpowers/plans/2026-07-09-refresh-bootstrap-offer.md`
 
 ## Unrecorded Repo Memory
 
