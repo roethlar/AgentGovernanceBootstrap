@@ -1,6 +1,13 @@
 # refresh.py: unmissable non-replacement notice + offer to run bootstrap
 
-Status: DRAFT 2026-07-09, awaiting owner go on this plan. Direction is
+Status: CLOSED 2026-07-09 — landed on owner go (this session). Commit map:
+slices 1+2 (banner, TTY-gated offer, non-TTY command block, tests 49/49
+green, decision entry) in `f65e892`; slice 3 bookkeeping (this file's
+closure, state rotation) in the commit that carries this line. Verified
+live 2026-07-09: self-refresh of this repo prints no banner; a scratch
+clone with a foreign `AGENTS.md` prints the ATTENTION banner and, non-TTY,
+the ready-to-paste launch commands for all four detected harnesses
+(claude, codex, agy, grok) with no prompt and no hang. Direction is
 owner-set (this session, 2026-07-09): the refresh output that matters is an
 **unmissable notice that a core file was NOT replaced, for any reason**; the
 notice resolves to "run bootstrap"; and refresh should **offer to run
