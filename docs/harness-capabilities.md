@@ -18,7 +18,7 @@ apparatus dropped. Full original in git history.)
 | harness | governance load vector |
 |---|---|
 | Claude Code | `CLAUDE.md` (+`@AGENTS.md` import). A bare `AGENTS.md` with no `CLAUDE.md` is **inert** in headless mode — the shim is load-bearing. |
-| codex | `AGENTS.md` natively — no shim needed. Does not need `CLAUDE.md`. |
+| codex | `AGENTS.md` natively — no shim needed. Does not need `CLAUDE.md`. **Does NOT process `@` imports** (documented: codex discovers/concatenates `AGENTS.override.md` + `AGENTS.md` + configured fallback filenames root-down; no include expansion — developers.openai.com/codex/guides/agents-md, checked 2026-07-08 via codex itself). `@.agents/repo-guidance.md` is literal text there; repo-guidance loads on codex only via the template's explicit read-it-directly instruction — a directed read, one diligence-hop weaker than injection. |
 | grok | `AGENTS.md` (also reads `CLAUDE.md`; does NOT read `.cursorrules`). |
 | agy (Antigravity) | `AGENTS.md` + `GEMINI.md` — but **only with `--new-project`** in headless mode; a plain `--print` loads only the global `~/.gemini/GEMINI.md`. Does not read `CLAUDE.md`. |
 
