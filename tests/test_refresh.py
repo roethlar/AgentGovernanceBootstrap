@@ -96,7 +96,8 @@ def refresh(toolkit: Path, target: Path, *extra: str) -> "subprocess.CompletedPr
     return subprocess.run(
         [sys.executable, str(REFRESH), str(target),
          "--toolkit", str(toolkit), "--no-sync", *extra],
-        capture_output=True, text=True, encoding="utf-8")
+        capture_output=True, text=True, encoding="utf-8",
+        stdin=subprocess.DEVNULL)
 
 
 class RefreshTests(unittest.TestCase):
@@ -470,6 +471,65 @@ class RefreshTests(unittest.TestCase):
         finally:
             sys.path.remove(str(TOOLS))
         self.assertIn("no canonical remote reachable", note)
+
+    # -- bootstrap banner and offer ----------------------------------------
+
+    def test_foreign_core_file_prints_banner_and_commands(self):
+        (self.target / "AGENTS.md").write_text("# Mine\nforeign\n", newline="\n")
+        commit_all(self.target, "foreign agents")
+        proc = refresh(self.toolkit, self.target)
+        self.assertEqual(proc.returncode, 0)
+        self.assertIn("ATTENTION: AGENTS.md was NOT replaced.", proc.stdout)
+        self.assertIn("bootstrap", proc.stdout)
+        # non-TTY: never asks, never hangs
+        self.assertNotIn("Run bootstrap now?", proc.stdout)
+
+    def test_clean_run_prints_no_banner(self):
+        proc = refresh(self.toolkit, self.target)
+        self.assertEqual(proc.returncode, 0)
+        self.assertNotIn("ATTENTION", proc.stdout)
+
+    def test_non_core_flag_prints_no_banner(self):
+        refresh(self.toolkit, self.target)
+        (self.target / ".claude" / "commands" / "tool.md").write_text(
+            "my edited wrapper\n", newline="\n")
+        commit_all(self.target, "edit tool")
+        proc = refresh(self.toolkit, self.target)
+        self.assertEqual(proc.returncode, 0)
+        self.assertNotIn("ATTENTION", proc.stdout)
+
+    def _refresh_mod(self):
+        sys.path.insert(0, str(TOOLS))
+        self.addCleanup(sys.path.remove, str(TOOLS))
+        import refresh as refresh_mod
+        return refresh_mod
+
+    def test_offer_launches_chosen_harness_with_prompt(self):
+        mod = self._refresh_mod()
+        seen = {}
+        cands = [("fakecli", ["fakecli", "--prompt", "{prompt}"])]
+        rc = mod.offer_bootstrap(cands, "do the bootstrap", self.target,
+                                 input_fn=lambda _q: "1",
+                                 launch_fn=lambda argv: seen.setdefault("argv", argv) and 0)
+        self.assertEqual(seen["argv"], ["fakecli", "--prompt", "do the bootstrap"])
+
+    def test_offer_declines_on_q_empty_junk_and_eof(self):
+        mod = self._refresh_mod()
+        cands = [("fakecli", ["fakecli", "{prompt}"])]
+        boom = lambda argv: self.fail("must not launch")
+        for answer in ("q", "", "no", "2", "0"):
+            self.assertIsNone(mod.offer_bootstrap(
+                cands, "p", self.target,
+                input_fn=lambda _q, a=answer: a, launch_fn=boom))
+        def raise_eof(_q):
+            raise EOFError
+        self.assertIsNone(mod.offer_bootstrap(
+            cands, "p", self.target, input_fn=raise_eof, launch_fn=boom))
+
+    def test_non_tty_commands_without_harness_points_at_procedure(self):
+        mod = self._refresh_mod()
+        text = mod.non_tty_commands([], "p", self.target, self.toolkit)
+        self.assertIn(str(self.toolkit / "procedures" / "bootstrap.md"), text)
 
 
 if __name__ == "__main__":

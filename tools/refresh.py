@@ -42,6 +42,8 @@ import argparse
 import hashlib
 import json
 import re
+import shlex
+import shutil
 import subprocess
 import sys
 from pathlib import Path
@@ -315,6 +317,92 @@ def stage(target_repo: Path, plan: Plan) -> None:
         git(target_repo, "add", "--", *paths)
 
 
+# Harness CLIs that can run the bootstrap procedure, with the interactive
+# launch shape ("{prompt}" is the kickoff slot). Seeded from the recorded
+# live behavior in docs/harness-capabilities.md; adding or changing an entry
+# is a provenance-bearing change (2026-07-08 standing rule). gemini renamed
+# agy per owner 2026-07-09.
+HARNESSES = [
+    ("claude", ("claude", "{prompt}")),
+    ("codex", ("codex", "{prompt}")),
+    ("agy", ("agy", "-i", "{prompt}")),
+    ("grok", ("grok", "{prompt}")),
+]
+
+
+def detect_harnesses(which=shutil.which):
+    """Harness CLIs actually installed right now - probed at offer time,
+    never remembered between runs."""
+    return [(name, shape) for name, shape in HARNESSES if which(name)]
+
+
+def core_flags(plan: Plan, shipped: dict) -> list:
+    """Flag targets in the replace-whole (core file) class - the one flag
+    category that is never a legitimate steady state."""
+    whole = {a["target"] for a in shipped["artifacts"]
+             if a["class"] == "replace-whole"}
+    return [t for t, _ in plan.flags if t in whole]
+
+
+def banner_block(targets) -> str:
+    bar = "=" * 66
+    lines = [bar]
+    for t in targets:
+        lines.append("  ATTENTION: {} was NOT replaced.".format(t))
+    lines.append("  It matches no known template version (hand-edited or foreign).")
+    lines.append("  Hand-repair is not the fix. The fix is the bootstrap procedure.")
+    lines.append(bar)
+    return "\n".join(lines)
+
+
+def bootstrap_prompt(toolkit: Path, target: Path) -> str:
+    return ("Read {} in full, then run the bootstrap procedure against this "
+            "repo ({}). Governance refresh refused to replace a core "
+            "governance file here; the procedure owns recovery, including "
+            "the legacy-governance carve-out.").format(
+                toolkit / "procedures" / "bootstrap.md", target)
+
+
+def launch_argv(shape, prompt: str) -> list:
+    return [part.replace("{prompt}", prompt) for part in shape]
+
+
+def non_tty_commands(candidates, prompt: str, target: Path, toolkit: Path) -> str:
+    """The non-interactive fallback under the banner: never prompt, never
+    hang - print the exact ready-to-paste launch command per detected
+    harness (or the procedure path when nothing is installed)."""
+    if not candidates:
+        return ("  no known harness CLI found on PATH; the procedure is\n"
+                "  {}".format(toolkit / "procedures" / "bootstrap.md"))
+    lines = ["  to run bootstrap, launch one of these in {}:".format(target)]
+    for _name, shape in candidates:
+        lines.append("    " + shlex.join(launch_argv(shape, prompt)))
+    return "\n".join(lines)
+
+
+def offer_bootstrap(candidates, prompt: str, target: Path,
+                    input_fn=input, launch_fn=None):
+    """One question at a real TTY; a valid number launches that harness
+    interactively in the target repo with the kickoff prompt; anything else
+    (q, empty, EOF, out-of-range) declines and changes nothing. Returns the
+    harness exit code, or None when declined. Callers gate on isatty - this
+    function is never reached non-interactively."""
+    menu = "  ".join("[{}] {}".format(i + 1, name)
+                     for i, (name, _shape) in enumerate(candidates))
+    try:
+        choice = input_fn("Run bootstrap now? Installed harnesses: "
+                          "{}  [q] no\n> ".format(menu)).strip()
+    except EOFError:
+        return None
+    if not choice.isdigit() or not (1 <= int(choice) <= len(candidates)):
+        return None
+    _name, shape = candidates[int(choice) - 1]
+    argv = launch_argv(shape, prompt)
+    if launch_fn is None:
+        launch_fn = lambda a: subprocess.call(a, cwd=str(target))
+    return launch_fn(argv)
+
+
 def summarize(plan: Plan, sync_note: str) -> str:
     lines = []
     for label, items in (
@@ -384,6 +472,16 @@ def main(argv=None) -> int:
     policy = target / ".agents" / "push-policy.md"
     if policy.exists():
         print("push policy: {}".format(policy.read_text(encoding="utf-8").strip().splitlines()[-1]))
+
+    core = core_flags(plan, shipped)
+    if core:
+        print(banner_block(core))
+        prompt = bootstrap_prompt(toolkit, target)
+        candidates = detect_harnesses()
+        if candidates and sys.stdin.isatty() and sys.stdout.isatty():
+            offer_bootstrap(candidates, prompt, target)
+        else:
+            print(non_tty_commands(candidates, prompt, target, toolkit))
     return 0
 
 

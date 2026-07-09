@@ -613,6 +613,49 @@ The deferred "Command wrappers are created only on the migration route"
 (2026-06-15), now adopted in generalized form.
 
 
+### 2026-07-09 - Refused core-file replacement ends in an unmissable banner plus an offer to run bootstrap
+
+Status: Active
+
+Decision:
+When `tools/refresh.py` refuses to replace a **replace-whole (core) artifact**
+— for any reason — the run no longer ends with just an interleaved
+`FLAG` line. After all normal output it prints an unmissable ATTENTION banner
+naming each unreplaced core file and stating that hand-repair is not the fix;
+the fix is the bootstrap procedure. Under the banner, refresh resolves the
+notice to "run bootstrap": it probes `PATH` at that moment for known harness
+CLIs (`docs/harness-capabilities.md` is the capability record; the probe is
+`shutil.which`, never a remembered path) and
+
+- at a real TTY (stdin **and** stdout), asks one question offering to launch
+  a detected harness interactively in the target repo with a kickoff prompt
+  that points at `procedures/bootstrap.md`; any answer other than a listed
+  number (q, empty, junk, EOF) declines and changes nothing;
+- otherwise (agents, CI, pipes), never prompts and never hangs: it prints the
+  exact ready-to-paste launch command per detected harness, or the procedure
+  path when none is installed.
+
+Flags on `replace-if-unmodified` artifacts keep today's quiet single-line
+shape; clean runs are byte-identical to before. Exit code is unchanged.
+
+Reason:
+Owner direction this session (2026-07-09): the refresh output that matters is
+an unmissable notice that a core file was NOT replaced; the one line the owner
+cares about was the easiest to miss, and the correct recovery (bootstrap, with
+its legacy-governance carve-out) was named nowhere in the output. Plan:
+`docs/superpowers/plans/2026-07-09-refresh-bootstrap-offer.md`.
+
+Alternative considered and rejected:
+The shim/skill/PATH-entry-point proposal (declined by the owner 2026-07-09,
+archived verbatim in `docs/history/state-archive.md`). This decision honors
+its standing constraints: assume no harness, no PowerShell, no remembered
+path, no remembered interpreter; nothing auto-runs — a launch requires an
+explicit interactive yes at a real TTY.
+
+Supersedes:
+Nothing; extends the 2026-07-08 refresh behavior (flag semantics unchanged).
+
+
 ## Open Decisions (deferred - not yet adopted)
 
 These are assessed findings the owner chose to record for a future decision
