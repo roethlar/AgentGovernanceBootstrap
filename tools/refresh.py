@@ -42,11 +42,12 @@ import sys
 from pathlib import Path
 
 CANONICAL_URLS = [
-    # Order: LAN mirror first (faster when reachable), GitHub is canon.
-    # ls-remote against GitHub decides the target head; the mirror only
-    # serves bytes. Offline -> proceed on the local copy with a flag.
-    "http://q:3000/michael/AgentGovernanceBootstrap.git",
+    # Order matters: GitHub is canon and is tried first whenever reachable;
+    # the LAN gitea mirror is only a fallback when GitHub does not respond.
+    # (Mirror-first would fast-forward to a lagging mirror head and silently
+    # run a stale toolkit.) Offline -> proceed on the local copy with a flag.
     "https://github.com/roethlar/AgentGovernanceBootstrap.git",
+    "http://q:3000/michael/AgentGovernanceBootstrap.git",
 ]
 
 ADAPTER_DIRS = (".claude", ".codex", ".gemini", ".grok")
