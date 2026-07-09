@@ -1235,54 +1235,6 @@ drafted).
 Recommendation: a one-line judgment call for the owner. (a) removes the
 agent-judged escape hatch cheaply; (c) is a compromise. Low effort either way.
 
-### Open: a `governance-lint` self-audit playbook (mechanical checks only)
-
-> Amended 2026-07-08 (zero-based consolidation — see the 2026-07-08 entry): its named substrate (repo-map.json `guidance_paths`/`validated_against`, discover.py helpers) was deleted; if ever built it walks `.agents/` live. Owner disposition pending: close as obsolete or re-scope.
-
-Evidence: `AGENTS.md` advertises `.agents/playbooks/*` as an authority slot and a
-`playbook <name>` operator. The toolkit already ships a playbook template
-(`templates/playbooks/reviewloop.md`, a two-agent review loop installable into a
-target repo), but this repo's own `.agents/playbooks/` directory does not yet
-exist — so governance-lint would be the first playbook authored as a self-audit,
-not the first use of the mechanism. (Amended 2026-07-03: `reviewloop.md` now
-installs on any refresh/dogfood run per the playbooks decision, so
-governance-lint would not necessarily be the first playbook *installed* here;
-it remains the first self-audit playbook authored.)
-Three doc-health checks are mechanizable
-against existing structures: (1) **state freshness** — `.agents/repo-map.json`
-carries a structured `validated_against: {commit, date}`; compare it against the
-git log for `.agents/` to flag a state doc that has drifted past its last
-validation; (2) **pointer/section/stamp resolution** — cross-references are
-backtick-wrapped paths (regex-extractable, `Path.exists()`-checkable),
-`repo-map.json.guidance_paths` supplies the golden file list to walk, and
-`discover.py` already has `extract_template_version()` for the stamp; (3) dead
-backtick-path links fall out of (2). `discover.py` exposes reusable helpers
-(`run_git`, `match_paths`, `extract_template_version`), so the core is ~150 lines.
-Evidence-citation sufficiency and prose-reference resolution are explicitly NOT
-mechanizable (they need semantic judgment) and stay the `drift` operator's job.
-
-Options: (a) build a standalone `.agents/playbooks/governance-lint.md` (+ a small
-Python checker) covering freshness + pointer/section/stamp resolution, run
-on-demand and recommended by the migration route's reconciliation branch — not a
-blocking gate; (b) fold the mechanical freshness check into the existing `drift`
-operator without a new playbook; (c) YAGNI — leave it.
-
-Recommendation: (a), with evidence-citation checking declared an explicit
-non-goal. It fills the already-advertised, currently-empty playbook slot rather
-than adding new surface; it stays agent-driven (a playbook the agent runs, not a
-script gate); and it makes the `validated_against` freshness signal — which
-nothing currently checks despite guarding the "discoverable current-state entry
-point" invariant — actually load-bearing. The narrow form (freshness +
-pointer/stamp) is not YAGNI; the broad "audit governance health" form Grok
-originally proposed would be.
-
-Owner decision 2026-06-22: option (a) — standalone
-`.agents/playbooks/governance-lint.md` plus a small checker, run on-demand and
-recommended (not gated) by the migration route's reconciliation branch
-(reworded 2026-07-01 per the adopted route collapse); evidence-citation
-sufficiency stays an explicit non-goal (the `drift` operator's job). Still
-Open: not yet implemented. Next step is a `plan` for the checker.
-
 ### Open: foreign-model governance validation
 
 Owner needs a way for a *different* model to validate that a repo's governance

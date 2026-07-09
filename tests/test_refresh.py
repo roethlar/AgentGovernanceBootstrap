@@ -263,6 +263,54 @@ class RefreshTests(unittest.TestCase):
         self.assertIn(".agents/state.md", staged)  # pre-staged foreign path untouched
         self.assertIn("staged only", proc.stdout)
 
+    # -- governance lint (always on, read-only) ----------------------------
+
+    def test_lint_flags_dead_path_reference(self):
+        ag = self.target / ".agents"
+        ag.mkdir()
+        (ag / "state.md").write_text(
+            "See `.agents/repo-map.json` and `docs/plan.md` for details.\n", newline="\n")
+        commit_all(self.target, "state with dead pointers")
+        proc = refresh(self.toolkit, self.target)
+        self.assertEqual(proc.returncode, 0)
+        self.assertIn("LINT .agents/state.md: references missing path `.agents/repo-map.json`", proc.stdout)
+        self.assertIn("references missing path `docs/plan.md`", proc.stdout)
+
+    def test_lint_skips_existing_commands_urls_and_placeholders(self):
+        ag = self.target / ".agents"
+        ag.mkdir()
+        (ag / "repo-guidance.md").write_text(
+            "Run `git ls-remote --exit-code` then `npm run e2e`.\n"
+            "See `http://q:3000/x/y.md`, `docs/plan.md:15`, `.claude/commands/<name>.md`,\n"
+            "`procedures/*.md`, and `README.md` (exists at root, no slash - skipped).\n"
+            "Real file: `.agents/repo-guidance.md`.\n", newline="\n")
+        commit_all(self.target, "guidance with skip-worthy tokens")
+        proc = refresh(self.toolkit, self.target)
+        self.assertEqual(proc.returncode, 0)
+        self.assertNotIn("LINT .agents/repo-guidance.md", proc.stdout)
+
+    def test_lint_flags_closed_decision_awaiting_archive(self):
+        ag = self.target / ".agents"
+        ag.mkdir()
+        (ag / "decisions.md").write_text(
+            "# Decisions\n\n### Old rule\n\nStatus: Adopted 2026-07-01\n\nbody\n\n"
+            "### Live rule\n\nStatus: Active\n\nbody\n", newline="\n")
+        commit_all(self.target, "decisions")
+        proc = refresh(self.toolkit, self.target)
+        self.assertEqual(proc.returncode, 0)
+        self.assertIn("closed decision awaiting archive: Old rule", proc.stdout)
+        self.assertNotIn("Live rule", proc.stdout)
+
+    def test_lint_never_blocks_commit_or_exit(self):
+        ag = self.target / ".agents"
+        ag.mkdir()
+        (ag / "state.md").write_text("Dead: `.agents/gone.md`\n", newline="\n")
+        commit_all(self.target, "dead pointer present")
+        proc = refresh(self.toolkit, self.target)
+        self.assertEqual(proc.returncode, 0)
+        head = run_git(self.target, "log", "-1", "--format=%B")
+        self.assertIn("governance refresh: toolkit ", head)  # commit still made
+
     # -- refusals ----------------------------------------------------------
 
     def test_non_git_target_is_refused(self):

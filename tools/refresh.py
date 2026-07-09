@@ -37,6 +37,7 @@ Python 3.9+, stdlib only.
 import argparse
 import hashlib
 import json
+import re
 import subprocess
 import sys
 from pathlib import Path
@@ -173,6 +174,55 @@ def check_committability(target_repo: Path, plan: Plan, shipped: dict) -> None:
     ))
 
 
+PATH_TOKEN = re.compile(r"`([^`\s]+)`")
+
+
+def _lintable_repo_path(tok: str) -> bool:
+    """True for backtick tokens that read as repo-relative file references.
+    Conservative by design: commands, URLs, globs, placeholders, file:line
+    cites, absolute/outside paths, and bare shorthand names are all skipped —
+    a missed lint is cheap, a false LINT line erodes trust in the report."""
+    if any(c in tok for c in ":<>*{}$\\(),"):
+        return False
+    if tok.startswith(("http", "..", "~", "/", "-", "@")):
+        return False
+    return "/" in tok
+
+
+def lint_governance(target_repo: Path) -> list:
+    """Read-only hygiene checks over the governance prose. Never blocks,
+    never edits; emits LINT report lines only. Runs on every refresh —
+    the field lesson is that checks nobody triggers rot, checks riding an
+    existing touchpoint stay true."""
+    findings = []
+    files = [target_repo / "AGENTS.md"]
+    agents_dir = target_repo / ".agents"
+    if agents_dir.is_dir():
+        files += sorted(agents_dir.glob("*.md"))
+    for f in files:
+        if not f.is_file():
+            continue
+        rel = f.relative_to(target_repo).as_posix()
+        text = f.read_text(encoding="utf-8", errors="replace")
+        seen = set()
+        for m in PATH_TOKEN.finditer(text):
+            tok = m.group(1)
+            if tok in seen or not _lintable_repo_path(tok):
+                continue
+            seen.add(tok)
+            if not (target_repo / tok.rstrip("/")).exists():
+                findings.append((rel, "references missing path `{}`".format(tok)))
+        if f.name == "decisions.md":
+            entries = list(re.finditer(r"^### (.+)$", text, re.M))
+            for i, em in enumerate(entries):
+                end = entries[i + 1].start() if i + 1 < len(entries) else len(text)
+                seg = text[em.end():end]
+                sm = re.search(r"^Status:\s*(\w+)", seg, re.M)
+                if sm and sm.group(1) in ("Adopted", "Superseded"):
+                    findings.append((rel, "closed decision awaiting archive: {}".format(em.group(1)[:70])))
+    return findings
+
+
 def touched_paths(plan: Plan) -> list:
     paths = [t for t, _ in plan.install + plan.update] + list(plan.remove)
     if plan.gitignore_repairs:
@@ -272,6 +322,8 @@ def main(argv=None) -> int:
 
     print("governance refresh against toolkit {}".format(toolkit_sha))
     print(summarize(plan, sync_note))
+    for rel, msg in lint_governance(target):
+        print("  LINT {}: {}".format(rel, msg))
     if changed and args.stage_only:
         print("  (staged only - the bootstrap procedure makes the single scoped commit)")
     policy = target / ".agents" / "push-policy.md"
