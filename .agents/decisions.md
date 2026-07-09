@@ -34,6 +34,37 @@ live rule now owned elsewhere - archive it per the rule above: move it verbatim 
 
 ## Decisions
 
+### 2026-07-09 — Dead-path lint is git-aware: vouched deletions print a NOTE; no allowlists anywhere
+
+Status: Active (implemented same day, commit `e9e04b4`; plan with outcome
+record: `docs/superpowers/plans/2026-07-09-git-aware-dead-path-lint.md`).
+
+Decision: when the governance lint in `tools/refresh.py` finds a backticked
+repo-relative path that does not exist on disk, it consults git for a
+deletion commit (`git log --diff-filter=D --format=%h -1`, one cached lookup
+per unique missing path, zero subprocesses when nothing is missing). A
+deletion commit turns the finding into an informational note — `NOTE <file>:
+historical: <tok> — deleted in <hash>` — so the lint output itself records
+exactly which commit retired the file. No evidence (never tracked, typo,
+shallow clone, git failure) keeps the loud missing-path warning: degradation
+is always toward loud, never toward silent-wrong. No allowlist exists
+anywhere — `LINT_EXEMPT_PATHS` was not extended, and per-repo/global lists
+were owner-rejected (2026-07-09). Never-tracked mentions in closed decision
+entries stay loud permanently: the owner delegated that call the same day
+and the closed-entry special case was dropped as "added complexity for an
+extremely low-value operation."
+
+Earned by: the 2026-07-08 zero-based consolidation retired substrate that
+append-only decision records still name, so every refresh printed the same
+dozen missing-path warnings forever, and a *real* dead reference (a typo,
+genuine drift) would hide in the permanent noise. The owner asked for the
+note, not silence, and not a list.
+
+Relationship: preserves the append-only/never-rewrite record discipline
+(the note lives in the lint output, not in edited history); leaves
+`LINT_EXEMPT_PATHS` exactly its template-intentionality role from the
+2026-07-08 consolidation; lint remains advisory and read-only.
+
 ### 2026-07-08 — Zero-based consolidation: every product piece justifies its existence or leaves
 
 Status: Active (implemented same day; plan with eight-round codex review

@@ -12,9 +12,13 @@ machine-local facts are labeled or omitted.
   2026-07-09; this handoff's own commit lands on top): the 2026-07-08
   zero-based consolidation is landed and self-applied; the product shape is
   owned by `.agents/repo-guidance.md` (Mission Detail). Latest product
-  change: refresh matching is newline-equivalent and both shims ship with a
-  final newline — GitHub issue #1, fixed 2026-07-09, plan closed with commit
-  map: `docs/superpowers/plans/2026-07-09-refresh-newline-equivalence.md`;
+  change: the dead-path lint is git-aware — vouched deletions print
+  `NOTE ... deleted in <hash>`, never-tracked mentions stay loud
+  (owner-delegated call, slice 2 dropped); landed `e9e04b4` 2026-07-09, plan
+  closed with outcome record:
+  `docs/superpowers/plans/2026-07-09-git-aware-dead-path-lint.md`. Prior:
+  newline-equivalence fix for GitHub issue #1, plan closed:
+  `docs/superpowers/plans/2026-07-09-refresh-newline-equivalence.md`;
   issue commented-and-closed on GitHub 2026-07-09 on explicit owner go.
   Rollout is DONE for vela, Blit_v2, ai-rpg-engine, and
   Powershell-Token-Killer (details in `docs/history/state-archive.md`).
@@ -43,14 +47,6 @@ machine-local facts are labeled or omitted.
   verbatim to `docs/history/state-archive.md`).
 - Owner, at leisure: archive the `agent-harvest` dropbox repo (re-verified
   still unarchived 2026-07-09 via `gh repo view --json isArchived`).
-- Dead-path lint noise — plan drafted, awaiting owner go:
-  `docs/superpowers/plans/2026-07-09-git-aware-dead-path-lint.md`. Owner set
-  the direction 2026-07-09 (rejected live-with-it, per-repo list, global
-  list, recent-only scoping; chose git-history evidence + "print the note"):
-  git-vouched deletions print `NOTE ... deleted in <hash>` instead of the
-  loud warning. Measured: clears 4 of the 10 decisions.md lines (and both
-  state.md lines rotate away with this bullet); the plan carries one open
-  owner question — slice 2, disposition of the six never-tracked mentions.
 
 ## Blockers
 

@@ -4,6 +4,24 @@ Landed or superseded `.agents/state.md` entries, rotated here verbatim at
 handoff per the state-rotation rule (first applied 2026-07-08). Newest
 rotation first; entries are never edited after rotation.
 
+## Rotated 2026-07-09 (fifth rotation, mid-session on plan close) — dead-path lint landed
+
+Disposition: landed 2026-07-09. Slice 1 (git-vouched deletions print `NOTE
+... deleted in <hash>`) shipped in `e9e04b4`; slice 2 dropped on the owner's
+call (added complexity for a low-value operation — the six never-tracked
+mentions stay loud); plan closed with outcome record:
+`docs/superpowers/plans/2026-07-09-git-aware-dead-path-lint.md`. Entry
+rotated verbatim from `.agents/state.md` ## Next:
+
+- Dead-path lint noise — plan drafted, awaiting owner go:
+  `docs/superpowers/plans/2026-07-09-git-aware-dead-path-lint.md`. Owner set
+  the direction 2026-07-09 (rejected live-with-it, per-repo list, global
+  list, recent-only scoping; chose git-history evidence + "print the note"):
+  git-vouched deletions print `NOTE ... deleted in <hash>` instead of the
+  loud warning. Measured: clears 4 of the 10 decisions.md lines (and both
+  state.md lines rotate away with this bullet); the plan carries one open
+  owner question — slice 2, disposition of the six never-tracked mentions.
+
 ## Rotated 2026-07-09 (fourth rotation, mid-session on owner decision) — smoother-entry proposal declined
 
 Disposition: declined by the owner 2026-07-09 (answer: "no"). Per its own

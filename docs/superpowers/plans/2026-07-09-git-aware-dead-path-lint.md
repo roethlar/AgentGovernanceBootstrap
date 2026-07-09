@@ -1,10 +1,13 @@
 # refresh.py: git-aware dead-path lint — deliberate deletions print a NOTE, not a warning
 
-Status: DRAFT 2026-07-09, awaiting owner go on this plan. Direction and
-output shape are already owner-set (this session, 2026-07-09): rejected —
-live-with-it, a per-repo list, a global list, recent-only scoping; chosen —
-consult git history, and **print the note** (not silence). One open
-sub-question for the owner: slice 2 (the six never-tracked mentions).
+Status: CLOSED 2026-07-09. Slice 1 landed in `e9e04b4`; slice 2 **dropped**
+on the owner's call (2026-07-09): the closed-entry special case is "added
+complexity for an extremely low-value operation" — the six never-tracked
+mentions stay loud as ordinary warnings, permanently. Direction and output
+shape were owner-set (this session, 2026-07-09): rejected — live-with-it, a
+per-repo list, a global list, recent-only scoping; chosen — consult git
+history, and **print the note** (not silence). Outcome record at the end of
+this file.
 
 ## Why this plan exists
 
@@ -132,4 +135,23 @@ plus the slice-1 guard proof. Slice 3 doc edits: `git diff --check`.
 
 Provenance: owner direction this session (2026-07-09) — "live with it? no /
 a custom list for every repo? a global list? no to both / check recent …
-may bite"; "draft it. print the note."
+may bite"; "draft it. print the note." Slice 2 disposition, owner
+(2026-07-09): "keeping a log of what is potentially changed in the old log
+in another place is added complexity for an extremely low-value operation."
+
+## Outcome (2026-07-09)
+
+- Slice 1 landed: `e9e04b4` (`tools/refresh.py` + `tests/test_refresh.py`).
+- Full suite: 43/43 OK (`/opt/homebrew/bin/python3.14 -m unittest discover
+  -s tests`).
+- Guard proof: with the evidence lookup stubbed to return `None`, the two
+  vouched-deletion tests failed exactly as designed (the `NOTE` degraded to
+  the loud `LINT` line — nothing went silent); stub removed, suite green.
+- Self-refresh on this repo (working tree at `9c82cd4` + the slice-1
+  change): `nothing to do - repo is current`, then the predicted output
+  precisely — 4 `NOTE` lines carrying `f901ad2` / `19bc791` / `6f08a67` /
+  `a576b17`, and the six never-tracked mentions still loud as `LINT`.
+- Slice 2 dropped (owner call above): no closed-entry special case; the six
+  stay loud permanently.
+- Slice 3 (this close, state rotation, decisions entry): docs commit noted
+  in `.agents/state.md`.
