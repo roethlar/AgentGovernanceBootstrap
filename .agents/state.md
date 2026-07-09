@@ -43,11 +43,14 @@ machine-local facts are labeled or omitted.
   verbatim to `docs/history/state-archive.md`).
 - Owner, at leisure: archive the `agent-harvest` dropbox repo (re-verified
   still unarchived 2026-07-09 via `gh repo view --json isArchived`).
-- Drift-sweep candidate, advisory only: the always-on lint reports dead-path
-  references inside historical `.agents/decisions.md` entries (retired
-  substrate named in verbatim records — e.g. `tools/discover.py`,
-  `procedures/migration.md`). Reproduce with any refresh run; decide
-  annotate-or-leave at leisure.
+- Dead-path lint noise — plan drafted, awaiting owner go:
+  `docs/superpowers/plans/2026-07-09-git-aware-dead-path-lint.md`. Owner set
+  the direction 2026-07-09 (rejected live-with-it, per-repo list, global
+  list, recent-only scoping; chose git-history evidence + "print the note"):
+  git-vouched deletions print `NOTE ... deleted in <hash>` instead of the
+  loud warning. Measured: clears 4 of the 10 decisions.md lines (and both
+  state.md lines rotate away with this bullet); the plan carries one open
+  owner question — slice 2, disposition of the six never-tracked mentions.
 
 ## Blockers
 
@@ -63,6 +66,7 @@ machine-local facts are labeled or omitted.
 - `.agents/repo-guidance.md`
 - `.agents/decisions.md`
 - `docs/superpowers/plans/2026-07-09-refresh-newline-equivalence.md`
+- `docs/superpowers/plans/2026-07-09-git-aware-dead-path-lint.md`
 
 ## Unrecorded Repo Memory
 
