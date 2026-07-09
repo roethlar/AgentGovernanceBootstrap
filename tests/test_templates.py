@@ -45,7 +45,8 @@ class ShippedSetIntegrity(unittest.TestCase):
         retired = {r["target"]: r for r in shipped_set()["retired"]}
         # Hooks (2026-07-08): removable when byte-matching a shipped version.
         for path in (".claude/agents-md-tripwire.py", ".codex/hooks.json",
-                     ".codex/agents-md-tripwire.py", ".grok/hooks/reground.json"):
+                     ".codex/agents-md-tripwire.py", ".grok/hooks/reground.json",
+                     ".agents/hooks.json"):
             self.assertIn(path, retired)
             self.assertTrue(retired[path]["formerly"], path)
         # JSON layer (2026-07-08): generated per-repo, so empty formerly =
@@ -57,32 +58,25 @@ class ShippedSetIntegrity(unittest.TestCase):
 
 class ShippedHooks(unittest.TestCase):
     def test_shipped_hooks_are_the_verified_regrounds_only(self):
-        # Hooks ship only behind the verify-once gate (a live check that the
-        # event actually fires; docs/harness-capabilities.md). Verified:
-        # Claude Code SessionStart/compact (2026-06-21) and agy SessionStart
-        # in a trusted workspace (owner live check 2026-07-08 — fires at the
-        # first prompt of a session).
+        # Hooks ship only where verified to fire AND needed
+        # (docs/harness-capabilities.md). Claude Code SessionStart/compact is
+        # the sole survivor: codex and agy pin guidance across compaction
+        # natively (codex owner-attested; agy attested 2026-07-08), so their
+        # re-grounds are not-needed — the agy hook shipped 2026-07-08 and was
+        # retired same-day on that evidence.
         base = TEMPLATES / "hooks"
         shipped = sorted(p.relative_to(base).as_posix()
                          for p in base.rglob("*") if p.is_file())
-        self.assertEqual(shipped, ["agy/hooks.json", "claude/settings.json"])
+        self.assertEqual(shipped, ["claude/settings.json"])
 
         cfg = json.loads((base / "claude" / "settings.json").read_text(encoding="utf-8"))
         self.assertEqual(list(cfg["hooks"].keys()), ["SessionStart"])
         entry = cfg["hooks"]["SessionStart"][0]
         self.assertEqual(entry.get("matcher"), "compact")
         self.assertEqual(entry["hooks"][0]["command"], CANONICAL_REGROUND_COMMAND)
-
-        cfg = json.loads((base / "agy" / "hooks.json").read_text(encoding="utf-8"))
-        self.assertEqual(list(cfg["hooks"].keys()), ["SessionStart"])
-        entry = cfg["hooks"]["SessionStart"][0]
-        self.assertNotIn("matcher", entry)  # agy: once per session start
-        self.assertEqual(entry["hooks"][0]["command"], CANONICAL_REGROUND_COMMAND)
-
-        for rel in shipped:
-            body = (base / rel).read_text(encoding="utf-8")
-            self.assertNotIn("/Users/", body)
-            self.assertNotIn("/home/", body)
+        body = (base / "claude" / "settings.json").read_text(encoding="utf-8")
+        self.assertNotIn("/Users/", body)
+        self.assertNotIn("/home/", body)
 
 
 class ShippedShimsAndWrappers(unittest.TestCase):

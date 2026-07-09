@@ -190,16 +190,6 @@
         "53e7ea1debc550f31b312d67d81dbcfb4e62c5b7915202aad061317839770f84",
         "f2fae64cf284776af135405c048a2925256c70e899f6048fb44d855979d3183c"
       ]
-    },
-    {
-      "source": "templates/hooks/agy/hooks.json",
-      "target": ".agents/hooks.json",
-      "class": "replace-if-unmodified",
-      "formerly": [
-        "53e7ea1debc550f31b312d67d81dbcfb4e62c5b7915202aad061317839770f84",
-        "f2fae64cf284776af135405c048a2925256c70e899f6048fb44d855979d3183c",
-        "7c9ecd7ce0ed63e78fa9c0c94092cf5c0e19e2254454e5e7e8a922ad8e37c340"
-      ]
     }
   ],
   "retired": [
@@ -240,6 +230,15 @@
       "target": ".agents/artifact-manifest.json",
       "comment": "Generated per-repo at bootstrap time, so no shipped hash can match: refresh always FLAGS it for by-hand removal, never deletes it.",
       "formerly": []
+    },
+    {
+      "target": ".agents/hooks.json",
+      "formerly": [
+        "53e7ea1debc550f31b312d67d81dbcfb4e62c5b7915202aad061317839770f84",
+        "f2fae64cf284776af135405c048a2925256c70e899f6048fb44d855979d3183c",
+        "7c9ecd7ce0ed63e78fa9c0c94092cf5c0e19e2254454e5e7e8a922ad8e37c340",
+        "878cba5f5dcaad8bfbc7ff97324683a1f4c3238a36e8a9b01cfa0ad67dcc2c42"
+      ]
     }
   ],
   "machine_local_exclusions": {
