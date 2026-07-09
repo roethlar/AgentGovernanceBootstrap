@@ -36,6 +36,15 @@ class ShippedSetIntegrity(unittest.TestCase):
         retired = {r["target"] for r in s["retired"]}
         self.assertFalse(set(targets) & retired)
 
+    def test_every_shipped_source_ends_with_final_newline(self):
+        # Issue #1 (2026-07-09): a no-final-newline source puts drift
+        # pressure on every installed copy - insert-final-newline tooling
+        # rewrites it and (pre-equivalence) it flagged owner-modified
+        # forever. POSIX convention is the stable attractor; ship it.
+        for art in shipped_set()["artifacts"]:
+            data = (ROOT / art["source"]).read_bytes()
+            self.assertTrue(data.endswith(b"\n"), art["source"])
+
     def test_agents_md_is_the_only_replace_whole(self):
         whole = [a["target"] for a in shipped_set()["artifacts"]
                  if a["class"] == "replace-whole"]
