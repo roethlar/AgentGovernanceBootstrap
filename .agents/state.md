@@ -23,18 +23,27 @@ machine-local facts are labeled or omitted.
   natively); dead `.agents/RTK.md` removed (`6040a53`). Per-harness
   capability record: `docs/harness-capabilities.md`.
 - Rollout: vela, Blit_v2, and ai-rpg-engine are DONE (2026-07-08; details
-  rotated verbatim to `docs/history/state-archive.md`). Their rollout commits
-  were local in those repos awaiting owner push as of 2026-07-08 — re-verify
-  in those repos, not here.
+  rotated verbatim to `docs/history/state-archive.md`);
+  **Powershell-Token-Killer DONE 2026-07-09, run by the owner** (refresh
+  commit `602ee45` in that repo; the run's false CLAUDE.md flag is the
+  evidence in issue #1). Rollout commits were local in those repos awaiting
+  owner push as of their run dates — re-verify in those repos, not here.
 
 ## Next
 
-- Rollout of the last two repos, deferred by the owner (2026-07-08):
-  **Powershell-Token-Killer** when the owner's active work there quiets, and
-  **ExchangeAdminWeb** after vacation (work-specific). Same recipe: run
-  `tools/refresh.py`, resolve FLAG lines (EAW is oldest — 2026-06-22-era
-  template, no repo-guidance.md yet, so it likely needs the bootstrap
-  procedure's carve-out rather than a bare refresh).
+- **ExchangeAdminWeb**, the last rollout repo, deferred by the owner until
+  **2026-07-20**: run `tools/refresh.py`, resolve FLAG lines (oldest instance
+  — 2026-06-22-era template, no repo-guidance.md yet, so it likely needs the
+  bootstrap procedure's carve-out rather than a bare refresh).
+- **GitHub issue #1** (owner-filed 2026-07-09): `refresh.py` exact-byte
+  tracking + no-final-newline canonical shims produce permanent false
+  owner-modified FLAGs. Assessed 2026-07-09, confirmed in code: `norm()`
+  (`tools/refresh.py:57`) normalizes CRLF only, never a trailing final
+  newline, and `templates/shims/CLAUDE.template.md` /
+  `GEMINI.template.md` are the only two shipped sources lacking a final
+  newline. Fix awaits an owner go and a `plan`; any comparator change must
+  keep the recorded `formerly` hash lists matching (regenerate them under
+  the new normalization, or hash a candidate set so old hashes stay valid).
 - Owner, at leisure: archive the `agent-harvest` dropbox repo (feedback is
   issues now; re-verified still unarchived 2026-07-09 via
   `gh repo view roethlar/agent-harvest --json isArchived`).
