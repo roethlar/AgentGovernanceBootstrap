@@ -176,6 +176,16 @@ def check_committability(target_repo: Path, plan: Plan, shipped: dict) -> None:
 
 PATH_TOKEN = re.compile(r"`([^`\s]+)`")
 
+# The toolkit's own designated create-on-first-use homes: the template and
+# the decisions header name these before a repo's first rotation creates
+# them, so their absence is expected in every fresh repo, not a dead
+# reference (field finding, 2026-07-08).
+LINT_EXEMPT_PATHS = frozenset({
+    "docs/history",
+    "docs/history/state-archive.md",
+    "docs/history/decisions-archive.md",
+})
+
 
 def _lintable_repo_path(tok: str) -> bool:
     """True for backtick tokens that read as repo-relative file references.
@@ -190,12 +200,14 @@ def _lintable_repo_path(tok: str) -> bool:
 
 
 def lint_governance(target_repo: Path) -> list:
-    """Read-only hygiene checks over the governance prose. Never blocks,
+    """Read-only hygiene checks over the repo-authored governance prose
+    (`.agents/*.md` — NOT `AGENTS.md`, whose text is the byte-verified
+    template and whose references are template-intentional). Never blocks,
     never edits; emits LINT report lines only. Runs on every refresh —
     the field lesson is that checks nobody triggers rot, checks riding an
     existing touchpoint stay true."""
     findings = []
-    files = [target_repo / "AGENTS.md"]
+    files = []
     agents_dir = target_repo / ".agents"
     if agents_dir.is_dir():
         files += sorted(agents_dir.glob("*.md"))
@@ -210,6 +222,8 @@ def lint_governance(target_repo: Path) -> list:
             if tok in seen or not _lintable_repo_path(tok):
                 continue
             seen.add(tok)
+            if tok.rstrip("/") in LINT_EXEMPT_PATHS:
+                continue
             if not (target_repo / tok.rstrip("/")).exists():
                 findings.append((rel, "references missing path `{}`".format(tok)))
         if f.name == "decisions.md":

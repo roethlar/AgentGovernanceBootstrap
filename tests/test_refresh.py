@@ -301,6 +301,28 @@ class RefreshTests(unittest.TestCase):
         self.assertIn("closed decision awaiting archive: Old rule", proc.stdout)
         self.assertNotIn("Live rule", proc.stdout)
 
+    def test_lint_skips_agents_md_and_create_on_first_use_archives(self):
+        # Field finding 2026-07-08 (Move-SteamGame refresh): the template and
+        # the decisions header name docs/history archive paths "create on
+        # first use", so every fresh repo flagged them — trust-eroding noise.
+        # AGENTS.md is the byte-verified template: never linted. The
+        # designated archive paths are exempt everywhere.
+        (self.target / "AGENTS.md").write_text(
+            CUR_AGENTS + "\nSee `docs/nonexistent-thing.md` and `docs/history/state-archive.md`.\n",
+            newline="\n")
+        ag = self.target / ".agents"
+        ag.mkdir()
+        (ag / "state.md").write_text(
+            "Rotate to `docs/history/state-archive.md` (create on first use).\n",
+            newline="\n")
+        (ag / "decisions.md").write_text(
+            "# D\n\nArchive: `docs/history/decisions-archive.md` under `docs/history/`.\n",
+            newline="\n")
+        commit_all(self.target, "fresh governance, no archives yet")
+        proc = refresh(self.toolkit, self.target)
+        self.assertEqual(proc.returncode, 0)
+        self.assertNotIn("LINT", proc.stdout)
+
     def test_lint_never_blocks_commit_or_exit(self):
         ag = self.target / ".agents"
         ag.mkdir()
