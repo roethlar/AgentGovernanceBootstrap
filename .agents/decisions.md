@@ -34,6 +34,48 @@ live rule now owned elsewhere - archive it per the rule above: move it verbatim 
 
 ## Decisions
 
+### 2026-07-09 — Codex 0.144 new surface evaluated; reviewloop keeps `codex exec`+stdin dispatch
+
+Status: Active (evaluation only; no product change).
+
+Decision: the Codex CLI's newer surface (`codex-cli 0.144.0` on this machine)
+was evaluated against the reviewer-dispatch contract in
+`.agents/playbooks/reviewloop.md`, and the `codex exec` + prompt-piped-via-stdin
+dispatch is **retained unchanged**. Three new subcommands were assessed —
+`codex review` (first-party non-interactive review), `codex plugin` (plugin
+management), and `codex mcp-server` (run Codex as an MCP stdio server):
+
+- **`codex mcp-server` was tested** (MCP `initialize` + `tools/list` over stdio,
+  bounded, inspection-only — no agent turn invoked). It speaks protocol
+  `2025-06-18`, identifies as `codex-mcp-server` `0.144.0`, and exposes exactly
+  two tools: `codex` (required `prompt`; structured `sandbox` =
+  `read-only`|`workspace-write`|`danger-full-access`, `approval-policy`,
+  `model`, `cwd`; output `{threadId, content}`) and `codex-reply` (continue via
+  `threadId`). It is a viable *alternative* reviewer transport — structured
+  `sandbox: read-only` enforcement at the harness boundary, and no stdin-vs-argv
+  hang — but it is **not adopted**: (1) it returns free-form `content`, not the
+  fail-closed JSON *verdict envelope* our contract parses, so the verdict-parsing
+  responsibility is unchanged; and (2) its `threadId`/`codex-reply` model is
+  stateful, whereas the loop's atomic unit is one-shot per finding. Adopting it
+  would be a design change, not a swap.
+- **`codex review`** is noted but not adopted: it is not a drop-in for our
+  custom verdict schema, guard-proof-in-a-worktree, and pinned base/head SHA
+  contract.
+
+No change was needed regardless: `reviewloop.md` derives the reviewer
+incantation **live, per session, by probing** and names harnesses only as
+examples, so CLI drift self-corrects — there is no hardcoded incantation to
+update. The one durable, hard-won fact (`docs/harness-capabilities.md`,
+`.agents/repo-guidance.md`) — pipe the prompt via **stdin**, not argv, or it
+hangs — still holds under `codex exec`.
+
+Reason: owner asked whether the new Codex options affect this repo's reviewer
+dispatch. Recorded here so the evaluation and its evidence are not
+re-litigated, without touching the probe-driven design that already handles
+CLI drift.
+
+Supersedes: nothing.
+
 ### 2026-07-09 — Dead-path lint is git-aware: vouched deletions print a NOTE; no allowlists anywhere
 
 Status: Active (implemented same day, commit `e9e04b4`; plan with outcome
