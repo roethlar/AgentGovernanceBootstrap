@@ -48,6 +48,22 @@ Verify-once ledger:
 
 ## Operational harness facts
 
+- **User-level durable guidance paths** (for cross-repo owner preferences —
+  the sanctioned out-of-repo store): Claude Code `~/.claude/CLAUDE.md`;
+  codex `~/.codex/AGENTS.md`; agy `~/.gemini/GEMINI.md` (global file load
+  verified 2026-06-29; combines with repo-level guidance in the system
+  prompt). grok: unrecorded.
+- **Unverified lead (recalled by agy itself, 2026-07-08 — labeled
+  assumption, conflicts in part with our verified facts):** agy claims hooks
+  are plugin-bundled (`~/.gemini/antigravity-cli/plugins/<name>/hooks.json`)
+  with a blocking `before_tool_call` event, "not configured like
+  Claude-style hook events" — yet our owner-verified live check proved a
+  Claude-schema repo-level `.agents/hooks.json` SessionStart fires in a
+  trusted workspace. Verified beats recalled: the shipped hook stands. The
+  plugin `before_tool_call` surface remains a lead for future enforcement
+  hooks (verify before use); agy MCP registration reportedly lives in
+  `~/.gemini/config/mcp_config.json` / the `/mcp` overlay (also unverified).
+
 - Pin models explicitly; unpinned defaults bite. Grok as of 2026-07-08:
   default `grok-4.5` (alt `grok-composer-2.5-fast`); the former `grok-build`
   id no longer exists.
