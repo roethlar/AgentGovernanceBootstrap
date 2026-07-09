@@ -14,7 +14,8 @@ machine-local facts are labeled or omitted.
   owned by `.agents/repo-guidance.md` (Mission Detail). Latest product
   change: refresh matching is newline-equivalent and both shims ship with a
   final newline — GitHub issue #1, fixed 2026-07-09, plan closed with commit
-  map: `docs/superpowers/plans/2026-07-09-refresh-newline-equivalence.md`.
+  map: `docs/superpowers/plans/2026-07-09-refresh-newline-equivalence.md`;
+  issue commented-and-closed on GitHub 2026-07-09 on explicit owner go.
   Rollout is DONE for vela, Blit_v2, ai-rpg-engine, and
   Powershell-Token-Killer (details in `docs/history/state-archive.md`).
   Per-harness capability record: `docs/harness-capabilities.md`.
@@ -50,8 +51,6 @@ machine-local facts are labeled or omitted.
   running the bootstrap carve-out there — the first live exercise of the
   legacy-flag path. Not this repo's work item; friction observed there fed
   the smoother-entry proposal above.
-- Issue #1 GitHub closure (comment-and-close, outward-facing): **awaits an
-  explicit owner go**.
 - Owner, at leisure: archive the `agent-harvest` dropbox repo (re-verified
   still unarchived 2026-07-09 via `gh repo view --json isArchived`).
 - Drift-sweep candidate, advisory only: the always-on lint reports dead-path

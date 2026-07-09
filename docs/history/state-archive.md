@@ -4,6 +4,15 @@ Landed or superseded `.agents/state.md` entries, rotated here verbatim at
 handoff per the state-rotation rule (first applied 2026-07-08). Newest
 rotation first; entries are never edited after rotation.
 
+## Rotated 2026-07-09 (third rotation, mid-session on owner decision) — issue #1 closed on GitHub
+
+Disposition: explicit owner go received 2026-07-09; the issue was commented
+and closed the same day, citing fix commits `0151f5b` / `05e6c1e` /
+`59439e7` and the plan's commit map. Entry rotated verbatim from
+`.agents/state.md` ## Next:
+
+- Issue #1 GitHub closure (comment-and-close, outward-facing): **awaits an
+  explicit owner go**.
 ## Rotated 2026-07-09 (second rotation, evening) — PTK rollout done; issue #1 fixed
 
 (Both landed 2026-07-09. The GitHub closure of issue #1 stays live in
