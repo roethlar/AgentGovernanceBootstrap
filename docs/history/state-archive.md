@@ -4,6 +4,36 @@ Landed or superseded `.agents/state.md` entries, rotated here verbatim at
 handoff per the state-rotation rule (first applied 2026-07-08). Newest
 rotation first; entries are never edited after rotation.
 
+## Rotated 2026-07-09 — consolidation/rollout landed entries and a resolved Next item
+
+(The two `## Now` entries below landed 2026-07-08. In the `## Next` bullet,
+the governance-lint disposition was resolved 2026-07-08 — adopted as the
+always-on `lint_governance` in `tools/refresh.py` (`b9a867c`, refined
+`8e6a42f`) and archived in the decisions archive sweep (`f3173ef`); the
+agent-harvest half of that bullet stays live in `.agents/state.md`.)
+
+- **Zero-based consolidation: IMPLEMENTED and self-applied 2026-07-08** (as of
+  `6f08a67` here). Plan (approved, codex-accepted r8, commit map = the slice
+  commits `657aa93..6f08a67`):
+  `docs/superpowers/plans/2026-07-08-zero-based-consolidation.md`; the
+  decision entry with the full supersession map is in `.agents/decisions.md`
+  (2026-07-08). The product is now: one procedure + templates +
+  `tools/refresh.py`/`shipped-set.json` + reviewloop + one hook + GitHub
+  issues feedback. This repo refreshed itself with its own script (commit
+  `d5ae8b3` + flag cleanup `6f08a67`).
+- **Rollout status (2026-07-08):** vela DONE (`88be803` + carve `1b014e9`);
+  Blit_v2 DONE (refresh + follow-up, rebased onto GitHub canon on owner go
+  2026-07-08 → now `905c7d3` + `e5a78d9` on top of `b187b56`; the tripwire
+  block was also removed from its owner settings.json since it invoked the
+  deleted script; push-ready, owner pushes);
+  ai-rpg-engine DONE (clone fast-forwarded 75 commits to canon `3d2cc87`
+  first, then refresh `97f55fd` + follow-up `38cc4b2`; CLAUDE.md normalized —
+  it differed only by a trailing newline). All rollout commits are LOCAL in
+  their repos; every push policy there requires the owner.
+- Owner, at leisure: archive the `agent-harvest` dropbox repo (feedback is
+  issues now); disposition for the `governance-lint` Open entry
+  (`.agents/decisions.md` — close as obsolete or re-scope).
+
 ## Rotated 2026-07-08 — pre-consolidation CURRENT FOCUS, Now, and Next
 
 (All entries below were landed or superseded by the 2026-07-08 zero-based

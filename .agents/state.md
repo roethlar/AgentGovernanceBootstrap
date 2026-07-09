@@ -8,24 +8,24 @@ machine-local facts are labeled or omitted.
 
 ## Now
 
-- **Zero-based consolidation: IMPLEMENTED and self-applied 2026-07-08** (as of
-  `6f08a67` here). Plan (approved, codex-accepted r8, commit map = the slice
-  commits `657aa93..6f08a67`):
-  `docs/superpowers/plans/2026-07-08-zero-based-consolidation.md`; the
-  decision entry with the full supersession map is in `.agents/decisions.md`
-  (2026-07-08). The product is now: one procedure + templates +
-  `tools/refresh.py`/`shipped-set.json` + reviewloop + one hook + GitHub
-  issues feedback. This repo refreshed itself with its own script (commit
-  `d5ae8b3` + flag cleanup `6f08a67`).
-- **Rollout status (2026-07-08):** vela DONE (`88be803` + carve `1b014e9`);
-  Blit_v2 DONE (refresh + follow-up, rebased onto GitHub canon on owner go
-  2026-07-08 → now `905c7d3` + `e5a78d9` on top of `b187b56`; the tripwire
-  block was also removed from its owner settings.json since it invoked the
-  deleted script; push-ready, owner pushes);
-  ai-rpg-engine DONE (clone fast-forwarded 75 commits to canon `3d2cc87`
-  first, then refresh `97f55fd` + follow-up `38cc4b2`; CLAUDE.md normalized —
-  it differed only by a trailing newline). All rollout commits are LOCAL in
-  their repos; every push policy there requires the owner.
+- Steady state as of `ce0db15` (= GitHub canon, verified via `git ls-remote`
+  2026-07-09; this handoff's own commit lands on top): the 2026-07-08
+  zero-based consolidation is landed and self-applied. The product shape is
+  owned by `.agents/repo-guidance.md` (Mission Detail); provenance is the
+  2026-07-08 decision entry and its plan. Landed since the consolidation's
+  commit map: the always-on governance lint in `tools/refresh.py`
+  (`lint_governance`, adopted 2026-07-08 from the former governance-lint Open
+  entry — `b9a867c`, refined `8e6a42f`: never lint `AGENTS.md`,
+  create-on-first-use archive paths exempt); operator skills shared via
+  `.agents/skills/` with verify-once positives on codex, grok, and agy
+  (`f544dfc`); the agy compaction re-ground shipped (`3d3b7f5`) then retired
+  on owner decision (`dfbd0c9` — agy pins guidance across compaction
+  natively); dead `.agents/RTK.md` removed (`6040a53`). Per-harness
+  capability record: `docs/harness-capabilities.md`.
+- Rollout: vela, Blit_v2, and ai-rpg-engine are DONE (2026-07-08; details
+  rotated verbatim to `docs/history/state-archive.md`). Their rollout commits
+  were local in those repos awaiting owner push as of 2026-07-08 — re-verify
+  in those repos, not here.
 
 ## Next
 
@@ -36,8 +36,8 @@ machine-local facts are labeled or omitted.
   template, no repo-guidance.md yet, so it likely needs the bootstrap
   procedure's carve-out rather than a bare refresh).
 - Owner, at leisure: archive the `agent-harvest` dropbox repo (feedback is
-  issues now); disposition for the `governance-lint` Open entry
-  (`.agents/decisions.md` — close as obsolete or re-scope).
+  issues now; re-verified still unarchived 2026-07-09 via
+  `gh repo view roethlar/agent-harvest --json isArchived`).
 
 ## Blockers
 
