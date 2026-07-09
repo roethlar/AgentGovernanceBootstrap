@@ -659,9 +659,11 @@ priority than the medium-severity authority gap above. This intersects the
 decision (which stays Active): the reconciliation must not weaken the wrapper
 guarantee, only label non-evidenced artifacts as optional in the summary.
 
-The following two were recorded 2026-07-06 on the owner's explicit instruction
-("just add these as open items"). They are owner-surfaced product gaps, not yet
-designed or decided.
+The following was recorded 2026-07-06 on the owner's explicit instruction
+("just add these as open items") as one of two owner-surfaced product gaps; the
+other (the fast-update docs-refresh path) was adopted 2026-07-08 as
+`tools/refresh.py` via the zero-based consolidation and is archived verbatim in
+`docs/history/decisions-archive.md`.
 
 ### Open: the `reviewloop` playbook hard-requires git branches; it should not
 
