@@ -63,6 +63,13 @@ Verify-once ledger:
   plugin `before_tool_call` surface remains a lead for future enforcement
   hooks (verify before use); agy MCP registration reportedly lives in
   `~/.gemini/config/mcp_config.json` / the `/mcp` overlay (also unverified).
+  Corroborated from agy's local builtin guide
+  (`~/.gemini/antigravity-cli/builtin/skills/antigravity_guide/references/cli.md`,
+  read 2026-07-08): CLI config lives at
+  `~/.gemini/antigravity-cli/settings.json`; authoritative references are
+  `antigravity.google/docs/cli/{features,best-practices,reference}` — note
+  those pages are JS-rendered (plain fetch returns an empty shell), so
+  verifying the MCP/hook leads takes a browser or agy's own web tool.
 
 - Pin models explicitly; unpinned defaults bite. Grok as of 2026-07-08:
   default `grok-4.5` (alt `grok-composer-2.5-fast`); the former `grok-build`
