@@ -12,30 +12,22 @@ machine-local facts are labeled or omitted.
   2026-07-09; this handoff's own commit lands on top): the 2026-07-08
   zero-based consolidation is landed and self-applied; the product shape is
   owned by `.agents/repo-guidance.md` (Mission Detail). Latest product
-  change: the dead-path lint is git-aware — vouched deletions print
-  `NOTE ... deleted in <hash>`, never-tracked mentions stay loud
-  (owner-delegated call, slice 2 dropped); landed `e9e04b4` 2026-07-09, plan
-  closed with outcome record:
-  `docs/superpowers/plans/2026-07-09-git-aware-dead-path-lint.md`. Prior:
-  newline-equivalence fix for GitHub issue #1, plan closed:
-  `docs/superpowers/plans/2026-07-09-refresh-newline-equivalence.md`;
-  issue commented-and-closed on GitHub 2026-07-09 on explicit owner go.
+  change: a refused **core-file** replacement now ends in an unmissable
+  ATTENTION banner plus an offer to run bootstrap — TTY-gated interactive
+  launch of a PATH-detected harness, non-TTY prints ready-to-paste launch
+  commands, nothing auto-runs; landed `f65e892` 2026-07-09 on owner go,
+  decision entry 2026-07-09, plan closed with commit map:
+  `docs/superpowers/plans/2026-07-09-refresh-bootstrap-offer.md`. Prior:
+  git-aware dead-path lint (`e9e04b4`, plan closed:
+  `docs/superpowers/plans/2026-07-09-git-aware-dead-path-lint.md`) and the
+  newline-equivalence fix for GitHub issue #1 (plan closed:
+  `docs/superpowers/plans/2026-07-09-refresh-newline-equivalence.md`).
   Rollout is DONE for vela, Blit_v2, ai-rpg-engine, and
   Powershell-Token-Killer (details in `docs/history/state-archive.md`).
   Per-harness capability record: `docs/harness-capabilities.md`.
 
 ## Next
 
-- **Smoother bootstrap/refresh entry — direction named (owner, 2026-07-09);
-  plan drafted, awaiting owner go:**
-  `docs/superpowers/plans/2026-07-09-refresh-bootstrap-offer.md`. The
-  direction: the refresh output that matters is an unmissable notice that a
-  core file was NOT replaced, for any reason; the notice resolves to "run
-  bootstrap," and refresh offers to run bootstrap with a harness chosen from
-  those installed at that moment. The owner constraints still stand (must
-  not assume Claude, PowerShell, a remembered path, or a remembered
-  interpreter); the earlier declined shim/skill/pointer proposal stays
-  declined and archived verbatim in `docs/history/state-archive.md`.
 - **ExchangeAdminWeb**, the last legacy rollout repo, deferred by the owner
   to **2026-07-20** (re-affirmed 2026-07-09): run `tools/refresh.py`,
   resolve FLAG lines; oldest instance — 2026-06-22-era template, no

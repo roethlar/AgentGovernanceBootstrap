@@ -698,3 +698,20 @@ from the tree 2026-07-08 — full record in git history.)
   per TEST-PLAN §10. Phase 1 is approvable once fixture manifests + metric defs exist; the
   open owner decisions in TEST-PLAN §12 (tier, repos, H6 approval arm, proportionality rule)
   still gate the *screening* runs, not fixture construction.
+
+## Rotated 2026-07-09 — smoother bootstrap/refresh entry, landed
+
+Landed as the banner + bootstrap offer in `f65e892` (plan closed:
+`docs/superpowers/plans/2026-07-09-refresh-bootstrap-offer.md`; decision
+entry 2026-07-09 in `.agents/decisions.md`). The `## Next` bullet, verbatim:
+
+- **Smoother bootstrap/refresh entry — direction named (owner, 2026-07-09);
+  plan drafted, awaiting owner go:**
+  `docs/superpowers/plans/2026-07-09-refresh-bootstrap-offer.md`. The
+  direction: the refresh output that matters is an unmissable notice that a
+  core file was NOT replaced, for any reason; the notice resolves to "run
+  bootstrap," and refresh offers to run bootstrap with a harness chosen from
+  those installed at that moment. The owner constraints still stand (must
+  not assume Claude, PowerShell, a remembered path, or a remembered
+  interpreter); the earlier declined shim/skill/pointer proposal stays
+  declined and archived verbatim in `docs/history/state-archive.md`.
