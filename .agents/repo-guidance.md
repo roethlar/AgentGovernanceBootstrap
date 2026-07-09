@@ -58,6 +58,10 @@ For documentation-only changes, run `git diff --check`.
 
 ## Earned Practices
 
+- `templates/AGENTS.template.md` body stays one line per paragraph/bullet —
+  no hard line-wraps; re-wrapping is a regression (2026-07-02 decision,
+  archived: wrapping's only remaining effect was a per-session token tax).
+
 - Token efficiency with a discretionary filter proxy (2026-06-22 decision in
   `docs/history/decisions-archive.md`): work compact-but-equivalent —
   targeted reads over whole-file dumps, scoped searches, no re-reading
