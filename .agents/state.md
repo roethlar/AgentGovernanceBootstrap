@@ -41,9 +41,11 @@ machine-local facts are labeled or omitted.
   (`tools/refresh.py:57`) normalizes CRLF only, never a trailing final
   newline, and `templates/shims/CLAUDE.template.md` /
   `GEMINI.template.md` are the only two shipped sources lacking a final
-  newline. Fix awaits an owner go and a `plan`; any comparator change must
-  keep the recorded `formerly` hash lists matching (regenerate them under
-  the new normalization, or hash a candidate set so old hashes stay valid).
+  newline. Plan drafted 2026-07-09 —
+  `docs/superpowers/plans/2026-07-09-refresh-newline-equivalence.md`
+  (candidate-set matching so recorded `formerly` hashes stay valid; shims
+  gain a final newline; auto-heal rejected) — **awaiting owner approval**;
+  no code touched.
 - Owner, at leisure: archive the `agent-harvest` dropbox repo (feedback is
   issues now; re-verified still unarchived 2026-07-09 via
   `gh repo view roethlar/agent-harvest --json isArchived`).
