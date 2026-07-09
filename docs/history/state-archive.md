@@ -4,6 +4,27 @@ Landed or superseded `.agents/state.md` entries, rotated here verbatim at
 handoff per the state-rotation rule (first applied 2026-07-08). Newest
 rotation first; entries are never edited after rotation.
 
+## Rotated 2026-07-09 (second rotation, evening) — PTK rollout done; issue #1 fixed
+
+(Both landed 2026-07-09. The GitHub closure of issue #1 stays live in
+`.agents/state.md` ## Next until the owner's explicit go.)
+
+- Rollout: vela, Blit_v2, and ai-rpg-engine are DONE (2026-07-08; details
+  rotated verbatim to `docs/history/state-archive.md`);
+  **Powershell-Token-Killer DONE 2026-07-09, run by the owner** (refresh
+  commit `602ee45` in that repo; the run's false CLAUDE.md flag is the
+  evidence in issue #1). Rollout commits were local in those repos awaiting
+  owner push as of their run dates — re-verify in those repos, not here.
+- **GitHub issue #1 FIXED 2026-07-09** (owner approved the plan same day;
+  slices `0151f5b` + `05e6c1e`; plan closed with commit map:
+  `docs/superpowers/plans/2026-07-09-refresh-newline-equivalence.md`):
+  refresh matching is newline-equivalent (at most one trailing final
+  newline; candidate-set hashing keeps every recorded `formerly` hash
+  valid) and both shims ship with a final newline. Suite 41 green,
+  guard-proven both slices; post-fix self-refresh: "nothing to do".
+  Remaining: comment-and-close issue #1 — **awaits an explicit owner go**
+  (outward-facing).
+
 ## Rotated 2026-07-09 — consolidation/rollout landed entries and a resolved Next item
 
 (The two `## Now` entries below landed 2026-07-08. In the `## Next` bullet,
