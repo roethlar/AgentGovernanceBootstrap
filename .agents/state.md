@@ -18,11 +18,10 @@ machine-local facts are labeled or omitted.
   issues feedback. This repo refreshed itself with its own script (commit
   `d5ae8b3` + flag cleanup `6f08a67`).
 - **Rollout status (2026-07-08):** vela DONE (`88be803` + carve `1b014e9`);
-  Blit_v2 DONE (`c92797e` + follow-up `100e2ff` — tripwire block also removed
-  from its owner settings.json since it invoked the deleted script; NOTE
-  machine-local (this box): Blit's local master was 2 commits behind GitHub
-  canon, so these two commits **diverge from `github/master`** — owner call:
-  say the word to rebase them onto canon, or reconcile on your next pull);
+  Blit_v2 DONE (refresh + follow-up, rebased onto GitHub canon on owner go
+  2026-07-08 → now `905c7d3` + `e5a78d9` on top of `b187b56`; the tripwire
+  block was also removed from its owner settings.json since it invoked the
+  deleted script; push-ready, owner pushes);
   ai-rpg-engine DONE (clone fast-forwarded 75 commits to canon `3d2cc87`
   first, then refresh `97f55fd` + follow-up `38cc4b2`; CLAUDE.md normalized —
   it differed only by a trailing newline). All rollout commits are LOCAL in
