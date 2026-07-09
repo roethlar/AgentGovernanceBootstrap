@@ -39,8 +39,6 @@ machine-local facts are labeled or omitted.
   legacy-flag path. Not this repo's work item; friction observed there fed a
   smoother-entry proposal, declined by the owner 2026-07-09 (rotated
   verbatim to `docs/history/state-archive.md`).
-- Owner, at leisure: archive the `agent-harvest` dropbox repo (re-verified
-  still unarchived 2026-07-09 via `gh repo view --json isArchived`).
 
 ## Blockers
 

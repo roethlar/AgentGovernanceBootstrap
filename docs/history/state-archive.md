@@ -699,6 +699,16 @@ from the tree 2026-07-08 — full record in git history.)
   open owner decisions in TEST-PLAN §12 (tier, repos, H6 approval arm, proportionality rule)
   still gate the *screening* runs, not fixture construction.
 
+## Rotated 2026-07-09 — agent-harvest archive reminder, owner took it off the books
+
+Owner direction 2026-07-09: stop tracking the `agent-harvest` dropbox-repo
+archive item in this repo's state; the owner will clean it up directly. Not
+done, not declined — just no longer this repo's ledger entry. The `## Next`
+bullet, verbatim:
+
+- Owner, at leisure: archive the `agent-harvest` dropbox repo (re-verified
+  still unarchived 2026-07-09 via `gh repo view --json isArchived`).
+
 ## Rotated 2026-07-09 — smoother bootstrap/refresh entry, landed
 
 Landed as the banner + bootstrap offer in `f65e892` (plan closed:
