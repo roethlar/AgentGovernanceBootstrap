@@ -1,8 +1,14 @@
 # refresh.py: trailing-newline equivalence in artifact matching + shims ship with a final newline (issue #1)
 
-Status: DRAFT 2026-07-09 — awaiting owner approval. No code touched; this
-plan is the proposed implementation of GitHub issue #1's fixes 1 and 2 (fix 3
-deliberately not adopted — see Non-goals).
+Status: DONE 2026-07-09 (owner approved same day). Commit map: slice 1 =
+`0151f5b` (comparator equivalence + five tests, guard-proven: the old
+comparator fails all four positive tests), slice 2 = `05e6c1e` (shim final
+newlines + shipped-source newline invariant, red→green proven), slice 3 =
+the docs/bookkeeping commit carrying this Status. Suite 41 green; post-fix
+self-refresh of this repo: "nothing to do - repo is current" as predicted.
+Issue #1 comment/close still awaits an explicit owner go. This plan
+implemented issue #1's fixes 1 and 2 (fix 3 deliberately not adopted — see
+Non-goals).
 
 ## Why this plan exists
 

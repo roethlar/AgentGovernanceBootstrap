@@ -69,7 +69,9 @@ Two flows:
   formerly-shipped hash ⇒ provably unmodified ⇒ update; else flag, never
   overwrite), `retired` (removed only on a formerly-shipped match; generated
   files carry no hashes and are only ever flagged). All matching is
-  newline-normalized for mixed-platform checkouts. Committability follows
+  newline-equivalent (CRLF → LF, at most one trailing final newline — issue
+  #1) for mixed-platform checkouts and insert-final-newline tooling.
+  Committability follows
   the custody rules (per-path `check-ignore`, the blanket adapter-dir
   repair, never `add -f`). The division of labor is strict: refresh installs
   shipped artifacts and never touches repo-owned files; the bootstrap

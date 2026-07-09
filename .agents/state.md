@@ -20,8 +20,8 @@ machine-local facts are labeled or omitted.
   `.agents/skills/` with verify-once positives on codex, grok, and agy
   (`f544dfc`); the agy compaction re-ground shipped (`3d3b7f5`) then retired
   on owner decision (`dfbd0c9` — agy pins guidance across compaction
-  natively); dead `.agents/RTK.md` removed (`6040a53`). Per-harness
-  capability record: `docs/harness-capabilities.md`.
+  natively); the rtk app's dead usage doc removed from .agents/ (`6040a53`).
+  Per-harness capability record: `docs/harness-capabilities.md`.
 - Rollout: vela, Blit_v2, and ai-rpg-engine are DONE (2026-07-08; details
   rotated verbatim to `docs/history/state-archive.md`);
   **Powershell-Token-Killer DONE 2026-07-09, run by the owner** (refresh
@@ -35,17 +35,15 @@ machine-local facts are labeled or omitted.
   **2026-07-20**: run `tools/refresh.py`, resolve FLAG lines (oldest instance
   — 2026-06-22-era template, no repo-guidance.md yet, so it likely needs the
   bootstrap procedure's carve-out rather than a bare refresh).
-- **GitHub issue #1** (owner-filed 2026-07-09): `refresh.py` exact-byte
-  tracking + no-final-newline canonical shims produce permanent false
-  owner-modified FLAGs. Assessed 2026-07-09, confirmed in code: `norm()`
-  (`tools/refresh.py:57`) normalizes CRLF only, never a trailing final
-  newline, and `templates/shims/CLAUDE.template.md` /
-  `GEMINI.template.md` are the only two shipped sources lacking a final
-  newline. Plan drafted 2026-07-09 —
-  `docs/superpowers/plans/2026-07-09-refresh-newline-equivalence.md`
-  (candidate-set matching so recorded `formerly` hashes stay valid; shims
-  gain a final newline; auto-heal rejected) — **awaiting owner approval**;
-  no code touched.
+- **GitHub issue #1 FIXED 2026-07-09** (owner approved the plan same day;
+  slices `0151f5b` + `05e6c1e`; plan closed with commit map:
+  `docs/superpowers/plans/2026-07-09-refresh-newline-equivalence.md`):
+  refresh matching is newline-equivalent (at most one trailing final
+  newline; candidate-set hashing keeps every recorded `formerly` hash
+  valid) and both shims ship with a final newline. Suite 41 green,
+  guard-proven both slices; post-fix self-refresh: "nothing to do".
+  Remaining: comment-and-close issue #1 — **awaits an explicit owner go**
+  (outward-facing).
 - Owner, at leisure: archive the `agent-harvest` dropbox repo (feedback is
   issues now; re-verified still unarchived 2026-07-09 via
   `gh repo view roethlar/agent-harvest --json isArchived`).
