@@ -22,6 +22,14 @@ machine-local facts are labeled or omitted.
 
 ## Next
 
+- **Smoother bootstrap/refresh entry — need still open, shape unknown**
+  (owner, 2026-07-09: "I still need something here, just not sure what
+  yet"). The specific 2026-07-09 shim/skill/pointer proposal was declined
+  and is archived verbatim in `docs/history/state-archive.md`; the owner
+  constraints from that discussion still stand (must not assume Claude,
+  PowerShell, a remembered path, or a remembered interpreter). No design
+  work until the owner names a direction; meanwhile capture any fresh
+  entry-friction observations here as they occur.
 - **ExchangeAdminWeb**, the last legacy rollout repo, deferred by the owner
   to **2026-07-20** (re-affirmed 2026-07-09): run `tools/refresh.py`,
   resolve FLAG lines; oldest instance — 2026-06-22-era template, no
