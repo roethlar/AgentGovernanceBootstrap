@@ -66,7 +66,10 @@ the banner, and agents read stdout.
 **3. Harness detection.** A small constant table in `tools/refresh.py` —
 (executable name, interactive-launch argv shape with a prompt slot) — seeded
 from the recorded live behavior in `docs/harness-capabilities.md`: `claude`,
-`codex`, `gemini`, `grok`. Detection is `shutil.which` per candidate at
+`codex`, `agy`, `grok` (owner correction 2026-07-09: the gemini CLI is `agy`
+now; the capability record still says `gemini` and needs the rename folded
+in during slice 1, on a live `agy --version`/launch check per the evidence
+rule). Detection is `shutil.which` per candidate at
 offer time; only hits are offered, in table order, no default. Nothing is
 remembered between runs. Adding a harness to the table is a normal
 provenance-bearing change (standing rule, 2026-07-08). If nothing is
