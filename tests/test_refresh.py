@@ -24,6 +24,7 @@ OLD_TOOL = "old tool wrapper\n"
 CUR_SETTINGS = '{"hooks": "current"}\n'
 OLD_SETTINGS = '{"hooks": "old"}\n'
 OLD_HOOK = "retired hook script\n"
+CUR_SHIM = "@AGENTS.md"  # no final newline - the canonical shape that produced issue #1
 
 
 def nhash(text: str) -> str:
@@ -56,10 +57,12 @@ def make_toolkit(root: Path) -> Path:
     init_repo(tk)
     (tk / "templates" / "commands" / "claude").mkdir(parents=True)
     (tk / "templates" / "hooks" / "claude").mkdir(parents=True)
+    (tk / "templates" / "shims").mkdir(parents=True)
     (tk / "tools").mkdir()
     (tk / "templates" / "AGENTS.template.md").write_text(CUR_AGENTS, newline="\n")
     (tk / "templates" / "commands" / "claude" / "tool.md").write_text(CUR_TOOL, newline="\n")
     (tk / "templates" / "hooks" / "claude" / "settings.json").write_text(CUR_SETTINGS, newline="\n")
+    (tk / "templates" / "shims" / "CLAUDE.template.md").write_text(CUR_SHIM, newline="\n")
     shipped = {
         "artifacts": [
             {"source": "templates/AGENTS.template.md", "target": "AGENTS.md",
@@ -68,6 +71,8 @@ def make_toolkit(root: Path) -> Path:
              "class": "replace-if-unmodified", "formerly": [nhash(OLD_TOOL)]},
             {"source": "templates/hooks/claude/settings.json", "target": ".claude/settings.json",
              "class": "replace-if-unmodified", "formerly": [nhash(OLD_SETTINGS)]},
+            {"source": "templates/shims/CLAUDE.template.md", "target": "CLAUDE.md",
+             "class": "replace-if-unmodified", "formerly": []},
         ],
         "retired": [
             {"target": ".claude/old-hook.py", "formerly": [nhash(OLD_HOOK)]},
@@ -183,6 +188,62 @@ class RefreshTests(unittest.TestCase):
         proc = refresh(self.toolkit, self.target)
         self.assertEqual(proc.returncode, 0)
         self.assertEqual((self.target / ".claude" / "commands" / "tool.md").read_text(), CUR_TOOL)
+
+    # -- trailing-newline equivalence (issue #1) --------------------------
+
+    def test_shim_gaining_final_newline_stays_current_not_flagged(self):
+        # The issue #1 repro: an installed no-final-newline shim is touched
+        # by insert-final-newline tooling; refresh must read it as current,
+        # not flag it owner-modified forever.
+        refresh(self.toolkit, self.target)
+        (self.target / "CLAUDE.md").write_bytes(CUR_SHIM.encode() + b"\n")
+        commit_all(self.target, "editor adds final newline")
+        n = len(self.commits())
+        proc = refresh(self.toolkit, self.target)
+        self.assertEqual(proc.returncode, 0, proc.stderr)
+        self.assertNotIn("FLAG CLAUDE.md", proc.stdout)
+        self.assertIn("nothing to do", proc.stdout)
+        self.assertEqual((self.target / "CLAUDE.md").read_bytes(), CUR_SHIM.encode() + b"\n")
+        self.assertEqual(len(self.commits()), n)
+
+    def test_current_content_minus_final_newline_is_current(self):
+        (self.target / ".claude" / "commands").mkdir(parents=True)
+        (self.target / ".claude" / "commands" / "tool.md").write_bytes(CUR_TOOL.rstrip("\n").encode())
+        commit_all(self.target, "wrapper missing final newline")
+        proc = refresh(self.toolkit, self.target)
+        self.assertEqual(proc.returncode, 0)
+        self.assertNotIn("FLAG .claude/commands/tool.md", proc.stdout)
+        self.assertEqual((self.target / ".claude" / "commands" / "tool.md").read_bytes(),
+                         CUR_TOOL.rstrip("\n").encode())
+
+    def test_formerly_shipped_minus_final_newline_updates_not_flags(self):
+        (self.target / ".claude" / "commands").mkdir(parents=True)
+        (self.target / ".claude" / "commands" / "tool.md").write_bytes(OLD_TOOL.rstrip("\n").encode())
+        commit_all(self.target, "stale wrapper missing final newline")
+        proc = refresh(self.toolkit, self.target)
+        self.assertEqual(proc.returncode, 0)
+        self.assertEqual((self.target / ".claude" / "commands" / "tool.md").read_text(), CUR_TOOL)
+        self.assertIn("updated: .claude/commands/tool.md", proc.stdout)
+
+    def test_retired_artifact_minus_final_newline_is_removed(self):
+        (self.target / ".claude").mkdir()
+        (self.target / ".claude" / "old-hook.py").write_bytes(OLD_HOOK.rstrip("\n").encode())
+        commit_all(self.target, "old hook missing final newline")
+        proc = refresh(self.toolkit, self.target)
+        self.assertEqual(proc.returncode, 0)
+        self.assertFalse((self.target / ".claude" / "old-hook.py").exists())
+
+    def test_second_trailing_newline_still_flags(self):
+        # Equivalence stops at ONE trailing newline: a second one is a real
+        # modification and must keep flagging.
+        (self.target / ".claude" / "commands").mkdir(parents=True)
+        (self.target / ".claude" / "commands" / "tool.md").write_bytes(CUR_TOOL.encode() + b"\n")
+        commit_all(self.target, "double final newline")
+        proc = refresh(self.toolkit, self.target)
+        self.assertEqual(proc.returncode, 0)
+        self.assertIn("FLAG .claude/commands/tool.md", proc.stdout)
+        self.assertEqual((self.target / ".claude" / "commands" / "tool.md").read_bytes(),
+                         CUR_TOOL.encode() + b"\n")
 
     # -- retired ---------------------------------------------------------
 

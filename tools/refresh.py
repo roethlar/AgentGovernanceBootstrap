@@ -7,7 +7,7 @@ remote, then reconciles the target repo to tools/shipped-set.json:
 
   - replace-whole   (AGENTS.md): replaced only when the existing file matches
                     the current or a formerly-shipped template version
-                    (newline-normalized). Anything else is flagged, never
+                    (newline-equivalent). Anything else is flagged, never
                     overwritten - a content-bearing foreign AGENTS.md is a
                     migration, not a refresh.
   - replace-if-unmodified: missing -> install; matches a formerly-shipped
@@ -16,6 +16,10 @@ remote, then reconciles the target repo to tools/shipped-set.json:
   - retired:        formerly-shipped paths are removed only when they match a
                     formerly-shipped version; otherwise flagged. A modified
                     file is never deleted by machine.
+
+Matching is newline-equivalent: CRLF normalizes to LF, and content differing
+only by at most one trailing final newline matches - a file touched by
+insert-final-newline tooling is not an owner edit (issue #1).
 
 Repo-owned files (.agents/state.md, decisions.md, repo-guidance.md,
 push-policy.md, plans, review trails, archives) are never touched.
@@ -58,7 +62,23 @@ def norm(data: bytes) -> bytes:
     return data.replace(b"\r\n", b"\n")
 
 
+def _stem(data: bytes) -> bytes:
+    """Equivalence stem: normalized bytes minus at most one trailing newline."""
+    n = norm(data)
+    return n[:-1] if n.endswith(b"\n") else n
+
+
+def candidate_hashes(data: bytes) -> "set[str]":
+    """The nhash values every byte-form equivalent to `data` can have
+    recorded: the stem itself and the stem plus one final newline."""
+    stem = _stem(data)
+    return {hashlib.sha256(stem).hexdigest(),
+            hashlib.sha256(stem + b"\n").hexdigest()}
+
+
 def nhash(data: bytes) -> str:
+    """The maintenance-rule hash: shipped-set.json formerly[] entries are
+    nhash of the outgoing source bytes (see the manifest comment)."""
     return hashlib.sha256(norm(data)).hexdigest()
 
 
@@ -117,15 +137,14 @@ def classify(target_repo: Path, toolkit: Path, shipped: dict) -> Plan:
     for art in shipped["artifacts"]:
         src = toolkit / art["source"]
         src_bytes = src.read_bytes()
-        src_hash = nhash(src_bytes)
         tgt = target_repo / art["target"]
         if not tgt.exists():
             plan.install.append((art["target"], src))
             continue
-        tgt_hash = nhash(tgt.read_bytes())
-        if tgt_hash == src_hash:
+        tgt_bytes = tgt.read_bytes()
+        if _stem(tgt_bytes) == _stem(src_bytes):
             plan.current.append(art["target"])
-        elif tgt_hash in art.get("formerly", []):
+        elif candidate_hashes(tgt_bytes) & set(art.get("formerly", [])):
             plan.update.append((art["target"], src))
         elif art["class"] == "replace-whole":
             plan.flags.append((
@@ -140,7 +159,7 @@ def classify(target_repo: Path, toolkit: Path, shipped: dict) -> Plan:
         tgt = target_repo / ret["target"]
         if not tgt.exists():
             continue
-        if nhash(tgt.read_bytes()) in ret.get("formerly", []):
+        if candidate_hashes(tgt.read_bytes()) & set(ret.get("formerly", [])):
             plan.remove.append(ret["target"])
         else:
             plan.flags.append((ret["target"], "retired artifact, but modified locally; remove by hand if intended"))
