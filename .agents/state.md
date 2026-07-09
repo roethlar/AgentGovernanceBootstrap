@@ -8,9 +8,8 @@ machine-local facts are labeled or omitted.
 
 ## Now
 
-- Steady state as of `ee40dc3` (canon `791cd10` verified via `git ls-remote`
-  2026-07-09; `ee40dc3` and this handoff's own commit land on top): the
-  2026-07-08
+- Steady state as of `fbe9087` (canon `fbe9087` verified via `git rev-parse
+  HEAD` vs `@{u}`, 2026-07-09; local == remote, clean tree): the 2026-07-08
   zero-based consolidation is landed and self-applied; the product shape is
   owned by `.agents/repo-guidance.md` (Mission Detail). Latest product
   change: a refused **core-file** replacement now ends in an unmissable
@@ -18,9 +17,7 @@ machine-local facts are labeled or omitted.
   launch of a PATH-detected harness, non-TTY prints ready-to-paste launch
   commands, nothing auto-runs; landed `f65e892` 2026-07-09 on owner go,
   decision entry 2026-07-09, plan closed with commit map:
-  `docs/superpowers/plans/2026-07-09-refresh-bootstrap-offer.md` (closure
-  text was left uncommitted at close time; landed `ee40dc3` at this
-  handoff). Prior:
+  `docs/superpowers/plans/2026-07-09-refresh-bootstrap-offer.md`. Prior:
   git-aware dead-path lint (`e9e04b4`, plan closed:
   `docs/superpowers/plans/2026-07-09-git-aware-dead-path-lint.md`) and the
   newline-equivalence fix for GitHub issue #1 (plan closed:
@@ -28,6 +25,15 @@ machine-local facts are labeled or omitted.
   Rollout is DONE for vela, Blit_v2, ai-rpg-engine, and
   Powershell-Token-Killer (details in `docs/history/state-archive.md`).
   Per-harness capability record: `docs/harness-capabilities.md`.
+- Tooling evaluation, no product change (`fbe9087`, 2026-07-09): the Codex
+  CLI's newer surface (`codex-cli 0.144.0`) was checked against the
+  `reviewloop` dispatch contract. `codex mcp-server` was tested (MCP
+  `initialize` + `tools/list` over stdio, inspection-only): protocol
+  `2025-06-18`, exposes `codex` + `codex-reply` tools with structured
+  `sandbox`/`approval-policy` inputs. Viable alt reviewer transport but not
+  adopted (returns free-form `content`, not our fail-closed verdict envelope;
+  stateful `threadId` vs. our one-shot atomic unit); `codex exec`+stdin
+  dispatch retained. Decision entry 2026-07-09 in `.agents/decisions.md`.
 
 ## Next
 
