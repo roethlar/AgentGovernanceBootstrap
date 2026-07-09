@@ -90,6 +90,19 @@ class ShippedShimsAndWrappers(unittest.TestCase):
             self.assertIn(op, shipped)
         self.assertIn("update-governance", shipped)
 
+    def test_codex_skill_set_mirrors_the_wrapper_set(self):
+        # Verified 2026-07-08 (live check, codex-cli 0.143.0): codex discovers
+        # repo skills from .agents/skills/<name>/SKILL.md, untrusted repos
+        # included. The skill set is the codex face of the operator wrappers.
+        skills = {p.parent.name for p in
+                  (TEMPLATES / "skills" / "codex").glob("*/SKILL.md")}
+        wrappers = {p.stem for p in (TEMPLATES / "commands" / "claude").glob("*.md")}
+        self.assertEqual(skills, wrappers)
+        for p in (TEMPLATES / "skills" / "codex").glob("*/SKILL.md"):
+            body = p.read_text(encoding="utf-8")
+            self.assertTrue(body.startswith("---\n"), p)
+            self.assertIn("name: " + p.parent.name, body)
+
     def test_update_governance_wrapper_invokes_refresh_script(self):
         text = (TEMPLATES / "commands" / "claude" / "update-governance.md").read_text(encoding="utf-8")
         self.assertIn("https://github.com/roethlar/AgentGovernanceBootstrap.git", text)

@@ -138,6 +138,48 @@
       ]
     },
     {
+      "source": "templates/skills/codex/catchup/SKILL.md",
+      "target": ".agents/skills/catchup/SKILL.md",
+      "class": "replace-if-unmodified",
+      "formerly": []
+    },
+    {
+      "source": "templates/skills/codex/handoff/SKILL.md",
+      "target": ".agents/skills/handoff/SKILL.md",
+      "class": "replace-if-unmodified",
+      "formerly": []
+    },
+    {
+      "source": "templates/skills/codex/drift/SKILL.md",
+      "target": ".agents/skills/drift/SKILL.md",
+      "class": "replace-if-unmodified",
+      "formerly": []
+    },
+    {
+      "source": "templates/skills/codex/decision/SKILL.md",
+      "target": ".agents/skills/decision/SKILL.md",
+      "class": "replace-if-unmodified",
+      "formerly": []
+    },
+    {
+      "source": "templates/skills/codex/plan/SKILL.md",
+      "target": ".agents/skills/plan/SKILL.md",
+      "class": "replace-if-unmodified",
+      "formerly": []
+    },
+    {
+      "source": "templates/skills/codex/playbook/SKILL.md",
+      "target": ".agents/skills/playbook/SKILL.md",
+      "class": "replace-if-unmodified",
+      "formerly": []
+    },
+    {
+      "source": "templates/skills/codex/update-governance/SKILL.md",
+      "target": ".agents/skills/update-governance/SKILL.md",
+      "class": "replace-if-unmodified",
+      "formerly": []
+    },
+    {
       "source": "templates/hooks/claude/settings.json",
       "target": ".claude/settings.json",
       "class": "replace-if-unmodified",

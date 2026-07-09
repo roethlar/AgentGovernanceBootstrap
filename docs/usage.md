@@ -24,6 +24,13 @@ Open a fresh agent session in the target repo and paste:
 Read <path-to-AgentGovernanceBootstrap>/procedures/bootstrap.md and follow it.
 ```
 
+The same line works on any harness. Codex CLI headless example (prompt via
+stdin — the argv form has hung):
+
+```bash
+echo "Read ~/dev/AgentGovernanceBootstrap/procedures/bootstrap.md and follow it." | codex exec
+```
+
 The agent syncs the toolkit, discovers the repo live, inventories existing
 governance if any (you approve the reconciliation as a plain-English table),
 drafts the repo-specific `.agents/` files, and presents
@@ -43,7 +50,8 @@ py -3 ~/dev/AgentGovernanceBootstrap/tools/refresh.py      # Windows
 python3 ~/dev/AgentGovernanceBootstrap/tools/refresh.py    # macOS/Linux
 ```
 
-or type `/update-governance` in a Claude Code session. Seconds, no agent
+or type `/update-governance` in a Claude Code session (codex: the
+`update-governance` skill, installed under `.agents/skills/`). Seconds, no agent
 judgment involved: the script syncs the toolkit (offline it proceeds on the
 local copy and says so), installs new shipped artifacts, updates
 provably-unmodified stale ones, removes retired ones, and commits once with
