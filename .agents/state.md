@@ -8,8 +8,9 @@ machine-local facts are labeled or omitted.
 
 ## Now
 
-- Steady state as of `59439e7` (= GitHub canon, verified via `git ls-remote`
-  2026-07-09; this handoff's own commit lands on top): the 2026-07-08
+- Steady state as of `ee40dc3` (canon `791cd10` verified via `git ls-remote`
+  2026-07-09; `ee40dc3` and this handoff's own commit land on top): the
+  2026-07-08
   zero-based consolidation is landed and self-applied; the product shape is
   owned by `.agents/repo-guidance.md` (Mission Detail). Latest product
   change: a refused **core-file** replacement now ends in an unmissable
@@ -17,7 +18,9 @@ machine-local facts are labeled or omitted.
   launch of a PATH-detected harness, non-TTY prints ready-to-paste launch
   commands, nothing auto-runs; landed `f65e892` 2026-07-09 on owner go,
   decision entry 2026-07-09, plan closed with commit map:
-  `docs/superpowers/plans/2026-07-09-refresh-bootstrap-offer.md`. Prior:
+  `docs/superpowers/plans/2026-07-09-refresh-bootstrap-offer.md` (closure
+  text was left uncommitted at close time; landed `ee40dc3` at this
+  handoff). Prior:
   git-aware dead-path lint (`e9e04b4`, plan closed:
   `docs/superpowers/plans/2026-07-09-git-aware-dead-path-lint.md`) and the
   newline-equivalence fix for GitHub issue #1 (plan closed:
