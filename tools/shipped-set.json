@@ -46,7 +46,8 @@
         "1caae805f8427ad477848ed4ee642975f1d9bd0cfc35977fca7ff8182433fdd6",
         "b27435a2e9e61b92f57c2e9e5339900a6ef8c12c85a5dccb7dfec057563a8cda",
         "fb41f1f3f4ead4c23a2e71d0ba04e28817243d7524eb310d18cca45aa402ba0b",
-        "9ca6663315a64901364d5b607d48e9ff827e4d907cca280d3262c97a50296ec6"
+        "9ca6663315a64901364d5b607d48e9ff827e4d907cca280d3262c97a50296ec6",
+        "1d264a8f0dd1446a09eccdefbe3e134577cabf20bf85caf8424f17e2199d630b"
       ]
     },
     {
@@ -138,43 +139,43 @@
       ]
     },
     {
-      "source": "templates/skills/codex/catchup/SKILL.md",
+      "source": "templates/skills/shared/catchup/SKILL.md",
       "target": ".agents/skills/catchup/SKILL.md",
       "class": "replace-if-unmodified",
       "formerly": []
     },
     {
-      "source": "templates/skills/codex/handoff/SKILL.md",
+      "source": "templates/skills/shared/handoff/SKILL.md",
       "target": ".agents/skills/handoff/SKILL.md",
       "class": "replace-if-unmodified",
       "formerly": []
     },
     {
-      "source": "templates/skills/codex/drift/SKILL.md",
+      "source": "templates/skills/shared/drift/SKILL.md",
       "target": ".agents/skills/drift/SKILL.md",
       "class": "replace-if-unmodified",
       "formerly": []
     },
     {
-      "source": "templates/skills/codex/decision/SKILL.md",
+      "source": "templates/skills/shared/decision/SKILL.md",
       "target": ".agents/skills/decision/SKILL.md",
       "class": "replace-if-unmodified",
       "formerly": []
     },
     {
-      "source": "templates/skills/codex/plan/SKILL.md",
+      "source": "templates/skills/shared/plan/SKILL.md",
       "target": ".agents/skills/plan/SKILL.md",
       "class": "replace-if-unmodified",
       "formerly": []
     },
     {
-      "source": "templates/skills/codex/playbook/SKILL.md",
+      "source": "templates/skills/shared/playbook/SKILL.md",
       "target": ".agents/skills/playbook/SKILL.md",
       "class": "replace-if-unmodified",
       "formerly": []
     },
     {
-      "source": "templates/skills/codex/update-governance/SKILL.md",
+      "source": "templates/skills/shared/update-governance/SKILL.md",
       "target": ".agents/skills/update-governance/SKILL.md",
       "class": "replace-if-unmodified",
       "formerly": []

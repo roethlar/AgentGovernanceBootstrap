@@ -90,15 +90,17 @@ class ShippedShimsAndWrappers(unittest.TestCase):
             self.assertIn(op, shipped)
         self.assertIn("update-governance", shipped)
 
-    def test_codex_skill_set_mirrors_the_wrapper_set(self):
-        # Verified 2026-07-08 (live check, codex-cli 0.143.0): codex discovers
-        # repo skills from .agents/skills/<name>/SKILL.md, untrusted repos
-        # included. The skill set is the codex face of the operator wrappers.
+    def test_shared_skill_set_mirrors_the_wrapper_set(self):
+        # Verified 2026-07-08 (live checks): codex 0.143.0 and grok discover
+        # repo skills from .agents/skills/<name>/SKILL.md untrusted+headless;
+        # agy 1.1.0 exposes them as slash commands in a trusted workspace
+        # (owner-verified). The shared skill set is the multi-harness face of
+        # the operator wrappers.
         skills = {p.parent.name for p in
-                  (TEMPLATES / "skills" / "codex").glob("*/SKILL.md")}
+                  (TEMPLATES / "skills" / "shared").glob("*/SKILL.md")}
         wrappers = {p.stem for p in (TEMPLATES / "commands" / "claude").glob("*.md")}
         self.assertEqual(skills, wrappers)
-        for p in (TEMPLATES / "skills" / "codex").glob("*/SKILL.md"):
+        for p in (TEMPLATES / "skills" / "shared").glob("*/SKILL.md"):
             body = p.read_text(encoding="utf-8")
             self.assertTrue(body.startswith("---\n"), p)
             self.assertIn("name: " + p.parent.name, body)

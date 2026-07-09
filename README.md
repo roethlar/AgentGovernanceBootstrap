@@ -40,9 +40,9 @@ shipped set — as ONE scoped commit. Nothing changes before you approve.
 py -3 <path-to-this-repo>/tools/refresh.py    # or python3 on macOS/Linux
 ```
 
-(or `/update-governance` in Claude Code; codex sessions get the same entry
-point as the `update-governance` skill, installed under `.agents/skills/`).
-The script syncs the toolkit,
+(or `/update-governance` in Claude Code; codex, grok, and agy sessions get
+the same entry point as the `update-governance` skill, installed under
+`.agents/skills/` — verified on all three). The script syncs the toolkit,
 reconciles the repo to the shipped artifact set — installs what's new,
 updates provably-unmodified stale files, removes retired ones — and makes
 one scoped commit recording the toolkit version. It never overwrites or

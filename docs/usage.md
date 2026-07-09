@@ -50,8 +50,9 @@ py -3 ~/dev/AgentGovernanceBootstrap/tools/refresh.py      # Windows
 python3 ~/dev/AgentGovernanceBootstrap/tools/refresh.py    # macOS/Linux
 ```
 
-or type `/update-governance` in a Claude Code session (codex: the
-`update-governance` skill, installed under `.agents/skills/`). Seconds, no agent
+or type `/update-governance` in a Claude Code session (codex/grok/agy: the
+`update-governance` skill, installed under `.agents/skills/`; agy needs the
+workspace trusted first). Seconds, no agent
 judgment involved: the script syncs the toolkit (offline it proceeds on the
 local copy and says so), installs new shipped artifacts, updates
 provably-unmodified stale ones, removes retired ones, and commits once with

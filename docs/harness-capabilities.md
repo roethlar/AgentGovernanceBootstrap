@@ -28,7 +28,7 @@ apparatus dropped. Full original in git history.)
 |---|---|---|---|
 | Claude Code | yes, blocking (verified) | **yes — `SessionStart` matcher `compact` (verified 2026-06-21; the one shipped hook)** | yes — Stop hook can force continuation (Claude-Code-only) |
 | codex | historical: `pre_tool_use` fired in eval runs 2026-06-29 (global `CODEX_HOME` config era). Repo-local: **dormant in exec mode** — differential probe 2026-07-08 on 0.143.0 (SessionStart + PreToolUse markers, one file) fired NEITHER, in an untrusted temp repo AND a trusted repo with registered hook state. | **negative, thoroughly**: 0 fires across 0.142.5 + 0.143.0, Claude-schema + snake_case, trusted + untrusted repos, exec mode (2026-07-08). Interactive mode untestable headless. Not shipped. | unconfirmed |
-| codex **skills** | — | — | **POSITIVE (2026-07-08, codex-cli 0.143.0): codex discovers and invokes repo skills from `.agents/skills/<name>/SKILL.md`, untrusted repos included** (marker probe returned exactly). The operator wrapper set ships for codex as pointer skills (`templates/skills/codex/`), same pure-adapter class as `.claude/commands/`. |
+| repo **skills** (`.agents/skills/<name>/SKILL.md`) | — | — | **POSITIVE on three harnesses (2026-07-08)** — codex 0.143.0: discovered + invoked, untrusted repo, headless (marker probe exact). grok (grok-4.5 default): discovered + invoked, untrusted temp repo, headless `-p` (marker exact). agy 1.1.0: exposed as a native slash command (`/pingprobe`) and invoked (marker exact) — **requires a trusted workspace** (owner-verified interactively; headless untrusted probe not viable). The operator set ships as shared pointer skills (`templates/skills/shared/`), same pure-adapter class as `.claude/commands/`. |
 | grok | yes, blocking (global `~/.grok/hooks/*.json`; also auto-scans `~/.claude/settings.json`, `.cursor/hooks.json`) | repo-level hook config **unverified** (no hook surface in `--help`, 2026-07-08); shipped repo-level config retired | no — `Stop` passive; substitutes: `--check` / `--max-turns` flags |
 | agy | yes — Claude-style events in **global** `~/.gemini/settings.json` (docs: antigravity.google/docs/hooks) | repo-level hook config **unverified** (no hook surface in `--help`, 2026-07-08); shipped repo-level config retired | no — `Stop` passive (`{"decision":"allow"}` only) |
 | gemini CLI | — | **not checkable** on the dev machine (CLI not installed, 2026-07-08) | — |
@@ -41,11 +41,15 @@ Verify-once ledger:
 - 2026-07-08 — grok, agy repo-level hook configs: unverified, no help surface; retired. gemini CLI: absent, not checkable.
 - 2026-07-08 (later, 0.143.0) — codex repo-local hooks re-checked after the version bump and codex-docs claims of repo-local hook support: differential probe (SessionStart + PreToolUse in one `.codex/hooks.json`, tool-forcing prompt) fired **neither** event, untrusted temp repo and trusted registered repo alike. Negative deepened: the repo-local hook engine is dormant in exec mode; the 2026-06-29 `pre_tool_use` fires were global-config-era. Still not shipped.
 - 2026-07-08 (later, 0.143.0) — codex repo skills from `.agents/skills/`: **positive** (probe skill invoked by name in an untrusted temp repo, exact marker returned). Operator skills shipped via `tools/shipped-set.json`.
+- 2026-07-08 (later) — grok repo skills from `.agents/skills/`: **positive** (headless `-p`, untrusted temp repo, exact marker). agy repo skills: **positive** (owner-verified interactively on agy 1.1.0 — trusted workspace required; skill surfaced as a native slash command). The shipped skill set is renamed `templates/skills/shared/` — a three-harness operator surface.
+- 2026-07-08 — grok model facts refreshed: `grok-build` is no longer a valid model id ("unknown model id"); current default is `grok-4.5` (alt: `grok-composer-2.5-fast`). The earlier pin-grok-build note is obsolete.
+- Still open for owner-assisted checks: agy `.agents/hooks.json` SessionStart in a *trusted* workspace (the marker hook from the 2026-07-08 probe is still in the owner's trusted temp workspace — one fresh agy session there settles it); grok `PostCompact` (needs a real compaction; untestable headless).
 
 ## Operational harness facts
 
-- Pin models explicitly; unpinned defaults bite (grok's default is
-  `grok-composer-2.5-fast`, not Grok Build — use `-m grok-build`).
+- Pin models explicitly; unpinned defaults bite. Grok as of 2026-07-08:
+  default `grok-4.5` (alt `grok-composer-2.5-fast`); the former `grok-build`
+  id no longer exists.
 - agy's OAuth token is short-lived and does not refresh headless; re-auth
   interactively at session start if lapsed.
 - agy in a write-blocked workspace does not fail gracefully (it hunts for
