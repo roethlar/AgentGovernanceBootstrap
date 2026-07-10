@@ -1932,3 +1932,86 @@ less-capable agent — cannot be linted and stays a review judgment.
 > review (codex, REVISE ×5 → APPROVE) recorded in the plan, CLOSED:
 > `docs/superpowers/plans/2026-07-10-plan-lint-suite.md`.
 
+### 2026-07-09 — `handoff` is a fast save-my-place snapshot; the doc-cleanup pass moves to `drift`
+
+Status: Adopted 2026-07-10 — landed `741f846`; the rules live in the
+`handoff`/`drift` operator bullets of `templates/AGENTS.template.md`, with
+machine-specific facts in the tracked `.agents/machines.md` (per-machine
+headings, dated; owner design 2026-07-10, recorded verbatim in
+`docs/superpowers/plans/2026-07-10-handoff-snapshot-and-machine-local-state.md`,
+which also resolves GitHub issue #2).
+
+Decision: the `handoff` operator is redefined as a **fast session snapshot**,
+bounded to seconds — the thing the owner runs to stop a session and resume it
+later. The slow documentation-hygiene work currently bundled into `handoff`
+moves to the existing **`drift`** operator; no new operator vocabulary is
+added. Owner direction (2026-07-09): "handoff as a trigger for doc cleanup is
+wrong. handoff is what I run when I want to stop a session so I can pick it up
+later, not something that can run for more than 30 seconds." Owner chose to
+fold the cleanup into `drift` rather than mint a new operator.
+
+The split, concretely:
+
+- **`handoff` (fast)** keeps only: write `## Now` / `## Next` so the next
+  session resumes without chat context, note the in-flight work and next
+  action, stop. No archive rotation, no re-verification sweep, no re-anchoring
+  of volatile facts as a mandatory step. Seconds, not minutes.
+- **`drift` (deliberate)** absorbs the hygiene rules currently in the
+  `handoff` bullet: rotate landed/superseded `## Now` entries verbatim to
+  `docs/history/state-archive.md`; re-verify the recorded basis of every
+  parked/blocked item and move falsified ones to `## Blockers` with new
+  evidence; re-anchor or drop volatile facts (`as of <commit>`); reduce copied
+  counts/enumerations to pointers; label or omit machine-local facts. These
+  are all species of "reconcile a doc against repo evidence," which is already
+  `drift`'s charter.
+
+Current wording being changed (quoted so the plan edits the right text):
+
+- `templates/AGENTS.template.md` `handoff` bullet — the full "Prune as you
+  write: rotate landed or superseded entries verbatim … move anything
+  falsified into `## Blockers` with the new evidence" clause is what moves out.
+- `templates/AGENTS.template.md` `drift` bullet — gains the rotation /
+  re-verification / re-anchoring responsibilities (as the deliberate cleanup
+  pass), keeping its existing doc-vs-evidence reconciliation charter.
+
+Implementation surface for the plan (product files; this repo's own
+`AGENTS.md` is refreshed from the template, not hand-edited):
+
+- `templates/AGENTS.template.md` (both operator bullets).
+- `templates/skills/shared/handoff/SKILL.md` and
+  `templates/skills/shared/drift/SKILL.md` (pointer skills; the
+  `description` frontmatter and body reference the operator's scope and must
+  track the new split).
+- `templates/commands/claude/handoff.md` (wrapper prose).
+- `templates/approval-summary.template.md` (mentions `handoff`; check whether
+  the reference assumes the old cleanup scope).
+- Any `handoff`/`drift` reference in `procedures/*.md`.
+
+Reason: the two jobs were conflated. "Save my place" must be zero-latency and
+is run frequently; "tidy the durable docs" is slow, occasional, and
+deliberate. Bundling the second into the first defeats the purpose of the
+first — the owner cannot fire `handoff` and walk away if it triggers an
+archive-rotation-and-re-verification pass. This session's own `handoff` run
+(2026-07-09, commit `56f7cff`) demonstrated the cost: it read the archive,
+grepped `decisions.md`, and verified commits before it could write — minutes,
+not the seconds the operator is supposed to take.
+
+Relationship: the hygiene rules being relocated are the field-earned handoff
+rules added by the 2026-07-08 zero-based consolidation (template redline);
+this decision does not delete them, it re-homes them under `drift`. The
+one-canonical-location and smallest-guidance-set invariants are preserved (the
+rules keep exactly one home, now `drift`). No conflict with the 2026-06-28
+harness-neutral / pure-adapter decision: the skills remain pointers to the
+`AGENTS.md` operator definitions.
+
+Alternatives considered and rejected (owner, 2026-07-09): (a) a new dedicated
+`tidy`/`prune` operator — rejected in favor of fewer operators to learn;
+(c) drop the mandated cleanup entirely — rejected (leaves `## Now` to
+accumulate stale entries with nothing obligated to prune them). The
+machine-local wording in the drift bullet was superseded before landing by
+the 2026-07-10 owner design (tracked `.agents/machines.md`).
+
+> Archived 2026-07-10: Adopted — landed `741f846` per
+> `docs/superpowers/plans/2026-07-10-handoff-snapshot-and-machine-local-state.md`
+> (CLOSED). Decision text verbatim; only the Status line reflects adoption.
+

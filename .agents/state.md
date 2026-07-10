@@ -8,25 +8,26 @@ machine-local facts are labeled or omitted.
 
 ## Now
 
-- Steady state as of `292a4d2` (verified `git ls-remote origin HEAD` ==
-  local, 2026-07-10; clean tree except untracked items noted below): the
-  2026-07-08 zero-based consolidation is landed and self-applied; the
-  product shape is owned by `.agents/repo-guidance.md` (Mission Detail).
-  2026-07-10 owner session landed: governance refresh at toolkit `d3f49d3`
-  (`65a8543`), the plan-contract decision (plan docs are agent-facing;
-  owner decisions in chat, 25–50 plain words, one at a time — `d3f49d3`),
-  the self-refresh-is-owner-only decision (`292a4d2`), and four draft plans
-  from the holistic review (`650a122` trust-boundary hardening, `decace2`
-  handoff fast-snapshot split, `eaffc7a` fresh-eyes clone rehearsal,
-  `a7a6cd7` legacy carve-out commit shape); the plan-lint suite is landed
-  (`tests/test_plan_lint.py` + repo-guidance Verification line, `279d25d`);
-  open plans dated 2026-07-10+ are linted for leakage, stale paths, and
-  bloat. Earlier landed work: bootstrap-offer banner
-  (`f65e892`), dead-path lint (`e9e04b4`), newline equivalence (issue #1) —
-  plans closed under `docs/superpowers/plans/`. Rollout DONE for vela,
-  Blit_v2, ai-rpg-engine, Powershell-Token-Killer (details in
-  `docs/history/state-archive.md`). Per-harness capability record:
-  `docs/harness-capabilities.md`.
+- Steady state as of `741f846` (2026-07-10): the 2026-07-08 zero-based
+  consolidation is landed; the product shape is owned by
+  `.agents/repo-guidance.md` (Mission Detail). The 2026-07-10 session
+  landed, all plans CLOSED with commit maps under
+  `docs/superpowers/plans/`: the plan contract (agent-facing plans, owner
+  decisions in chat — `d3f49d3`), self-refresh-is-owner-only (`292a4d2`),
+  the plan-lint suite (`279d25d`), carve-out two-commit route + git hard
+  requirement (`2478103`/`dc87799`), refresh trust-boundary hardening
+  (slices `9b3aa64`..`b24a0ab`: floor 3.10, preflight, containment,
+  pathspec commits, mirror wording, equivalence boundary), fresh-eyes
+  clone rehearsal (`c85129e`), and the handoff/drift split with tracked
+  `.agents/machines.md` for machine facts (`741f846`). GitHub issues #2,
+  #3, #4 are resolved in the product and await the owner's go to close.
+  This repo's installed copies (`AGENTS.md`, skills, wrappers)
+  intentionally lag the templates until the owner's next refresh
+  (owner-only rule, `292a4d2`). Earlier landed work: bootstrap-offer
+  banner (`f65e892`), dead-path lint (`e9e04b4`), newline equivalence
+  (issue #1). Rollout DONE for vela, Blit_v2, ai-rpg-engine,
+  Powershell-Token-Killer (details in `docs/history/state-archive.md`).
+  Per-harness capability record: `docs/harness-capabilities.md`.
 ## Next
 
 - **ExchangeAdminWeb**, the last legacy rollout repo, deferred by the owner
@@ -54,10 +55,6 @@ machine-local facts are labeled or omitted.
 - `AGENTS.md`
 - `.agents/repo-guidance.md`
 - `.agents/decisions.md`
-- `docs/superpowers/plans/2026-07-10-refresh-trust-boundary-hardening.md` (open, drafted 2026-07-10)
-- `docs/superpowers/plans/2026-07-10-handoff-snapshot-and-machine-local-state.md` (open, drafted 2026-07-10)
-- `docs/superpowers/plans/2026-07-10-fresh-eyes-clone-rehearsal.md` (open, drafted 2026-07-10)
-- `docs/superpowers/plans/2026-07-10-carve-out-commit-shape.md` (open, drafted 2026-07-10)
 
 ## Unrecorded Repo Memory
 

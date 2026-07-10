@@ -1,14 +1,22 @@
 # handoff operator: fast snapshot split + machine-local state relocation
 
-Status: APPROVED 2026-07-10 — owner ruling, verbatim: "New tracked file
-`.agents/machines.md` — machine-specific facts live there under a heading
-per machine, dated. `handoff` writes machine facts only there; the main
-state file stays portable and may point to it. `drift` prunes stale
-entries. No hidden files, nothing lost on reclone." (Owner reply:
-"approved"; the owner proposed the tracked keyed file over both an
-untracked local file and omit-only.) The handoff/drift split was
-owner-settled 2026-07-09 (decisions log). Implementation awaits an
-explicit owner go.
+Status: CLOSED 2026-07-10 — landed on owner go ("go on all"). Commit map:
+slice 1 `741f846` (template bullets, skills, wrappers, state template,
+bootstrap Step 4.2, design doc, manifest formerly[] appends,
+LINT_EXEMPT_PATHS gains `.agents/machines.md` with a guard-proven test);
+slice 2 bookkeeping in the commit carrying this line (2026-07-09 decision
+Adopted and archived verbatim; state updated). Suite 93/93 (python3.14).
+Owner ruling, verbatim: "New tracked file `.agents/machines.md` —
+machine-specific facts live there under a heading per machine, dated.
+`handoff` writes machine facts only there; the main state file stays
+portable and may point to it. `drift` prunes stale entries. No hidden
+files, nothing lost on reclone." The handoff/drift split was owner-settled
+2026-07-09. Deviation from the drafted slice text: no self-refresh was run
+(owner-only rule, 2026-07-10) — this repo's installed copies lag the
+templates until the owner's next refresh, the expected steady state.
+GitHub issue #2 is resolved by this plan and awaits an explicit owner go
+to close. The bite proof (a live `handoff` writing a machine fact to
+`.agents/machines.md`) runs at the next real handoff on a refreshed repo.
 
 ## Why this plan exists
 
