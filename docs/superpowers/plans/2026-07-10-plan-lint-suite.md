@@ -2,7 +2,7 @@
 
 Status: APPROVED 2026-07-10 — authority and the owner's verbatim approval
 are recorded in `.agents/decisions.md` ("Plan linter for leakage and bloat",
-2026-07-10, Status: Active). Revision 4 after external review rounds 1–3
+2026-07-10, Status: Active). Revision 5 after external review rounds 1–4
 (each REVISE); re-review required before implementation.
 
 ## Rule being enforced
@@ -64,10 +64,14 @@ document — no pattern can match across a newline.
   Line numbers in findings always match the original file.
 - `plan_status(masked) -> str | None` — iterate the MASKED text line by
   line; the first line matching
-  `^ {0,3}\**[ \t]*Status[ \t]*\**[ \t]*:[ \t]*(.*)$` (case-sensitive
-  `Status`) yields the captured remainder. Bold `**Status:**` matches;
-  lowercase `status:` does not (documented choice); a line indented 4+
-  spaces is indented code and does not match; `Status` and `:` split
+  `^ {0,3}(?:Status|\*\*Status\*\*|\*\*Status:\*\*)[ \t]*:?[ \t]*(.*)$`
+  — exactly two canonical shapes, plain `Status:` and bold
+  `**Status:**` (with the colon inside or outside the bold), preceded
+  by at most 3 spaces and nothing else — yields the captured remainder;
+  the implementation must ensure exactly one colon is consumed.
+  Case-sensitive; lowercase `status:` does not match (documented
+  choice); tab-indented, 4+-space-indented (indented code), and
+  bulleted (`* Status:`) lines do not match; `Status` and `:` split
   across two lines never match (line-oriented by construction). Later
   `Status:` lines are ignored; fenced fake statuses are masked away.
 - `is_closed(status) -> bool` — True iff the status matches, on that
@@ -99,17 +103,10 @@ document — no pattern can match across a newline.
      checks only).
   4. Otherwise append, deduplicated:
      - `leakage`: case-insensitive per-line search of the masked text
-       for the module constant `LEAKAGE_PHRASES`; one finding per
-       (line, phrase). The constant holds exactly these eight phrases:
-
-       ```
-       LEAKAGE_PHRASES = (
-           "this session", "this conversation", "in this chat",
-           "as discussed", "per our discussion", "approved in chat",
-           "approval in chat", "wording from chat",
-       )
-       ```
-
+       for the module constant `LEAKAGE_PHRASES` (its exact eight
+       values are listed in the fenced block after this API section —
+       at top level, where the masker's 3-space fence rule masks it);
+       one finding per (line, phrase).
      - `stale-path` (only when `history` is True): over the ORIGINAL
        text, backtick path tokens accepted by
        `refresh._lintable_repo_path` (import `tools.refresh` as the
@@ -129,6 +126,19 @@ document — no pattern can match across a newline.
   `glob("docs/superpowers/plans/*.md")`; raises `AssertionError` if the
   glob is empty (vacuity guard); creates one cache dict and passes it
   to every `scan_plan`; concatenated findings.
+- Import convention: follow the existing suite — prepend the `tools/`
+  directory to `sys.path` and `import refresh`, exactly as
+  `tests/test_refresh.py` does; no `tools.refresh` namespace import.
+
+The `LEAKAGE_PHRASES` constant holds exactly these eight values:
+
+```
+LEAKAGE_PHRASES = (
+    "this session", "this conversation", "in this chat",
+    "as discussed", "per our discussion", "approved in chat",
+    "approval in chat", "wording from chat",
+)
+```
 
 ## Test specification
 
@@ -155,10 +165,10 @@ not delete them.
     runs (``` ``x` ```) leave the prose unmasked; equal runs mask.
   - status parsing: `**Status:** DRAFT` (bold) parsed; lowercase
     `status: CLOSED` not parsed (→ `missing-status`); `Status` on one
-    line and `: CLOSED` on the next → `missing-status`; a 4-space
-    indented `Status: CLOSED` → `missing-status`; two `Status:` lines →
-    first wins; fenced fake `Status: CLOSED` with no real status →
-    `missing-status`.
+    line and `: CLOSED` on the next → `missing-status`; 4-space
+    indented, tab-indented, and bulleted (`* Status: CLOSED`) forms →
+    `missing-status`; two `Status:` lines → first wins; fenced fake
+    `Status: CLOSED` with no real status → `missing-status`.
   - closure: each of the six markers followed by an ISO date → `[]`
     even with a planted phrase; each marker alone → `[]`; `CLOSED for
     Artifact 1 ...`, `CLOSED — part 2 remains`, `DONE except X` (no
@@ -196,9 +206,15 @@ not delete them.
    parked drafts untouched.
 2. Scanner + tests + the repo-guidance verification line (the gate and
    its wiring are one item). Suite green before commit.
-3. Closure bookkeeping: this plan's Status flips to CLOSED with the
-   commit map; the decisions entry gains the landing-commit reference;
-   `.agents/state.md` drops its interim under-review wording.
+3. Closure bookkeeping, exact edits: this plan's Status line becomes
+   `Status: CLOSED <landing date> — landed <commit hashes>` (commit
+   map); in `.agents/decisions.md`, the entry's status line becomes
+   `Status: Adopted <landing date> — landed <scanner commit>; canonical
+   home tests/test_plan_lint.py + the repo-guidance Verification line`;
+   in `.agents/state.md`, the plan's line is REMOVED from Active
+   Sources and the `## Now` under-review clause is replaced by a landed
+   note. Until landing, the decision entry's "implementation in
+   progress" wording covers the review phase — no interim edit needed.
 
 ## Verification
 
@@ -208,20 +224,34 @@ not delete them.
   Bash) `py -3.9 -m unittest tests.test_plan_lint -v` — this module is
   a required gate and must not deepen the recorded 3.9 floor problem.
 - Guard proof, hermetic (never mutate the tracked file): copy
-  `tests/test_plan_lint.py` to a temp directory; in the copy,
-  neutralize one detector (empty `LEAKAGE_PHRASES`, force `is_closed`
-  True, bump the length bound, drop the stale-path branch, point the
-  corpus glob at an empty pattern); load the copy with
+  `tests/test_plan_lint.py` to a temp directory; load the copy with
   `importlib.util.spec_from_file_location` and run its tests via
-  `unittest.TestLoader().loadTestsFromModule`, passing this repo's root
-  explicitly where a test needs it (`repo_root` is always a function
-  argument, never module state, precisely so the copy runs against the
-  same repo). Fixture data is literal (see above), so each
-  neutralization turns specific fixtures red rather than deleting
-  them; the corpus-glob neutralization trips the empty-glob
-  `AssertionError`. Observe red per detector, discard the copy, run
-  the real module and full suite green. Record the red/green table in
-  the closure commit message.
+  `unittest.TestLoader().loadTestsFromModule`. The copy finds the real
+  repo through the already-importable `refresh` module
+  (`Path(refresh.__file__).resolve().parent.parent` is the repo root;
+  `repo_root` is always a function argument, never module state).
+  First run the UNMODIFIED copy and require green — proves the loader
+  works before any mutation is trusted. Then one mutation at a time,
+  each named with the fixtures it must turn red:
+  - empty `LEAKAGE_PHRASES` → the eight per-phrase fixtures;
+  - force `is_closed` to always True → the open-status and
+    qualified-closure fixtures;
+  - force `is_closed` to always False → the closure-marker exempt
+    fixtures;
+  - bump the length bound to 10000 → the 601-line and blank-heavy
+    fixtures;
+  - drop the stale-path branch → the deleted-token fixture;
+  - make `plan_date` return None always → the grandfathered-plan
+    fixture (its `[]` expectation fails);
+  - make `plan_status` return "" always → the `missing-status`
+    fixtures;
+  - disable `mask_code` (identity function) → the phrase-in-fence and
+    phrase-in-span negative fixtures;
+  - point the corpus glob at an empty pattern → the empty-glob
+    `AssertionError`.
+  Observe red per mutation, discard the copy, run the real module and
+  full suite green. Record the red/green table in the closure commit
+  message.
 - Docs edits: `git diff --check`.
 
 ## Non-goals and risks
@@ -239,7 +269,9 @@ not delete them.
 - Multi-line inline code spans are not masked (spans never cross
   lines); the fenced-block form is the sanctioned way to write
   multi-phrase listings, as this plan itself does.
-- Post-cutoff closures must carry an ISO date after the marker; a
-  dateless closure stays under lint until reworded. This is a wording
-  requirement on future plans, enforced loudly, chosen over any
-  heuristic for "partial" closure.
+- Post-cutoff closure wording rule: a BARE closure marker (`CLOSED`,
+  `DONE`, ...) closes, and a marker followed by an ISO date closes;
+  any trailing detail without a leading date ("CLOSED for part 1")
+  stays open under lint until reworded. Chosen over any heuristic for
+  "partial" closure — enforced loudly, trivially satisfied by writing
+  the date.
