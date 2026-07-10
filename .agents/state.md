@@ -8,20 +8,23 @@ machine-local facts are labeled or omitted.
 
 ## Now
 
-- Steady state as of `741f846` (2026-07-10): the 2026-07-08 zero-based
+- Steady state as of `be03b2c` (2026-07-10): the 2026-07-08 zero-based
   consolidation is landed; the product shape is owned by
-  `.agents/repo-guidance.md` (Mission Detail). The 2026-07-10 session
-  landed, all plans CLOSED with commit maps under
-  `docs/superpowers/plans/`: the plan contract (agent-facing plans, owner
-  decisions in chat — `d3f49d3`), self-refresh-is-owner-only (`292a4d2`),
-  the plan-lint suite (`279d25d`), carve-out two-commit route + git hard
+  `.agents/repo-guidance.md` (Mission Detail). Every 2026-07-10 plan is
+  CLOSED with a commit map under `docs/superpowers/plans/`: the plan
+  contract (`d3f49d3`), self-refresh-is-owner-only (`292a4d2`), the
+  plan-lint suite (`279d25d`), carve-out two-commit route + git hard
   requirement (`2478103`/`dc87799`), refresh trust-boundary hardening
-  (slices `9b3aa64`..`b24a0ab`: floor 3.10, preflight, containment,
-  pathspec commits, mirror wording, equivalence boundary), fresh-eyes
-  clone rehearsal (`c85129e`), and the handoff/drift split with tracked
-  `.agents/machines.md` for machine facts (`741f846`). GitHub issues #2,
-  #3, #4 are resolved in the product and await the owner's go to close.
-  This repo's installed copies (`AGENTS.md`, skills, wrappers)
+  (`9b3aa64`..`b24a0ab`), fresh-eyes clone rehearsal (`c85129e`), the
+  handoff/drift split with tracked `.agents/machines.md` (`741f846`), the
+  refresh plan/apply protocol + manifest schema + re-exec
+  (`12b6bd4`..`300bff1`), reviewloop shipping + acceptance hardening
+  (`77bbf60`/`7295d19`/`4562923`), and guidance-lint precision with a
+  zero-warn baseline (`7074f6b`/`be03b2c`). GitHub issues #2/#3/#4 closed
+  2026-07-10. The 2026-07-09 external holistic review is fully triaged:
+  every accepted finding landed; release engineering is deferred by the
+  release-posture decision; the per-repo verbosity/tech-level tuning idea
+  is queued Open in `.agents/decisions.md`. This repo's installed copies
   intentionally lag the templates until the owner's next refresh
   (owner-only rule, `292a4d2`). Earlier landed work: bootstrap-offer
   banner (`f65e892`), dead-path lint (`e9e04b4`), newline equivalence
