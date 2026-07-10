@@ -725,3 +725,19 @@ entry 2026-07-09 in `.agents/decisions.md`). The `## Next` bullet, verbatim:
   not assume Claude, PowerShell, a remembered path, or a remembered
   interpreter); the earlier declined shim/skill/pointer proposal stays
   declined and archived verbatim in `docs/history/state-archive.md`.
+
+## Rotated 2026-07-10 — Codex 0.144 surface evaluation, settled
+
+- Tooling evaluation, no product change (`fbe9087`, 2026-07-09): the Codex
+  CLI's newer surface (`codex-cli 0.144.0`) was checked against the
+  `reviewloop` dispatch contract. `codex mcp-server` was tested (MCP
+  `initialize` + `tools/list` over stdio, inspection-only): protocol
+  `2025-06-18`, exposes `codex` + `codex-reply` tools with structured
+  `sandbox`/`approval-policy` inputs. Viable alt reviewer transport but not
+  adopted (returns free-form `content`, not our fail-closed verdict envelope;
+  stateful `threadId` vs. our one-shot atomic unit); `codex exec`+stdin
+  dispatch retained. Decision entry 2026-07-09 in `.agents/decisions.md`.
+
+Rotation note: settled by decision and then exercised for real — the
+2026-07-10 pxpipe reviewloop ran nine `codex exec`+stdin dispatches
+(codex-cli 0.144.1) end-to-end, confirming the retained contract.
