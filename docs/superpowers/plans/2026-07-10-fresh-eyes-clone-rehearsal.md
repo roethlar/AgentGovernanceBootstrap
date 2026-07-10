@@ -1,10 +1,14 @@
 # fresh-eyes verification: throwaway-clone rehearsal as the default form
 
-Status: APPROVED 2026-07-10 — owner approval on this summary: the
-fresh-eyes check moves to a throwaway clone of the target repo with drafts
-at their real paths and the shipped set actually installed there; the
-clone is scratch and deleted after grading; nothing touches the real repo.
-No open questions were raised. Implementation awaits an explicit owner go.
+Status: CLOSED 2026-07-10 — landed on owner go ("go on all"). Commit map:
+`c85129e` (procedures/verification.md rewrite: clone rehearsal default,
+dotfile-warned in-place fallback; bootstrap Step 5.2 needed no change —
+its wording does not assume the drafts-only form). Mechanical bite check
+run 2026-07-10: scratch target repo cloned, `refresh.py --stage-only`
+installed and staged the shipped set in the clone, the target stayed
+untouched, scratch deleted. The full fresh-agent rehearsal happens on the
+next real bootstrap; GitHub issue #3 is resolved by this plan and awaits
+an explicit owner go to close.
 
 ## Why this plan exists
 
