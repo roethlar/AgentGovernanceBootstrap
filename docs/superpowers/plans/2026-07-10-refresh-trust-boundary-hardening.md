@@ -1,14 +1,16 @@
 # refresh.py: trust-boundary and transaction hardening
 
-Status: APPROVED 2026-07-10 — owner rulings (2026-07-10): slices 0–3 and 5
-are all in ("all 3 in" covering commit scope, preflight-before-commit, and
-the equivalence-boundary overwrite, plus the earlier symlink-containment
-go); the mirror-distrust slice is REJECTED and replaced by a wording-only
-fix — the gitea mirror is owner-controlled and trusted, GitHub stays the
-primary sync source, sync behavior unchanged ("fix wording, keep github
-primary"); the Python floor is raised to the actual requirement instead of
-restoring 3.9 test compatibility ("just make the required version the
-actual required version"). Implementation awaits an explicit owner go.
+Status: CLOSED 2026-07-10 — landed on owner go ("go on all"). Commit map:
+slice 0 floor raise + shim removal `9b3aa64` (+ allow-marker follow-up
+`b9f7f46`); slice 1 preflight `2d71540`; slice 2 containment `d86856b`;
+slice 3 commit scope `de1d8dc`; slice 4 mirror wording `a1dfea8`; slice 5
+equivalence boundary `b24a0ab`. Every code slice guard-proven red against
+the pre-slice `tools/refresh.py` in a scratch copy; suite 92/92
+(python3.14). Owner rulings recorded 2026-07-10: slices 0–3 and 5 in;
+mirror-distrust rejected in favor of the wording fix ("fix wording, keep
+github primary"); floor raised to the actual requirement. Deviation:
+slice 3's forced-mismatch fixture dropped as unreachable by construction
+under pathspec commits (noted in `de1d8dc`).
 
 ## Why this plan exists
 
