@@ -1,8 +1,10 @@
 # fresh-eyes verification: throwaway-clone rehearsal as the default form
 
-Status: DRAFT 2026-07-10 — awaiting owner approval; no implementation
-authorized. Drafted on owner instruction ("make whatever plans are needed to
-address anything new", 2026-07-10).
+Status: APPROVED 2026-07-10 — owner approval on this summary: the
+fresh-eyes check moves to a throwaway clone of the target repo with drafts
+at their real paths and the shipped set actually installed there; the
+clone is scratch and deleted after grading; nothing touches the real repo.
+No open questions were raised. Implementation awaits an explicit owner go.
 
 ## Why this plan exists
 
