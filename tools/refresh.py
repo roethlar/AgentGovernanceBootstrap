@@ -41,11 +41,13 @@ Python 3.10+, stdlib only.
 import argparse
 import hashlib
 import json
+import os
 import re
 import shlex
 import shutil
 import subprocess
 import sys
+import tempfile
 from pathlib import Path
 
 CANONICAL_URLS = [
@@ -135,6 +137,79 @@ def sync_toolkit(toolkit: Path) -> str:
 
 def load_shipped_set(toolkit: Path) -> dict:
     return json.loads((toolkit / "tools" / "shipped-set.json").read_text(encoding="utf-8"))
+
+
+_HEX64 = re.compile(r"^[0-9a-f]{64}$")
+_KNOWN_CLASSES = ("replace-whole", "replace-if-unmodified")
+
+
+def validate_manifest(shipped: dict, toolkit: Path) -> "list[str]":
+    """Structural safety checks before any read or write: the manifest is
+    trusted input only after these hold. Relative paths only, no upward
+    traversal, unique targets, known classes, well-formed hashes,
+    existing sources."""
+    errors = []
+    seen = set()
+
+    def check_rel(kind, rel):
+        p = Path(rel)
+        if not rel or p.is_absolute() or rel.startswith(("/", "\\")):
+            errors.append("{} path is absolute or empty: {!r}".format(kind, rel))
+        elif ".." in p.parts:
+            errors.append("{} path traverses upward: {}".format(kind, rel))
+
+    for art in shipped.get("artifacts", []):
+        tgt = art.get("target", "")
+        check_rel("source", art.get("source", ""))
+        check_rel("target", tgt)
+        if tgt in seen:
+            errors.append("duplicate target: {}".format(tgt))
+        seen.add(tgt)
+        if art.get("class") not in _KNOWN_CLASSES:
+            errors.append("unknown class {!r} for {}".format(art.get("class"), tgt))
+        elif not (toolkit / art.get("source", "")).is_file():
+            errors.append("missing source file: {}".format(art.get("source")))
+        for h in art.get("formerly", []):
+            if not _HEX64.match(h):
+                errors.append("malformed hash for {}: {!r}".format(tgt, h))
+    for ret in shipped.get("retired", []):
+        check_rel("retired target", ret.get("target", ""))
+        for h in ret.get("formerly", []):
+            if not _HEX64.match(h):
+                errors.append("malformed hash for retired {}: {!r}".format(ret.get("target"), h))
+    return errors
+
+
+def assert_safe_dest(target_repo: Path, rel: str) -> None:
+    """Refuse a destination whose existing components include a symlink or
+    whose resolved parent escapes the repository root. The never-overwrite
+    promise depends on writes landing exactly where the manifest names."""
+    probe = target_repo
+    for part in Path(rel).parts:
+        probe = probe / part
+        if probe.is_symlink():
+            raise RuntimeError(
+                "{}: {} is a symlink; refusing to write through it".format(rel, probe))
+        if not probe.exists():
+            break
+    root = target_repo.resolve()
+    resolved_parent = (target_repo / rel).parent.resolve()
+    if resolved_parent != root and root not in resolved_parent.parents:
+        raise RuntimeError("{}: resolves outside the repository root".format(rel))
+
+
+def write_atomic(dest: Path, data: bytes) -> None:
+    fd, tmp = tempfile.mkstemp(dir=str(dest.parent), prefix=".refresh-tmp-")
+    try:
+        with os.fdopen(fd, "wb") as f:
+            f.write(data)
+        os.replace(tmp, str(dest))
+    except BaseException:
+        try:
+            os.unlink(tmp)
+        except OSError:
+            pass
+        raise
 
 
 class Plan:
@@ -309,10 +384,18 @@ def dirty_conflicts(target_repo: Path, plan: Plan) -> list:
 
 
 def apply_plan(target_repo: Path, plan: Plan) -> None:
+    # Validate every destination before the first write: a refusal must
+    # leave the tree untouched, never partially mutated.
+    for target, _src in plan.install + plan.update:
+        assert_safe_dest(target_repo, target)
+    for target in plan.remove:
+        assert_safe_dest(target_repo, target)
+    if plan.gitignore_repairs:
+        assert_safe_dest(target_repo, ".gitignore")
     for target, src in plan.install + plan.update:
         dest = target_repo / target
         dest.parent.mkdir(parents=True, exist_ok=True)
-        dest.write_bytes(src.read_bytes())
+        write_atomic(dest, src.read_bytes())
     for target in plan.remove:
         (target_repo / target).unlink()
     if plan.gitignore_repairs:
@@ -321,7 +404,7 @@ def apply_plan(target_repo: Path, plan: Plan) -> None:
         # apply bottom-up so line numbers stay valid
         for lineno, _old, repl in sorted(plan.gitignore_repairs, reverse=True):
             lines[lineno - 1:lineno] = list(repl)
-        gitignore.write_text("\n".join(lines) + "\n", encoding="utf-8")
+        write_atomic(gitignore, ("\n".join(lines) + "\n").encode("utf-8"))
 
 
 def stage(target_repo: Path, plan: Plan) -> None:
@@ -470,6 +553,12 @@ def main(argv=None) -> int:
     toolkit_sha = git(toolkit, "rev-parse", "--short", "HEAD").stdout.strip()
 
     shipped = load_shipped_set(toolkit)
+    manifest_errors = validate_manifest(shipped, toolkit)
+    if manifest_errors:
+        print("refresh: tools/shipped-set.json failed validation:", file=sys.stderr)
+        for e in manifest_errors:
+            print("  " + e, file=sys.stderr)
+        return 4
     plan = classify(target, toolkit, shipped)
     check_committability(target, plan, shipped)
     core = core_flags(plan, shipped)
@@ -483,7 +572,11 @@ def main(argv=None) -> int:
 
     changed = bool(plan.install or plan.update or plan.remove or plan.gitignore_repairs)
     if changed:
-        apply_plan(target, plan)
+        try:
+            apply_plan(target, plan)
+        except RuntimeError as exc:
+            print("refresh: refusing unsafe write - {}".format(exc), file=sys.stderr)
+            return 4
         stage(target, plan)
         if not args.stage_only:
             git(target, "commit", "-m",

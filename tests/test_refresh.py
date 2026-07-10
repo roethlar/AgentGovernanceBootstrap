@@ -8,6 +8,7 @@ any real remote.
 
 import hashlib
 import json
+import os
 import subprocess
 import sys
 import tempfile
@@ -199,6 +200,64 @@ class RefreshTests(unittest.TestCase):
         self.assertIn("push policy", proc.stderr)
         self.assertFalse((self.target / "AGENTS.md").exists())
         self.assertEqual(len(self.commits()), n)
+
+    # -- filesystem containment ------------------------------------------
+    # Writes must land exactly where the manifest names them: symlinked
+    # components and unsafe manifest paths are refused with the tree
+    # untouched.
+
+    @unittest.skipIf(os.name == "nt", "symlink creation needs privileges on Windows")
+    def test_broken_symlink_dest_refused_nothing_written(self):
+        outside = self.root / "outside.md"
+        (self.target / "AGENTS.md").symlink_to(outside)
+        commit_all(self.target, "symlinked agents")
+        proc = refresh(self.toolkit, self.target)
+        self.assertEqual(proc.returncode, 4, proc.stderr)
+        self.assertIn("symlink", proc.stderr)
+        self.assertFalse(outside.exists())
+        self.assertFalse((self.target / ".claude").exists())
+
+    @unittest.skipIf(os.name == "nt", "symlink creation needs privileges on Windows")
+    def test_symlinked_parent_dir_refused(self):
+        outside_dir = self.root / "outside-dir"
+        outside_dir.mkdir()
+        (self.target / ".claude").symlink_to(outside_dir)
+        commit_all(self.target, "symlinked adapter dir")
+        proc = refresh(self.toolkit, self.target)
+        self.assertEqual(proc.returncode, 4, proc.stderr)
+        self.assertIn("symlink", proc.stderr)
+        self.assertEqual(list(outside_dir.iterdir()), [])
+
+    def _mutate_manifest(self, fn):
+        ss = self.toolkit / "tools" / "shipped-set.json"
+        data = json.loads(ss.read_text(encoding="utf-8"))
+        fn(data)
+        with open(str(ss), "w", newline="\n") as f:
+            json.dump(data, f)
+
+    def test_manifest_traversal_target_refused(self):
+        self._mutate_manifest(
+            lambda d: d["artifacts"][0].update(target="../escape.md"))
+        proc = refresh(self.toolkit, self.target)
+        self.assertEqual(proc.returncode, 4, proc.stderr)
+        self.assertIn("traverses", proc.stderr)
+        self.assertFalse((self.root / "escape.md").exists())
+        self.assertFalse((self.target / ".claude").exists())
+
+    def test_manifest_absolute_target_refused(self):
+        evil = str(self.root / "evil.md")
+        self._mutate_manifest(lambda d: d["artifacts"][0].update(target=evil))
+        proc = refresh(self.toolkit, self.target)
+        self.assertEqual(proc.returncode, 4, proc.stderr)
+        self.assertIn("absolute", proc.stderr)
+        self.assertFalse((self.root / "evil.md").exists())
+
+    def test_manifest_duplicate_target_refused(self):
+        self._mutate_manifest(
+            lambda d: d["artifacts"].append(dict(d["artifacts"][0])))
+        proc = refresh(self.toolkit, self.target)
+        self.assertEqual(proc.returncode, 4, proc.stderr)
+        self.assertIn("duplicate", proc.stderr)
 
     # -- legacy carve-out route mechanics (bootstrap Step 7) -------------
     # Pins the behavior the two-commit carve-out route documents: refresh
