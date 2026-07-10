@@ -33,6 +33,13 @@ machine-local facts are labeled or omitted.
   Per-harness capability record: `docs/harness-capabilities.md`.
 ## Next
 
+- **Owner refresh loop pending**: the 2026-07-10 template changes (handoff/
+  drift split, `machines.md`, plan bullet, review skill/wrapper, playbook
+  hardening) reach governed repos — and this repo's own lagging installed
+  copies — only when the owner runs the fleet refresh (self-refresh is
+  owner-only, `292a4d2`).
+- Per-repo verbosity/tech-level tuning sits Open in `.agents/decisions.md`
+  awaiting an owner go for a plan.
 - **ExchangeAdminWeb**, the last legacy rollout repo, deferred by the owner
   to **2026-07-20** (re-affirmed 2026-07-09): run `tools/refresh.py`,
   resolve FLAG lines; oldest instance — 2026-06-22-era template, no
