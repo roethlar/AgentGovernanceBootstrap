@@ -1,7 +1,7 @@
 # reviewloop: ship the review entry point; harden acceptance; scope its claims
 
-Status: DRAFT 2026-07-10 — awaiting owner approval; no implementation
-authorized.
+Status: APPROVED 2026-07-10 — owner approval, verbatim: "Do the plans for
+the rest as well." Implementation in progress.
 
 ## Why this plan exists
 
