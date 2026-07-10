@@ -34,6 +34,32 @@ live rule now owned elsewhere - archive it per the rule above: move it verbatim 
 
 ## Decisions
 
+### 2026-07-10 — Plan linter for leakage and bloat
+
+Status: Open
+
+Finding: chat leakage and human-facing prose bloat in plan documents are
+named as real recurring problems under the plan contract (see the
+2026-07-10 plan-contract decision). Owner raised the same day: "we might
+need a linter for plans, since leakage and bloat are real problems." No go
+given yet; recorded for a decision.
+
+Options assessed: (a) extend the refresh lint (`lint_governance()` in
+`tools/refresh.py`) to still-open plan documents — conservative checks
+only: chat/session-leakage phrases ("this session", "as discussed",
+undated owner references), references to nonexistent repo paths, a size
+warning as a crude bloat signal; closed/archived plans exempt; requires a
+recorded canonical plans location per governed repo. (b) a standalone
+checker an agent runs while writing a plan — but checks nobody triggers
+rot (2026-07-08 field lesson). (c) no linter — the writing agent owns the
+standard, enforced at review.
+
+Standing recommendation: (a). It rides the existing refresh touchpoint, and
+the lint's conservative design rule (a false LINT line erodes trust) already
+guards against false-positive fatigue. The core standard — implementable by
+a cold, less-capable agent — cannot be linted and stays a review judgment
+under every option.
+
 ### 2026-07-10 — Plan contract: agent-facing plan documents; owner decisions in chat
 
 Status: Active
