@@ -2,7 +2,7 @@
 
 Status: APPROVED 2026-07-10 — authority and the owner's verbatim approval
 are recorded in `.agents/decisions.md` ("Plan linter for leakage and bloat",
-2026-07-10, Status: Active). Revision 5 after external review rounds 1–4
+2026-07-10, Status: Active). Revision 6 after external review rounds 1–5
 (each REVISE); re-review required before implementation.
 
 ## Rule being enforced
@@ -64,27 +64,30 @@ document — no pattern can match across a newline.
   Line numbers in findings always match the original file.
 - `plan_status(masked) -> str | None` — iterate the MASKED text line by
   line; the first line matching
-  `^ {0,3}(?:Status|\*\*Status\*\*|\*\*Status:\*\*)[ \t]*:?[ \t]*(.*)$`
-  — exactly two canonical shapes, plain `Status:` and bold
-  `**Status:**` (with the colon inside or outside the bold), preceded
-  by at most 3 spaces and nothing else — yields the captured remainder;
-  the implementation must ensure exactly one colon is consumed.
-  Case-sensitive; lowercase `status:` does not match (documented
-  choice); tab-indented, 4+-space-indented (indented code), and
-  bulleted (`* Status:`) lines do not match; `Status` and `:` split
-  across two lines never match (line-oriented by construction). Later
-  `Status:` lines are ignored; fenced fake statuses are masked away.
+  `^ {0,3}(?:Status:|\*\*Status:\*\*|\*\*Status\*\*:)(?!:)[ \t]*(.*)$`
+  — exactly three canonical shapes, each with ONE mandatory colon
+  (plain `Status:`, bold with colon inside `**Status:**`, bold with
+  colon outside `**Status**:`), preceded by at most 3 spaces and
+  nothing else, and not followed by a second colon — yields the
+  captured remainder. Case-sensitive; lowercase `status:`, colonless
+  `Status CLOSED`, doubled-colon `Status:: CLOSED`, tab-indented,
+  4+-space-indented (indented code), and bulleted (`* Status:`) lines
+  all do not match; `Status` and `:` split across two lines never
+  match (line-oriented by construction). Later `Status:` lines are
+  ignored; fenced fake statuses are masked away.
 - `is_closed(status) -> bool` — True iff the status matches, on that
   single line:
-  `(?i)^[ \t]*\**[ \t]*(CLOSED|DONE|SUPERSEDED|IMPLEMENTED|WITHDRAWN|REJECTED)\**[ \t]*(\d{4}-\d{2}-\d{2}\b.*)?$`
-  — the closure marker either stands alone or is followed by an ISO
-  date and then anything. Every qualified form without a leading date
-  ("CLOSED for part 1", "CLOSED — part 2 remains", "DONE except X")
-  reads as OPEN: the decision exempts only closed plans, and partial
-  closure is not closure. Post-cutoff closures therefore must be
-  written `CLOSED 2026-07-12 — <detail>` (marker, date, detail);
-  anything else stays under lint. `DRAFT`, `APPROVED`, `Open`, unknown
-  wording → open.
+  `(?i)^[ \t]*\**[ \t]*(CLOSED|DONE|SUPERSEDED|IMPLEMENTED|WITHDRAWN|REJECTED)\**[ \t]*($|[ \t](\d{4}-\d{2}-\d{2})\b.*)`
+  AND, when the date group is present, `datetime.date.fromisoformat`
+  accepts it — the closure marker either stands alone or is followed
+  by horizontal whitespace, a VALID ISO date, then anything.
+  `CLOSED2026-07-12` (no separator), `CLOSED 2026-99-99` (impossible
+  date), and every qualified form without a leading date ("CLOSED for
+  part 1", "CLOSED — part 2 remains", "DONE except X") read as OPEN:
+  the decision exempts only closed plans, and partial closure is not
+  closure. Post-cutoff closures therefore are written either as the
+  bare marker or as `CLOSED 2026-07-12 — <detail>` (marker, valid
+  date, detail). `DRAFT`, `APPROVED`, `Open`, unknown wording → open.
 - `plan_date(path) -> datetime.date | None` — filename must match
   `^(\d{4}-\d{2}-\d{2})-` (date then a literal hyphen delimiter); the
   captured string is validated with `datetime.date.fromisoformat`, and
@@ -109,8 +112,9 @@ document — no pattern can match across a newline.
        one finding per (line, phrase).
      - `stale-path` (only when `history` is True): over the ORIGINAL
        text, backtick path tokens accepted by
-       `refresh._lintable_repo_path` (import `tools.refresh` as the
-       existing suite does) that do not exist under `repo_root` AND for
+       `refresh._lintable_repo_path` (the imported `refresh` module —
+       see Import convention below) that do not exist under
+       `repo_root` AND for
        which `refresh._deletion_commit(repo_root, token, cache)`
        returns a commit. Deliberately narrow: never-existed tokens are
        allowed (open plans name files they will create), so typos
@@ -169,11 +173,15 @@ not delete them.
     indented, tab-indented, and bulleted (`* Status: CLOSED`) forms →
     `missing-status`; two `Status:` lines → first wins; fenced fake
     `Status: CLOSED` with no real status → `missing-status`.
-  - closure: each of the six markers followed by an ISO date → `[]`
-    even with a planted phrase; each marker alone → `[]`; `CLOSED for
-    Artifact 1 ...`, `CLOSED — part 2 remains`, `DONE except X` (no
-    leading date) → OPEN (phrase finding present); `DRAFT`, `APPROVED`,
-    `Open`, gibberish → open.
+  - closure, two layers: (a) table-driven direct `is_closed`
+    assertions — every marker alone → True; every marker + valid ISO
+    date → True; `CLOSED for Artifact 1`, `CLOSED — part 2 remains`,
+    `DONE except X`, `CLOSED2026-07-12`, `CLOSED 2026-99-99`, `DRAFT`,
+    `APPROVED`, `Open`, gibberish → False; (b) scanner fixtures where
+    EVERY document above (closed and open alike) carries a literal
+    planted leakage phrase — closed forms → `[]`, open forms → the
+    `leakage` finding. No closure fixture is ever phrase-free, so
+    inverting `is_closed` in either direction turns fixtures red.
   - dates: `2026-07-10-x.md` without status → `missing-status`;
     `2026-06-01-x.md` (any content) → `[]`; `notes.md`,
     `2026-07-09notes.md`, and `0000-00-00-x.md` (valid open status, a
@@ -208,13 +216,21 @@ not delete them.
    its wiring are one item). Suite green before commit.
 3. Closure bookkeeping, exact edits: this plan's Status line becomes
    `Status: CLOSED <landing date> — landed <commit hashes>` (commit
-   map); in `.agents/decisions.md`, the entry's status line becomes
+   map). In `.agents/decisions.md`, the entry's status line becomes
    `Status: Adopted <landing date> — landed <scanner commit>; canonical
-   home tests/test_plan_lint.py + the repo-guidance Verification line`;
-   in `.agents/state.md`, the plan's line is REMOVED from Active
-   Sources and the `## Now` under-review clause is replaced by a landed
-   note. Until landing, the decision entry's "implementation in
-   progress" wording covers the review phase — no interim edit needed.
+   home tests/test_plan_lint.py + the repo-guidance Verification line`,
+   and — per that file's own archive rule for entries whose rule now
+   lives in its canonical home — the whole entry then moves VERBATIM to
+   `docs/history/decisions-archive.md` in the same commit, no stub left
+   behind (the refresh lint flags closed decisions awaiting archive).
+   In `.agents/state.md`, the plan's line is REMOVED from Active
+   Sources and the `## Now` clause "the plan-linter decision is Active,
+   its plan approved and under external review (…)" is replaced by:
+   "the plan-lint suite is landed (`tests/test_plan_lint.py` +
+   repo-guidance Verification line, <scanner commit>); open plans dated
+   2026-07-10+ are linted for leakage, stale paths, and bloat." Until
+   landing, the decision entry's "implementation in progress" wording
+   covers the review phase — no interim edit needed.
 
 ## Verification
 
@@ -223,30 +239,41 @@ not delete them.
   Unix `python3.9 -m unittest tests.test_plan_lint -v`, Windows (Git
   Bash) `py -3.9 -m unittest tests.test_plan_lint -v` — this module is
   a required gate and must not deepen the recorded 3.9 floor problem.
-- Guard proof, hermetic (never mutate the tracked file): copy
-  `tests/test_plan_lint.py` to a temp directory; load the copy with
-  `importlib.util.spec_from_file_location` and run its tests via
-  `unittest.TestLoader().loadTestsFromModule`. The copy finds the real
-  repo through the already-importable `refresh` module
-  (`Path(refresh.__file__).resolve().parent.parent` is the repo root;
-  `repo_root` is always a function argument, never module state).
-  First run the UNMODIFIED copy and require green — proves the loader
-  works before any mutation is trusted. Then one mutation at a time,
-  each named with the fixtures it must turn red:
+- Guard proof, hermetic (never mutate the tracked file): the runner is
+  driven from the real repo checkout, so BEFORE loading the temp copy
+  it prepends the real repo's `tools/` directory to `sys.path` (the
+  runner knows the repo root; the copy must not derive paths from its
+  own relocated `__file__`). Copy `tests/test_plan_lint.py` to a temp
+  directory; load it with `importlib.util.spec_from_file_location`; run
+  its tests via `unittest.TestLoader().loadTestsFromModule`. Inside the
+  module, the real repo root for corpus tests is
+  `Path(refresh.__file__).resolve().parent.parent` (works identically
+  in the copy because `refresh` resolves through the pre-set
+  `sys.path`); `repo_root` is always a function argument, never module
+  state. First run the UNMODIFIED copy and require green — proves the
+  loader works before any mutation is trusted. Then one mutation at a
+  time, each named with the fixtures it must turn red:
   - empty `LEAKAGE_PHRASES` → the eight per-phrase fixtures;
   - force `is_closed` to always True → the open-status and
-    qualified-closure fixtures;
-  - force `is_closed` to always False → the closure-marker exempt
-    fixtures;
+    qualified-closure scanner fixtures (their planted phrases stop
+    being reported) and the False rows of the `is_closed` table;
+  - force `is_closed` to always False → the closed-marker scanner
+    fixtures (planted phrases start being reported) and the True rows
+    of the table;
   - bump the length bound to 10000 → the 601-line and blank-heavy
     fixtures;
   - drop the stale-path branch → the deleted-token fixture;
   - make `plan_date` return None always → the grandfathered-plan
     fixture (its `[]` expectation fails);
-  - make `plan_status` return "" always → the `missing-status`
-    fixtures;
+  - skip appending the `missing-date` finding → the `notes.md`,
+    `2026-07-09notes.md`, and `0000-00-00-x.md` fixtures;
+  - make `plan_status` return None always → the closed-marker exempt
+    fixtures (they now get `missing-status`);
+  - skip appending the `missing-status` finding → the no-status and
+    fake-status fixtures;
   - disable `mask_code` (identity function) → the phrase-in-fence and
-    phrase-in-span negative fixtures;
+    phrase-in-span negative fixtures and the fenced-fake-status
+    fixture;
   - point the corpus glob at an empty pattern → the empty-glob
     `AssertionError`.
   Observe red per mutation, discard the copy, run the real module and
