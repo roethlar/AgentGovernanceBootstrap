@@ -47,7 +47,8 @@
         "b27435a2e9e61b92f57c2e9e5339900a6ef8c12c85a5dccb7dfec057563a8cda",
         "fb41f1f3f4ead4c23a2e71d0ba04e28817243d7524eb310d18cca45aa402ba0b",
         "9ca6663315a64901364d5b607d48e9ff827e4d907cca280d3262c97a50296ec6",
-        "1d264a8f0dd1446a09eccdefbe3e134577cabf20bf85caf8424f17e2199d630b"
+        "1d264a8f0dd1446a09eccdefbe3e134577cabf20bf85caf8424f17e2199d630b",
+        "1a1fb5b36145c7c36babdb74f5c10bb7870db778fb2c9c2024494d8b66410fac"
       ]
     },
     {
@@ -166,7 +167,9 @@
       "source": "templates/skills/shared/plan/SKILL.md",
       "target": ".agents/skills/plan/SKILL.md",
       "class": "replace-if-unmodified",
-      "formerly": []
+      "formerly": [
+        "bb60b5c05cfee5e9773a58417868338726de7ee8e975baf1eedad6a40f082a45"
+      ]
     },
     {
       "source": "templates/skills/shared/playbook/SKILL.md",

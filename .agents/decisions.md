@@ -34,6 +34,41 @@ live rule now owned elsewhere - archive it per the rule above: move it verbatim 
 
 ## Decisions
 
+### 2026-07-10 — Plan contract: agent-facing plan documents; owner decisions in chat
+
+Status: Active
+
+Decision: A plan document is written for agents, never for the owner. It must
+be self-contained and implementable by a completely cold, less-capable agent
+than the one that wrote it: technical, free of human-facing summary prose,
+free of chat or session references that need the originating conversation to
+make sense. The owner does not read plan documents. Every decision a plan
+needs is presented in chat as roughly 25-50 plain-English words — the
+problem, the change, the cost or risk — one decision at a time, never a
+batch, no jargon. The owner's approved wording is copied verbatim into the
+durable record (this log and/or the plan's status line); there is no
+separate executive-summary document type. Canonical home of the rule: the
+`plan` operator bullet in `templates/AGENTS.template.md` (installed as
+`AGENTS.md`); the plan skill and wrappers point to it.
+
+Approved owner wording (2026-07-10): "I'll write this contract into the
+toolkit's plan rule — the shared rulebook template and its plan skill — and
+record it in the decision log. It changes how plans are written and how I
+ask you for decisions, everywhere the toolkit is installed." Owner
+constraints recorded verbatim the same day: plans should be "implementable
+by a completely cold, far less capable agent than the one that wrote it";
+"no superfluous human-focused token bloat, no chat context leakage that
+would invite future drift"; "the decisions come in the chat, get recorded to
+decisions/state/wherever appropriate."
+
+Reason: Owner direction (2026-07-10). Plan documents read as
+engineer-facing; the owner is not a software engineer and does not read
+them, so approval stalled whenever it depended on reading a plan file.
+Splitting the roles — a technical plan for agents, short plain-English asks
+in chat for the owner — fills both roles the owner named. The four
+2026-07-10 draft plans in `docs/superpowers/plans/` remain parked; their
+decisions are brought to the owner per this contract when unparked.
+
 ### 2026-07-09 — `handoff` is a fast save-my-place snapshot; the doc-cleanup pass moves to `drift`
 
 Status: Open — settled in intent by the owner; implementation deferred to a
