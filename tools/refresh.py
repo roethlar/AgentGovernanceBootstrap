@@ -407,6 +407,25 @@ def build_record(toolkit: Path, target: Path, plan: Plan) -> dict:
     return rec
 
 
+def verify_record(record: dict, toolkit: Path, target: Path, plan: Plan) -> "list[str]":
+    """Reasons an approved plan record no longer matches reality. Any
+    non-empty result refuses the apply before the first write."""
+    if record.get("schema") != 1:
+        return ["unsupported plan schema: {!r}".format(record.get("schema"))]
+    current = build_record(toolkit, target, plan)
+    problems = []
+    if current["toolkit_dirty"] or record.get("toolkit_dirty"):
+        problems.append("toolkit worktree is dirty (apply requires a clean tree)")
+    for field in ("toolkit_sha", "manifest_digest", "target_head", "installs",
+                  "updates", "removes", "gitignore_repairs", "flags",
+                  "staged_paths"):
+        if current[field] != record.get(field):
+            problems.append("drift in {}: the current state no longer matches the approved plan".format(field))
+    if not problems and current["digest"] != record.get("digest"):
+        problems.append("plan digest mismatch")
+    return problems
+
+
 def touched_paths(plan: Plan) -> list:
     paths = [t for t, _ in plan.install + plan.update] + list(plan.remove)
     if plan.gitignore_repairs:
@@ -638,6 +657,14 @@ def main(argv=None) -> int:
             print("  {} {}: {}".format("NOTE" if kind == "note" else "LINT", rel, note_msg))
         return 0
 
+    if plan_record is not None:
+        problems = verify_record(plan_record, toolkit, target, plan)
+        if problems:
+            print("refresh: refusing --apply; the approved plan no longer matches:", file=sys.stderr)
+            for p in problems:
+                print("  " + p, file=sys.stderr)
+            return 4
+
     changed = bool(plan.install or plan.update or plan.remove or plan.gitignore_repairs)
     if changed:
         try:
@@ -651,9 +678,11 @@ def main(argv=None) -> int:
             # and out of the governance commit, then the created commit is
             # verified to touch exactly the planned paths.
             paths = touched_paths(plan)
-            git(target, "commit", "-m",
-                "governance refresh: toolkit {}\n\n{}".format(toolkit_sha, summarize(plan, "")),
-                "--", *paths)
+            msg = "governance refresh: toolkit {}\n\n{}".format(toolkit_sha, summarize(plan, ""))
+            if plan_record is not None:
+                msg += "\n\ntoolkit-sha: {}\nplan-digest: {}".format(
+                    plan_record.get("toolkit_sha", ""), plan_record.get("digest", ""))
+            git(target, "commit", "-m", msg, "--", *paths)
             committed = set(
                 git(target, "show", "--name-only", "--format=", "HEAD").stdout.splitlines())
             committed.discard("")

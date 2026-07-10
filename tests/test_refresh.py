@@ -303,6 +303,50 @@ class RefreshTests(unittest.TestCase):
         refresh(self.toolkit, self.target, "--plan-json", str(out3))
         self.assertNotEqual(d1, json.loads(out3.read_text())["digest"])
 
+    def test_apply_reproduces_the_planned_operation(self):
+        out = self.root / "plan.json"
+        refresh(self.toolkit, self.target, "--plan-json", str(out))
+        proc = refresh(self.toolkit, self.target, "--apply", str(out))
+        self.assertEqual(proc.returncode, 0, proc.stderr)
+        self.assertEqual((self.target / "AGENTS.md").read_text(), CUR_AGENTS)
+        rec = json.loads(out.read_text())
+        committed = run_git(self.target, "show", "--name-only",
+                            "--format=", "HEAD").split()
+        self.assertEqual(sorted(committed), sorted(rec["staged_paths"]))
+        body = run_git(self.target, "log", "-1", "--format=%B")
+        self.assertIn("toolkit-sha: " + rec["toolkit_sha"], body)
+        self.assertIn("plan-digest: " + rec["digest"], body)
+
+    def test_apply_refuses_after_target_moved(self):
+        out = self.root / "plan.json"
+        refresh(self.toolkit, self.target, "--plan-json", str(out))
+        (self.target / "later.txt").write_text("x\n", newline="\n")
+        commit_all(self.target, "moved on")
+        proc = refresh(self.toolkit, self.target, "--apply", str(out))
+        self.assertEqual(proc.returncode, 4, proc.stderr)
+        self.assertIn("target_head", proc.stderr)
+        self.assertFalse((self.target / "AGENTS.md").exists())
+
+    def test_apply_refuses_after_toolkit_content_changed(self):
+        out = self.root / "plan.json"
+        refresh(self.toolkit, self.target, "--plan-json", str(out))
+        with open(str(self.toolkit / "templates" / "AGENTS.template.md"), "a",
+                  newline="\n") as f:
+            f.write("changed after approval\n")
+        proc = refresh(self.toolkit, self.target, "--apply", str(out))
+        self.assertEqual(proc.returncode, 4, proc.stderr)
+        self.assertFalse((self.target / "AGENTS.md").exists())
+
+    def test_apply_stage_only_stages_without_commit(self):
+        out = self.root / "plan.json"
+        refresh(self.toolkit, self.target, "--plan-json", str(out))
+        n = len(self.commits())
+        proc = refresh(self.toolkit, self.target, "--apply", str(out), "--stage-only")
+        self.assertEqual(proc.returncode, 0, proc.stderr)
+        self.assertEqual(len(self.commits()), n)
+        staged = run_git(self.target, "diff", "--cached", "--name-only").split()
+        self.assertIn("AGENTS.md", staged)
+
     # -- equivalence boundary (a historical hash never widens it) --------
 
     def test_formerly_containing_current_hash_does_not_widen_boundary(self):
