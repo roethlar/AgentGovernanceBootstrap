@@ -18,10 +18,10 @@ machine-local facts are labeled or omitted.
   the self-refresh-is-owner-only decision (`292a4d2`), and four draft plans
   from the holistic review (`650a122` trust-boundary hardening, `decace2`
   handoff fast-snapshot split, `eaffc7a` fresh-eyes clone rehearsal,
-  `a7a6cd7` legacy carve-out commit shape); the plan-linter decision is
-  Active, its plan approved and under external review
-  (`docs/superpowers/plans/2026-07-10-plan-lint-suite.md` owns current
-  revision state). Earlier landed work: bootstrap-offer banner
+  `a7a6cd7` legacy carve-out commit shape); the plan-lint suite is landed
+  (`tests/test_plan_lint.py` + repo-guidance Verification line, `279d25d`);
+  open plans dated 2026-07-10+ are linted for leakage, stale paths, and
+  bloat. Earlier landed work: bootstrap-offer banner
   (`f65e892`), dead-path lint (`e9e04b4`), newline equivalence (issue #1) —
   plans closed under `docs/superpowers/plans/`. Rollout DONE for vela,
   Blit_v2, ai-rpg-engine, Powershell-Token-Killer (details in
@@ -58,7 +58,6 @@ machine-local facts are labeled or omitted.
 - `docs/superpowers/plans/2026-07-10-handoff-snapshot-and-machine-local-state.md` (open, drafted 2026-07-10)
 - `docs/superpowers/plans/2026-07-10-fresh-eyes-clone-rehearsal.md` (open, drafted 2026-07-10)
 - `docs/superpowers/plans/2026-07-10-carve-out-commit-shape.md` (open, drafted 2026-07-10)
-- `docs/superpowers/plans/2026-07-10-plan-lint-suite.md` (approved, in review)
 
 ## Unrecorded Repo Memory
 

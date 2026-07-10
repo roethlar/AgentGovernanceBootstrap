@@ -1894,3 +1894,41 @@ rather than a fourth detected route, but that is a design call for the owner.
 
 > Archived 2026-07-08 (sweep): resolved — tools/refresh.py is the mechanical fast path.
 
+### 2026-07-10 — Plan linter for leakage and bloat
+
+Status: Adopted 2026-07-10 — landed `279d25d`; canonical home
+`tests/test_plan_lint.py` + the repo-guidance Verification line.
+
+Decision: this repo's test suite gains a lint over still-open plan
+documents in `docs/superpowers/plans/` that fails on conversational
+leakage phrases, on backtick references to repo paths that git history
+shows were deleted, and on extreme length. Closed plans and all plans
+dated before 2026-07-10 (the plan-contract date) are exempt history. The
+selected design is a test-suite check, NOT an extension of the refresh
+lint: the same-day rule making refresh owner-only in this repo means
+agents never trigger refresh here, while the suite is the touchpoint
+agents hit before every change. This supersedes the standing
+recommendation previously recorded in this entry (extend
+`lint_governance()` in `tools/refresh.py`). The verification rule in
+`.agents/repo-guidance.md` gains a matching line so changes under the
+plans directory run the plan lint, closing the gap where a docs-only plan
+edit verified by `git diff --check` alone would never meet the linter.
+
+Owner-approved wording (2026-07-10), verbatim: "Add a check to this
+repo's test suite that reads still-open plan documents and fails when one
+contains chat leakage (phrases like 'this session', references to files
+that don't exist) or is extremely long. Agents run these tests before
+every change, so a leaky plan gets caught before it lands. Occasional
+false alarms possible." Owner reply, verbatim: "plan that, review with
+codex. this is a major pain point for me. do it right."
+
+Provenance of the pain point: a fleet scan (2026-07-10, four read-only
+agents over 37 directories under the owner's dev root) found "this
+session" in at least 15 real plan documents across six repos, several
+already marked Implemented. The core standard — implementable by a cold,
+less-capable agent — cannot be linted and stays a review judgment.
+
+> Archived 2026-07-10: Adopted — landed `279d25d`; six-round external
+> review (codex, REVISE ×5 → APPROVE) recorded in the plan, CLOSED:
+> `docs/superpowers/plans/2026-07-10-plan-lint-suite.md`.
+

@@ -1,9 +1,16 @@
 # Test-suite lint for open plan documents (leakage, stale paths, bloat)
 
-Status: APPROVED 2026-07-10 — authority and the owner's verbatim approval
-are recorded in `.agents/decisions.md` ("Plan linter for leakage and bloat",
-2026-07-10, Status: Active). Revision 6 after external review rounds 1–5
-(each REVISE); re-review required before implementation.
+Status: CLOSED 2026-07-10 — landed. External review: codex, six rounds
+(REVISE ×5 → APPROVE at revision 6). Commit map: conformance edits
+`e78f7b6` (carve-out draft), `5113822` (fresh-eyes draft), `82d1209`
+(trust-boundary draft); scanner + tests + repo-guidance verification line
+`279d25d`; closure bookkeeping in the commit carrying this line. Guard
+proof: unmodified temp copy green (32 tests), then 11 single-detector
+mutations each red (table in the closure commit message). Verified:
+81/81 full suite on python3.14; targeted module 32/32 complete on stock
+python3 3.9.6. The decision record is archived in
+`docs/history/decisions-archive.md` ("Plan linter for leakage and bloat",
+Adopted 2026-07-10).
 
 ## Rule being enforced
 
