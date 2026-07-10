@@ -19,7 +19,7 @@ Two independent defects in the current fresh-eyes form
    throwaway clone with drafts at final paths answered all six questions
    correctly.
 2. **Holistic review finding H6** (untracked review, GPT-5.6-Sol,
-   2026-07-09; verified against the procedures this session): the prompt
+   2026-07-09; verified against the procedures 2026-07-10): the prompt
    tells the reviewer "drafts/AGENTS.md is AGENTS.md", but no such draft
    exists in the defined flow — bootstrap Step 4 explicitly never drafts the
    shipped `AGENTS.md` (`tools/refresh.py` is its single installer). The
@@ -97,5 +97,5 @@ existing drafts) cannot recur since no dot-hidden staging dir is read.
 Provenance: GitHub issue #3 (2026-07-09, BlitAdmin_UIs live false-fail and
 successful clone-form re-run); untracked holistic review H6 (2026-07-09),
 verified against `procedures/verification.md` and `procedures/bootstrap.md`
-Step 4 this session; owner instruction 2026-07-10 to draft plans for the new
+Step 4, 2026-07-10; owner instruction 2026-07-10 to draft plans for the new
 findings.
