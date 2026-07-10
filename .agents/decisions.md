@@ -34,6 +34,37 @@ live rule now owned elsewhere - archive it per the rule above: move it verbatim 
 
 ## Decisions
 
+### 2026-07-10 — Agents never update this repo's own governance while working on the toolkit
+
+Status: Active
+
+Decision: An agent in this repo works on the toolkit product — templates,
+tools, procedures, tests, docs. It never updates this repo's own installed
+governance: not by hand-editing `AGENTS.md`, shims, wrappers, skills, hooks,
+or playbooks, and not by running any toolkit tool (including
+`tools/refresh.py` and the `update-governance` operator) against this repo.
+Self-refresh is an owner-only action. Installed copies lagging the templates
+after a template change is the expected steady state, not drift to fix; at
+most, note the lag. Repo-owned records (`.agents/state.md`,
+`.agents/decisions.md`, `.agents/repo-guidance.md`, push policy, plans)
+remain normal working surfaces under the standard operators — this rule
+covers the installed shipped-set copies and the tools that write them.
+
+Owner wording (2026-07-10): "you cannot update this repo's governance while
+working on the toolkit. that is a foot-gun. you do not update this repo's
+governance, either directly or by running any tools in the toolkit on this
+repo."
+
+Supersedes the earned-practice wording "run the refresh" formerly in
+`.agents/repo-guidance.md` (rewritten with this decision).
+
+Reason: The dogfood loop let toolkit work rewrite the governance of the very
+session doing the work: a template edit followed by an agent-run self-refresh
+changed this repo's `AGENTS.md` mid-session (incident 2026-07-10, refresh
+commit `65a8543`, run on the strength of the old earned-practice line rather
+than a specific owner go). Separating the roles — agents change the product,
+the owner refreshes this repo deliberately — removes the foot-gun.
+
 ### 2026-07-10 — Plan linter for leakage and bloat
 
 Status: Open

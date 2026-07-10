@@ -69,10 +69,14 @@ For documentation-only changes, run `git diff --check`.
   it per-command at your discretion for routine, high-volume, low-stakes
   output; never wire it as an auto-rewrite hook — it is lossy by design.
 - This repo governs itself with its own product: `AGENTS.md` is the template
-  verbatim, refreshed by `tools/refresh.py` like any governed repo. Local
-  hook/wrapper files may briefly lag the templates between a template change
-  and the next self-refresh — that is expected, not drift to hand-fix; run
-  the refresh.
+  verbatim, installed by `tools/refresh.py`. **Agents never update this
+  repo's installed governance** — not by hand-editing `AGENTS.md`, shims,
+  wrappers, skills, hooks, or playbooks, and not by running any toolkit tool
+  (including `tools/refresh.py` and the `update-governance` operator)
+  against this repo; self-refresh is an owner-only action (owner rule,
+  2026-07-10, recorded in `.agents/decisions.md`). Installed copies lagging
+  the templates is the expected steady state between owner-run refreshes —
+  leave the lag alone; at most note it.
 - A `review <agent>` wrapper exists at `.claude/commands/review.md`; the
   reusable playbook ships at `templates/playbooks/reviewloop.md` and installs
   into `.agents/playbooks/` via refresh. Dispatching `codex` as a reviewer:
