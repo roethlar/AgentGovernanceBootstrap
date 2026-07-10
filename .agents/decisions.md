@@ -38,7 +38,10 @@ live rule now owned elsewhere - archive it per the rule above: move it verbatim 
 
 Status: Open — settled in intent by the owner; implementation deferred to a
 plan (template + skill rewrite is a product change with fleet-wide blast
-radius). The process is unchanged until the plan lands.
+radius). The process is unchanged until the plan lands. Plan drafted
+2026-07-10, awaiting approval:
+`docs/superpowers/plans/2026-07-10-handoff-snapshot-and-machine-local-state.md`
+(also folds in GitHub issue #2, machine-local state relocation).
 
 Decision: the `handoff` operator is redefined as a **fast session snapshot**,
 bounded to seconds — the thing the owner runs to stop a session and resume it
