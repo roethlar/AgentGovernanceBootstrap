@@ -48,7 +48,8 @@
         "fb41f1f3f4ead4c23a2e71d0ba04e28817243d7524eb310d18cca45aa402ba0b",
         "9ca6663315a64901364d5b607d48e9ff827e4d907cca280d3262c97a50296ec6",
         "1d264a8f0dd1446a09eccdefbe3e134577cabf20bf85caf8424f17e2199d630b",
-        "1a1fb5b36145c7c36babdb74f5c10bb7870db778fb2c9c2024494d8b66410fac"
+        "1a1fb5b36145c7c36babdb74f5c10bb7870db778fb2c9c2024494d8b66410fac",
+        "77db17a3a3dd20284d09293998febaac37142edf173df86fbb3937c13158036c"
       ]
     },
     {
@@ -149,13 +150,17 @@
       "source": "templates/skills/shared/handoff/SKILL.md",
       "target": ".agents/skills/handoff/SKILL.md",
       "class": "replace-if-unmodified",
-      "formerly": []
+      "formerly": [
+        "6b41450a060dadc0707bbd73cb580e1d610ae8b412317e6a63e9e87804abeda1"
+      ]
     },
     {
       "source": "templates/skills/shared/drift/SKILL.md",
       "target": ".agents/skills/drift/SKILL.md",
       "class": "replace-if-unmodified",
-      "formerly": []
+      "formerly": [
+        "3c9278a91df2b0b93c27a3cb59d6c77cb86f46da68cf6b0bbbf4e0686e2942bd"
+      ]
     },
     {
       "source": "templates/skills/shared/decision/SKILL.md",

@@ -30,7 +30,8 @@ lives in `templates/AGENTS.template.md`; every line there carries provenance
   enumerations.
 - One discoverable current-state entry point (`.agents/state.md`), kept
   live-only by rotation to an archive; volatile facts carry `as of <commit>`;
-  machine-local facts are labeled or omitted.
+  machine-specific facts live in the tracked `.agents/machines.md`, keyed
+  per machine and dated.
 - Conflicts between documents are flagged, never silently resolved; specific
   no-discretion rules outrank generic defaults.
 - Code changes are verified before completion claims; new tests are

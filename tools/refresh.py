@@ -298,6 +298,7 @@ LINT_EXEMPT_PATHS = frozenset({
     "docs/history",
     "docs/history/state-archive.md",
     "docs/history/decisions-archive.md",
+    ".agents/machines.md",
 })
 
 

@@ -1,14 +1,14 @@
 # Agent State
 
 This file is the first place future agents should read for current repo state.
-Keep it short: `## Now` holds only live entries. At each `handoff`, rotate
-landed or superseded entries verbatim to `docs/history/state-archive.md`
-(create it on first use) — never summarize them away, never let them pile up
-here. Write-time rules: volatile facts (push status, CI state, counts) carry
-`as of <commit>` and are re-verified or dropped at the next handoff; a count
-or enumeration another file owns is pointed to, never copied; machine-local
-facts (remote names, local toolchains, per-clone posture) are labeled
-`machine-local (<host>)` or left out.
+Keep it short: `## Now` holds only live entries; the `drift` operator's
+hygiene pass rotates landed or superseded entries verbatim to
+`docs/history/state-archive.md` (create it on first use) — never summarize
+them away, never let them pile up here. Write-time rules: volatile facts
+(push status, CI state, counts) carry `as of <commit>`; a count or
+enumeration another file owns is pointed to, never copied; machine-specific
+facts (local toolchains, host layout, per-clone posture) go to the tracked
+`.agents/machines.md`, keyed by machine and dated — never here.
 
 ## Now
 

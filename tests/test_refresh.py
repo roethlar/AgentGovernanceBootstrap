@@ -259,6 +259,19 @@ class RefreshTests(unittest.TestCase):
         self.assertEqual(proc.returncode, 4, proc.stderr)
         self.assertIn("duplicate", proc.stderr)
 
+    def test_lint_exempts_machines_md_as_create_on_first_use(self):
+        # .agents/machines.md is a designated create-on-first-use home
+        # (the per-machine facts file): its absence in a fresh repo is
+        # expected, never a dead reference.
+        (self.target / ".agents").mkdir()
+        (self.target / ".agents" / "state.md").write_text(
+            "machine facts live in `.agents/machines.md`\n", newline="\n")
+        commit_all(self.target, "state pointer")
+        proc = refresh(self.toolkit, self.target)
+        self.assertEqual(proc.returncode, 0, proc.stderr)
+        self.assertNotIn("references missing path `.agents/machines.md`",
+                         proc.stdout)
+
     # -- equivalence boundary (a historical hash never widens it) --------
 
     def test_formerly_containing_current_hash_does_not_widen_boundary(self):

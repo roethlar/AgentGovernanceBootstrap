@@ -156,7 +156,8 @@ intact.
 2. `.agents/state.md` from its template — current truth only: what is true
    now, active work, blockers, next action. No historical narrative; honor
    the template's write rules (volatile facts stamped `as of <commit>`,
-   counts pointed to not copied, machine-local facts labeled or omitted).
+   counts pointed to not copied, machine-specific facts to the tracked
+   `.agents/machines.md` keyed by machine and dated, created on first use).
 3. `.agents/decisions.md` from its template — settled decisions, generalized
    to make sense without chat context, citing superseded docs.
 4. `.agents/push-policy.md` from `templates/push-policy.template.md`
