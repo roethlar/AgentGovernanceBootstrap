@@ -1,8 +1,11 @@
 # bootstrap Step 7: carve-out commit shape + non-git branch resolution
 
-Status: DRAFT 2026-07-10 — awaiting owner approval; no implementation
-authorized. Drafted on owner instruction ("make whatever plans are needed to
-address anything new", 2026-07-10).
+Status: APPROVED 2026-07-10 — two-commit carve-out route approved on the
+summary (both commits named up front in the approval; no tool changes; the
+dirty-tree guard stays strict). Non-git branch settled by owner ruling,
+verbatim: "just make git a hard requirement. git init on any repos without
+.git, gated with a simple Y/n, where n quits the process and Y, the
+default, does the git setup." Implementation awaits an explicit owner go.
 
 ## Why this plan exists
 
@@ -57,25 +60,25 @@ is tightening transaction guarantees; a procedure that tells the truth
 beats a guard with a carve-out. Revisit only if the two-commit shape
 proves problematic in the field.
 
-**Non-git branch: stop cleanly, honestly scoped.** Resolve H3's second gap
-in favor of NOT implementing a non-git install (refresh stays git-only; its
-"single installer, never hand-copied" protection depends on git custody
-checks). Step 1's decline path is rewritten: when the owner declines
-`git init`, the run copies ONLY the judgment drafts to their final paths
-("On disk only — no version control", limitation recorded as today), states
-plainly that the shipped set — `AGENTS.md`, skills, wrappers, hooks — CANNOT
-be installed without git because `refresh.py` is its sole installer, and
-Step 7.2/7.3 are skipped, closing with the standing offer that a later
-`git init` makes a normal bootstrap possible. The approval-summary non-git
-paragraph is aligned. If the owner would rather support full non-git
-installs, that is a refresh.py feature with its own transaction design —
-out of scope here, needs its own plan.
+**Non-git branch: git is a hard requirement (owner ruling 2026-07-10).**
+There is no on-disk-only mode. `procedures/bootstrap.md` Step 1 is
+rewritten: when the target has no `.git`, ask the owner one gated
+question — "Initialize git here? [Y/n]" — where **Y is the default** and
+performs `git init` (the scoped first commit then joins the bootstrap
+normally), and **n quits the whole bootstrap** with nothing written. The
+"On disk only — no version control" continuation is deleted from Step 1,
+and the matching non-git paragraph is deleted from
+`templates/approval-summary.template.md` (by approval time the target
+always has git). `tools/refresh.py` is unchanged — its non-git rejection
+(exit 2) becomes unreachable through the procedure and remains the
+backstop for direct invocation.
 
 ## Slices
 
-1. `procedures/bootstrap.md` Step 7 route split + Step 1 decline-path
-   rewrite; `templates/approval-summary.template.md` commit-paragraph and
-   non-git-paragraph alignment. Docs/template-only.
+1. `procedures/bootstrap.md` Step 7 route split + Step 1 hard-requirement
+   rewrite (Y/n gate, Y default inits git, n quits);
+   `templates/approval-summary.template.md` commit-paragraph carve-out
+   variant added and non-git paragraph deleted. Docs/template-only.
 2. Regression tests pinning the route's mechanics in `tests/test_refresh.py`
    (current behavior, so the procedure's claims stay true): foreign
    `AGENTS.md` present → flagged, not installed; uncommitted deletion →
