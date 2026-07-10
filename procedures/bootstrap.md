@@ -31,8 +31,10 @@ Three rules govern everything you show and do here:
 
 The canonical copy of this process lives on GitHub
 (`https://github.com/roethlar/AgentGovernanceBootstrap.git`); the LAN gitea
-remote (`http://q:3000/michael/AgentGovernanceBootstrap.git`) is a mirror —
-a faster fetch source when reachable, never authoritative.
+remote (`http://q:3000/michael/AgentGovernanceBootstrap.git`) is the
+owner-controlled mirror — a trusted fetch source whose purpose is covering
+GitHub being unreachable. It may lag GitHub; lag is expected, never a
+conflict. Canon propagates only via pushes to GitHub.
 
 Sync the local toolkit clone (the directory containing this `procedures/`
 folder; normally `~/dev/AgentGovernanceBootstrap`) before anything else. Run

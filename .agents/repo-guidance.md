@@ -54,9 +54,11 @@ For documentation-only changes, run `git diff --check`. Changes touching
 
 - Canonical remote: GitHub, `https://github.com/roethlar/AgentGovernanceBootstrap.git`.
   This toolkit's canon propagates only when pushed there.
-- LAN gitea mirror: `http://q:3000/michael/AgentGovernanceBootstrap.git` — a
-  mirror of GitHub (faster fetch on the LAN); it may lag and is never
-  authoritative.
+- LAN gitea mirror: `http://q:3000/michael/AgentGovernanceBootstrap.git` —
+  the owner-controlled LAN mirror of GitHub, a trusted fetch source whose
+  purpose is covering GitHub being unreachable. It may lag GitHub; lag is
+  expected, never a conflict (2026-06-10 decision; owner ruling
+  2026-07-10). Canon propagates only via pushes to GitHub.
 - Push policy lives in `.agents/push-policy.md`.
 
 ## Earned Practices
