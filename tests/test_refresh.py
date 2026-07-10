@@ -65,6 +65,7 @@ def make_toolkit(root: Path) -> Path:
     (tk / "templates" / "hooks" / "claude" / "settings.json").write_text(CUR_SETTINGS, newline="\n")
     (tk / "templates" / "shims" / "CLAUDE.template.md").write_text(CUR_SHIM, newline="\n")
     shipped = {
+        "schema": 1,
         "artifacts": [
             {"source": "templates/AGENTS.template.md", "target": "AGENTS.md",
              "class": "replace-whole", "formerly": [nhash(OLD_AGENTS)]},
@@ -251,6 +252,13 @@ class RefreshTests(unittest.TestCase):
         self.assertEqual(proc.returncode, 4, proc.stderr)
         self.assertIn("absolute", proc.stderr)
         self.assertFalse((self.root / "evil.md").exists())
+
+    def test_manifest_missing_schema_refused(self):
+        self._mutate_manifest(lambda d: d.pop("schema"))
+        proc = refresh(self.toolkit, self.target)
+        self.assertEqual(proc.returncode, 4, proc.stderr)
+        self.assertIn("schema", proc.stderr)
+        self.assertFalse((self.target / "AGENTS.md").exists())
 
     def test_manifest_duplicate_target_refused(self):
         self._mutate_manifest(

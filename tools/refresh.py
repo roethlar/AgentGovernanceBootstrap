@@ -168,6 +168,8 @@ def validate_manifest(shipped: dict, toolkit: Path) -> "list[str]":
     existing sources."""
     errors = []
     seen = set()
+    if shipped.get("schema") != 1:
+        errors.append("unsupported or missing manifest schema (expected 1, got {!r})".format(shipped.get("schema")))
 
     def check_rel(kind, rel):
         p = Path(rel)
