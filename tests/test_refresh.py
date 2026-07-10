@@ -369,6 +369,17 @@ class RefreshTests(unittest.TestCase):
         self.assertEqual(proc.returncode, 0, proc.stderr)
         self.assertIn("toolkit tree is dirty", proc.stdout)
 
+    def test_lint_allow_marker_suppresses_same_line_only(self):
+        (self.target / ".agents").mkdir()
+        (self.target / ".agents" / "state.md").write_text(
+            "see `made/up-path.md` <!-- lint: allow -->\n"
+            "and `also/missing.md`\n", newline="\n")
+        commit_all(self.target, "state with marker")
+        proc = refresh(self.toolkit, self.target)
+        self.assertEqual(proc.returncode, 0, proc.stderr)
+        self.assertNotIn("made/up-path.md", proc.stdout)
+        self.assertIn("references missing path `also/missing.md`", proc.stdout)
+
     def test_render_cmd_per_platform(self):
         sys.path.insert(0, str(TOOLS))
         self.addCleanup(sys.path.remove, str(TOOLS))

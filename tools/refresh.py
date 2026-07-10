@@ -370,19 +370,24 @@ def lint_governance(target_repo: Path) -> list:
         rel = f.relative_to(target_repo).as_posix()
         text = f.read_text(encoding="utf-8", errors="replace")
         seen = set()
-        for m in PATH_TOKEN.finditer(text):
-            tok = m.group(1)
-            if tok in seen or not _lintable_repo_path(tok):
+        for line in text.splitlines():
+            if "lint: allow" in line:
+                # The visible per-line escape for legitimate illustrative or
+                # historical references (same convention as the plan lint).
                 continue
-            seen.add(tok)
-            if tok.rstrip("/") in LINT_EXEMPT_PATHS:
-                continue
-            if not (target_repo / tok.rstrip("/")).exists():
-                dh = _deletion_commit(target_repo, tok, deleted_cache)
-                if dh:
-                    findings.append((rel, "historical: `{}` - deleted in {}".format(tok, dh), "note"))
-                else:
-                    findings.append((rel, "references missing path `{}`".format(tok), "warn"))
+            for m in PATH_TOKEN.finditer(line):
+                tok = m.group(1)
+                if tok in seen or not _lintable_repo_path(tok):
+                    continue
+                seen.add(tok)
+                if tok.rstrip("/") in LINT_EXEMPT_PATHS:
+                    continue
+                if not (target_repo / tok.rstrip("/")).exists():
+                    dh = _deletion_commit(target_repo, tok, deleted_cache)
+                    if dh:
+                        findings.append((rel, "historical: `{}` - deleted in {}".format(tok, dh), "note"))
+                    else:
+                        findings.append((rel, "references missing path `{}`".format(tok), "warn"))
         if f.name == "decisions.md":
             entries = list(re.finditer(r"^### (.+)$", text, re.M))
             for i, em in enumerate(entries):
