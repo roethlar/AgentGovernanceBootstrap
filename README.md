@@ -60,7 +60,7 @@ are the triage queue; closed issues are the outcome ledger.
 ## Requirements
 
 - Git.
-- Python 3.9+ (`tools/refresh.py`, stdlib only). On Windows prefer `py -3`;
+- Python 3.10+ (`tools/refresh.py`, stdlib only). On Windows prefer `py -3`;
   a bare `python3` on PATH is often the Microsoft Store stub.
 - An agent harness that can read files and run commands (bootstrap only;
   refresh is plain Python).

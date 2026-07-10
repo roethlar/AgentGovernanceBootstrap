@@ -42,8 +42,8 @@ python3 -m unittest discover -s tests -v
 ```
 
 On Windows run it from Git Bash as `py -3 -m unittest discover -s tests -v`
-(stock `python3` on PATH is the Microsoft Store stub); the suite self-shims
-`python3` for subprocesses (`tests/_pyshim.py`).
+(stock `python3` on PATH is the Microsoft Store stub). The suite requires
+Python 3.10+ and runs its subprocesses via the invoking interpreter.
 
 For documentation-only changes, run `git diff --check`. Changes touching
 `docs/superpowers/plans/` additionally run the plan lint:

@@ -68,9 +68,10 @@ another repo. Everything else in the toolkit stays read-only.
    `python --version`. Treat a candidate as absent when the command fails OR
    its output mentions "was not found" or "Microsoft Store" — Windows ships
    App Execution Alias stubs named `python`/`python3` that sit on PATH but
-   only open the Store. The floor is Python 3.9 (a stock macOS `python3`
-   suffices); below it, probe versioned names (`python3.14`, ...). If every
-   probe fails, help the human install Python first.
+   only open the Store. The floor is Python 3.10 (a stock macOS `python3`
+   is 3.9 and does NOT suffice — install one via brew or python.org); below
+   the floor, probe versioned names (`python3.14`, ...). If every probe
+   fails, help the human install Python first.
 
 ## Step 2: Discover the repo (live)
 

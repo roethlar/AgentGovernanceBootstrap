@@ -35,7 +35,7 @@ message records the toolkit commit it synced to. --stage-only stages and
 stops (the bootstrap procedure then stages the approved judgment drafts and
 makes the single scoped commit covering both groups). Neither mode pushes.
 
-Python 3.9+, stdlib only.
+Python 3.10+, stdlib only.
 """
 
 import argparse

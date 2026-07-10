@@ -2,7 +2,7 @@
 
 ## One-time setup, per machine
 
-1. Install Git and Python 3.9+. Windows:
+1. Install Git and Python 3.10+. Windows:
    `winget install Git.Git Python.Python.3.12`.
 2. Clone this toolkit — `git clone
    https://github.com/roethlar/AgentGovernanceBootstrap.git
