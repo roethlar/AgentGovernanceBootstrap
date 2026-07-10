@@ -78,8 +78,8 @@ self-contained:
    verification command errors out on 3.9 before asserting anything. The
    README/bootstrap claim of a 3.9 floor is therefore unverifiable by the
    repo's own suite. Related drift: `.agents/repo-guidance.md` says the
-   suite "self-shims `python3`" via `tests/_pyshim.py`, but
-   `ensure_python3()` currently has no caller.
+   suite "self-shims `python3`" via `tests/_pyshim.py`, but <!-- plan-lint: allow -->
+   `ensure_python3()` had no caller (module deleted at `9b3aa64`).
 
 Findings deliberately NOT in this plan (the review's Phase 1+ material —
 plan/apply approval protocol, pinned-provenance redesign, self-update
@@ -99,7 +99,7 @@ requirement; no test rewrites for old interpreters.
   means installing a real Python (brew or python.org) rather than relying
   on a stock 3.9; the bootstrap Step 1 probe already falls through to
   versioned interpreter names.
-- Resolve the `_pyshim` drift: `ensure_python3()` in `tests/_pyshim.py`
+- Resolve the `_pyshim` drift: `ensure_python3()` in `tests/_pyshim.py` <!-- plan-lint: allow -->
   has no caller; wire it back in if subprocess runs still need it, or
   correct the "self-shims" claim in `.agents/repo-guidance.md` — whichever
   the code evidence supports.
