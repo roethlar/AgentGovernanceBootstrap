@@ -272,6 +272,37 @@ class RefreshTests(unittest.TestCase):
         self.assertNotIn("references missing path `.agents/machines.md`",
                          proc.stdout)
 
+    # -- plan/apply protocol ----------------------------------------------
+
+    def test_plan_json_is_read_only_and_complete(self):
+        out = self.root / "plan.json"
+        before = run_git(self.target, "rev-parse", "HEAD").strip()
+        proc = refresh(self.toolkit, self.target, "--plan-json", str(out))
+        self.assertEqual(proc.returncode, 0, proc.stderr)
+        self.assertIn("read-only", proc.stdout)
+        self.assertFalse((self.target / "AGENTS.md").exists())
+        self.assertEqual(run_git(self.target, "rev-parse", "HEAD").strip(), before)
+        self.assertEqual(run_git(self.target, "status", "--porcelain"), "")
+        rec = json.loads(out.read_text())
+        for key in ("schema", "toolkit_sha", "toolkit_dirty", "manifest_digest",
+                    "target_head", "installs", "updates", "removes",
+                    "gitignore_repairs", "flags", "staged_paths", "digest"):
+            self.assertIn(key, rec)
+        self.assertTrue(any(e["target"] == "AGENTS.md" for e in rec["installs"]))
+        self.assertEqual(rec["target_head"], before)
+
+    def test_plan_digest_stable_then_content_sensitive(self):
+        out1, out2, out3 = (self.root / n for n in ("p1.json", "p2.json", "p3.json"))
+        refresh(self.toolkit, self.target, "--plan-json", str(out1))
+        refresh(self.toolkit, self.target, "--plan-json", str(out2))
+        d1 = json.loads(out1.read_text())["digest"]
+        self.assertEqual(d1, json.loads(out2.read_text())["digest"])
+        with open(str(self.toolkit / "templates" / "AGENTS.template.md"), "a",
+                  newline="\n") as f:
+            f.write("changed\n")
+        refresh(self.toolkit, self.target, "--plan-json", str(out3))
+        self.assertNotEqual(d1, json.loads(out3.read_text())["digest"])
+
     # -- equivalence boundary (a historical hash never widens it) --------
 
     def test_formerly_containing_current_hash_does_not_widen_boundary(self):

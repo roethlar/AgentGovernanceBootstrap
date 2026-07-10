@@ -374,6 +374,39 @@ def lint_governance(target_repo: Path) -> list:
     return findings
 
 
+def manifest_digest(toolkit: Path) -> str:
+    return hashlib.sha256(
+        (toolkit / "tools" / "shipped-set.json").read_bytes()).hexdigest()
+
+
+def build_record(toolkit: Path, target: Path, plan: Plan) -> dict:
+    """The immutable operation record: what a human approves is what
+    --apply later verifies, field for field, before any write."""
+    def entry(t, s):
+        return {"target": t,
+                "source": Path(s).relative_to(toolkit).as_posix(),
+                "sha256": hashlib.sha256(Path(s).read_bytes()).hexdigest()}
+    head = git(target, "rev-parse", "HEAD", check=False)
+    rec = {
+        "schema": 1,
+        "toolkit_sha": git(toolkit, "rev-parse", "HEAD").stdout.strip(),
+        "toolkit_dirty": bool(
+            git(toolkit, "status", "--porcelain", check=False).stdout.strip()),
+        "manifest_digest": manifest_digest(toolkit),
+        "target_head": head.stdout.strip() if head.returncode == 0 else "",
+        "installs": [entry(t, s) for t, s in plan.install],
+        "updates": [entry(t, s) for t, s in plan.update],
+        "removes": list(plan.remove),
+        "gitignore_repairs": [[ln, old, list(repl)]
+                              for ln, old, repl in plan.gitignore_repairs],
+        "flags": [[t, r] for t, r in plan.flags],
+        "staged_paths": touched_paths(plan),
+    }
+    canonical = json.dumps(rec, sort_keys=True, separators=(",", ":"))
+    rec["digest"] = hashlib.sha256(canonical.encode("utf-8")).hexdigest()
+    return rec
+
+
 def touched_paths(plan: Plan) -> list:
     paths = [t for t, _ in plan.install + plan.update] + list(plan.remove)
     if plan.gitignore_repairs:
@@ -531,7 +564,23 @@ def main(argv=None) -> int:
     ap.add_argument("--toolkit", default=None, help="toolkit root (default: this script's repo)")
     ap.add_argument("--stage-only", action="store_true", help="stage reconciled paths, do not commit (first-bootstrap mode)")
     ap.add_argument("--no-sync", action="store_true", help="skip syncing the toolkit clone")
+    ap.add_argument("--plan-json", default=None, metavar="PATH",
+                    help="read-only: write the operation record as JSON (or - for stdout) and change nothing")
+    ap.add_argument("--apply", default=None, metavar="PLAN",
+                    help="apply a --plan-json record, refusing if anything drifted since it was made")
     args = ap.parse_args(argv)
+
+    if args.plan_json and args.apply:
+        print("refresh: --plan-json and --apply are mutually exclusive", file=sys.stderr)
+        return 2
+    plan_record = None
+    if args.apply:
+        try:
+            plan_record = json.loads(Path(args.apply).read_text(encoding="utf-8"))
+        except (OSError, ValueError) as exc:
+            print("refresh: cannot read plan {}: {}".format(args.apply, exc), file=sys.stderr)
+            return 2
+        args.no_sync = True  # apply never resyncs: the record is the operation
 
     toolkit = Path(args.toolkit).resolve() if args.toolkit else Path(__file__).resolve().parent.parent
     target = Path(args.target).resolve()
@@ -575,6 +624,19 @@ def main(argv=None) -> int:
         for line in conflicts:
             print("  " + line, file=sys.stderr)
         return 3
+
+    if args.plan_json:
+        record = build_record(toolkit, target, plan)
+        payload = json.dumps(record, indent=2, sort_keys=True) + "\n"
+        if args.plan_json == "-":
+            sys.stdout.write(payload)
+        else:
+            Path(args.plan_json).write_text(payload, encoding="utf-8")
+        print("governance refresh plan against toolkit {} (read-only - nothing changed)".format(toolkit_sha))
+        print(summarize(plan, sync_note))
+        for rel, note_msg, kind in lint_governance(target):
+            print("  {} {}: {}".format("NOTE" if kind == "note" else "LINT", rel, note_msg))
+        return 0
 
     changed = bool(plan.install or plan.update or plan.remove or plan.gitignore_repairs)
     if changed:
