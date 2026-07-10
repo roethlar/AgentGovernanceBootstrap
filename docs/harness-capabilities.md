@@ -9,6 +9,16 @@ here with its date. Facts below marked "global" describe user-level config,
 not the repo-level configs the toolkit ships; do not cite them as evidence
 for repo-level behavior.
 
+Claim discipline: every claim here is one of **observed** (carries a date
+and, where it matters, the harness version and command), **assumed**
+(labeled), or **historical** (superseded or version-scoped — evidence about
+that version only). An observation holds for the version probed; a newer
+installed version needs a scoped recheck before the claim is relied on for
+recovery or reviewer dispatch. Launch/recovery command shapes recorded here
+or seeded into `tools/refresh.py` are syntactically-known invocations —
+PATH presence is probed at offer time, and nothing else (auth state,
+headless mode, JSON support) is implied.
+
 (Salvaged 2026-07-08 from the closed eval workstream's
 `evals/harness-capabilities.md`; original validated 2026-06-29, eval-lane
 apparatus dropped. Full original in git history.)
@@ -60,7 +70,9 @@ Verify-once ledger:
   with a blocking `before_tool_call` event, "not configured like
   Claude-style hook events" — yet our owner-verified live check proved a
   Claude-schema repo-level `.agents/hooks.json` SessionStart fires in a
-  trusted workspace. Verified beats recalled: the shipped hook stands. The
+  trusted workspace. Verified beats recalled: the firing MECHANISM stands
+  verified (the agy hook itself was retired 2026-07-09 on the merits — see
+  the ledger above; this paragraph predates that retirement). The
   plugin `before_tool_call` surface remains a lead for future enforcement
   hooks (verify before use); agy MCP registration reportedly lives in
   `~/.gemini/config/mcp_config.json` / the `/mcp` overlay (also unverified).

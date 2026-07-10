@@ -1,7 +1,13 @@
 # reviewloop: ship the review entry point; harden acceptance; scope its claims
 
-Status: APPROVED 2026-07-10 — owner approval, verbatim: "Do the plans for
-the rest as well." Implementation in progress.
+Status: CLOSED 2026-07-10 — landed on owner approval, verbatim: "Do the
+plans for the rest as well." Commit map: slice 1 shipped skill + wrapper
+`77bbf60` (wrapper byte-identical to the dogfood copy, which classifies
+current on the next refresh); slice 2 acceptance hardening + probe-scoped
+claims + branch scoping `7295d19` (outgoing playbook hash was already in
+`formerly[]`); slice 3 capability-ledger claim discipline in the commit
+carrying this line (legend added; the stale "shipped hook stands" prose
+reconciled with the 2026-07-09 agy retirement). Suite 103/103.
 
 ## Why this plan exists
 
