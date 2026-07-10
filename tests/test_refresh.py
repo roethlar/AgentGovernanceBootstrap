@@ -170,6 +170,33 @@ class RefreshTests(unittest.TestCase):
         self.assertIn("FLAG AGENTS.md", proc.stdout)
         self.assertIn("bootstrap procedure", proc.stdout)
 
+    # -- legacy carve-out route mechanics (bootstrap Step 7) -------------
+    # Pins the behavior the two-commit carve-out route documents: refresh
+    # refuses an uncommitted deletion of the foreign AGENTS.md (the
+    # dirty-path guard), and installs with its own commit once the
+    # deletion is committed - the route's commit 2.
+
+    def test_uncommitted_foreign_agents_deletion_is_refused(self):
+        (self.target / "AGENTS.md").write_text("# Legacy house rules\n", newline="\n")
+        commit_all(self.target, "legacy governance")
+        (self.target / "AGENTS.md").unlink()
+        proc = refresh(self.toolkit, self.target)
+        self.assertEqual(proc.returncode, 3, proc.stderr)
+        self.assertIn("uncommitted changes", proc.stderr)
+        self.assertFalse((self.target / "AGENTS.md").exists())
+        self.assertFalse((self.target / ".claude").exists())
+
+    def test_committed_foreign_agents_deletion_installs_and_commits(self):
+        (self.target / "AGENTS.md").write_text("# Legacy house rules\n", newline="\n")
+        commit_all(self.target, "legacy governance")
+        (self.target / "AGENTS.md").unlink()
+        commit_all(self.target, "carve-out: delete legacy AGENTS.md")
+        n = len(self.commits())
+        proc = refresh(self.toolkit, self.target)
+        self.assertEqual(proc.returncode, 0, proc.stderr)
+        self.assertEqual((self.target / "AGENTS.md").read_text(), CUR_AGENTS)
+        self.assertEqual(len(self.commits()), n + 1)
+
     # -- newline normalization ------------------------------------------
 
     def test_crlf_checkout_of_current_content_is_treated_current(self):
