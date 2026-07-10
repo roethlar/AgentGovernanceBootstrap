@@ -1,11 +1,15 @@
 # bootstrap Step 7: carve-out commit shape + non-git branch resolution
 
-Status: APPROVED 2026-07-10 — two-commit carve-out route approved on the
-summary (both commits named up front in the approval; no tool changes; the
-dirty-tree guard stays strict). Non-git branch settled by owner ruling,
-verbatim: "just make git a hard requirement. git init on any repos without
-.git, gated with a simple Y/n, where n quits the process and Y, the
-default, does the git setup." Implementation awaits an explicit owner go.
+Status: CLOSED 2026-07-10 — landed on owner go ("go on all"). Commit map:
+slice 1 procedures/template rewrite `2478103`; slice 2 route-mechanics
+regression tests `dc87799` (guard-proven: dirty-path guard neutralized in
+a scratch clone turns the refusal test red); slice 3 closure in the commit
+carrying this line. Suite 83/83 (python3.14). Owner rulings recorded
+2026-07-10: two-commit carve-out route, both commits announced in the
+approval summary; git is a hard requirement — "git init on any repos
+without .git, gated with a simple Y/n, where n quits the process and Y,
+the default, does the git setup" (verbatim). GitHub issue #4 is resolved
+by this plan and awaits an explicit owner go to close.
 
 ## Why this plan exists
 
