@@ -1,7 +1,13 @@
 # refresh guidance lint: kill the false positives, drive the baseline to zero
 
-Status: APPROVED 2026-07-10 — owner approval, verbatim: "Do the plans for
-the rest as well." Implementation in progress.
+Status: CLOSED 2026-07-10 — landed on owner approval, verbatim: "Do the
+plans for the rest as well." Commit map: slice 1 marker support `7074f6b`
+(guard-proven); slice 2 baseline cleanup + zero-warn regression test in
+the commit carrying this line — the six live warn findings (protocol
+token, illustrative layouts, historical install location, declined
+artifact, external-repo file) each got the same-line marker with a short
+reason, and `lint_governance` over this repo now returns zero warn-level
+findings, enforced by the suite.
 
 ## Why this plan exists
 

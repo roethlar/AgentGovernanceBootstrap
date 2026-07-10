@@ -146,7 +146,7 @@ dispatch is **retained unchanged**. Three new subcommands were assessed —
 `codex review` (first-party non-interactive review), `codex plugin` (plugin
 management), and `codex mcp-server` (run Codex as an MCP stdio server):
 
-- **`codex mcp-server` was tested** (MCP `initialize` + `tools/list` over stdio,
+- **`codex mcp-server` was tested** (MCP `initialize` + `tools/list` over stdio, <!-- lint: allow (MCP protocol method, not a repo path) -->
   bounded, inspection-only — no agent turn invoked). It speaks protocol
   `2025-06-18`, identifies as `codex-mcp-server` `0.144.0`, and exposes exactly
   two tools: `codex` (required `prompt`; structured `sandbox` =
@@ -254,7 +254,7 @@ What changed, and what each change supersedes or amends:
   CI-executability rule. Supersedes the script half of the 2026-06-09/10
   kickoff decision; the single-session kickoff, Step 0 sync, and evidence
   rule stand. The `.bootstrap-tmp` handoff pack dies with its generator; the
-  self-ignored `drafts/` custody convention survives in the procedure.
+  self-ignored `drafts/` custody convention survives in the procedure. <!-- lint: allow (procedure convention, not a repo path) -->
 - **The JSON layer is retired** — `repo-map.json` / `artifact-manifest.json`
   templates deleted; both on the retired list (flag-only). Field evidence:
   frozen and wrong in every audited repo while the prose files stayed
@@ -321,7 +321,7 @@ Status: Active
 corrected by its supersession note).
 
 Decision: every playbook template shipped under
-`.bootstrap-tmp/templates/playbooks/` is installed into
+`.bootstrap-tmp/templates/playbooks/` is installed into <!-- lint: allow (historical install location) -->
 `.agents/playbooks/<name>.md` on every route, unconditionally — the same
 standing-guarantee class as operator wrappers and hooks (2026-06-18). There is
 no approval-summary question, no default, no per-run choice, and no tier
@@ -376,7 +376,7 @@ inside the single `.agents/` set: path-conditional rules in
 Splitting state or decisions per subtree would violate the
 one-discoverable-current-state-entry-point invariant. Real-world nested
 per-directory `AGENTS.md` layouts exist (observed 2026-07-03 in the `agentrq`
-repo: `backend/` and `frontend/` each carry their own `AGENTS.md` plus a
+repo: `backend/` and `frontend/` each carry their own `AGENTS.md` plus a <!-- lint: allow (illustrative monorepo layout) -->
 `@AGENTS.md` shim), but they are evidence about content-bearing `AGENTS.md`
 systems and do not transfer to this toolkit, whose `AGENTS.md` carries no
 repo-specific content.
@@ -414,7 +414,7 @@ silo that diverges from the neutral source.
 Corollaries settled in the same session:
 
 - **Durable repo facts a working model learns** (not a decision, not churny
-  current-state) have a home: `.agents/repo-facts.jsonl` — JSONL, append-only
+  current-state) have a home: `.agents/repo-facts.jsonl` — JSONL, append-only <!-- lint: allow (proposed-and-declined artifact) -->
   (one fact per line), `evidence` field required, read on demand, never
   auto-injected. It is the in-repo, harness-neutral equivalent of a harness's
   "auto memory" (which the harness-local-memory invariant forbids relying on).
@@ -857,7 +857,7 @@ small for wrappers (the toolkit currently ships wrapper templates only for Claud
 Code, `:158`) but real for hooks (it ships claude/codex/grok/agents configs,
 `:200-201`). Severity low — unused files / mild over-documentation, no incorrect
 behavior or data loss. Source:
-`bugs/headroom-harness-artifact-overproduction-2026-06-23.md`.
+`bugs/headroom-harness-artifact-overproduction-2026-06-23.md`. <!-- lint: allow (file in the external agent-harvest repo) -->
 
 Options: (a) reconcile explicitly: keep the draft-all portability default but add a
 sentence to both "all routes" sections pointing at the smallest-set invariant, and

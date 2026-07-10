@@ -834,6 +834,20 @@ class RefreshTests(unittest.TestCase):
         self.assertIn(str(self.toolkit / "procedures" / "bootstrap.md"), text)
 
 
+class GuidanceLintBaselineTests(unittest.TestCase):
+    """This repo's own .agents/*.md files lint clean at warn level, so the
+    next real LINT warning is signal, not noise. Legitimate illustrative or
+    historical references carry the same-line 'lint: allow' marker."""
+
+    def test_this_repos_agents_files_have_zero_warn_findings(self):
+        sys.path.insert(0, str(TOOLS))
+        self.addCleanup(sys.path.remove, str(TOOLS))
+        import refresh as refresh_mod
+        warns = [f for f in refresh_mod.lint_governance(TOOLS.parent)
+                 if f[2] == "warn"]
+        self.assertEqual([], warns)
+
+
 class RealManifestEquivalenceTests(unittest.TestCase):
     """Regression for the real shipped set: wherever a current source's
     own hash sits in its formerly[] list, current-plus-an-extra-trailing-
