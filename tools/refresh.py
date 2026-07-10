@@ -135,6 +135,24 @@ def sync_toolkit(toolkit: Path) -> str:
     return "no canonical remote reachable; proceeding on the local toolkit copy (may be stale)"
 
 
+def maybe_reexec(head_before: str, head_after: str, environ=None, execv_fn=None,
+                 script_argv=None) -> bool:
+    """After a sync fast-forward, run the freshly synced runner exactly once:
+    re-exec with --no-sync under a loop-guard marker, so a new manifest is
+    never read by an old in-memory runner. Returns False when no re-exec is
+    needed; a real re-exec never returns (fakes do, for tests)."""
+    environ = os.environ if environ is None else environ
+    if head_after == head_before or environ.get("AGB_REFRESH_REEXEC"):
+        return False
+    environ["AGB_REFRESH_REEXEC"] = "1"
+    argv = [sys.executable, str(Path(__file__).resolve())]
+    argv += list(sys.argv[1:] if script_argv is None else script_argv)
+    if "--no-sync" not in argv:
+        argv.append("--no-sync")
+    (os.execv if execv_fn is None else execv_fn)(sys.executable, argv)
+    return True
+
+
 def load_shipped_set(toolkit: Path) -> dict:
     return json.loads((toolkit / "tools" / "shipped-set.json").read_text(encoding="utf-8"))
 
@@ -623,7 +641,12 @@ def main(argv=None) -> int:
             return 4
         policy_line = policy_lines[-1]
 
-    sync_note = "" if args.no_sync else sync_toolkit(toolkit)
+    sync_note = ""
+    if not args.no_sync:
+        head_before = git(toolkit, "rev-parse", "HEAD").stdout.strip()
+        sync_note = sync_toolkit(toolkit)
+        head_after = git(toolkit, "rev-parse", "HEAD").stdout.strip()
+        maybe_reexec(head_before, head_after)
     toolkit_sha = git(toolkit, "rev-parse", "--short", "HEAD").stdout.strip()
 
     shipped = load_shipped_set(toolkit)

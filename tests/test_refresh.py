@@ -361,6 +361,26 @@ class RefreshTests(unittest.TestCase):
         self.assertEqual(proc.returncode, 0, proc.stderr)
         self.assertIn("toolkit tree is dirty", proc.stdout)
 
+    def test_maybe_reexec_runs_new_runner_once(self):
+        sys.path.insert(0, str(TOOLS))
+        self.addCleanup(sys.path.remove, str(TOOLS))
+        import refresh as refresh_mod
+        calls = []
+        env = {}
+        refresh_mod.maybe_reexec("aaa", "bbb", environ=env,
+                                 execv_fn=lambda exe, argv: calls.append(argv),
+                                 script_argv=["/repo", "--stage-only"])
+        self.assertEqual(len(calls), 1)
+        self.assertIn("--no-sync", calls[0])
+        self.assertIn("--stage-only", calls[0])
+        self.assertEqual(env.get("AGB_REFRESH_REEXEC"), "1")
+        # same head: no re-exec; marker set: no second re-exec even on change
+        self.assertFalse(refresh_mod.maybe_reexec(
+            "aaa", "aaa", environ={}, execv_fn=lambda *a: calls.append(a)))
+        self.assertFalse(refresh_mod.maybe_reexec(
+            "aaa", "bbb", environ=env, execv_fn=lambda *a: calls.append(a)))
+        self.assertEqual(len(calls), 1)
+
     # -- equivalence boundary (a historical hash never widens it) --------
 
     def test_formerly_containing_current_hash_does_not_widen_boundary(self):
