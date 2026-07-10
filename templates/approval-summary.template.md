@@ -78,12 +78,13 @@ making ONE scoped commit covering both groups (exactly the lists above,
 never `git add -A`, never `git add -f`). Nothing is pushed yet; the push
 policy written by this run governs all subsequent commits.>
 
-<Non-git targets: there is no commit to authorize yet. Ask here whether to
-`git init` and include the scoped first commit (see bootstrap.md, "If the
-target is not a git repository"). If the owner declines, replace the two
-lists above with one list titled "On disk only - no version control" and
-replace the commit paragraph with a plain statement that `git init` remains
-the owner's decision.>
+<Legacy carve-out runs (a foreign `AGENTS.md` is being superseded): state
+BOTH exact commit messages instead — commit 1, the carve-out (judgment
+drafts + supersession banners + the legacy file's deletion); commit 2, the
+refresh install's own commit. Approving this summary authorizes exactly
+those two commits, in that order, and nothing else. Git is a hard
+requirement settled at Step 1; a target without git never reaches this
+summary.>
 
 ## Push Policy
 

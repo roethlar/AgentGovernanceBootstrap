@@ -56,14 +56,13 @@ another repo. Everything else in the toolkit stays read-only.
 
 ## Step 1: Prerequisites
 
-1. **Git.** Check the target root for `.git/`. If missing, ask the owner —
-   now, not at the approval stage — whether to `git init` and make the
-   scoped first commit part of this bootstrap. If the owner approves, init
-   and continue normally. If the owner declines: nothing is committable —
-   the approval summary's Committed lists become one list titled "On disk
-   only — no version control", and the drafted guidance must state the
-   limitation plainly (no history, no rollback, state can drift silently),
-   recorded as the top risk in the summary and in `.agents/state.md`.
+1. **Git — hard requirement.** Check the target root for `.git/`. If
+   missing, ask the owner one gated question — now, not at the approval
+   stage: "Initialize git here? [Y/n]". Y is the default (an empty reply
+   counts as Y): run `git init` and the scoped first commit becomes part
+   of this bootstrap. n — or any decline — ends the bootstrap immediately
+   with nothing written. There is no on-disk-only mode: `tools/refresh.py`
+   is the shipped set's sole installer and requires git.
 2. **Python** (for `tools/refresh.py`). Probe in order: `py -3 --version`
    (the canonical Windows launcher; prefer it there), `python3 --version`,
    `python --version`. Treat a candidate as absent when the command fails OR
@@ -187,6 +186,12 @@ and wait.
 
 ## Step 7: After approval — install and commit
 
+Two routes. The approval summary must have announced which route applies
+and its exact commit message(s); the owner's approval covers exactly that
+shape and nothing else.
+
+**Standard route** — no legacy core governance file is being superseded:
+
 1. Copy approved judgment drafts to their final paths; apply approved
    supersession banners.
 2. Run `<probed-python> <toolkit>/tools/refresh.py --stage-only <repo>`. The
@@ -201,6 +206,25 @@ and wait.
    action ("move the files into place") approves copying alone; confirm
    commit scope in one line first. Never amend, rebase, squash, or
    force-push it afterward without a fresh owner go.
+
+**Legacy carve-out route** — a foreign `AGENTS.md` is being superseded.
+Refresh refuses to install over the foreign file AND over its uncommitted
+deletion (the dirty-path guard), so this route is exactly TWO scoped
+commits, both announced with exact messages in the approval summary:
+
+1. **Commit 1 — the carve-out.** Copy approved judgment drafts to their
+   final paths, apply approved supersession banners, delete the legacy
+   `AGENTS.md`, and commit exactly those approved paths with the first
+   announced message.
+2. **Commit 2 — the shipped set.** Run
+   `<probed-python> <toolkit>/tools/refresh.py <repo>` (default mode, not
+   `--stage-only`); it installs the shipped set and makes its own scoped
+   commit recording the toolkit commit. Surface every FLAG line to the
+   owner. Nothing lands between the two commits, and nothing after them
+   without a fresh owner go; the never-amend rule above applies to both.
+
+Both routes, then:
+
 4. Consult `.agents/push-policy.md`: `always` ⇒ push immediately naming the
    remote; `operators` ⇒ push if this commit is operator-invoked; otherwise
    ask once, in one line, naming the remotes when there are several, and
