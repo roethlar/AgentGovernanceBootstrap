@@ -45,7 +45,10 @@ On Windows run it from Git Bash as `py -3 -m unittest discover -s tests -v`
 (stock `python3` on PATH is the Microsoft Store stub); the suite self-shims
 `python3` for subprocesses (`tests/_pyshim.py`).
 
-For documentation-only changes, run `git diff --check`.
+For documentation-only changes, run `git diff --check`. Changes touching
+`docs/superpowers/plans/` additionally run the plan lint:
+`python3 -m unittest tests.test_plan_lint -v` (Windows, from Git Bash:
+`py -3 -m unittest tests.test_plan_lint -v`).
 
 ## Remotes & Sync
 
