@@ -695,6 +695,8 @@ def main(argv=None) -> int:
 
     print("governance refresh against toolkit {}".format(toolkit_sha))
     print(summarize(plan, sync_note))
+    if git(toolkit, "status", "--porcelain", check=False).stdout.strip():
+        print("  NOTE: toolkit tree is dirty; installed bytes may not match {}".format(toolkit_sha))
     for rel, msg, kind in lint_governance(target):
         print("  {} {}: {}".format("NOTE" if kind == "note" else "LINT", rel, msg))
     if changed and args.stage_only:

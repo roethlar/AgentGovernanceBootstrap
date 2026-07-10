@@ -347,6 +347,20 @@ class RefreshTests(unittest.TestCase):
         staged = run_git(self.target, "diff", "--cached", "--name-only").split()
         self.assertIn("AGENTS.md", staged)
 
+    def test_dirty_toolkit_notes_default_mode_and_refuses_apply(self):
+        with open(str(self.toolkit / "templates" / "shims" / "CLAUDE.template.md"),
+                  "a", newline="\n") as f:
+            f.write("uncommitted\n")
+        out = self.root / "plan.json"
+        refresh(self.toolkit, self.target, "--plan-json", str(out))
+        self.assertTrue(json.loads(out.read_text())["toolkit_dirty"])
+        proc = refresh(self.toolkit, self.target, "--apply", str(out))
+        self.assertEqual(proc.returncode, 4, proc.stderr)
+        self.assertIn("dirty", proc.stderr)
+        proc = refresh(self.toolkit, self.target)
+        self.assertEqual(proc.returncode, 0, proc.stderr)
+        self.assertIn("toolkit tree is dirty", proc.stdout)
+
     # -- equivalence boundary (a historical hash never widens it) --------
 
     def test_formerly_containing_current_hash_does_not_widen_boundary(self):
