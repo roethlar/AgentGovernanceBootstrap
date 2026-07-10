@@ -190,6 +190,18 @@
       "formerly": []
     },
     {
+      "source": "templates/skills/shared/review/SKILL.md",
+      "target": ".agents/skills/review/SKILL.md",
+      "class": "replace-if-unmodified",
+      "formerly": []
+    },
+    {
+      "source": "templates/commands/claude/review.md",
+      "target": ".claude/commands/review.md",
+      "class": "replace-if-unmodified",
+      "formerly": []
+    },
+    {
       "source": "templates/hooks/claude/settings.json",
       "target": ".claude/settings.json",
       "class": "replace-if-unmodified",
