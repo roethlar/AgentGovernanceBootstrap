@@ -1,7 +1,19 @@
 # refresh.py: read-only plan / verified apply protocol + provenance integrity
 
-Status: APPROVED 2026-07-10 — owner approval, verbatim: "Approved. Do the
-plans for the rest as well." Implementation in progress.
+Status: CLOSED 2026-07-10 — landed on owner approval, verbatim: "Approved.
+Do the plans for the rest as well." Commit map: slice 1 plan mode
+`12b6bd4`; slice 2 verified apply `d49c317`; slice 3 dirty-toolkit NOTE
+`fbf8266`; slice 4 re-exec `f72e3bf` (unit-tested via injected exec — a
+real exec would replace the test process; deviation from the drafted
+fixture-remote test, noted here); slice 5 manifest schema `c9921e7`;
+slice 6 bootstrap/summary wiring + Windows rendering `300bff1`. Suite
+103/103 (python3.14); code slices guard-proven against the pre-slice
+runner in scratch copies (slice-2 note: three of four apply tests proved
+red against the old runner; the fourth shares their mechanism). One
+design amendment landed with slice 6: the carve-out route's commit 2
+stays default mode — commit 1 moves the target HEAD, so a pre-approval
+record cannot pin it; the two announced commit messages are that route's
+binding record.
 
 ## Why this plan exists
 
