@@ -1,8 +1,14 @@
 # refresh.py: trust-boundary and transaction hardening
 
-Status: DRAFT 2026-07-10 — awaiting owner approval; no implementation
-authorized. Drafted on owner instruction ("make whatever plans are needed to
-address anything new", 2026-07-10).
+Status: APPROVED 2026-07-10 — owner rulings (2026-07-10): slices 0–3 and 5
+are all in ("all 3 in" covering commit scope, preflight-before-commit, and
+the equivalence-boundary overwrite, plus the earlier symlink-containment
+go); the mirror-distrust slice is REJECTED and replaced by a wording-only
+fix — the gitea mirror is owner-controlled and trusted, GitHub stays the
+primary sync source, sync behavior unchanged ("fix wording, keep github
+primary"); the Python floor is raised to the actual requirement instead of
+restoring 3.9 test compatibility ("just make the required version the
+actual required version"). Implementation awaits an explicit owner go.
 
 ## Why this plan exists
 
@@ -15,20 +21,20 @@ the review's controlled reproductions are noted where they add evidence
 beyond code inspection. Findings restated in full here so this plan is
 self-contained:
 
-1. **Unauthenticated mirror can decide currency (review C1).**
-   `CANONICAL_URLS` (`tools/refresh.py:51-58`) lists the LAN gitea mirror
-   (`http://q:3000/...`) after GitHub; `sync_toolkit()` (`:106-120`)
-   fast-forwards the toolkit clone to whichever source responds first. When
-   GitHub is unreachable, a plain-HTTP LAN host decides what toolkit commit
-   is current — and what this repo ships is executable governance
-   (`AGENTS.md`, hooks, skills). `procedures/bootstrap.md` Step 0 currently
-   endorses the same fallback ("fast-forward ... to gitea's only when GitHub
-   did not [respond]"), so this is a recorded-intent change, not just a code
-   fix. `.agents/repo-guidance.md` (Remotes & Sync) already says the mirror
-   "is never authoritative" — the code and Step 0 are the lower-authority
-   sources here. Git subprocesses also have no timeout and no
-   `GIT_TERMINAL_PROMPT=0`, so an interactive credential prompt can hang an
-   automated run.
+1. **Mirror trust (review C1) — REJECTED as a defect by owner ruling
+   (2026-07-10).** The review treated the LAN gitea fallback in
+   `CANONICAL_URLS` (`tools/refresh.py:51-58`) / `sync_toolkit()`
+   (`:106-120`) as a supply-chain risk. The owner's ruling: the gitea host
+   is the one machine the owner controls outright; the mirror exists
+   precisely to cover GitHub being unreachable, and this is a personal
+   toolkit, not a release product. Sync behavior is therefore UNCHANGED
+   (GitHub primary, gitea fallback). What remains is wording drift: the
+   "never authoritative" phrasing in `.agents/repo-guidance.md` (Remotes &
+   Sync) and `procedures/bootstrap.md` Step 0 overstates the 2026-06-10
+   decision ("GitHub is authoritative; a lagging mirror is expected, not a
+   disagreement to flag" — about lag and canon-for-propagation, not trust)
+   and is fixed by slice 4. Subprocess timeouts / prompt suppression are
+   deliberately OUT of this plan (behavior change not ruled on).
 2. **Symlinks and unvalidated manifest paths can write outside the target
    (review C2).** `classify()` (`:137-168`) and `apply_plan()` (`:298-311`)
    join manifest paths and call `exists()`/`write_bytes()` with no `lstat()`
@@ -81,18 +87,24 @@ re-exec, release engineering, CI, licensing): they are product-shape
 decisions awaiting owner direction, recorded in the final session report,
 not silently dropped.
 
-## Slice 0 — test floor repair (prerequisite)
+## Slice 0 — raise the documented Python floor (prerequisite)
 
-Every later slice adds tests; they must run at the floor the repo claims.
+Owner ruling (2026-07-10): the required version becomes the actual
+requirement; no test rewrites for old interpreters.
 
-- Replace `Path.write_text(..., newline=...)` in `tests/` with a
-  3.9-compatible form (`open(..., "w", newline=...)` or `write_bytes`).
-- Resolve the `_pyshim` drift: wire `ensure_python3()` back into the suite
-  if subprocess runs still need it, or correct the claim in
-  `.agents/repo-guidance.md` — whichever the code evidence supports.
-- Verify: full suite green under a 3.9 interpreter if one is available on
-  the machine; otherwise state plainly that floor verification was
-  code-inspection only and record that as a known gap.
+- The suite's real floor is Python 3.10 (`Path.write_text(newline=...)`,
+  added in 3.10, used in `tests/test_refresh.py:62-82`). Update every
+  documented floor claim — README, `docs/usage.md`, `procedures/bootstrap.md`
+  Step 1 probe wording — from 3.9 to 3.10. On macOS/Windows/Linux this
+  means installing a real Python (brew or python.org) rather than relying
+  on a stock 3.9; the bootstrap Step 1 probe already falls through to
+  versioned interpreter names.
+- Resolve the `_pyshim` drift: `ensure_python3()` in `tests/_pyshim.py`
+  has no caller; wire it back in if subprocess runs still need it, or
+  correct the "self-shims" claim in `.agents/repo-guidance.md` — whichever
+  the code evidence supports.
+- Note: `tests/test_plan_lint.py` intentionally runs on 3.9 and stays so —
+  raising the floor does not license new 3.10-only usage there.
 
 ## Slice 1 — preflight before mutation (H5 + H7)
 
@@ -137,23 +149,21 @@ All fatal validation moves ahead of the first write:
   only planned paths and the unrelated file remains staged; post-commit
   scope verification failure path exercised with a forced mismatch.
 
-## Slice 4 — sync authentication (C1)
+## Slice 4 — mirror wording fix (C1 as re-ruled; docs only)
 
-- The mirror never decides currency. `sync_toolkit()` fast-forwards only to
-  a head attested by GitHub (`ls-remote` on the canonical URL); when GitHub
-  is unreachable, proceed on the local copy with the existing flag note —
-  never fast-forward to a mirror-only head. The mirror remains usable as an
-  object transport for a GitHub-attested SHA (fetch from mirror, verify the
-  attested commit is what arrived) — or is dropped from sync entirely if the
-  owner prefers; decide at approval.
-- All git subprocesses in `refresh.py` gain a bounded timeout and
-  `GIT_TERMINAL_PROMPT=0`; a timeout is a failed source, not a hang.
-- `procedures/bootstrap.md` Step 0 is amended to match (mirror as transport
-  for GitHub-attested heads only; offline → local copy + flag), fixing the
-  lower-authority source per the flag-conflicts invariant.
-- Tests: fake-remote harness — GitHub down + mirror responding does NOT
-  advance the clone; GitHub attesting a SHA the mirror serves does; prompt
-  suppression and timeout wiring asserted on the subprocess call.
+Sync code and behavior UNCHANGED (owner ruling 2026-07-10: GitHub stays
+primary, the gitea mirror is owner-controlled and trusted, the fallback is
+the mirror's purpose).
+
+- `.agents/repo-guidance.md` (Remotes & Sync): replace "it may lag and is
+  never authoritative" with wording matching the 2026-06-10 decision and
+  the owner's intent — the mirror is the owner-controlled LAN mirror of
+  GitHub, a trusted fetch source that covers GitHub being unreachable; it
+  may lag, and lag is expected, never a conflict; canon propagates only
+  via pushes to GitHub.
+- `procedures/bootstrap.md` Step 0: same alignment where it calls the
+  mirror "never authoritative"; the fallback instruction itself stands.
+- No test changes (no behavior changed).
 
 ## Slice 5 — equivalence boundary integrity (M1)
 
@@ -178,10 +188,8 @@ red, restore). Slice 0's floor check as described there.
 - No plan/apply approval protocol, no manifest schema version, no re-exec
   after self-update, no CI/release work — Phase 1+ material awaiting owner
   direction.
-- Slice 4 changes recorded Step 0 behavior; a machine that is offline from
-  GitHub but on-LAN loses mirror-driven freshness and proceeds on the local
-  copy with a flag. That is the intended trade (mirror is documented
-  non-authoritative); the owner should confirm it consciously.
+- No sync behavior change and no subprocess timeout/prompt-suppression
+  work (owner ruling 2026-07-10; a future one-line ask if hangs ever bite).
 - Slice 3's pathspec commit changes commit mechanics on every governed
   repo; the scope-verification step is the guard against surprises.
 - Containment checks add `lstat`/`resolve` calls per artifact — negligible
