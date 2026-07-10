@@ -99,8 +99,21 @@ def git(repo: Path, *args: str, check: bool = True) -> "subprocess.CompletedProc
     return proc
 
 
-def is_git_repo(path: Path) -> bool:
-    return git(path, "rev-parse", "--is-inside-work-tree", check=False).returncode == 0
+def worktree_root_error(path: Path) -> "str | None":
+    """Non-None reason when `path` is not the root of a git working tree.
+    Bare repos and nested subdirectories are refused before any mutation —
+    a nested install would govern a subtree and leave the root bare."""
+    inside = git(path, "rev-parse", "--is-inside-work-tree", check=False)
+    if inside.returncode != 0:
+        return "not a git repository"
+    if inside.stdout.strip() != "true":
+        return "a bare repository (no working tree)"
+    top = git(path, "rev-parse", "--show-toplevel", check=False)
+    if top.returncode != 0 or not top.stdout.strip():
+        return "missing a resolvable working-tree root"
+    if Path(top.stdout.strip()).resolve() != path:
+        return "not the working-tree root (that is {})".format(top.stdout.strip())
+    return None
 
 
 def sync_toolkit(toolkit: Path) -> str:
@@ -434,12 +447,24 @@ def main(argv=None) -> int:
     toolkit = Path(args.toolkit).resolve() if args.toolkit else Path(__file__).resolve().parent.parent
     target = Path(args.target).resolve()
 
-    if not is_git_repo(target):
-        print("refresh: {} is not a git repository".format(target), file=sys.stderr)
+    err = worktree_root_error(target)
+    if err:
+        print("refresh: {} is {}".format(target, err), file=sys.stderr)
         return 2
     if not (toolkit / "tools" / "shipped-set.json").exists():
         print("refresh: {} does not look like the toolkit (no tools/shipped-set.json)".format(toolkit), file=sys.stderr)
         return 2
+
+    # Preflight: every fatal read happens before the first write, so a
+    # nonzero exit always means "nothing changed" — never half-committed.
+    policy_path = target / ".agents" / "push-policy.md"
+    policy_line = None
+    if policy_path.exists():
+        policy_lines = policy_path.read_text(encoding="utf-8").strip().splitlines()
+        if not policy_lines:
+            print("refresh: {} is empty or malformed; fix the push policy before refreshing".format(policy_path), file=sys.stderr)
+            return 4
+        policy_line = policy_lines[-1]
 
     sync_note = "" if args.no_sync else sync_toolkit(toolkit)
     toolkit_sha = git(toolkit, "rev-parse", "--short", "HEAD").stdout.strip()
@@ -447,6 +472,7 @@ def main(argv=None) -> int:
     shipped = load_shipped_set(toolkit)
     plan = classify(target, toolkit, shipped)
     check_committability(target, plan, shipped)
+    core = core_flags(plan, shipped)
 
     conflicts = dirty_conflicts(target, plan)
     if conflicts:
@@ -469,11 +495,9 @@ def main(argv=None) -> int:
         print("  {} {}: {}".format("NOTE" if kind == "note" else "LINT", rel, msg))
     if changed and args.stage_only:
         print("  (staged only - the bootstrap procedure makes the single scoped commit)")
-    policy = target / ".agents" / "push-policy.md"
-    if policy.exists():
-        print("push policy: {}".format(policy.read_text(encoding="utf-8").strip().splitlines()[-1]))
+    if policy_line is not None:
+        print("push policy: {}".format(policy_line))
 
-    core = core_flags(plan, shipped)
     if core:
         print(banner_block(core))
         prompt = bootstrap_prompt(toolkit, target)

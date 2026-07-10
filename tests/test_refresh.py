@@ -170,6 +170,36 @@ class RefreshTests(unittest.TestCase):
         self.assertIn("FLAG AGENTS.md", proc.stdout)
         self.assertIn("bootstrap procedure", proc.stdout)
 
+    # -- preflight before mutation ---------------------------------------
+    # A nonzero exit must always mean "nothing changed": target validation
+    # and push-policy parsing happen before the first write.
+
+    def test_bare_repo_is_refused(self):
+        bare = self.root / "bare.git"
+        subprocess.run(["git", "init", "-q", "--bare", str(bare)], check=True)
+        proc = refresh(self.toolkit, bare)
+        self.assertEqual(proc.returncode, 2, proc.stderr)
+        self.assertIn("bare repository", proc.stderr)
+
+    def test_nested_directory_is_refused(self):
+        sub = self.target / "sub"
+        sub.mkdir()
+        proc = refresh(self.toolkit, sub)
+        self.assertEqual(proc.returncode, 2, proc.stderr)
+        self.assertIn("working-tree root", proc.stderr)
+        self.assertFalse((sub / "AGENTS.md").exists())
+
+    def test_empty_push_policy_fails_before_any_write(self):
+        (self.target / ".agents").mkdir()
+        (self.target / ".agents" / "push-policy.md").write_text("", newline="\n")
+        commit_all(self.target, "empty policy")
+        n = len(self.commits())
+        proc = refresh(self.toolkit, self.target)
+        self.assertEqual(proc.returncode, 4, proc.stderr)
+        self.assertIn("push policy", proc.stderr)
+        self.assertFalse((self.target / "AGENTS.md").exists())
+        self.assertEqual(len(self.commits()), n)
+
     # -- legacy carve-out route mechanics (bootstrap Step 7) -------------
     # Pins the behavior the two-commit carve-out route documents: refresh
     # refuses an uncommitted deletion of the foreign AGENTS.md (the
