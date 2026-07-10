@@ -1,8 +1,14 @@
 # handoff operator: fast snapshot split + machine-local state relocation
 
-Status: DRAFT 2026-07-10 — awaiting owner approval; no implementation
-authorized. Drafted on owner instruction ("make whatever plans are needed to
-address anything new", 2026-07-10).
+Status: APPROVED 2026-07-10 — owner ruling, verbatim: "New tracked file
+`.agents/machines.md` — machine-specific facts live there under a heading
+per machine, dated. `handoff` writes machine facts only there; the main
+state file stays portable and may point to it. `drift` prunes stale
+entries. No hidden files, nothing lost on reclone." (Owner reply:
+"approved"; the owner proposed the tracked keyed file over both an
+untracked local file and omit-only.) The handoff/drift split was
+owner-settled 2026-07-09 (decisions log). Implementation awaits an
+explicit owner go.
 
 ## Why this plan exists
 
@@ -34,27 +40,31 @@ fleet's `AGENTS.md` twice.
 `## Blockers` if something is live) so the next session resumes without chat
 context — in-flight work, next action, stop. Seconds, not minutes. No
 archive rotation, no re-verification sweep, no mandatory re-anchoring of
-volatile facts. Machine-local facts (CLI paths, local tool versions, host
-layout) go to the untracked per-host file `.agents/state.local.md` — never
-into tracked state; tracked state may carry at most the portable pointer
-"machine-local facts live in each host's untracked `.agents/state.local.md`".
+volatile facts. Machine-specific facts (CLI paths, local tool versions,
+host layout) go to the TRACKED file `.agents/machines.md`, under a heading
+per machine (stable host key, e.g. hostname), each fact dated — never into
+`.agents/state.md`, which stays portable and may carry at most a pointer
+to `.agents/machines.md`. Created on first use, like the history archives.
 
 **`drift` (deliberate).** The bullet absorbs the hygiene rules verbatim from
 the current handoff bullet, per the decision entry: rotate landed/superseded
 `## Now` entries verbatim to `docs/history/state-archive.md`; re-verify the
 recorded basis of parked/blocked items and move falsified ones to
 `## Blockers` with new evidence; re-anchor or drop volatile `as of <commit>`
-facts; reduce copied counts/enumerations to pointers; and (reworded per
-issue #2) relocate any machine-local facts found in tracked state to
-`.agents/state.local.md`.
+facts; reduce copied counts/enumerations to pointers; and (per the
+2026-07-10 ruling) relocate machine-specific facts found in tracked state
+to `.agents/machines.md` and prune stale entries there.
 
-**Gitignore mechanism (issue #2).** Least machinery, per M8-style caution
-about installers editing tracking policy: the operator wording instructs
-adding `.agents/*.local.*` to the repo's `.gitignore` on first use, and the
-bootstrap procedure's judgment-draft step (Step 4) adds that line when
-drafting. `tools/refresh.py` does NOT enforce or repair it — no new ignore
-side effects. If the owner prefers refresh-enforced ignoring, that is a
-scope extension to decide at approval, not the default here.
+**Why tracked-and-keyed (issue #2's fix, owner design 2026-07-10).** The
+vela failure was unkeyed machine facts polluting the portable state file,
+not trackedness itself; an untracked local file dies on every reclone and
+reboot-cleaned temp path. A tracked per-machine-keyed file is durable,
+visible in history, works across all the owner's machines, and needs no
+gitignore machinery. `tools/refresh.py`'s `LINT_EXEMPT_PATHS` gains
+`.agents/machines.md` (a designated create-on-first-use home, same class
+as the history archives, so fresh repos do not lint it as a dead
+reference). The reviewloop's `harnesses.local.json` probe cache is
+unaffected — it is a regenerable self-authored cache, not durable memory.
 
 ## Implementation surface
 
@@ -72,10 +82,11 @@ From the decision entry plus issue #2, verified against the shipped set:
   slice).
 - `procedures/bootstrap.md` Step 4.2 — the state-draft write rules restate
   "machine-local facts labeled or omitted" and must adopt the
-  `state.local.md` wording; Step 4 gains the `.agents/*.local.*` gitignore
-  line.
+  `.agents/machines.md` wording (create on first use; no bootstrap draft).
 - The state template under `templates/` (write-rules preamble) — same
   rewording.
+- `tools/refresh.py` — add `.agents/machines.md` to `LINT_EXEMPT_PATHS`
+  (create-on-first-use home; small code change, suite-covered).
 - `docs/design.md:33` — cited by issue #2; verify and align during the
   slice.
 - This repo's own `AGENTS.md`, skills, and wrappers — via self-refresh, never
@@ -93,19 +104,21 @@ From the decision entry plus issue #2, verified against the shipped set:
 
 ## Verification
 
-`python3 -m unittest discover -s tests -v` (template structural tests ride
-the suite). Bite proof per issue #2, run manually after self-refresh: a
-`handoff` performed with a machine-local fact in hand yields zero
-`machine-local` content in tracked `.agents/state.md` (grep clean) and the
-fact in untracked `.agents/state.local.md`. Grep the whole template set for
-`machine-local` to prove one canonical rule remains.
+`python3 -m unittest discover -s tests -v` (template structural tests and
+the refresh lint exemption ride the suite). Bite proof per issue #2, run
+manually after self-refresh: a `handoff` performed with a machine-specific
+fact in hand yields zero machine-specific content in `.agents/state.md`
+(grep clean) and the fact in `.agents/machines.md` under this machine's
+heading, dated. Grep the whole template set for `machine-local` to prove
+one canonical rule remains.
 
 ## Non-goals and risks
 
 - No new operator vocabulary (owner rejected a `tidy`/`prune` operator,
   2026-07-09); the hygiene rules move homes, they are not deleted or
   weakened.
-- No refresh-enforced gitignore editing (see Design; owner may extend).
+- No gitignore machinery at all (the 2026-07-10 ruling made the file
+  tracked); no untracked `*.local.*` state file ships.
 - Fleet-wide wording change: every governed repo's next refresh replaces
   `AGENTS.md`. Repos mid-session during the swap see the old wording until
   their next refresh — acceptable, versions are individually coherent.
