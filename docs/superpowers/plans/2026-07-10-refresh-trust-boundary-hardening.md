@@ -189,5 +189,5 @@ red, restore). Slice 0's floor check as described there.
 
 Provenance: untracked holistic review (GPT-5.6-Sol, 2026-07-09), findings
 C1, C2, H2, H5, H7, M1, M9, re-verified against `tools/refresh.py` at
-`8c3b6e3` by code inspection this session (2026-07-10); owner instruction
+`8c3b6e3` by code inspection, 2026-07-10; owner instruction
 2026-07-10 to draft plans for the new findings.
