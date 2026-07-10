@@ -19,7 +19,7 @@ address anything new", 2026-07-10).
    `ece7b2e`, then refresh's own commit `889f38c`. Every future carve-out
    run must re-derive and re-justify the same deviation.
 2. **Holistic review finding H3** (untracked review, GPT-5.6-Sol,
-   2026-07-09; verified against the procedures this session): the same
+   2026-07-09; verified against the procedures 2026-07-10): the same
    route gap, plus a second unreachable branch — bootstrap Step 1 lets an
    owner decline `git init` and continue "on disk only" (the approval
    summary template even carries a non-git variant paragraph), but Step 7.2
@@ -114,5 +114,5 @@ Provenance: GitHub issue #4 (2026-07-10, ExchangeAdminWeb live run, commits
 `ece7b2e`/`889f38c` in that repo); untracked holistic review H3
 (2026-07-09), verified against `procedures/bootstrap.md` Steps 1/7,
 `templates/approval-summary.template.md`, and `tools/refresh.py` at
-`8c3b6e3` this session; owner instruction 2026-07-10 to draft plans for the
+`8c3b6e3`, 2026-07-10; owner instruction 2026-07-10 to draft plans for the
 new findings.
