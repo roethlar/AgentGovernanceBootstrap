@@ -234,7 +234,12 @@ def classify(target_repo: Path, toolkit: Path, shipped: dict) -> Plan:
         tgt_bytes = tgt.read_bytes()
         if _stem(tgt_bytes) == _stem(src_bytes):
             plan.current.append(art["target"])
-        elif candidate_hashes(tgt_bytes) & set(art.get("formerly", [])):
+        elif (candidate_hashes(tgt_bytes) & set(art.get("formerly", []))
+              and not candidate_hashes(tgt_bytes) & candidate_hashes(src_bytes)):
+            # A historical hash never widens the current equivalence
+            # boundary: when the current source's own hash sits in
+            # formerly[], a file within one newline of current-but-not-
+            # stem-equal must flag as owner-modified, not update (M1).
             plan.update.append((art["target"], src))
         elif art["class"] == "replace-whole":
             plan.flags.append((

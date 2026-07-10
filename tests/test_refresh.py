@@ -259,6 +259,27 @@ class RefreshTests(unittest.TestCase):
         self.assertEqual(proc.returncode, 4, proc.stderr)
         self.assertIn("duplicate", proc.stderr)
 
+    # -- equivalence boundary (a historical hash never widens it) --------
+
+    def test_formerly_containing_current_hash_does_not_widen_boundary(self):
+        # Record the CURRENT wrapper content's hash in formerly[] (the
+        # real manifest has this overlap), then present the current
+        # content plus one extra trailing newline: owner-modified, never
+        # silently "updated" back.
+        self._mutate_manifest(lambda d: [
+            a["formerly"].append(nhash(CUR_TOOL))
+            for a in d["artifacts"] if a["target"].endswith("tool.md")])
+        (self.target / ".claude" / "commands").mkdir(parents=True)
+        (self.target / ".claude" / "commands" / "tool.md").write_text(
+            CUR_TOOL + "\n", newline="\n")
+        commit_all(self.target, "extra trailing newline")
+        proc = refresh(self.toolkit, self.target)
+        self.assertEqual(proc.returncode, 0, proc.stderr)
+        self.assertIn("FLAG .claude/commands/tool.md", proc.stdout)
+        self.assertEqual(
+            (self.target / ".claude" / "commands" / "tool.md").read_text(),
+            CUR_TOOL + "\n")
+
     # -- exact commit scope ----------------------------------------------
 
     def test_pre_staged_unrelated_file_stays_out_of_the_commit(self):
@@ -660,6 +681,37 @@ class RefreshTests(unittest.TestCase):
         mod = self._refresh_mod()
         text = mod.non_tty_commands([], "p", self.target, self.toolkit)
         self.assertIn(str(self.toolkit / "procedures" / "bootstrap.md"), text)
+
+
+class RealManifestEquivalenceTests(unittest.TestCase):
+    """Regression for the real shipped set: wherever a current source's
+    own hash sits in its formerly[] list, current-plus-an-extra-trailing-
+    newline must classify owner-modified (flagged), never update."""
+
+    def test_overlapping_artifacts_flag_not_update(self):
+        sys.path.insert(0, str(TOOLS))
+        self.addCleanup(sys.path.remove, str(TOOLS))
+        import refresh as refresh_mod
+        toolkit = TOOLS.parent
+        shipped = refresh_mod.load_shipped_set(toolkit)
+        overlapping = [
+            a for a in shipped["artifacts"]
+            if refresh_mod.candidate_hashes((toolkit / a["source"]).read_bytes())
+            & set(a.get("formerly", []))]
+        if not overlapping:
+            self.skipTest("no current/formerly hash overlap in the manifest")
+        with tempfile.TemporaryDirectory() as tmp:
+            for art in overlapping:
+                target_repo = Path(tmp) / Path(art["target"]).name
+                dest = target_repo / art["target"]
+                dest.parent.mkdir(parents=True)
+                src_bytes = (toolkit / art["source"]).read_bytes()
+                dest.write_bytes(src_bytes + b"\n")
+                plan = refresh_mod.classify(
+                    target_repo, toolkit, {"artifacts": [art]})
+                self.assertEqual([], plan.update, art["target"])
+                self.assertEqual([art["target"]],
+                                 [t for t, _ in plan.flags], art["target"])
 
 
 if __name__ == "__main__":
