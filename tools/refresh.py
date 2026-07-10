@@ -541,6 +541,13 @@ def launch_argv(shape, prompt: str) -> list:
     return [part.replace("{prompt}", prompt) for part in shape]
 
 
+def render_cmd(argv, windows=None) -> str:
+    """Platform-correct copy/paste rendering: POSIX quoting is wrong for
+    Windows shells, so render with list2cmdline there."""
+    win = (os.name == "nt") if windows is None else windows
+    return subprocess.list2cmdline(argv) if win else shlex.join(argv)
+
+
 def non_tty_commands(candidates, prompt: str, target: Path, toolkit: Path) -> str:
     """The non-interactive fallback under the banner: never prompt, never
     hang - print the exact ready-to-paste launch command per detected
@@ -550,7 +557,7 @@ def non_tty_commands(candidates, prompt: str, target: Path, toolkit: Path) -> st
                 "  {}".format(toolkit / "procedures" / "bootstrap.md"))
     lines = ["  to run bootstrap, launch one of these in {}:".format(target)]
     for _name, shape in candidates:
-        lines.append("    " + shlex.join(launch_argv(shape, prompt)))
+        lines.append("    " + render_cmd(launch_argv(shape, prompt)))
     return "\n".join(lines)
 
 

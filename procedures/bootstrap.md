@@ -3,7 +3,10 @@
 You are an agent in a target repo. The owner started you with a one-line
 prompt pointing at this file. Follow it top to bottom. The single approval
 gate is the approval summary near the end — do not pause to ask the owner to
-approve each step.
+approve each step. Before that gate, nothing in the TARGET repository
+changes — no files, index entries, commits, remotes, or settings; the one
+sanctioned pre-approval write anywhere is Step 0's sync of the local
+toolkit clone, which never touches the target.
 
 The repo you are pointed at *is* the target — including this toolkit repo
 itself (a dogfood / self-application run is a normal in-place run whose
@@ -178,15 +181,21 @@ intact.
 
 ## Step 6: Approval summary
 
+First generate the machine plan:
+`<probed-python> <toolkit>/tools/refresh.py --plan-json .bootstrap-tmp/refresh-plan.json <repo>`
+— a read-only run that records exactly what refresh will install, update,
+remove, and stage, pinned to the toolkit commit, manifest digest, and
+target HEAD. The summary's shipped-set list is rendered FROM that record,
+never reconstructed by hand.
+
 Write `.bootstrap-tmp/drafts/approval-summary.md` from
 `templates/approval-summary.template.md`. It starts with `Approve`,
 `Approve after edits`, or `Do not approve yet`, and presents one complete
 picture: the judgment drafts (with custody proven by `git check-ignore` on
 each final path — a gitignored path goes in Local-only or raises the ignore
-rule as a question, never a silent `git add -f`), the shipped set
-`refresh.py` will install, the push-policy question, the inventory and
-fresh-eyes results for migrations, and the exact commit message. Present it
-and wait.
+rule as a question, never a silent `git add -f`), the shipped set from the
+plan record, the push-policy question, the inventory and fresh-eyes
+results for migrations, and the exact commit message. Present it and wait.
 
 ## Step 7: After approval — install and commit
 
@@ -198,10 +207,14 @@ shape and nothing else.
 
 1. Copy approved judgment drafts to their final paths; apply approved
    supersession banners.
-2. Run `<probed-python> <toolkit>/tools/refresh.py --stage-only <repo>`. The
-   script installs and stages the shipped set (repairing a known blanket
-   harness-dir ignore itself, flagging anything unexpected — surface every
-   FLAG line to the owner). Stage the copied judgment drafts.
+2. Run `<probed-python> <toolkit>/tools/refresh.py --apply
+   .bootstrap-tmp/refresh-plan.json --stage-only <repo>`. Apply verifies
+   the approved plan record first and refuses if the toolkit, manifest, or
+   target moved since approval (regenerate the plan and re-present the
+   summary if it does); it then installs and stages the shipped set
+   (repairing a known blanket harness-dir ignore itself, flagging anything
+   unexpected — surface every FLAG line to the owner). Stage the copied
+   judgment drafts.
 3. Make ONE scoped commit covering both groups — `git add` exactly the
    approved files, never `git add -A` — using the commit message the summary
    announced. The owner's approval covers this single commit; after an
@@ -223,9 +236,12 @@ commits, both announced with exact messages in the approval summary:
 2. **Commit 2 — the shipped set.** Run
    `<probed-python> <toolkit>/tools/refresh.py <repo>` (default mode, not
    `--stage-only`); it installs the shipped set and makes its own scoped
-   commit recording the toolkit commit. Surface every FLAG line to the
-   owner. Nothing lands between the two commits, and nothing after them
-   without a fresh owner go; the never-amend rule above applies to both.
+   commit recording the toolkit commit. Default mode, not `--apply`: commit
+   1 moves the target HEAD, so a pre-approval plan record cannot pin this
+   commit — on this route the two announced commit messages in the approval
+   summary are the binding record. Surface every FLAG line to the owner.
+   Nothing lands between the two commits, and nothing after them without a
+   fresh owner go; the never-amend rule above applies to both.
 
 Both routes, then:
 

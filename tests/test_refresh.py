@@ -369,6 +369,16 @@ class RefreshTests(unittest.TestCase):
         self.assertEqual(proc.returncode, 0, proc.stderr)
         self.assertIn("toolkit tree is dirty", proc.stdout)
 
+    def test_render_cmd_per_platform(self):
+        sys.path.insert(0, str(TOOLS))
+        self.addCleanup(sys.path.remove, str(TOOLS))
+        import refresh as refresh_mod
+        argv = ["claude", "read the file", "--flag"]
+        posix = refresh_mod.render_cmd(argv, windows=False)
+        self.assertIn("'read the file'", posix)
+        win = refresh_mod.render_cmd(argv, windows=True)
+        self.assertIn('"read the file"', win)
+
     def test_maybe_reexec_runs_new_runner_once(self):
         sys.path.insert(0, str(TOOLS))
         self.addCleanup(sys.path.remove, str(TOOLS))
