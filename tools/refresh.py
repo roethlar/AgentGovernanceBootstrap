@@ -579,8 +579,22 @@ def main(argv=None) -> int:
             return 4
         stage(target, plan)
         if not args.stage_only:
+            # Pathspec-scoped commit: unrelated pre-staged work stays staged
+            # and out of the governance commit, then the created commit is
+            # verified to touch exactly the planned paths.
+            paths = touched_paths(plan)
             git(target, "commit", "-m",
-                "governance refresh: toolkit {}\n\n{}".format(toolkit_sha, summarize(plan, "")))
+                "governance refresh: toolkit {}\n\n{}".format(toolkit_sha, summarize(plan, "")),
+                "--", *paths)
+            committed = set(
+                git(target, "show", "--name-only", "--format=", "HEAD").stdout.splitlines())
+            committed.discard("")
+            if committed != set(paths):
+                print("refresh: the created commit does not match the plan "
+                      "(expected {}; got {}). The commit exists - inspect it "
+                      "before retrying.".format(sorted(set(paths)), sorted(committed)),
+                      file=sys.stderr)
+                return 4
 
     print("governance refresh against toolkit {}".format(toolkit_sha))
     print(summarize(plan, sync_note))

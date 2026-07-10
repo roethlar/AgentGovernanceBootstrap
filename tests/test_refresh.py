@@ -259,6 +259,20 @@ class RefreshTests(unittest.TestCase):
         self.assertEqual(proc.returncode, 4, proc.stderr)
         self.assertIn("duplicate", proc.stderr)
 
+    # -- exact commit scope ----------------------------------------------
+
+    def test_pre_staged_unrelated_file_stays_out_of_the_commit(self):
+        (self.target / "unrelated.txt").write_text("wip\n", newline="\n")
+        run_git(self.target, "add", "unrelated.txt")
+        proc = refresh(self.toolkit, self.target)
+        self.assertEqual(proc.returncode, 0, proc.stderr)
+        committed = run_git(self.target, "show", "--name-only",
+                            "--format=", "HEAD").split()
+        self.assertIn("AGENTS.md", committed)
+        self.assertNotIn("unrelated.txt", committed)
+        staged = run_git(self.target, "diff", "--cached", "--name-only").split()
+        self.assertIn("unrelated.txt", staged)
+
     # -- legacy carve-out route mechanics (bootstrap Step 7) -------------
     # Pins the behavior the two-commit carve-out route documents: refresh
     # refuses an uncommitted deletion of the foreign AGENTS.md (the
