@@ -5,8 +5,10 @@ Keep it short: `## Now` holds only live entries; the `drift` operator's
 hygiene pass rotates landed or superseded entries verbatim to
 `docs/history/state-archive.md` (create it on first use) — never summarize
 them away, never let them pile up here. Write-time rules: volatile facts
-(push status, CI state, counts) carry `as of <commit>`; a count or
-enumeration another file owns is pointed to, never copied; machine-specific
+(CI state, counts) carry `as of <commit>`; push status is never recorded
+here — git owns it, and unpushed work is mentioned in the moment it
+matters, never written down; a count or enumeration another file owns is
+pointed to, never copied; machine-specific
 facts (local toolchains, host layout, per-clone posture) go to the tracked
 `.agents/machines.md`, keyed by machine and dated — never here.
 

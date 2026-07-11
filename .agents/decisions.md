@@ -34,6 +34,35 @@ live rule now owned elsewhere - archive it per the rule above: move it verbatim 
 
 ## Decisions
 
+### 2026-07-11 — Push status is never recorded in state files; git is the only source
+
+Status: Active
+
+Decision: state files never record push status. Git owns that fact; sessions
+check it live (the Session Startup clone-freshness check) and mention
+unpushed work only in the moment it matters — about to push, or handing off
+unpushed commits. `drift` deletes any recorded push-state line on sight
+instead of refreshing it. Owner-approved wording (2026-07-11): "Stop
+recording push status in state files, fleet-wide. Git already knows, and
+every session checks it live at startup. Agents mention unpushed work only
+when it matters right now — about to push, or handing off unpushed commits —
+and drift deletes any recorded push line instead of refreshing it."
+
+Basis: a recorded push line is a second copy of a fact git owns. It goes
+stale the moment the owner pushes manually outside a session, and every
+stale copy became an owner-facing nag — either a prompt to refresh the line
+or a false report of unpushed commits. This is the one-canonical-location
+invariant applied with git as the owning system.
+
+Changes: `templates/AGENTS.template.md` (drift operator line) and
+`templates/state.template.md` (write-time rules) drop push status from the
+volatile-facts examples and state the never-record rule. Reaches governed
+repos at the owner's next fleet refresh.
+
+Declined alongside (owner, 2026-07-11): a fifth `manual` push-policy option
+("agents never push, never ask; the owner handles propagation"). The
+2026-06-27 four-option policy set stands unchanged.
+
 ### 2026-07-10 — Release posture: perfect privately first, release widely later
 
 Status: Active
