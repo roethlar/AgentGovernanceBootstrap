@@ -2015,3 +2015,55 @@ the 2026-07-10 owner design (tracked `.agents/machines.md`).
 > `docs/superpowers/plans/2026-07-10-handoff-snapshot-and-machine-local-state.md`
 > (CLOSED). Decision text verbatim; only the Status line reflects adoption.
 
+The following Open-queue entry and its introducing paragraph are moved here
+verbatim from `.agents/decisions.md`:
+
+The following was recorded 2026-07-06 on the owner's explicit instruction
+("just add these as open items") as one of two owner-surfaced product gaps; the
+other (the fast-update docs-refresh path) was adopted 2026-07-08 as
+`tools/refresh.py` via the zero-based consolidation and is archived verbatim in
+`docs/history/decisions-archive.md`.
+
+### Open: the `reviewloop` playbook hard-requires git branches; it should not
+
+Evidence: `templates/playbooks/reviewloop.md` makes a per-finding git branch a
+load-bearing requirement of the loop, not a repo-configurable choice. The atomic
+unit is stated as "**one finding ↔ one branch ↔ one verdict**" (`:38`); the
+per-finding flow opens with "Finish the fix on a per-finding branch
+`fix/<id>-<slug>`" (`:124`); the reviewer dispatch pins "the reviewed branch
+**head SHA**" and merge-base (`:127-130`); accepted/reopened/invalid actions are
+all phrased in branch terms (`:156-163`); and both the finding-doc template
+(`**Branch**:`, `:211`) and the status index (a `Branch` column, `:270-273`)
+bake a branch in. This collides with this repo's own 2026-06-10
+"One-item-per-commit discipline" decision, which settled that "**Whether work
+happens on a branch is repo policy, not this rule**" — the playbook removes the
+per-repo discretion that decision reserves. Owner (2026-07-06): the playbook
+"demands git branches. it should not."
+
+Options: (a) re-express the atomic unit as "one finding ↔ one reviewable
+change ↔ one verdict" and make the branch one *permitted* isolation mechanism
+among others (branch, worktree, or a single commit on the working branch),
+deferring the choice to repo policy the way the commit-discipline decision does;
+the pinned base/head SHA contract (which needs only two commits, not a branch)
+and the reviewer's own disposable worktree stay unchanged. (b) keep branches as
+the documented default but add an explicit "no-branch" knob. (c) leave as-is.
+
+Recommendation: (a) — it aligns the playbook with the repo's existing
+branch-is-repo-policy decision and keeps the actual review discipline (pinned
+SHAs, guard proof, recorded fail-closed verdict) intact, since none of it
+depends on a branch existing. Playbook-template change only; no `discover.py`
+surface. A `plan` should confirm the SHA-pinning and worktree language survives
+the rewording before implementation.
+
+> Archived 2026-07-12: Adopted 2026-07-10 — resolved by the review-loop-shipping
+> plan (`docs/superpowers/plans/2026-07-10-review-loop-shipping.md`, CLOSED,
+> owner-approved), slice 2 landed in `7295d19`: `templates/playbooks/reviewloop.md`
+> now scopes per-finding branches as the loop's internal mechanics (its atomic
+> unit and guard-proof isolation), explicitly not repository branch policy —
+> whether the repo uses branches for other work stays repo policy, preserving
+> the discretion the 2026-06-10 one-item-per-commit decision reserves. Note the
+> landed resolution differs from this entry's recommendation (a): the collision
+> was resolved by scoping the branch to the loop's internals, not by making it
+> one permitted mechanism among others. Entry text verbatim; the line-number
+> citations describe the playbook as it stood 2026-07-06.
+
