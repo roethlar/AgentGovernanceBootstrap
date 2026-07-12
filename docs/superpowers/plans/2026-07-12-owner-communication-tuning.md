@@ -1,13 +1,16 @@
 # Per-Repo Owner-Communication Tuning
 
-Status: DRAFT 2026-07-12 — direction approved by the owner 2026-07-12
+Status: APPROVED 2026-07-12 — direction approved by the owner 2026-07-12
 (owner wording: "agreed, go", on option (a) of the 2026-07-10 Open decision
 "Per-repo tuning for verbosity and technical level" in
-`.agents/decisions.md`). Implementation is blocked on one owner decision,
-to be recorded here and in `.agents/decisions.md` when made: whether
-bootstrap asks the owner for the section's values at the approval gate
-(the push-policy pattern) or installs defaults silently for the owner to
-change later.
+`.agents/decisions.md`). Design settled by owner ruling the same day,
+verbatim: "yes, prompt. default is what I currently use- plain english exec
+summary for me; token-dense, detailed implementation plan for agents.
+alternates, devops - jargon is acceptable, detailed plan. student -
+accessible, instructive. any others you can think of, capped at 5." The
+approval summary asks (the push-policy pattern); the knob is a single named
+profile, five profiles total (three owner-named, two agent-proposed:
+`expert`, `brief`).
 
 ## Problem
 
@@ -26,14 +29,40 @@ design, read at session start (Session Startup step 1 in
 `templates/AGENTS.template.md`), and never touched by refresh — it is the
 correct home, and no new file class or load mechanism is needed.
 
-## Change
+## Design
 
-`templates/repo-guidance.template.md` gains an `## Owner Communication`
-section; `procedures/bootstrap.md` Step 4 fills it when drafting
-`.agents/repo-guidance.md`. The section tunes owner-facing chat output
-only — answers, summaries, decision asks. It never changes plan documents
-(agent-facing and technical per the plan contract), the register of
-durable repo files, or any safety, approval, or verification rule.
+One `Profile:` line in each repo's `.agents/repo-guidance.md`, chosen by
+the owner at the bootstrap approval gate. The five profiles, each defining
+the owner-chat register and the plan-document register:
+
+1. `default` — owner chat: plain-English executive summary, no jargon;
+   plans: token-dense, detailed, written for agents. (Owner-named;
+   reproduces current fleet-wide behavior.)
+2. `devops` — owner chat: technical jargon acceptable, summary-first;
+   plans: detailed. (Owner-named.)
+3. `student` — owner chat: accessible and instructive — explains the why,
+   defines terms on first use; plans: detailed, rationale spelled out.
+   (Owner-named.)
+4. `expert` — owner chat: terse practitioner shorthand, density over
+   ceremony; plans: token-dense, detailed. (Agent-proposed.)
+5. `brief` — owner chat: plain-English headlines only — the outcome and
+   the decision, detail on request; plans: token-dense, detailed.
+   (Agent-proposed.)
+
+Token-bloat constraint (owner principle, 2026-07-12 decision "Draft-all
+harness artifacts stands"): the drafted `.agents/repo-guidance.md` carries
+ONLY the chosen profile line with its one-line definition inline — never
+the full five-profile menu, which would cost every session in every repo.
+The menu's canonical home is `templates/approval-summary.template.md`
+(read once per bootstrap, never per session). The drafted line is
+self-contained so a governed repo needs no toolkit lookup to apply it.
+
+Scope guard: a profile tunes registers only. It never changes the plan
+contract's structure (plans stay agent-facing; owner decisions still come
+in chat, one at a time), any safety, approval, or verification rule, or
+the register of durable repo files.
+
+## Slices
 
 ### Slice 1: template section
 
@@ -41,66 +70,60 @@ Append to `templates/repo-guidance.template.md`:
 
 ```markdown
 ## Owner Communication
-<!-- Tunes owner-facing chat output for this repo: answers, summaries,
-     decision asks. Never changes plan documents (agent-facing, per the
-     AGENTS.md plan operator), durable repo files, or any approval rule.
-     Values shown are the defaults; the owner may change them anytime. -->
-- Verbosity: standard        <!-- brief | standard | detailed -->
-- Technical register: plain  <!-- plain | mixed | expert -->
-- Jargon: avoid              <!-- avoid | allow -->
+<!-- One profile line tuning owner-facing chat output (answers, summaries,
+     decision asks) and plan-document register. The owner chooses at the
+     approval gate from the five profiles in
+     approval-summary.template.md; never pre-fill from context. Write the
+     chosen profile WITH its one-line definition so this file stands
+     alone; never copy the full menu here. A profile never changes any
+     safety, approval, or verification rule. -->
+- Profile: default — owner chat: plain-English executive summary, no
+  jargon; plans: token-dense, detailed, written for agents.
 ```
 
-The defaults reproduce the existing fleet-wide behavior (plain English,
-no jargon), so a repo that never edits the section behaves exactly as
-before. Field semantics for the consuming agent: `Verbosity` scales how
-much supporting detail accompanies an answer; `Technical register` sets
-the working vocabulary (`plain` = non-engineer owner, `expert` =
-practitioner shorthand acceptable); `Jargon: allow` lifts the
-translate-all-terms obligation. The 25-50-word decision-ask shape from
-the plan operator is unchanged at the defaults and scales with
-`Verbosity`/`Technical register` when a repo tunes them.
+### Slice 2: approval-summary question + bootstrap drafting sentence
 
-### Slice 2: bootstrap drafting step
+`templates/approval-summary.template.md`: add an `## Owner Communication`
+section directly after `## Push Policy`, same shape as the push-policy
+question — default stated first (`1 — default`), the five numbered
+profiles with one-line definitions, and the guard note: do NOT pre-select
+or infer from prior decisions or context; the owner's approval-time reply
+is the only valid source; update the drafted repo-guidance line to the
+chosen profile (with definition) before the commit.
 
 `procedures/bootstrap.md` Step 4, list item 1 (drafting
-`.agents/repo-guidance.md` from the template): add one sentence stating
-how the Owner Communication section is filled. Pending the owner
-decision in the Status line, the sentence is one of:
-
-- ask variant: "Draft the Owner Communication section with the template
-  defaults; the approval summary asks the owner to confirm or change
-  them (the push-policy pattern — never pre-fill from context)." This
-  variant also adds a matching section to
-  `templates/approval-summary.template.md`.
-- defaults variant: "Draft the Owner Communication section with the
-  template defaults verbatim; the owner changes values on request after
-  install." No approval-summary change.
+`.agents/repo-guidance.md`): append one sentence — draft the Owner
+Communication line as `default` with its definition; the approval summary
+asks the owner to choose among the five profiles; update the drafted line
+to the owner's choice before commit. Step 6's summary-contents sentence
+("the push-policy question, ...") gains "the owner-communication
+question".
 
 ### Slice 3: record adoption
 
-When slices 1-2 land: flip the 2026-07-10 entry in
-`.agents/decisions.md` from Open to Adopted (rule's canonical home:
-the section comment in `templates/repo-guidance.template.md`), archive
-it per the decisions lifecycle, and set this plan's Status to CLOSED
-with the commit map.
+Flip the 2026-07-10 entry in `.agents/decisions.md` from Open to Adopted
+(rule's canonical home: the Owner Communication section of
+`templates/repo-guidance.template.md`; menu home:
+`templates/approval-summary.template.md`), archive it per the decisions
+lifecycle, set this plan's Status to CLOSED with the commit map, and
+update `.agents/state.md`.
 
 ## Propagation
 
 `tools/refresh.py` never touches `.agents/repo-guidance.md`, so existing
 governed repos do not gain the section on refresh. They gain it when the
-owner asks an agent in that repo to add it (copy the template section and
-tune the values), or on a bootstrap re-run. New bootstraps scaffold it
-from slice 1 onward. No shipped-set change, no `AGENTS.md` change, no
-new tests required by design — the change is a drafting-template section
-and one procedure sentence, with no runtime surface.
+owner asks an agent in that repo to add it (copy the slice-1 section and
+set the profile), or on a bootstrap re-run. New bootstraps scaffold it
+from slice 1 onward. No shipped-set change, no `AGENTS.md` change, no new
+tests by design — drafting-template and procedure prose only, no runtime
+surface.
 
 ## Verification
 
 - `python3 -m unittest discover -s tests -v` (Windows, from Git Bash:
-  `py -3 -m unittest discover -s tests -v`) — the guidance lint and
-  existing template tests must stay green.
-- This plan file itself:
-  `python3 -m unittest tests.test_plan_lint -v`.
-- Manual check, stated in the closing commit message: the drafted
-  section's defaults match the plan contract's register (plain English,
-  jargon avoided).
+  `py -3 -m unittest discover -s tests -v`) — guidance lint and template
+  tests stay green.
+- This plan file: `python3 -m unittest tests.test_plan_lint -v`.
+- Manual check, stated in the closing commit message: the `default`
+  profile's wording matches the plan contract's register, so an untouched
+  repo behaves exactly as before.
