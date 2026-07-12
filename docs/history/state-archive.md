@@ -4,6 +4,50 @@ Landed or superseded `.agents/state.md` entries, rotated here verbatim at
 handoff per the state-rotation rule (first applied 2026-07-08). Newest
 rotation first; entries are never edited after rotation.
 
+## Rotated 2026-07-12 (drift) — be03b2c steady-state anchor; holistic-review pointer resolved
+
+Disposition: superseded by re-anchoring to `0d05c97`. Two commits landed
+after the `be03b2c` anchor: the owner ran this repo's self-refresh
+(`32b598a`, 2026-07-10, toolkit `5574147`), and the push-status-never-recorded
+decision landed with its template change (`0d05c97`, 2026-07-11). The
+`## Now` entry, verbatim:
+
+- Steady state as of `be03b2c` (2026-07-10): the 2026-07-08 zero-based
+  consolidation is landed; the product shape is owned by
+  `.agents/repo-guidance.md` (Mission Detail). Every 2026-07-10 plan is
+  CLOSED with a commit map under `docs/superpowers/plans/`: the plan
+  contract (`d3f49d3`), self-refresh-is-owner-only (`292a4d2`), the
+  plan-lint suite (`279d25d`), carve-out two-commit route + git hard
+  requirement (`2478103`/`dc87799`), refresh trust-boundary hardening
+  (`9b3aa64`..`b24a0ab`), fresh-eyes clone rehearsal (`c85129e`), the
+  handoff/drift split with tracked `.agents/machines.md` (`741f846`), the
+  refresh plan/apply protocol + manifest schema + re-exec
+  (`12b6bd4`..`300bff1`), reviewloop shipping + acceptance hardening
+  (`77bbf60`/`7295d19`/`4562923`), and guidance-lint precision with a
+  zero-warn baseline (`7074f6b`/`be03b2c`). GitHub issues #2/#3/#4 closed
+  2026-07-10. The 2026-07-09 external holistic review is fully triaged:
+  every accepted finding landed; release engineering is deferred by the
+  release-posture decision; the per-repo verbosity/tech-level tuning idea
+  is queued Open in `.agents/decisions.md`. This repo's installed copies
+  intentionally lag the templates until the owner's next refresh
+  (owner-only rule, `292a4d2`). Earlier landed work: bootstrap-offer
+  banner (`f65e892`), dead-path lint (`e9e04b4`), newline equivalence
+  (issue #1). Rollout DONE for vela, Blit_v2, ai-rpg-engine,
+  Powershell-Token-Killer (details in `docs/history/state-archive.md`).
+  Per-harness capability record: `docs/harness-capabilities.md`.
+
+The `## Unrecorded Repo Memory` entry, verbatim (resolved: the untracked
+review file no longer exists in the working tree — `git status` clean,
+2026-07-12 — and the `## Now` entry above already records the review fully
+triaged, with the "untriaged remainder" items landed as the 2026-07-10
+plans or deferred by the release-posture decision):
+
+- `HOLISTIC-REVIEW-GPT-5.6-SOL.md` (untracked, owner-side): external review
+  assessed 2026-07-10; its verified findings are triaged into the four
+  2026-07-10 draft plans. Untriaged remainder (plan/apply approval
+  protocol, provenance pinning, review-loop shipping gap, release/CI
+  items) awaits owner direction.
+
 ## Rotated 2026-07-09 (fifth rotation, mid-session on plan close) — dead-path lint landed
 
 Disposition: landed 2026-07-09. Slice 1 (git-vouched deletions print `NOTE
