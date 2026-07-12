@@ -2092,3 +2092,53 @@ agent-judged escape hatch cheaply; (c) is a compromise. Low effort either way.
 > text verbatim; its `procedures/migration.md` citation describes the
 > pre-consolidation procedure set.
 
+The following Open-queue entry and its introducing batch paragraph are moved
+here verbatim from `.agents/decisions.md`:
+
+The following were assessed on 2026-06-23 from bug reports filed to the
+`agent-harvest` dropbox during a `headroom` (chopratejas/headroom) dogfood
+migration run, read against current repo evidence. They are appended at the end of
+the queue; the implementation sequence of the items above is unchanged. (The
+batch's authority/scope-boundary precedence finding was broadened into the
+general specific-over-generic precedence rule and adopted 2026-07-04 — see that
+decision; the original entry is archived verbatim.)
+
+### Open: "all routes" harness-artifact drafting contradicts the smallest-guidance-set invariant
+
+Evidence: `procedures/bootstrap.md` "Operator command wrappers (all routes)"
+(`:156`, `:159`) and "Hook install & trust (all routes)" (`:192-193`) instruct
+drafting wrappers/hooks for every harness the toolkit ships a template for, "even
+when the harness you are running in has no command-file mechanism," while
+`templates/AGENTS.template.md:61` states "Prefer the smallest durable guidance set
+that fits the repo. Over-documentation is a drift risk." No section reconciles the
+two, so an agent following the draft-all instruction literally produces governance
+files for harnesses a repo shows no evidence of using. In practice the bite is
+small for wrappers (the toolkit currently ships wrapper templates only for Claude
+Code, `:158`) but real for hooks (it ships claude/codex/grok/agents configs,
+`:200-201`). Severity low — unused files / mild over-documentation, no incorrect
+behavior or data loss. Source:
+`bugs/headroom-harness-artifact-overproduction-2026-06-23.md`. <!-- lint: allow (file in the external agent-harvest repo) -->
+
+Options: (a) reconcile explicitly: keep the draft-all portability default but add a
+sentence to both "all routes" sections pointing at the smallest-set invariant, and
+have the approval-summary step sort harness artifacts the repo shows no usage
+evidence for into a clearly-labeled "optional / not-evidenced" bucket the owner can
+drop. (b) make non-evidenced harness artifacts opt-in (draft only for harnesses
+with repo evidence; note the rest as available). (c) leave as-is and treat
+draft-all as the intended portability stance.
+
+Recommendation: (a). Docs-only reconciliation across `procedures/bootstrap.md`
+(the two "all routes" sections), `procedures/migration.md` (Step 4), and
+`templates/approval-summary.template.md` (the optional/not-evidenced bucket); it
+preserves the portability rationale while removing the literal contradiction. Lower
+priority than the medium-severity authority gap above. This intersects the
+2026-06-18 "operator command wrappers are a standing guarantee on every route"
+decision (which stays Active): the reconciliation must not weaken the wrapper
+guarantee, only label non-evidenced artifacts as optional in the summary.
+
+> Archived 2026-07-12: Closed by the Active decision "Draft-all harness
+> artifacts stands; 'smallest guidance set' means no token bloat, not fewer
+> support files" (2026-07-12, `.agents/decisions.md`) — owner ruled option
+> (c), no contradiction: the invariant governs guidance token cost, not the
+> presence of harness support files. Entry text verbatim.
+
