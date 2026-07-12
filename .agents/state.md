@@ -28,25 +28,15 @@ machine-local facts are labeled or omitted.
 
 ## Next
 
-- **Owner fleet-refresh pending**: the 2026-07-10/11 template changes
-  (handoff/drift split, `machines.md`, plan bullet, review skill/wrapper,
-  playbook hardening, push-status-never-recorded) reach governed repos only
-  when the owner runs the fleet refresh. This repo's own installed copies
-  were refreshed 2026-07-10 (`32b598a`) and lag only by the 2026-07-11
-  push-status template change (self-refresh is owner-only, `292a4d2`).
 - Per-repo verbosity/tech-level tuning sits Open in `.agents/decisions.md`
   awaiting an owner go for a plan.
 - **ExchangeAdminWeb**, the last legacy rollout repo, deferred by the owner
   to **2026-07-20** (re-affirmed 2026-07-09): run `tools/refresh.py`,
   resolve FLAG lines; oldest instance — 2026-06-22-era template, no
   repo-guidance.md, so it needs the bootstrap procedure's carve-out, the
-  same path qbit-mobile is exercising now.
-- qbit-mobile (fleet context, 2026-07-09): refresh at toolkit `319324e`
-  installed the shipped set and flagged its legacy `AGENTS.md`; the owner is
-  running the bootstrap carve-out there — the first live exercise of the
-  legacy-flag path. Not this repo's work item; friction observed there fed a
-  smoother-entry proposal, declined by the owner 2026-07-09 (rotated
-  verbatim to `docs/history/state-archive.md`).
+  same path qbit-mobile exercised (carve-out done, owner report
+  2026-07-12). The owner's fleet refresh (run by 2026-07-12) propagated
+  the 2026-07-10/11 template changes to governed repos.
 
 ## Blockers
 

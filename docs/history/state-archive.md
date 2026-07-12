@@ -4,6 +4,28 @@ Landed or superseded `.agents/state.md` entries, rotated here verbatim at
 handoff per the state-rotation rule (first applied 2026-07-08). Newest
 rotation first; entries are never edited after rotation.
 
+## Rotated 2026-07-12 (owner report) — fleet refresh run; qbit-mobile carve-out done
+
+Disposition: owner reported both done 2026-07-12. The fleet refresh
+propagated the 2026-07-10/11 template changes to governed repos; this
+repo's own installed copies were not re-refreshed (no new commits — local
+and GitHub HEAD both `e27fbc8` at the report) and still lag by the
+2026-07-11 push-status template change, as `## Now` records. The two
+`## Next` entries, verbatim:
+
+- **Owner fleet-refresh pending**: the 2026-07-10/11 template changes
+  (handoff/drift split, `machines.md`, plan bullet, review skill/wrapper,
+  playbook hardening, push-status-never-recorded) reach governed repos only
+  when the owner runs the fleet refresh. This repo's own installed copies
+  were refreshed 2026-07-10 (`32b598a`) and lag only by the 2026-07-11
+  push-status template change (self-refresh is owner-only, `292a4d2`).
+- qbit-mobile (fleet context, 2026-07-09): refresh at toolkit `319324e`
+  installed the shipped set and flagged its legacy `AGENTS.md`; the owner is
+  running the bootstrap carve-out there — the first live exercise of the
+  legacy-flag path. Not this repo's work item; friction observed there fed a
+  smoother-entry proposal, declined by the owner 2026-07-09 (rotated
+  verbatim to `docs/history/state-archive.md`).
+
 ## Rotated 2026-07-12 (drift) — be03b2c steady-state anchor; holistic-review pointer resolved
 
 Disposition: superseded by re-anchoring to `0d05c97`. Two commits landed
