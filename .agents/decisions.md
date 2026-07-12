@@ -99,32 +99,6 @@ This refines the personal-toolkit framing behind the 2026-07-10
 mirror-trust ruling (recorded in
 `docs/superpowers/plans/2026-07-10-refresh-trust-boundary-hardening.md`).
 
-### 2026-07-10 — Per-repo tuning for verbosity and technical level
-
-Status: Open
-
-Finding: owner idea (2026-07-10), verbatim: "A tuning option for
-verbosity/tech level per repo would probably be a good addition." The plan
-contract fixed the owner-facing register globally (plain English, roughly
-25-50 words per decision); a per-repo knob would calibrate agent output —
-verbosity, technical register, jargon tolerance — to each repo's audience.
-
-Options assessed: (a) an owner-communication section scaffolded by
-`templates/repo-guidance.template.md` (fields like verbosity level,
-technical register, jargon allowed), read at session start — repo-guidance
-is per-repo by design and refresh never touches it, so no new file class;
-(b) a parameter inside the AGENTS template — infeasible, the template is
-installed verbatim and byte-verified, parameters would break replace-whole
-matching; (c) decline.
-
-Standing recommendation: (a). Needs a plan on owner go; not scheduled.
-
-> Update 2026-07-12: owner go for option (a), verbatim: "agreed, go". Plan
-> drafted: `docs/superpowers/plans/2026-07-12-owner-communication-tuning.md`
-> (DRAFT — implementation blocked on one owner decision, recorded there:
-> approval-gate question vs silent defaults). Entry stays Open until the
-> plan lands, then flips to Adopted per slice 3.
-
 ### 2026-07-10 — Agents never update this repo's own governance while working on the toolkit
 
 Status: Active

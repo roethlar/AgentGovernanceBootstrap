@@ -811,3 +811,19 @@ entry 2026-07-09 in `.agents/decisions.md`). The `## Next` bullet, verbatim:
 Rotation note: settled by decision and then exercised for real — the
 2026-07-10 pxpipe reviewloop ran nine `codex exec`+stdin dispatches
 (codex-cli 0.144.1) end-to-end, confirming the retained contract.
+
+## Rotated 2026-07-12 — owner-communication tuning landed (first append-at-end rotation)
+
+Disposition: landed 2026-07-12, same day it was drafted — five named
+profiles, approval-gate question; plan CLOSED with the commit map:
+`docs/superpowers/plans/2026-07-12-owner-communication-tuning.md` (slices
+`9d8c156`/`b208067`; adoption recorded in the closing commit). The
+`## Next` entry, verbatim:
+
+- **Owner-communication tuning plan drafted** (owner go 2026-07-12 on the
+  repo-guidance-scaffold option):
+  `docs/superpowers/plans/2026-07-12-owner-communication-tuning.md`.
+  Implementation waits on one owner decision, recorded in the plan's
+  Status line: bootstrap asks for the section's values at the approval
+  gate vs installs silent defaults. The decisions entry stays Open until
+  the plan lands.

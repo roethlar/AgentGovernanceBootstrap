@@ -1,14 +1,17 @@
 # Per-Repo Owner-Communication Tuning
 
-Status: APPROVED 2026-07-12 — direction approved by the owner 2026-07-12
-(owner wording: "agreed, go", on option (a) of the 2026-07-10 Open decision
-"Per-repo tuning for verbosity and technical level" in
-`.agents/decisions.md`). Design settled by owner ruling the same day,
-verbatim: "yes, prompt. default is what I currently use- plain english exec
-summary for me; token-dense, detailed implementation plan for agents.
-alternates, devops - jargon is acceptable, detailed plan. student -
-accessible, instructive. any others you can think of, capped at 5." The
-approval summary asks (the push-policy pattern); the knob is a single named
+Status: CLOSED 2026-07-12 — landed: slice 1 `9d8c156` (repo-guidance
+template section), slice 2 `b208067` (approval-summary question +
+bootstrap drafting sentence), slice 3 in the closing commit (decisions
+entry Adopted and archived; state updated). Direction approved by the
+owner 2026-07-12 (owner wording: "agreed, go", on option (a) of the
+2026-07-10 Open decision "Per-repo tuning for verbosity and technical
+level"). Design settled by owner ruling the same day, verbatim: "yes,
+prompt. default is what I currently use- plain english exec summary for
+me; token-dense, detailed implementation plan for agents. alternates,
+devops - jargon is acceptable, detailed plan. student - accessible,
+instructive. any others you can think of, capped at 5." The approval
+summary asks (the push-policy pattern); the knob is a single named
 profile, five profiles total (three owner-named, two agent-proposed:
 `expert`, `brief`).
 

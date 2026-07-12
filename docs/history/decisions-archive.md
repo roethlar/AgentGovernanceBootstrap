@@ -2163,3 +2163,40 @@ the guidance). Not yet designed or decided — surfaced 2026-06-22, undecided.
 > in-bootstrap fresh-eyes test (same model, consistency-not-truth) remains
 > the only governance check. Entry text verbatim.
 
+The following entry is moved here verbatim from `.agents/decisions.md`:
+
+### 2026-07-10 — Per-repo tuning for verbosity and technical level
+
+Status: Open
+
+Finding: owner idea (2026-07-10), verbatim: "A tuning option for
+verbosity/tech level per repo would probably be a good addition." The plan
+contract fixed the owner-facing register globally (plain English, roughly
+25-50 words per decision); a per-repo knob would calibrate agent output —
+verbosity, technical register, jargon tolerance — to each repo's audience.
+
+Options assessed: (a) an owner-communication section scaffolded by
+`templates/repo-guidance.template.md` (fields like verbosity level,
+technical register, jargon allowed), read at session start — repo-guidance
+is per-repo by design and refresh never touches it, so no new file class;
+(b) a parameter inside the AGENTS template — infeasible, the template is
+installed verbatim and byte-verified, parameters would break replace-whole
+matching; (c) decline.
+
+Standing recommendation: (a). Needs a plan on owner go; not scheduled.
+
+> Update 2026-07-12: owner go for option (a), verbatim: "agreed, go". Plan
+> drafted: `docs/superpowers/plans/2026-07-12-owner-communication-tuning.md`
+> (DRAFT — implementation blocked on one owner decision, recorded there:
+> approval-gate question vs silent defaults). Entry stays Open until the
+> plan lands, then flips to Adopted per slice 3.
+
+> Archived 2026-07-12: Adopted 2026-07-12 — landed per
+> `docs/superpowers/plans/2026-07-12-owner-communication-tuning.md` (CLOSED;
+> owner design wording recorded verbatim in its Status line): a single
+> owner-chosen `Profile:` line, five named profiles. The rule's canonical
+> home is the Owner Communication section of
+> `templates/repo-guidance.template.md`; the five-profile menu's home is
+> `templates/approval-summary.template.md`; `procedures/bootstrap.md` asks
+> at the approval gate. Entry text verbatim.
+
