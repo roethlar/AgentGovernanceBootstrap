@@ -2142,3 +2142,24 @@ guarantee, only label non-evidenced artifacts as optional in the summary.
 > (c), no contradiction: the invariant governs guidance token cost, not the
 > presence of harness support files. Entry text verbatim.
 
+The following Open-queue entry and its introducing batch paragraph (the last
+of the 2026-06-22 batch) are moved here verbatim from `.agents/decisions.md`:
+
+The following were assessed on 2026-06-22 from three external repo
+reviews (DeepSeek, GPT-5.5, Grok) read against current repo evidence. The
+reviews' other suggestions were rejected as scope-inflating or already covered
+and are not recorded. Recommendation order below is the suggested implementation
+sequence. (The batch's monorepo-subdir probe finding was closed 2026-07-03 as
+not-applicable — see that decision above and the archive.)
+
+### Open: foreign-model governance validation
+
+Owner needs a way for a *different* model to validate that a repo's governance
+works (the in-bootstrap fresh-eyes test only ever runs the same model that drafted
+the guidance). Not yet designed or decided — surfaced 2026-06-22, undecided.
+
+> Archived 2026-07-12: Declined — owner ruling 2026-07-12, verbatim: "no,
+> won't always have multiple models available." No design work follows; the
+> in-bootstrap fresh-eyes test (same model, consistency-not-truth) remains
+> the only governance check. Entry text verbatim.
+
