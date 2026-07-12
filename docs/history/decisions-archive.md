@@ -2067,3 +2067,28 @@ the rewording before implementation.
 > one permitted mechanism among others. Entry text verbatim; the line-number
 > citations describe the playbook as it stood 2026-07-06.
 
+The following Open-queue entry is moved here verbatim from
+`.agents/decisions.md` (from the 2026-06-22 external-review batch):
+
+### Open: greenfield fresh-eyes test is agent-judged "optional", at a point the repo distrusts agent judgment
+
+Evidence: `procedures/bootstrap.md` greenfield step 8 makes the fresh-eyes test
+"optional ... recommended whenever the drafts are substantial"; migration
+(`procedures/migration.md` Step 6) requires it. The greenfield wording leans on
+the agent to judge "substantial," whereas the 2026-06-10 fresh-eyes decision and
+the repo's broader stance distrust agent self-assessment.
+
+Options: (a) make the greenfield fresh-eyes test mandatory unless the run is a
+genuine no-op (no drafted changes); (b) keep "optional/recommended"; (c) some
+middle threshold tied to an objective signal (e.g. any new `.agents/` file
+drafted).
+
+Recommendation: a one-line judgment call for the owner. (a) removes the
+agent-judged escape hatch cheaply; (c) is a compromise. Low effort either way.
+
+> Archived 2026-07-12: Declined — owner ruling 2026-07-12, verbatim: "no,
+> waste of tokens." The greenfield fresh-eyes wording stays
+> "optional ... recommended" (option (b)); the process is unchanged. Entry
+> text verbatim; its `procedures/migration.md` citation describes the
+> pre-consolidation procedure set.
+
