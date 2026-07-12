@@ -1,8 +1,12 @@
 # State archive
 
 Landed or superseded `.agents/state.md` entries, rotated here verbatim at
-handoff per the state-rotation rule (first applied 2026-07-08). Newest
-rotation first; entries are never edited after rotation.
+handoff per the state-rotation rule (first applied 2026-07-08). New
+rotations are appended at the end of the file; entries are never edited
+after rotation. (Rule flipped from newest-first by owner ruling
+2026-07-12 — appending is what writers naturally do, and the old rule was
+violated three times; entries rotated before the flip are in mixed order
+and stay where they landed.)
 
 ## Rotated 2026-07-12 (owner report) — fleet refresh run; qbit-mobile carve-out done
 
