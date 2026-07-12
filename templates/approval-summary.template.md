@@ -100,6 +100,20 @@ To change it, reply with a number when you approve:
 
 <Do NOT pre-select or infer the option from prior decisions, context, or the decisions log. Write the default (4) here and wait for the owner's answer at approval time. The owner's reply to the approval question is the only valid source for this choice.>
 
+## Owner Communication
+
+Communication profile will be set to: **1 — default**.
+
+To change it, reply with a number when you approve:
+
+  1 — default: Plain-English executive summary for the owner; token-dense, detailed implementation plans for agents. (default)
+  2 — devops: Technical jargon acceptable in owner chat, summary-first; detailed plans.
+  3 — student: Accessible and instructive owner chat — explains the why, defines terms on first use; plans carry rationale spelled out.
+  4 — expert: Terse practitioner shorthand in owner chat, density over ceremony; token-dense, detailed plans.
+  5 — brief: Plain-English headlines only — the outcome and the decision, detail on request; token-dense, detailed plans.
+
+<Do NOT pre-select or infer the option from prior decisions, context, or the decisions log. Write the default (1) here and wait for the owner's answer at approval time. Before the commit, update the drafted `.agents/repo-guidance.md` Owner Communication line to the chosen profile with its one-line definition — the drafted file carries only that line, never this menu.>
+
 ## Risks, Limitations, Or Open Questions
 
 <List unresolved questions, inferred facts, stale evidence, unread areas, or decisions

@@ -155,7 +155,10 @@ intact.
    examples, and flag anything unverifiable. A fresh authoritative file that
    launders stale facts is worse than the old file it replaced. It extends
    `AGENTS.md` and never overrides it — a genuine conflict is a defect to
-   flag.
+   flag. Draft the Owner Communication line as `default` with its one-line
+   definition; the approval summary asks the owner to choose among the five
+   profiles (never pre-fill), and the drafted line is updated to the
+   owner's choice before the commit.
 2. `.agents/state.md` from its template — current truth only: what is true
    now, active work, blockers, next action. No historical narrative; honor
    the template's write rules (volatile facts stamped `as of <commit>`,
@@ -194,8 +197,9 @@ Write `.bootstrap-tmp/drafts/approval-summary.md` from
 picture: the judgment drafts (with custody proven by `git check-ignore` on
 each final path — a gitignored path goes in Local-only or raises the ignore
 rule as a question, never a silent `git add -f`), the shipped set from the
-plan record, the push-policy question, the inventory and fresh-eyes
-results for migrations, and the exact commit message. Present it and wait.
+plan record, the push-policy and owner-communication questions, the
+inventory and fresh-eyes results for migrations, and the exact commit
+message. Present it and wait.
 
 ## Step 7: After approval — install and commit
 
