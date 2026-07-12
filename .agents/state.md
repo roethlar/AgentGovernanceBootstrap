@@ -28,8 +28,13 @@ machine-local facts are labeled or omitted.
 
 ## Next
 
-- Per-repo verbosity/tech-level tuning sits Open in `.agents/decisions.md`
-  awaiting an owner go for a plan.
+- **Owner-communication tuning plan drafted** (owner go 2026-07-12 on the
+  repo-guidance-scaffold option):
+  `docs/superpowers/plans/2026-07-12-owner-communication-tuning.md`.
+  Implementation waits on one owner decision, recorded in the plan's
+  Status line: bootstrap asks for the section's values at the approval
+  gate vs installs silent defaults. The decisions entry stays Open until
+  the plan lands.
 - **ExchangeAdminWeb**, the last legacy rollout repo, deferred by the owner
   to **2026-07-20** (re-affirmed 2026-07-09): run `tools/refresh.py`,
   resolve FLAG lines; oldest instance — 2026-06-22-era template, no

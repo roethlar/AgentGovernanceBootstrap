@@ -98,6 +98,12 @@ matching; (c) decline.
 
 Standing recommendation: (a). Needs a plan on owner go; not scheduled.
 
+> Update 2026-07-12: owner go for option (a), verbatim: "agreed, go". Plan
+> drafted: `docs/superpowers/plans/2026-07-12-owner-communication-tuning.md`
+> (DRAFT — implementation blocked on one owner decision, recorded there:
+> approval-gate question vs silent defaults). Entry stays Open until the
+> plan lands, then flips to Adopted per slice 3.
+
 ### 2026-07-10 — Agents never update this repo's own governance while working on the toolkit
 
 Status: Active
