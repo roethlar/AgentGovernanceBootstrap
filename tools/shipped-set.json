@@ -142,7 +142,9 @@
       "source": "templates/playbooks/codereview.md",
       "target": ".agents/playbooks/codereview.md",
       "class": "replace",
-      "formerly": []
+      "formerly": [
+        "e633a1dbfccfe1e561621767fcaf0d39e4cbb2c147bd838345f365e054f805d7"
+      ]
     },
     {
       "source": "templates/playbooks/openreview.md",

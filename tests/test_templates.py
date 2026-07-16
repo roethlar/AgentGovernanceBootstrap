@@ -97,6 +97,15 @@ class ProvenanceMarkerTests(unittest.TestCase):
         self.assertGreater(len(files), 10)  # the real corpus, not an empty glob
         self.assertEqual([], missing_markers(ROOT))
 
+    def test_playbooks_do_not_advertise_retired_operators(self):
+        # The reviewloop -> codereview/openreview split (2026-07-16) retired
+        # the `review` operator; an active playbook steering users to a
+        # removed command is drift-fodder.
+        for f in sorted((TEMPLATES / "playbooks").glob("*.md")):
+            body = f.read_text(encoding="utf-8")
+            for retired in ("`/review ", "`review <agent>`", "reviewloop"):
+                self.assertNotIn(retired, body, f)
+
     def test_detector_bites_on_an_unmarked_fixture(self):
         # Hermetic guard proof for the corpus check above: a temp tree with
         # one unmarked artifact must be caught.

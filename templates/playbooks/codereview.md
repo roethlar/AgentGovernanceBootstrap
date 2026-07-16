@@ -85,8 +85,8 @@ create a parallel canon or bypass owner gates:
 ## Operator
 
 `codereview <agent>` is the harness-neutral entry. In Claude Code it is the
-tab-completable slash command `/review <agent>`; on another harness the owner speaks
-"codereview \<agent\>". `<agent>` names the reviewer harness to dispatch.
+tab-completable slash command `/codereview <agent>`; on another harness the owner
+speaks "codereview \<agent\>". `<agent>` names the reviewer harness to dispatch.
 
 The flow is **synchronous by construction**: the coder dispatches the reviewer and
 blocks on its verdict before acting on that finding. There is therefore **no
