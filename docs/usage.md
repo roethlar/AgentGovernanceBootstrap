@@ -54,12 +54,14 @@ or type `/update-governance` in a Claude Code session (codex/grok/agy: the
 `update-governance` skill, installed under `.agents/skills/`; agy needs the
 workspace trusted first). Seconds, no agent
 judgment involved: the script syncs the toolkit (offline it proceeds on the
-local copy and says so), installs new shipped artifacts, updates
-provably-unmodified stale ones, removes retired ones, and commits once with
-the toolkit version in the message. Owner-modified files are FLAGGED, never
-touched — resolve flags yourself or hand them to an agent with instructions.
-If it flags `AGENTS.md` as "not a toolkit instance", the repo needs the
-bootstrap flow above, not a refresh.
+local copy and says so), installs new shipped artifacts, updates stale ones,
+removes retired ones, and commits once with the toolkit version in the
+message. Installed governance is toolkit-owned: a file that matches no
+shipped version is drift — whoever wrote it — and is restored to the shipped
+version, reported as a DRIFT line naming the commits that introduced it
+(uncommitted changes on touched paths make the run refuse instead, so
+nothing uncommitted is ever destroyed). If it flags `AGENTS.md` as a foreign
+governance file, the repo needs the bootstrap flow above, not a refresh.
 
 A repo you don't touch stays stale, and that's fine — it catches up the next
 time you work there.

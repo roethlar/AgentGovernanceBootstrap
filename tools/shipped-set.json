@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "comment": "The toolkit's shipped artifact set. tools/refresh.py reconciles a governed repo to exactly this set. Classes: replace-whole (byte-exact copy of the template, replaced only when the existing file matches a current or formerly-shipped template version - anything else is flagged, never overwritten); replace-if-unmodified (missing = install; matches a formerly-shipped version = update to current; anything else = owner-modified, flagged, never overwritten); retired (formerly-shipped target paths removed only when they match a formerly-shipped version, otherwise flagged). All matching is newline-equivalent sha256: CRLF -> LF, and content differing only by at most one trailing final newline matches (issue #1). formerly[] lists normalized hashes of every version ever shipped, from git history. MAINTENANCE RULE: whenever a shipped source file changes, append the OUTGOING version's normalized hash to its formerly[] in the same commit - otherwise deployed copies of that version get flagged owner-modified instead of updated.",
+  "comment": "The toolkit's shipped artifact set. tools/refresh.py reconciles a governed repo to exactly this set; installed governance is toolkit-owned (owner ruling 2026-07-16), so divergence is always drift and every run converges the repo. Classes: replace-whole (AGENTS.md: current or formerly-shipped versions update normally; divergent content is restored to current when git history shows a committed version once matched a shipped hash, and flagged as a foreign governance file - bootstrap, not refresh - when none ever did); replace (missing = install; matches a formerly-shipped version = update to current; anything else = drift, reported with its introducing commits and restored to current); retired (formerly-shipped target paths removed; drifted content is removed with a report - git history preserves it, and the dirty-tree refusal keeps uncommitted content from being machine-destroyed). All matching is newline-equivalent sha256: CRLF -> LF, and content differing only by at most one trailing final newline matches (issue #1). formerly[] lists normalized hashes of every version ever shipped, from git history. MAINTENANCE RULE: whenever a shipped source file changes, append the OUTGOING version's normalized hash to its formerly[] in the same commit - otherwise deployed copies of that version get reported as drift and restored instead of cleanly updated.",
   "artifacts": [
     {
       "source": "templates/AGENTS.template.md",
@@ -57,7 +57,7 @@
     {
       "source": "templates/shims/CLAUDE.template.md",
       "target": "CLAUDE.md",
-      "class": "replace-if-unmodified",
+      "class": "replace",
       "formerly": [
         "918b1c90559355ef78f33fdf3562f2b021ef8bdfd8a5c8415e5decd44934de55",
         "04214ad4d1c9fda3e2c11b4fd0fae6f059c302751a11956f818d199e910999f3",
@@ -67,7 +67,7 @@
     {
       "source": "templates/shims/GEMINI.template.md",
       "target": "GEMINI.md",
-      "class": "replace-if-unmodified",
+      "class": "replace",
       "formerly": [
         "918b1c90559355ef78f33fdf3562f2b021ef8bdfd8a5c8415e5decd44934de55",
         "30bd521b505a07f399d8b3a8f7d455c49c33a1405711dc4d00feb3bfac8eb102",
@@ -77,7 +77,7 @@
     {
       "source": "templates/commands/claude/catchup.md",
       "target": ".claude/commands/catchup.md",
-      "class": "replace-if-unmodified",
+      "class": "replace",
       "formerly": [
         "7420230497bb6e75dacfd9f1328f9034c0151b828f1dd8d03883f9de9f9161a9",
         "ae600ab5da21acdb5e1fcf5beb06d35c38e30596f46f060d9e5b0e4957487e35"
@@ -86,7 +86,7 @@
     {
       "source": "templates/commands/claude/decision.md",
       "target": ".claude/commands/decision.md",
-      "class": "replace-if-unmodified",
+      "class": "replace",
       "formerly": [
         "c6d68a38c857890e2fd313dc0448bba0d894f7c39a3cea5a557c424d4da49105"
       ]
@@ -94,7 +94,7 @@
     {
       "source": "templates/commands/claude/drift.md",
       "target": ".claude/commands/drift.md",
-      "class": "replace-if-unmodified",
+      "class": "replace",
       "formerly": [
         "322bed67010ed0b829ea34633e8bcba54ee125820b0a41719bc78ab9d01bc5a5"
       ]
@@ -102,7 +102,7 @@
     {
       "source": "templates/commands/claude/handoff.md",
       "target": ".claude/commands/handoff.md",
-      "class": "replace-if-unmodified",
+      "class": "replace",
       "formerly": [
         "c8e3da533eb92abc6aacf995fe4e2fbc231ad10a4ca1fabcc1d98f6c236f5a99"
       ]
@@ -110,7 +110,7 @@
     {
       "source": "templates/commands/claude/plan.md",
       "target": ".claude/commands/plan.md",
-      "class": "replace-if-unmodified",
+      "class": "replace",
       "formerly": [
         "7eeca1e480fafcb6b9618f2c11225584f253c7e1d19258d9d3073a4ff556630c"
       ]
@@ -118,7 +118,7 @@
     {
       "source": "templates/commands/claude/playbook.md",
       "target": ".claude/commands/playbook.md",
-      "class": "replace-if-unmodified",
+      "class": "replace",
       "formerly": [
         "68bc100abb6836af03bf4fd57ee07a639c3b30b1284e044ae6e66c180a7dc774"
       ]
@@ -126,16 +126,17 @@
     {
       "source": "templates/commands/claude/update-governance.md",
       "target": ".claude/commands/update-governance.md",
-      "class": "replace-if-unmodified",
+      "class": "replace",
       "formerly": [
         "bc11013e02545070fb37bedee4e0cfa5112628bfcd9ae26194dcab2c1d2ec954",
-        "28decbbb513d3c0897fee4692aab8549b787a9b1ecd4a1602ee2e13136d4be19"
+        "28decbbb513d3c0897fee4692aab8549b787a9b1ecd4a1602ee2e13136d4be19",
+        "2e6715044d644845298bca940f949b3a7d19acb473ce3b741d57e5a29ad1d26e"
       ]
     },
     {
       "source": "templates/playbooks/reviewloop.md",
       "target": ".agents/playbooks/reviewloop.md",
-      "class": "replace-if-unmodified",
+      "class": "replace",
       "formerly": [
         "80fcabf996af6afe911ff9678c03d8f6ef6f14cc31d61a47f248f5670e0662c4",
         "82b45743f4a9ce9fe9631db053541711628e18f87328953a2c658d51c3157c7e",
@@ -145,13 +146,13 @@
     {
       "source": "templates/skills/shared/catchup/SKILL.md",
       "target": ".agents/skills/catchup/SKILL.md",
-      "class": "replace-if-unmodified",
+      "class": "replace",
       "formerly": []
     },
     {
       "source": "templates/skills/shared/handoff/SKILL.md",
       "target": ".agents/skills/handoff/SKILL.md",
-      "class": "replace-if-unmodified",
+      "class": "replace",
       "formerly": [
         "6b41450a060dadc0707bbd73cb580e1d610ae8b412317e6a63e9e87804abeda1"
       ]
@@ -159,7 +160,7 @@
     {
       "source": "templates/skills/shared/drift/SKILL.md",
       "target": ".agents/skills/drift/SKILL.md",
-      "class": "replace-if-unmodified",
+      "class": "replace",
       "formerly": [
         "3c9278a91df2b0b93c27a3cb59d6c77cb86f46da68cf6b0bbbf4e0686e2942bd"
       ]
@@ -167,13 +168,13 @@
     {
       "source": "templates/skills/shared/decision/SKILL.md",
       "target": ".agents/skills/decision/SKILL.md",
-      "class": "replace-if-unmodified",
+      "class": "replace",
       "formerly": []
     },
     {
       "source": "templates/skills/shared/plan/SKILL.md",
       "target": ".agents/skills/plan/SKILL.md",
-      "class": "replace-if-unmodified",
+      "class": "replace",
       "formerly": [
         "bb60b5c05cfee5e9773a58417868338726de7ee8e975baf1eedad6a40f082a45"
       ]
@@ -181,31 +182,33 @@
     {
       "source": "templates/skills/shared/playbook/SKILL.md",
       "target": ".agents/skills/playbook/SKILL.md",
-      "class": "replace-if-unmodified",
+      "class": "replace",
       "formerly": []
     },
     {
       "source": "templates/skills/shared/update-governance/SKILL.md",
       "target": ".agents/skills/update-governance/SKILL.md",
-      "class": "replace-if-unmodified",
-      "formerly": []
+      "class": "replace",
+      "formerly": [
+        "3b4b1700e33f6700f50503f857ee7f56294ea1bc66b29069a52fa0e49a43e3c6"
+      ]
     },
     {
       "source": "templates/skills/shared/review/SKILL.md",
       "target": ".agents/skills/review/SKILL.md",
-      "class": "replace-if-unmodified",
+      "class": "replace",
       "formerly": []
     },
     {
       "source": "templates/commands/claude/review.md",
       "target": ".claude/commands/review.md",
-      "class": "replace-if-unmodified",
+      "class": "replace",
       "formerly": []
     },
     {
       "source": "templates/hooks/claude/settings.json",
       "target": ".claude/settings.json",
-      "class": "replace-if-unmodified",
+      "class": "replace",
       "formerly": [
         "10cbb3bd2c3967bb43d204b3db93c587f695b8c16cd842de4e7f8c011649ab94",
         "033e5394ad9cf77fe739efc283f168500a377f742391042c128ef35941a2bd9e",
@@ -245,12 +248,12 @@
     },
     {
       "target": ".agents/repo-map.json",
-      "comment": "Generated per-repo at bootstrap time, so no shipped hash can match: refresh always FLAGS it for by-hand removal, never deletes it.",
+      "comment": "Generated per-repo at bootstrap time, so no shipped hash can match: removal is always reported as drift (strict converge, 2026-07-16).",
       "formerly": []
     },
     {
       "target": ".agents/artifact-manifest.json",
-      "comment": "Generated per-repo at bootstrap time, so no shipped hash can match: refresh always FLAGS it for by-hand removal, never deletes it.",
+      "comment": "Generated per-repo at bootstrap time, so no shipped hash can match: removal is always reported as drift (strict converge, 2026-07-16).",
       "formerly": []
     },
     {

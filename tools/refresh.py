@@ -5,21 +5,30 @@ Pull-based, per-repo, no registry: run it while standing in (or pointing it
 at) a governed repo. It syncs the local toolkit clone from its canonical
 remote, then reconciles the target repo to tools/shipped-set.json:
 
-  - replace-whole   (AGENTS.md): replaced only when the existing file matches
-                    the current or a formerly-shipped template version
-                    (newline-equivalent). Anything else is flagged, never
-                    overwritten - a content-bearing foreign AGENTS.md is a
-                    migration, not a refresh.
-  - replace-if-unmodified: missing -> install; matches a formerly-shipped
-                    version -> update to current; anything else ->
-                    owner-modified: flagged, never overwritten.
-  - retired:        formerly-shipped paths are removed only when they match a
-                    formerly-shipped version; otherwise flagged. A modified
-                    file is never deleted by machine.
+  - replace-whole   (AGENTS.md): current or formerly-shipped versions update
+                    normally. Divergent content forks on git evidence: if any
+                    committed version of the file ever matched a shipped hash
+                    the repo was governed, so the divergence is drift and the
+                    file is RESTORED to current (reported with the commits
+                    that introduced it); if no committed version ever matched,
+                    it is a foreign governance file - flagged, never
+                    overwritten, a migration rather than a refresh.
+  - replace:        missing -> install; matches a formerly-shipped version ->
+                    update to current; anything else -> drift: reported with
+                    its introducing commits and RESTORED to current.
+  - retired:        formerly-shipped paths are removed. Content matching no
+                    shipped version is drift and is removed with a report.
+
+Installed governance is toolkit-owned (owner ruling 2026-07-16): no
+out-of-band edit to an installed artifact is legitimate, whoever made it, so
+divergence is always drift and every run converges the repo to exactly the
+shipped set. Nothing uncommitted is ever machine-destroyed: restores and
+removes are touched paths, so the dirty-tree refusal fires first; committed
+drift stays recoverable from git history.
 
 Matching is newline-equivalent: CRLF normalizes to LF, and content differing
 only by at most one trailing final newline matches - a file touched by
-insert-final-newline tooling is not an owner edit (issue #1).
+insert-final-newline tooling is not a divergence (issue #1).
 
 Repo-owned files (.agents/state.md, decisions.md, repo-guidance.md,
 push-policy.md, plans, review trails, archives) are never touched.
@@ -158,7 +167,7 @@ def load_shipped_set(toolkit: Path) -> dict:
 
 
 _HEX64 = re.compile(r"^[0-9a-f]{64}$")
-_KNOWN_CLASSES = ("replace-whole", "replace-if-unmodified")
+_KNOWN_CLASSES = ("replace-whole", "replace")
 
 
 def validate_manifest(shipped: dict, toolkit: Path) -> "list[str]":
@@ -236,10 +245,43 @@ class Plan:
     def __init__(self) -> None:
         self.install = []   # (target, source_path)
         self.update = []    # (target, source_path)
+        self.restore = []   # (target, source_path) - diverged, converged back
         self.remove = []    # target
         self.current = []   # target
         self.flags = []     # (target, reason)
+        self.drift = {}     # target -> introducing-commit provenance line
         self.gitignore_repairs = []  # (line_no, old_line, new_lines)
+
+
+def _drift_provenance(target_repo: Path, rel: str) -> str:
+    """The last few commits that touched a diverged path - the audit trail
+    that lets the owner see who introduced the drift without digging."""
+    proc = git(target_repo, "log", "-3", "--format=%h %s", "--", rel, check=False)
+    lines = [ln.strip() for ln in proc.stdout.splitlines() if ln.strip()] \
+        if proc.returncode == 0 else []
+    return " | ".join(lines) if lines else "no commit history for this path"
+
+
+def _ever_shipped(target_repo: Path, rel: str, known: "set[str]") -> bool:
+    """True when any committed historical version of `rel` matches a known
+    shipped hash - evidence the repo was governed, so a present-day mismatch
+    is drift to restore, not a foreign file to protect. Runs only when a
+    replace-whole target diverges; blobs are read once each."""
+    proc = git(target_repo, "log", "--format=%H", "--", rel, check=False)
+    if proc.returncode != 0:
+        return False
+    seen = set()
+    for commit in proc.stdout.split():
+        blob = git(target_repo, "rev-parse", "{}:{}".format(commit, rel), check=False)
+        oid = blob.stdout.strip()
+        if blob.returncode != 0 or not oid or oid in seen:
+            continue
+        seen.add(oid)
+        data = subprocess.run(["git", "-C", str(target_repo), "cat-file", "blob", oid],
+                              capture_output=True)
+        if data.returncode == 0 and candidate_hashes(data.stdout) & known:
+            return True
+    return False
 
 
 def classify(target_repo: Path, toolkit: Path, shipped: dict) -> Plan:
@@ -259,32 +301,35 @@ def classify(target_repo: Path, toolkit: Path, shipped: dict) -> Plan:
             # A historical hash never widens the current equivalence
             # boundary: when the current source's own hash sits in
             # formerly[], a file within one newline of current-but-not-
-            # stem-equal must flag as owner-modified, not update (M1).
+            # stem-equal is drift to restore, never a silent update (M1).
             plan.update.append((art["target"], src))
-        elif art["class"] == "replace-whole":
+        elif art["class"] == "replace-whole" and not _ever_shipped(
+                target_repo, art["target"],
+                set(art.get("formerly", [])) | candidate_hashes(src_bytes)):
             plan.flags.append((
                 art["target"],
-                "does not match any known template version - hand-edited or a foreign "
-                "governance file; refusing to replace. If this repo has never been "
-                "bootstrapped by the toolkit, run the bootstrap procedure instead.",
+                "matches no known template version and no committed version ever "
+                "did - a foreign governance file; refusing to replace. If this repo "
+                "has never been bootstrapped by the toolkit, run the bootstrap "
+                "procedure instead.",
             ))
         else:
-            plan.flags.append((art["target"], "owner-modified; left untouched"))
+            plan.restore.append((art["target"], src))
+            plan.drift[art["target"]] = _drift_provenance(target_repo, art["target"])
     for ret in shipped.get("retired", []):
         tgt = target_repo / ret["target"]
         if not tgt.exists():
             continue
-        if candidate_hashes(tgt.read_bytes()) & set(ret.get("formerly", [])):
-            plan.remove.append(ret["target"])
-        else:
-            plan.flags.append((ret["target"], "retired artifact, but modified locally; remove by hand if intended"))
+        if not candidate_hashes(tgt.read_bytes()) & set(ret.get("formerly", [])):
+            plan.drift[ret["target"]] = _drift_provenance(target_repo, ret["target"])
+        plan.remove.append(ret["target"])
     return plan
 
 
 def check_committability(target_repo: Path, plan: Plan, shipped: dict) -> None:
     """check-ignore each path we would add; repair known blanket adapter-dir
     ignores in the repo's root .gitignore; flag-and-skip anything else."""
-    paths = [t for t, _ in plan.install + plan.update]
+    paths = [t for t, _ in plan.install + plan.update + plan.restore]
     exclusions = shipped.get("machine_local_exclusions", {})
     gitignore = target_repo / ".gitignore"
     for path in list(paths):
@@ -299,7 +344,7 @@ def check_committability(target_repo: Path, plan: Plan, shipped: dict) -> None:
             repl = exclusions.get(pat, [])
             plan.gitignore_repairs.append((int(lineno), pattern, repl))
         else:
-            for lst in (plan.install, plan.update):
+            for lst in (plan.install, plan.update, plan.restore):
                 lst[:] = [(t, s) for t, s in lst if t != path]
             plan.flags.append((path, "ignored by '{}' ({}:{}) - unrecognized rule; skipped, never force-added".format(pattern, source, lineno)))
     # dedupe repairs (several paths may hit the same blanket line)
@@ -421,6 +466,8 @@ def build_record(toolkit: Path, target: Path, plan: Plan) -> dict:
         "target_head": head.stdout.strip() if head.returncode == 0 else "",
         "installs": [entry(t, s) for t, s in plan.install],
         "updates": [entry(t, s) for t, s in plan.update],
+        "restores": [entry(t, s) for t, s in plan.restore],
+        "drift": dict(sorted(plan.drift.items())),
         "removes": list(plan.remove),
         "gitignore_repairs": [[ln, old, list(repl)]
                               for ln, old, repl in plan.gitignore_repairs],
@@ -442,8 +489,8 @@ def verify_record(record: dict, toolkit: Path, target: Path, plan: Plan) -> "lis
     if current["toolkit_dirty"] or record.get("toolkit_dirty"):
         problems.append("toolkit worktree is dirty (apply requires a clean tree)")
     for field in ("toolkit_sha", "manifest_digest", "target_head", "installs",
-                  "updates", "removes", "gitignore_repairs", "flags",
-                  "staged_paths"):
+                  "updates", "restores", "drift", "removes",
+                  "gitignore_repairs", "flags", "staged_paths"):
         if current[field] != record.get(field):
             problems.append("drift in {}: the current state no longer matches the approved plan".format(field))
     if not problems and current["digest"] != record.get("digest"):
@@ -452,7 +499,7 @@ def verify_record(record: dict, toolkit: Path, target: Path, plan: Plan) -> "lis
 
 
 def touched_paths(plan: Plan) -> list:
-    paths = [t for t, _ in plan.install + plan.update] + list(plan.remove)
+    paths = [t for t, _ in plan.install + plan.update + plan.restore] + list(plan.remove)
     if plan.gitignore_repairs:
         paths.append(".gitignore")
     return paths
@@ -469,13 +516,13 @@ def dirty_conflicts(target_repo: Path, plan: Plan) -> list:
 def apply_plan(target_repo: Path, plan: Plan) -> None:
     # Validate every destination before the first write: a refusal must
     # leave the tree untouched, never partially mutated.
-    for target, _src in plan.install + plan.update:
+    for target, _src in plan.install + plan.update + plan.restore:
         assert_safe_dest(target_repo, target)
     for target in plan.remove:
         assert_safe_dest(target_repo, target)
     if plan.gitignore_repairs:
         assert_safe_dest(target_repo, ".gitignore")
-    for target, src in plan.install + plan.update:
+    for target, src in plan.install + plan.update + plan.restore:
         dest = target_repo / target
         dest.parent.mkdir(parents=True, exist_ok=True)
         write_atomic(dest, src.read_bytes())
@@ -594,10 +641,18 @@ def summarize(plan: Plan, sync_note: str) -> str:
     for label, items in (
         ("installed", [t for t, _ in plan.install]),
         ("updated", [t for t, _ in plan.update]),
-        ("removed", plan.remove),
     ):
         for t in items:
             lines.append("  {}: {}".format(label, t))
+    for t, _src in plan.restore:
+        lines.append("  restored: {} (DRIFT: matched no shipped version; recent: {})".format(
+            t, plan.drift.get(t, "")))
+    for t in plan.remove:
+        if t in plan.drift:
+            lines.append("  removed: {} (DRIFT: matched no shipped version; recent: {})".format(
+                t, plan.drift[t]))
+        else:
+            lines.append("  removed: {}".format(t))
     for lineno, old, _repl in plan.gitignore_repairs:
         lines.append("  .gitignore: repaired blanket rule '{}' (line {})".format(old, lineno))
     for t, reason in plan.flags:
@@ -702,7 +757,8 @@ def main(argv=None) -> int:
                 print("  " + p, file=sys.stderr)
             return 4
 
-    changed = bool(plan.install or plan.update or plan.remove or plan.gitignore_repairs)
+    changed = bool(plan.install or plan.update or plan.restore or plan.remove
+                   or plan.gitignore_repairs)
     if changed:
         try:
             apply_plan(target, plan)

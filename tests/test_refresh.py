@@ -70,14 +70,15 @@ def make_toolkit(root: Path) -> Path:
             {"source": "templates/AGENTS.template.md", "target": "AGENTS.md",
              "class": "replace-whole", "formerly": [nhash(OLD_AGENTS)]},
             {"source": "templates/commands/claude/tool.md", "target": ".claude/commands/tool.md",
-             "class": "replace-if-unmodified", "formerly": [nhash(OLD_TOOL)]},
+             "class": "replace", "formerly": [nhash(OLD_TOOL)]},
             {"source": "templates/hooks/claude/settings.json", "target": ".claude/settings.json",
-             "class": "replace-if-unmodified", "formerly": [nhash(OLD_SETTINGS)]},
+             "class": "replace", "formerly": [nhash(OLD_SETTINGS)]},
             {"source": "templates/shims/CLAUDE.template.md", "target": "CLAUDE.md",
-             "class": "replace-if-unmodified", "formerly": []},
+             "class": "replace", "formerly": []},
         ],
         "retired": [
             {"target": ".claude/old-hook.py", "formerly": [nhash(OLD_HOOK)]},
+            {"target": ".agents/generated.json", "formerly": []},
         ],
         "machine_local_exclusions": {".claude": [".claude/settings.local.json"]},
     }
@@ -145,14 +146,19 @@ class RefreshTests(unittest.TestCase):
         self.assertEqual((self.target / ".claude" / "commands" / "tool.md").read_text(), CUR_TOOL)
         self.assertIn("updated: .claude/commands/tool.md", proc.stdout)
 
-    def test_owner_modified_artifact_is_flagged_not_overwritten(self):
+    def test_diverged_artifact_is_restored_with_drift_report(self):
+        # Strict converge (owner ruling 2026-07-16): content matching no
+        # shipped version is drift, whoever wrote it - restored, and the
+        # report names the commits that introduced it.
         (self.target / ".claude" / "commands").mkdir(parents=True)
         (self.target / ".claude" / "commands" / "tool.md").write_text("my custom wrapper\n", newline="\n")
         commit_all(self.target, "custom wrapper")
         proc = refresh(self.toolkit, self.target)
-        self.assertEqual(proc.returncode, 0)
-        self.assertEqual((self.target / ".claude" / "commands" / "tool.md").read_text(), "my custom wrapper\n")
-        self.assertIn("FLAG .claude/commands/tool.md", proc.stdout)
+        self.assertEqual(proc.returncode, 0, proc.stderr)
+        self.assertEqual((self.target / ".claude" / "commands" / "tool.md").read_text(), CUR_TOOL)
+        self.assertIn("restored: .claude/commands/tool.md", proc.stdout)
+        self.assertIn("DRIFT", proc.stdout)
+        self.assertIn("custom wrapper", proc.stdout)  # introducing commit subject
 
     # -- replace-whole (AGENTS.md) --------------------------------------
 
@@ -164,6 +170,8 @@ class RefreshTests(unittest.TestCase):
         self.assertEqual((self.target / "AGENTS.md").read_text(), CUR_AGENTS)
 
     def test_foreign_agents_md_is_flagged_never_replaced(self):
+        # No committed version of this AGENTS.md ever matched a shipped
+        # hash: a foreign governance file is a migration, not drift.
         (self.target / "AGENTS.md").write_text("# My own house rules\n", newline="\n")
         commit_all(self.target, "foreign agents")
         proc = refresh(self.toolkit, self.target)
@@ -171,6 +179,33 @@ class RefreshTests(unittest.TestCase):
         self.assertEqual((self.target / "AGENTS.md").read_text(), "# My own house rules\n")
         self.assertIn("FLAG AGENTS.md", proc.stdout)
         self.assertIn("bootstrap procedure", proc.stdout)
+
+    def test_hand_edited_agents_md_in_governed_repo_is_restored(self):
+        # Git history holds a formerly-shipped version, so the repo was
+        # governed: the divergence is drift and converges back - no
+        # foreign-file flag, no bootstrap banner.
+        (self.target / "AGENTS.md").write_text(OLD_AGENTS, newline="\n")
+        commit_all(self.target, "governed agents")
+        (self.target / "AGENTS.md").write_text("# Agent Guidance\nhijacked body\n", newline="\n")
+        commit_all(self.target, "hijack edit")
+        proc = refresh(self.toolkit, self.target)
+        self.assertEqual(proc.returncode, 0, proc.stderr)
+        self.assertEqual((self.target / "AGENTS.md").read_text(), CUR_AGENTS)
+        self.assertIn("restored: AGENTS.md", proc.stdout)
+        self.assertIn("hijack edit", proc.stdout)
+        self.assertNotIn("ATTENTION", proc.stdout)
+
+    def test_uncommitted_diverged_artifact_refuses_before_restore(self):
+        # The restore path never destroys the only copy: uncommitted
+        # divergence hits the dirty-tree refusal and nothing changes.
+        refresh(self.toolkit, self.target)
+        (self.target / ".claude" / "commands" / "tool.md").write_text(
+            "uncommitted agent edit\n", newline="\n")
+        proc = refresh(self.toolkit, self.target)
+        self.assertEqual(proc.returncode, 3, proc.stderr)
+        self.assertIn("refusing", proc.stderr)
+        self.assertEqual((self.target / ".claude" / "commands" / "tool.md").read_text(),
+                         "uncommitted agent edit\n")
 
     # -- preflight before mutation ---------------------------------------
     # A nonzero exit must always mean "nothing changed": target validation
@@ -293,8 +328,9 @@ class RefreshTests(unittest.TestCase):
         self.assertEqual(run_git(self.target, "status", "--porcelain"), "")
         rec = json.loads(out.read_text())
         for key in ("schema", "toolkit_sha", "toolkit_dirty", "manifest_digest",
-                    "target_head", "installs", "updates", "removes",
-                    "gitignore_repairs", "flags", "staged_paths", "digest"):
+                    "target_head", "installs", "updates", "restores", "drift",
+                    "removes", "gitignore_repairs", "flags", "staged_paths",
+                    "digest"):
             self.assertIn(key, rec)
         self.assertTrue(any(e["target"] == "AGENTS.md" for e in rec["installs"]))
         self.assertEqual(rec["target_head"], before)
@@ -415,8 +451,8 @@ class RefreshTests(unittest.TestCase):
     def test_formerly_containing_current_hash_does_not_widen_boundary(self):
         # Record the CURRENT wrapper content's hash in formerly[] (the
         # real manifest has this overlap), then present the current
-        # content plus one extra trailing newline: owner-modified, never
-        # silently "updated" back.
+        # content plus one extra trailing newline: drift-restored, never
+        # reported as a clean "updated" (M1 report honesty).
         self._mutate_manifest(lambda d: [
             a["formerly"].append(nhash(CUR_TOOL))
             for a in d["artifacts"] if a["target"].endswith("tool.md")])
@@ -426,10 +462,11 @@ class RefreshTests(unittest.TestCase):
         commit_all(self.target, "extra trailing newline")
         proc = refresh(self.toolkit, self.target)
         self.assertEqual(proc.returncode, 0, proc.stderr)
-        self.assertIn("FLAG .claude/commands/tool.md", proc.stdout)
+        self.assertIn("restored: .claude/commands/tool.md", proc.stdout)
+        self.assertNotIn("updated: .claude/commands/tool.md", proc.stdout)
         self.assertEqual(
             (self.target / ".claude" / "commands" / "tool.md").read_text(),
-            CUR_TOOL + "\n")
+            CUR_TOOL)
 
     # -- exact commit scope ----------------------------------------------
 
@@ -536,17 +573,18 @@ class RefreshTests(unittest.TestCase):
         self.assertEqual(proc.returncode, 0)
         self.assertFalse((self.target / ".claude" / "old-hook.py").exists())
 
-    def test_second_trailing_newline_still_flags(self):
+    def test_second_trailing_newline_is_drift_and_restored(self):
         # Equivalence stops at ONE trailing newline: a second one is a real
-        # modification and must keep flagging.
+        # divergence - restored via the drift path, never a quiet update.
         (self.target / ".claude" / "commands").mkdir(parents=True)
         (self.target / ".claude" / "commands" / "tool.md").write_bytes(CUR_TOOL.encode() + b"\n")
         commit_all(self.target, "double final newline")
         proc = refresh(self.toolkit, self.target)
-        self.assertEqual(proc.returncode, 0)
-        self.assertIn("FLAG .claude/commands/tool.md", proc.stdout)
+        self.assertEqual(proc.returncode, 0, proc.stderr)
+        self.assertIn("restored: .claude/commands/tool.md", proc.stdout)
+        self.assertNotIn("updated: .claude/commands/tool.md", proc.stdout)
         self.assertEqual((self.target / ".claude" / "commands" / "tool.md").read_bytes(),
-                         CUR_TOOL.encode() + b"\n")
+                         CUR_TOOL.encode())
 
     # -- retired ---------------------------------------------------------
 
@@ -559,14 +597,28 @@ class RefreshTests(unittest.TestCase):
         self.assertFalse((self.target / ".claude" / "old-hook.py").exists())
         self.assertIn("removed: .claude/old-hook.py", proc.stdout)
 
-    def test_modified_retired_artifact_is_flagged_kept(self):
+    def test_modified_retired_artifact_is_removed_with_drift_report(self):
         (self.target / ".claude").mkdir()
         (self.target / ".claude" / "old-hook.py").write_text("customized hook\n", newline="\n")
         commit_all(self.target, "custom old hook")
         proc = refresh(self.toolkit, self.target)
-        self.assertEqual(proc.returncode, 0)
-        self.assertTrue((self.target / ".claude" / "old-hook.py").exists())
-        self.assertIn("FLAG .claude/old-hook.py", proc.stdout)
+        self.assertEqual(proc.returncode, 0, proc.stderr)
+        self.assertFalse((self.target / ".claude" / "old-hook.py").exists())
+        self.assertIn("removed: .claude/old-hook.py", proc.stdout)
+        self.assertIn("DRIFT", proc.stdout)
+        self.assertIn("custom old hook", proc.stdout)
+
+    def test_retired_generated_file_any_content_is_removed(self):
+        # Empty formerly[] (generated per-repo, no hash can ever match):
+        # still converges to absent, reported as drift.
+        (self.target / ".agents").mkdir()
+        (self.target / ".agents" / "generated.json").write_text("{\"repo\": \"specific\"}\n", newline="\n")
+        commit_all(self.target, "generated artifact")
+        proc = refresh(self.toolkit, self.target)
+        self.assertEqual(proc.returncode, 0, proc.stderr)
+        self.assertFalse((self.target / ".agents" / "generated.json").exists())
+        self.assertIn("removed: .agents/generated.json", proc.stdout)
+        self.assertIn("DRIFT", proc.stdout)
 
     # -- committability / .gitignore -------------------------------------
 
@@ -791,13 +843,14 @@ class RefreshTests(unittest.TestCase):
         self.assertEqual(proc.returncode, 0)
         self.assertNotIn("ATTENTION", proc.stdout)
 
-    def test_non_core_flag_prints_no_banner(self):
+    def test_non_core_drift_prints_no_banner(self):
         refresh(self.toolkit, self.target)
         (self.target / ".claude" / "commands" / "tool.md").write_text(
             "my edited wrapper\n", newline="\n")
         commit_all(self.target, "edit tool")
         proc = refresh(self.toolkit, self.target)
         self.assertEqual(proc.returncode, 0)
+        self.assertIn("restored: .claude/commands/tool.md", proc.stdout)
         self.assertNotIn("ATTENTION", proc.stdout)
 
     def _refresh_mod(self):
@@ -851,9 +904,9 @@ class GuidanceLintBaselineTests(unittest.TestCase):
 class RealManifestEquivalenceTests(unittest.TestCase):
     """Regression for the real shipped set: wherever a current source's
     own hash sits in its formerly[] list, current-plus-an-extra-trailing-
-    newline must classify owner-modified (flagged), never update."""
+    newline must classify as drift (restore), never as a clean update."""
 
-    def test_overlapping_artifacts_flag_not_update(self):
+    def test_overlapping_artifacts_restore_not_update(self):
         sys.path.insert(0, str(TOOLS))
         self.addCleanup(sys.path.remove, str(TOOLS))
         import refresh as refresh_mod
@@ -875,8 +928,14 @@ class RealManifestEquivalenceTests(unittest.TestCase):
                 plan = refresh_mod.classify(
                     target_repo, toolkit, {"artifacts": [art]})
                 self.assertEqual([], plan.update, art["target"])
-                self.assertEqual([art["target"]],
-                                 [t for t, _ in plan.flags], art["target"])
+                if art["class"] == "replace-whole":
+                    # No governed git history in the fixture: foreign, flagged.
+                    self.assertEqual([art["target"]],
+                                     [t for t, _ in plan.flags], art["target"])
+                else:
+                    self.assertEqual([], plan.flags, art["target"])
+                    self.assertEqual([art["target"]],
+                                     [t for t, _ in plan.restore], art["target"])
 
 
 if __name__ == "__main__":

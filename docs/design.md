@@ -64,12 +64,19 @@ Two flows:
   one scoped commit. Harness-specific files are pure adapters; durable truth
   lives only in the harness-neutral layer.
 - **Refresh** (deterministic, `tools/refresh.py`): pull-based
-  reconcile-to-shipped-set. `tools/shipped-set.json` maps each shipped
-  artifact to a target path and class — `replace-whole` (AGENTS.md, gated on
-  matching a known template version), `replace-if-unmodified` (matches a
-  formerly-shipped hash ⇒ provably unmodified ⇒ update; else flag, never
-  overwrite), `retired` (removed only on a formerly-shipped match; generated
-  files carry no hashes and are only ever flagged). All matching is
+  reconcile-to-shipped-set. Installed governance is toolkit-owned (owner
+  ruling 2026-07-16): no out-of-band edit is legitimate, so divergence is
+  always drift and every run converges the repo to exactly the shipped set.
+  `tools/shipped-set.json` maps each shipped artifact to a target path and
+  class — `replace-whole` (AGENTS.md: known versions update normally;
+  divergent content is restored when git history proves the repo was once
+  governed, and flagged as a foreign governance file — bootstrap, not
+  refresh — when it never was), `replace` (matches a formerly-shipped hash
+  ⇒ update; anything else ⇒ drift, reported with its introducing commits
+  and restored), `retired` (removed; drifted content is removed with a
+  DRIFT report). Uncommitted changes on touched paths trigger the
+  dirty-tree refusal, so nothing uncommitted is ever machine-destroyed;
+  committed drift stays recoverable from git history. All matching is
   newline-equivalent (CRLF → LF, at most one trailing final newline — issue
   #1) for mixed-platform checkouts and insert-final-newline tooling.
   Committability follows
