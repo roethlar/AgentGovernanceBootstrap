@@ -792,8 +792,13 @@ def main(argv=None) -> int:
                 msg += "\n\ntoolkit-sha: {}\nplan-digest: {}".format(
                     plan_record.get("toolkit_sha", ""), plan_record.get("digest", ""))
             git(target, "commit", "-m", msg, "--", *paths)
+            # --no-renames: a retired file replaced by a similar new artifact
+            # (reviewloop.md -> codereview.md) collapses to one rename line
+            # under default rename detection, making a correct commit look
+            # like a plan mismatch (fleet-refresh field failure, 2026-07-16).
             committed = set(
-                git(target, "show", "--name-only", "--format=", "HEAD").stdout.splitlines())
+                git(target, "show", "--no-renames", "--name-only", "--format=",
+                    "HEAD").stdout.splitlines())
             committed.discard("")
             if committed != set(paths):
                 print("refresh: the created commit does not match the plan "

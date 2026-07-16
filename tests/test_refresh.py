@@ -621,6 +621,27 @@ class RefreshTests(unittest.TestCase):
         self.assertEqual((self.target / ".claude" / "old-hook.py").read_text(),
                          "precious local state\n")
 
+    def test_retired_file_renamed_into_new_artifact_verifies_and_commits(self):
+        # A retired file whose successor artifact has near-identical content
+        # (reviewloop.md -> codereview.md) triggers git rename detection; the
+        # post-commit verification must not read the collapsed rename line as
+        # a plan mismatch.
+        self._mutate_manifest(lambda d: d["retired"].append(
+            {"target": ".claude/commands/old-tool.md",
+             "formerly": [nhash(CUR_TOOL)]}))
+        (self.target / ".claude" / "commands").mkdir(parents=True)
+        (self.target / ".claude" / "commands" / "old-tool.md").write_text(
+            CUR_TOOL, newline="\n")
+        commit_all(self.target, "old tool present")
+        proc = refresh(self.toolkit, self.target)
+        self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
+        self.assertNotIn("does not match the plan", proc.stdout + proc.stderr)
+        self.assertFalse((self.target / ".claude" / "commands" / "old-tool.md").exists())
+        committed = run_git(self.target, "show", "--no-renames", "--name-only",
+                            "--format=", "HEAD").split()
+        self.assertIn(".claude/commands/old-tool.md", committed)
+        self.assertIn(".claude/commands/tool.md", committed)
+
     def test_retired_generated_file_any_content_is_removed(self):
         # Empty formerly[] (generated per-repo, no hash can ever match):
         # still converges to absent, reported as drift.
