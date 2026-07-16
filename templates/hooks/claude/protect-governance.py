@@ -56,9 +56,21 @@ def main() -> int:
         root = os.environ.get("CLAUDE_PROJECT_DIR") or os.getcwd()
         # realpath both sides: symlinked tmp roots (macOS /var -> /private/var)
         # and symlinks pointed AT protected files must compare equal
-        rel = os.path.relpath(os.path.realpath(raw), os.path.realpath(root))
+        real = os.path.realpath(raw)
+        rel = os.path.relpath(real, os.path.realpath(root))
         rel = rel.replace(os.sep, "/")
-        if rel in PROTECTED:
+        hit = rel in PROTECTED
+        if not hit and os.path.exists(real):
+            # Case-insensitive filesystems (macOS, Windows): "agents.md"
+            # names the existing AGENTS.md but misses the string lookup -
+            # compare identity against each protected file that exists.
+            for p in PROTECTED:
+                cand = os.path.join(root, p)
+                if os.path.exists(cand) and os.path.samefile(real, cand):
+                    hit = True
+                    rel = p
+                    break
+        if hit:
             sys.stderr.write(
                 "BLOCKED: {} was installed by governance refresh and is "
                 "toolkit-owned. Editing installed copies is out of bounds; "

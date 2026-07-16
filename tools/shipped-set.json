@@ -239,7 +239,8 @@
       "target": ".claude/hooks/protect-governance.py",
       "class": "replace",
       "formerly": [
-        "9a9d0f77734006628f8b95ff5cef6ea818429f1f585c53943532b3c87ef316dd"
+        "9a9d0f77734006628f8b95ff5cef6ea818429f1f585c53943532b3c87ef316dd",
+        "107368242e292dceaa374afc52463ef68fcf286baa0038a6d7fc7ec5fe07c602"
       ]
     },
     {

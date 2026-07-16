@@ -196,6 +196,20 @@ class ProtectGovernanceHookTests(unittest.TestCase):
             self.assertEqual(proc.returncode, 0)
             self.assertEqual(proc.stderr, "")
 
+    def test_case_alias_of_existing_protected_file_is_blocked(self):
+        # On case-insensitive filesystems (macOS, Windows) "agents.md"
+        # opens AGENTS.md; the hook must catch the alias, not just the
+        # exact string.
+        with tempfile.TemporaryDirectory() as tmp:
+            (Path(tmp) / "AGENTS.md").write_text("x\n", encoding="utf-8")
+            if not (Path(tmp) / "agents.MD").exists():
+                self.skipTest("case-sensitive filesystem: alias not reachable")
+            proc = self.run_hook(
+                {"tool_input": {"file_path": str(Path(tmp) / "agents.MD")}},
+                tmp)
+            self.assertEqual(proc.returncode, 2)
+            self.assertIn("toolkit-owned", proc.stderr)
+
     def test_same_basename_outside_the_protected_path_passes(self):
         with tempfile.TemporaryDirectory() as tmp:
             proc = self.run_hook(
