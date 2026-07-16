@@ -1,9 +1,13 @@
 # `/git` Operator Family: Delegated Git Workflows
 
-Status: DRAFT 2026-07-16 — pending owner decision D1 (ship fleet-wide vs
-keep out of the toolkit). Implementation does not start until D1 carries
-the owner's approved wording. D2 (push immediacy) is resolved by
-precedent, not an owner ask; see Decisions.
+Status: CLOSED 2026-07-16 — landed: plan `10f232d`, slice 2 `01ece70`
+(playbook + wrapper + skill), slice 3 `933da4c` (manifest entries + hook
+protection + hook formerly append), slice 4 in the closing commit
+(decision recorded with the owner's verbatim wording in
+`.agents/decisions.md`; state and README updated). D1 resolved: ship
+through the toolkit — owner wording, verbatim: "yes, anything we do here
+is part of the product." D2 resolved by push-policy precedent, no owner
+ask.
 
 ## Problem
 

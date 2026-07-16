@@ -34,6 +34,39 @@ live rule now owned elsewhere - archive it per the rule above: move it verbatim 
 
 ## Decisions
 
+### 2026-07-16 — `/git` operator family ships in the toolkit: delegated plain-English git workflows, dialog before anything irreversible
+
+Status: Active
+
+Decision: the toolkit ships a `git` playbook (installed at
+`.agents/playbooks/git.md`, with a `/git` Claude Code wrapper and shared
+skill) carrying four owner-invoked operations — `push (local|remote|all)`,
+`reconcile (local|remote|all)`, `add-remote <server>`, and
+`branch-cleanup`. They are delegation shorthand for an owner who does not
+operate git directly, never automation: the agent gathers facts read-only,
+explains state in plain English with no git jargon, acts freely only on
+reversible steps, and asks one question at a time before anything
+irreversible, destructive, or outward-facing. History rewriting is never
+offered (`AGENTS.md` Git Safety). `push` executes immediately on
+invocation, consistent with the push-policy precedent that typing the
+instruction authorizes the push. Remote classification is deterministic by
+URL host (public forge hosts are `remote`, every other host is `local`).
+Canonical home of the workflow: `templates/playbooks/git.md`; plan:
+`docs/superpowers/plans/2026-07-16-git-operators.md`.
+
+Owner wording (2026-07-16), verbatim: "nothing destructive happens
+automatically. it's just shorthand for me. I don't speak git well. I can't
+merge a branch. I can't even create a branch without googling it. these
+would save me typing 'can you figure out wtf is happening with all these
+branches?' I'd then expect a dialog if there are questions. nothing
+automatic that's irreversible."
+
+Scope ruling (owner, 2026-07-16), on whether the family ships fleet-wide
+through the toolkit or stays a personal setup, verbatim: "yes, anything we
+do here is part of the product." Recorded as a standing scope principle
+for this repo: capabilities built here ship through the toolkit — there is
+no personal-tooling side channel.
+
 ### 2026-07-12 — Draft-all harness artifacts stands; "smallest guidance set" means no token bloat, not fewer support files
 
 Status: Active

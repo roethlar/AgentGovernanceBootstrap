@@ -8,6 +8,18 @@ machine-local facts are labeled or omitted.
 
 ## Now
 
+- 2026-07-16: the `/git` operator family plan is CLOSED with a commit map
+  (`docs/superpowers/plans/2026-07-16-git-operators.md`). The toolkit
+  ships a `git` playbook + `/git` wrapper + shared skill — delegated
+  plain-English git operations (`push`, `reconcile`, `add-remote`,
+  `branch-cleanup`), facts first, dialog before anything irreversible,
+  history rewriting never offered — protected by the pre-edit hook and
+  converged by refresh. Owner rulings recorded verbatim in
+  `.agents/decisions.md` (2026-07-16), including the standing scope
+  principle that anything built in this repo is part of the product.
+  Governed repos receive `/git` at the owner's next fleet refresh; this
+  repo's installed copies lag until the owner's next self-refresh
+  (owner-only).
 - 2026-07-16: the strict-converge + review-split plan is CLOSED with a
   commit map
   (`docs/superpowers/plans/2026-07-16-strict-converge-and-review-split.md`);
