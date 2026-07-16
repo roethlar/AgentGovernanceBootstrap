@@ -608,6 +608,19 @@ class RefreshTests(unittest.TestCase):
         self.assertIn("DRIFT", proc.stdout)
         self.assertIn("custom old hook", proc.stdout)
 
+    def test_ignored_untracked_retired_file_refuses_not_deletes(self):
+        # An ignored file never shows in `status --porcelain`, but deleting
+        # it would destroy content git holds nowhere. Refuse instead.
+        (self.target / ".gitignore").write_text("old-hook.py\n", newline="\n")
+        commit_all(self.target, "ignore old hook")
+        (self.target / ".claude").mkdir()
+        (self.target / ".claude" / "old-hook.py").write_text("precious local state\n", newline="\n")
+        proc = refresh(self.toolkit, self.target)
+        self.assertEqual(proc.returncode, 3, proc.stderr)
+        self.assertIn("refusing", proc.stderr)
+        self.assertEqual((self.target / ".claude" / "old-hook.py").read_text(),
+                         "precious local state\n")
+
     def test_retired_generated_file_any_content_is_removed(self):
         # Empty formerly[] (generated per-repo, no hash can ever match):
         # still converges to absent, reported as drift.

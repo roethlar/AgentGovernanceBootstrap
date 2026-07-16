@@ -510,7 +510,23 @@ def dirty_conflicts(target_repo: Path, plan: Plan) -> list:
     if not paths:
         return []
     out = git(target_repo, "status", "--porcelain", "--", *paths).stdout
-    return [line for line in out.splitlines() if line.strip()]
+    conflicts = [line for line in out.splitlines() if line.strip()]
+    # `status --porcelain` omits IGNORED untracked files, so an ignored copy
+    # of a retired target would sail past the dirty check and be unlinked -
+    # destroying content that exists nowhere in git (openreview finding,
+    # 2026-07-16). Removal requires the path to be tracked: tracked content
+    # is committed (working-tree edits already show up above), untracked or
+    # ignored content exists only in the working tree - refuse.
+    flagged = {ln[3:].strip() for ln in conflicts}
+    for target in plan.remove:
+        if target in flagged:
+            continue
+        tracked = git(target_repo, "ls-files", "--error-unmatch", "--", target,
+                      check=False)
+        if tracked.returncode != 0:
+            conflicts.append("!! {} (untracked or ignored; its content exists "
+                             "only in the working tree)".format(target))
+    return conflicts
 
 
 def apply_plan(target_repo: Path, plan: Plan) -> None:
