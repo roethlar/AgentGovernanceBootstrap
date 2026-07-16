@@ -226,6 +226,12 @@
       ]
     },
     {
+      "source": "templates/hooks/claude/protect-governance.py",
+      "target": ".claude/hooks/protect-governance.py",
+      "class": "replace",
+      "formerly": []
+    },
+    {
       "source": "templates/hooks/claude/settings.json",
       "target": ".claude/settings.json",
       "class": "replace",

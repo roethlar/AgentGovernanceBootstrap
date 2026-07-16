@@ -7,6 +7,10 @@ is governed by the no-rule-without-provenance discipline, not CI grep).
 """
 
 import json
+import os
+import subprocess
+import sys
+import tempfile
 import unittest
 from pathlib import Path
 
@@ -108,26 +112,101 @@ class ProvenanceMarkerTests(unittest.TestCase):
 
 
 class ShippedHooks(unittest.TestCase):
-    def test_shipped_hooks_are_the_verified_regrounds_only(self):
+    def test_shipped_hooks_are_the_verified_set(self):
         # Hooks ship only where verified to fire AND needed
-        # (docs/harness-capabilities.md). Claude Code SessionStart/compact is
-        # the sole survivor: codex and agy pin guidance across compaction
-        # natively (codex owner-attested; agy attested 2026-07-08), so their
-        # re-grounds are not-needed — the agy hook shipped 2026-07-08 and was
-        # retired same-day on that evidence.
+        # (docs/harness-capabilities.md). Claude Code carries the
+        # SessionStart/compact re-ground (sole survivor of the 2026-07-08
+        # narrowing: codex and agy pin guidance across compaction natively)
+        # plus the protect-governance PreToolUse deny (strict converge,
+        # 2026-07-16) - blocking PreToolUse is verified on Claude Code only.
         base = TEMPLATES / "hooks"
         shipped = sorted(p.relative_to(base).as_posix()
-                         for p in base.rglob("*") if p.is_file())
-        self.assertEqual(shipped, ["claude/settings.json"])
+                         for p in base.rglob("*")
+                         if p.is_file() and "__pycache__" not in p.parts)
+        self.assertEqual(shipped, ["claude/protect-governance.py",
+                                   "claude/settings.json"])
 
         cfg = json.loads((base / "claude" / "settings.json").read_text(encoding="utf-8"))
-        self.assertEqual(list(cfg["hooks"].keys()), ["SessionStart"])
+        self.assertEqual(sorted(cfg["hooks"].keys()),
+                         ["PreToolUse", "SessionStart"])
         entry = cfg["hooks"]["SessionStart"][0]
         self.assertEqual(entry.get("matcher"), "compact")
         self.assertEqual(entry["hooks"][0]["command"], CANONICAL_REGROUND_COMMAND)
+        pre = cfg["hooks"]["PreToolUse"][0]
+        self.assertEqual(pre.get("matcher"), "Edit|Write|MultiEdit|NotebookEdit")
+        cmd = pre["hooks"][0]["command"]
+        self.assertIn("protect-governance.py", cmd)
+        self.assertIn("${CLAUDE_PROJECT_DIR}", cmd)
+        # exit-code preservation: a blocking exit 2 must never trigger a
+        # fallback interpreter via `a || b` chaining
+        self.assertNotIn("||", cmd)
         body = (base / "claude" / "settings.json").read_text(encoding="utf-8")
         self.assertNotIn("/Users/", body)
         self.assertNotIn("/home/", body)
+
+
+class ProtectGovernanceHookTests(unittest.TestCase):
+    SCRIPT = TEMPLATES / "hooks" / "claude" / "protect-governance.py"
+
+    def run_hook(self, payload, project_dir):
+        env = dict(os.environ, CLAUDE_PROJECT_DIR=str(project_dir))
+        text = payload if isinstance(payload, str) else json.dumps(payload)
+        return subprocess.run([sys.executable, str(self.SCRIPT)],
+                              input=text, capture_output=True, text=True,
+                              env=env, cwd=str(project_dir))
+
+    def test_protected_set_matches_the_shipped_targets(self):
+        # The script's literal list and the manifest stay in lockstep or
+        # this goes red - the manifest is the source of truth.
+        import importlib.util
+        spec = importlib.util.spec_from_file_location(
+            "protect_governance", self.SCRIPT)
+        mod = importlib.util.module_from_spec(spec)
+        prior = sys.dont_write_bytecode
+        sys.dont_write_bytecode = True  # no __pycache__ inside templates/
+        try:
+            spec.loader.exec_module(mod)
+        finally:
+            sys.dont_write_bytecode = prior
+        targets = {a["target"] for a in shipped_set()["artifacts"]}
+        self.assertEqual(set(mod.PROTECTED), targets)
+
+    def test_edit_of_protected_target_is_blocked(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            for tool_key in ("file_path", "notebook_path"):
+                proc = self.run_hook(
+                    {"tool_name": "Edit",
+                     "tool_input": {tool_key: str(Path(tmp) / "AGENTS.md")}},
+                    tmp)
+                self.assertEqual(proc.returncode, 2, tool_key)
+                self.assertIn("toolkit-owned", proc.stderr)
+
+    def test_relative_protected_path_is_blocked(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            proc = self.run_hook(
+                {"tool_input": {"file_path": ".agents/playbooks/reviewloop.md"}},
+                tmp)
+            self.assertEqual(proc.returncode, 2)
+
+    def test_unprotected_path_passes(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            proc = self.run_hook(
+                {"tool_input": {"file_path": str(Path(tmp) / "src" / "main.py")}},
+                tmp)
+            self.assertEqual(proc.returncode, 0)
+            self.assertEqual(proc.stderr, "")
+
+    def test_same_basename_outside_the_protected_path_passes(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            proc = self.run_hook(
+                {"tool_input": {"file_path": str(Path(tmp) / "docs" / "AGENTS.md")}},
+                tmp)
+            self.assertEqual(proc.returncode, 0)
+
+    def test_garbage_stdin_fails_open(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            proc = self.run_hook("this is not json {", tmp)
+            self.assertEqual(proc.returncode, 0)
 
 
 class ShippedShimsAndWrappers(unittest.TestCase):
