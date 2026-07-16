@@ -23,6 +23,11 @@ machine-local facts are labeled or omitted.
   until the owner's next self-refresh (owner-only). Fleet note: refresh
   Powershell-Token-Killer only after this toolkit state — its edited
   reviewloop copy is upstreamed here and will be drift-removed there.
+  Dogfood 2026-07-16: openreview with codex over the landed range returned
+  four findings; all admitted and fixed with guard proofs (commit map in
+  the CLOSED plan's Status line). The per-finding codereview verification
+  round (re-dispatching a reviewer per fix) was not run — available on an
+  owner go.
 - Steady state as of `0d05c97` (2026-07-12): the 2026-07-08 zero-based
   consolidation is landed; the product shape is owned by
   `.agents/repo-guidance.md` (Mission Detail). Every 2026-07-10 plan is

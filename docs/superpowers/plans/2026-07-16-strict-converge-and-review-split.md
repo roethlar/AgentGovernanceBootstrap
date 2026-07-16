@@ -7,7 +7,13 @@ invariant), slice 3 `f4d322d` (provenance markers), slice 4 `3f2a99e`
 (codereview/openreview split), slice 6 in the closing commit (decisions
 Adopted and archived; state updated). Owner rulings verbatim in
 `docs/history/decisions-archive.md` (2026-07-16 rotation). Owner go
-2026-07-16; the post-landing openreview-with-codex dogfood run follows.
+2026-07-16. Post-landing openreview dogfood (codex, range
+`b1cd13f..8c0b9d7`): verdict `findings`, four returned, all four admitted
+at intake and fixed one-per-commit with guard proofs — `317220c`
+(HIGH: untracked/ignored retired targets now refuse, not delete),
+`1b90460` (MEDIUM: hook catches case-aliased paths), `e8885fa` (MEDIUM:
+README stated the retired never-overwrite contract), `643865c` (LOW:
+codereview operator section named the retired `/review`).
 
 ## Problem
 
