@@ -1,8 +1,13 @@
 # Strict Converge-To-Shipped Refresh + Review Playbook Split
 
-Status: APPROVED 2026-07-16 — owner go 2026-07-16; owner rulings recorded
-verbatim in `.agents/decisions.md` (two 2026-07-16 entries). Slices land in
-order, one commit each, suite green after each.
+Status: CLOSED 2026-07-16 — landed: plan+rulings `9cc2dae`, slice 1
+`95fb0c7` (strict converge refresh), slice 2 `0241a91` (generalized
+invariant), slice 3 `f4d322d` (provenance markers), slice 4 `3f2a99e`
+(blocking hook, live check positive), slice 5 `74f9082`
+(codereview/openreview split), slice 6 in the closing commit (decisions
+Adopted and archived; state updated). Owner rulings verbatim in
+`docs/history/decisions-archive.md` (2026-07-16 rotation). Owner go
+2026-07-16; the post-landing openreview-with-codex dogfood run follows.
 
 ## Problem
 

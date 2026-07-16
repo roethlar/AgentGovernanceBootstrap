@@ -8,14 +8,21 @@ machine-local facts are labeled or omitted.
 
 ## Now
 
-- Active plan (2026-07-16):
-  `docs/superpowers/plans/2026-07-16-strict-converge-and-review-split.md` —
-  strict converge-to-shipped refresh (divergence is always drift; restore,
-  never flag-and-keep), don't-edit invariant generalized to all installed
-  artifacts, provenance markers, blocking Claude Code pre-edit hook, and
-  the reviewloop → codereview/openreview split. Owner rulings verbatim in
-  `.agents/decisions.md` (two 2026-07-16 entries). After landing: dogfood
-  run — openreview with codex over the full change range.
+- 2026-07-16: the strict-converge + review-split plan is CLOSED with a
+  commit map
+  (`docs/superpowers/plans/2026-07-16-strict-converge-and-review-split.md`);
+  owner rulings archived verbatim (2026-07-16 rotation in
+  `docs/history/decisions-archive.md`). Refresh now converges every
+  governed repo to the shipped set (divergence = drift, restored with
+  commit provenance; uncommitted divergence refuses); the don't-edit
+  invariant covers every installed artifact; shipped wrappers/playbooks/
+  skills carry a provenance marker; a blocking Claude Code pre-edit hook
+  ships (live-checked positive). Playbooks: `codereview` (per-finding
+  conformance) + `openreview` (unprimed goal-first whole-change), owner-
+  invoked by name; `reviewloop` retired. This repo's installed copies lag
+  until the owner's next self-refresh (owner-only). Fleet note: refresh
+  Powershell-Token-Killer only after this toolkit state — its edited
+  reviewloop copy is upstreamed here and will be drift-removed there.
 - Steady state as of `0d05c97` (2026-07-12): the 2026-07-08 zero-based
   consolidation is landed; the product shape is owned by
   `.agents/repo-guidance.md` (Mission Detail). Every 2026-07-10 plan is
