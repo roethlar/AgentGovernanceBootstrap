@@ -82,8 +82,11 @@ For documentation-only changes, run `git diff --check`. Changes touching
   2026-07-10, recorded in `.agents/decisions.md`). Installed copies lagging
   the templates is the expected steady state between owner-run refreshes —
   leave the lag alone; at most note it.
-- A `review <agent>` wrapper exists at `.claude/commands/review.md`; the
-  reusable playbook ships at `templates/playbooks/reviewloop.md` and installs
-  into `.agents/playbooks/` via refresh. Dispatching `codex` as a reviewer:
-  pipe the prompt via **stdin** (`codex exec ... < prompt`); the argv form
-  has hung.
+- Review playbooks ship at `templates/playbooks/codereview.md` (per-finding
+  conformance loop) and `templates/playbooks/openreview.md` (unprimed
+  goal-first whole-change review); both install into `.agents/playbooks/`
+  via refresh, each with a Claude Code wrapper and shared skill, and the
+  owner invokes them by name (2026-07-16 decision). This repo's installed
+  copies lag until the owner's next self-refresh. Dispatching `codex` as a
+  reviewer: pipe the prompt via **stdin** (`codex exec ... < prompt`); the
+  argv form has hung.

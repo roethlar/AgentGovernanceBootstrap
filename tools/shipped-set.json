@@ -139,15 +139,16 @@
       ]
     },
     {
-      "source": "templates/playbooks/reviewloop.md",
-      "target": ".agents/playbooks/reviewloop.md",
+      "source": "templates/playbooks/codereview.md",
+      "target": ".agents/playbooks/codereview.md",
       "class": "replace",
-      "formerly": [
-        "80fcabf996af6afe911ff9678c03d8f6ef6f14cc31d61a47f248f5670e0662c4",
-        "82b45743f4a9ce9fe9631db053541711628e18f87328953a2c658d51c3157c7e",
-        "20b3b308da346ff05f7ed85bd5b81f3d262986cd3b14592b84ad61ab00608c00",
-        "268916110da2964b5e067c64bedd55e3c4a38404ccbfdde950cbfe04c75e7719"
-      ]
+      "formerly": []
+    },
+    {
+      "source": "templates/playbooks/openreview.md",
+      "target": ".agents/playbooks/openreview.md",
+      "class": "replace",
+      "formerly": []
     },
     {
       "source": "templates/skills/shared/catchup/SKILL.md",
@@ -210,26 +211,36 @@
       ]
     },
     {
-      "source": "templates/skills/shared/review/SKILL.md",
-      "target": ".agents/skills/review/SKILL.md",
+      "source": "templates/skills/shared/codereview/SKILL.md",
+      "target": ".agents/skills/codereview/SKILL.md",
       "class": "replace",
-      "formerly": [
-        "4ef18624df352399b9181ebabeef70f1142e2aef08f158cf0ae2f50f845ffbba"
-      ]
+      "formerly": []
     },
     {
-      "source": "templates/commands/claude/review.md",
-      "target": ".claude/commands/review.md",
+      "source": "templates/skills/shared/openreview/SKILL.md",
+      "target": ".agents/skills/openreview/SKILL.md",
       "class": "replace",
-      "formerly": [
-        "631b2752e84f36caf2687f18078a563a81a4de99b5be62c39442ef97dc147f0e"
-      ]
+      "formerly": []
+    },
+    {
+      "source": "templates/commands/claude/codereview.md",
+      "target": ".claude/commands/codereview.md",
+      "class": "replace",
+      "formerly": []
+    },
+    {
+      "source": "templates/commands/claude/openreview.md",
+      "target": ".claude/commands/openreview.md",
+      "class": "replace",
+      "formerly": []
     },
     {
       "source": "templates/hooks/claude/protect-governance.py",
       "target": ".claude/hooks/protect-governance.py",
       "class": "replace",
-      "formerly": []
+      "formerly": [
+        "9a9d0f77734006628f8b95ff5cef6ea818429f1f585c53943532b3c87ef316dd"
+      ]
     },
     {
       "source": "templates/hooks/claude/settings.json",
@@ -244,6 +255,33 @@
     }
   ],
   "retired": [
+    {
+      "target": ".agents/playbooks/reviewloop.md",
+      "comment": "Split into codereview.md + openreview.md (owner decision 2026-07-16).",
+      "formerly": [
+        "80fcabf996af6afe911ff9678c03d8f6ef6f14cc31d61a47f248f5670e0662c4",
+        "82b45743f4a9ce9fe9631db053541711628e18f87328953a2c658d51c3157c7e",
+        "20b3b308da346ff05f7ed85bd5b81f3d262986cd3b14592b84ad61ab00608c00",
+        "268916110da2964b5e067c64bedd55e3c4a38404ccbfdde950cbfe04c75e7719",
+        "9f543d10b6bf9c897df5fb198ccd172653e69ec85115a51f87ec2dd318b9117e"
+      ]
+    },
+    {
+      "target": ".claude/commands/review.md",
+      "comment": "Split into codereview.md + openreview.md (owner decision 2026-07-16).",
+      "formerly": [
+        "631b2752e84f36caf2687f18078a563a81a4de99b5be62c39442ef97dc147f0e",
+        "6b34abb8a8b4c413f15e0bbf913edaad32d91c019ee8d593416df82ce946d59a"
+      ]
+    },
+    {
+      "target": ".agents/skills/review/SKILL.md",
+      "comment": "Split into codereview + openreview skills (owner decision 2026-07-16).",
+      "formerly": [
+        "4ef18624df352399b9181ebabeef70f1142e2aef08f158cf0ae2f50f845ffbba",
+        "c3df5511c662823509d42a8511eb9e78d24c98bdab9fffcf1a12b6080f3213f5"
+      ]
+    },
     {
       "target": ".claude/agents-md-tripwire.py",
       "formerly": [

@@ -184,7 +184,7 @@ class ProtectGovernanceHookTests(unittest.TestCase):
     def test_relative_protected_path_is_blocked(self):
         with tempfile.TemporaryDirectory() as tmp:
             proc = self.run_hook(
-                {"tool_input": {"file_path": ".agents/playbooks/reviewloop.md"}},
+                {"tool_input": {"file_path": ".agents/playbooks/codereview.md"}},
                 tmp)
             self.assertEqual(proc.returncode, 2)
 

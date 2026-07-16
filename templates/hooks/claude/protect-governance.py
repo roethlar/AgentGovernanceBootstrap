@@ -27,11 +27,13 @@ PROTECTED = frozenset({
     ".claude/commands/handoff.md",
     ".claude/commands/plan.md",
     ".claude/commands/playbook.md",
-    ".claude/commands/review.md",
+    ".claude/commands/codereview.md",
+    ".claude/commands/openreview.md",
     ".claude/commands/update-governance.md",
     ".claude/settings.json",
     ".claude/hooks/protect-governance.py",
-    ".agents/playbooks/reviewloop.md",
+    ".agents/playbooks/codereview.md",
+    ".agents/playbooks/openreview.md",
     ".agents/skills/catchup/SKILL.md",
     ".agents/skills/handoff/SKILL.md",
     ".agents/skills/drift/SKILL.md",
@@ -39,7 +41,8 @@ PROTECTED = frozenset({
     ".agents/skills/plan/SKILL.md",
     ".agents/skills/playbook/SKILL.md",
     ".agents/skills/update-governance/SKILL.md",
-    ".agents/skills/review/SKILL.md",
+    ".agents/skills/codereview/SKILL.md",
+    ".agents/skills/openreview/SKILL.md",
 })
 
 
