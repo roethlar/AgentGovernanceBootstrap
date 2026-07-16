@@ -3,6 +3,8 @@ name: review
 description: Run the reviewloop playbook with a named reviewer agent to review the current finding. Use when the owner says review <agent>.
 ---
 
+<!-- Installed by governance refresh; do not edit. Any change here is drift and is restored on the next refresh. Route changes through the toolkit owner. -->
+
 Run the `review` playbook operator: read `.agents/playbooks/reviewloop.md`
 and follow it to review the current finding with the reviewer agent named
 in the request (for example `review codex`). The named agent is the

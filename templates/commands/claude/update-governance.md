@@ -1,3 +1,5 @@
+<!-- Installed by governance refresh; do not edit. Any change here is drift and is restored on the next refresh. Route changes through the toolkit owner. -->
+
 Refresh this repo's governance from the AgentGovernanceBootstrap toolkit.
 
 1. Locate the local toolkit clone (normally `~/dev/AgentGovernanceBootstrap`).

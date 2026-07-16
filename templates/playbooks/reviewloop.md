@@ -1,3 +1,5 @@
+<!-- Installed by governance refresh; do not edit. Any change here is drift and is restored on the next refresh. Route changes through the toolkit owner. -->
+
 # Playbook: synchronous cross-harness review (`review`)
 
 A portable workflow for reviewing a multi-fix sweep (security pass, refactor,

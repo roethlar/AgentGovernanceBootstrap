@@ -19,6 +19,28 @@ CANONICAL_REGROUND_COMMAND = (
     "Invariants block. Treat AGENTS.md, not this message, as authoritative.'"
 )
 
+GOVERNANCE_MARKER = (
+    "<!-- Installed by governance refresh; do not edit. Any change here "
+    "is drift and is restored on the next refresh. Route changes "
+    "through the toolkit owner. -->"
+)
+
+
+def marker_sources(root):
+    """Shipped markdown artifacts that must carry the provenance marker:
+    wrappers, playbooks, skills. AGENTS.template.md carries the invariant
+    itself; shims must stay exactly '@AGENTS.md' (per-session token cost)."""
+    base = Path(root) / "templates"
+    files = sorted((base / "commands" / "claude").glob("*.md"))
+    files += sorted((base / "playbooks").glob("*.md"))
+    files += sorted((base / "skills" / "shared").glob("*/SKILL.md"))
+    return files
+
+
+def missing_markers(root):
+    return [f for f in marker_sources(root)
+            if GOVERNANCE_MARKER not in f.read_text(encoding="utf-8")]
+
 
 def shipped_set():
     return json.loads((ROOT / "tools" / "shipped-set.json").read_text(encoding="utf-8"))
@@ -63,6 +85,26 @@ class ShippedSetIntegrity(unittest.TestCase):
         for path in (".agents/repo-map.json", ".agents/artifact-manifest.json"):
             self.assertIn(path, retired)
             self.assertEqual(retired[path]["formerly"], [], path)
+
+
+class ProvenanceMarkerTests(unittest.TestCase):
+    def test_every_wrapper_playbook_and_skill_carries_the_marker(self):
+        files = marker_sources(ROOT)
+        self.assertGreater(len(files), 10)  # the real corpus, not an empty glob
+        self.assertEqual([], missing_markers(ROOT))
+
+    def test_detector_bites_on_an_unmarked_fixture(self):
+        # Hermetic guard proof for the corpus check above: a temp tree with
+        # one unmarked artifact must be caught.
+        import tempfile
+        with tempfile.TemporaryDirectory() as tmp:
+            base = Path(tmp) / "templates" / "commands" / "claude"
+            base.mkdir(parents=True)
+            (base / "ok.md").write_text(GOVERNANCE_MARKER + "\n\nbody\n",
+                                        encoding="utf-8")
+            (base / "bare.md").write_text("body only\n", encoding="utf-8")
+            missing = missing_markers(tmp)
+            self.assertEqual([base / "bare.md"], missing)
 
 
 class ShippedHooks(unittest.TestCase):

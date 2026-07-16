@@ -1,3 +1,5 @@
+<!-- Installed by governance refresh; do not edit. Any change here is drift and is restored on the next refresh. Route changes through the toolkit owner. -->
+
 Run the `review` playbook operator: read
 `.agents/playbooks/reviewloop.md` and follow it to review the current finding
 with the agent named in your request (e.g. `/review codex`, `/review grok`,
