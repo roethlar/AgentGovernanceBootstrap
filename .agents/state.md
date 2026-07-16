@@ -8,6 +8,14 @@ machine-local facts are labeled or omitted.
 
 ## Now
 
+- Active plan (2026-07-16):
+  `docs/superpowers/plans/2026-07-16-strict-converge-and-review-split.md` —
+  strict converge-to-shipped refresh (divergence is always drift; restore,
+  never flag-and-keep), don't-edit invariant generalized to all installed
+  artifacts, provenance markers, blocking Claude Code pre-edit hook, and
+  the reviewloop → codereview/openreview split. Owner rulings verbatim in
+  `.agents/decisions.md` (two 2026-07-16 entries). After landing: dogfood
+  run — openreview with codex over the full change range.
 - Steady state as of `0d05c97` (2026-07-12): the 2026-07-08 zero-based
   consolidation is landed; the product shape is owned by
   `.agents/repo-guidance.md` (Mission Detail). Every 2026-07-10 plan is

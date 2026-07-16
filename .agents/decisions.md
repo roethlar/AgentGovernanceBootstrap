@@ -34,6 +34,82 @@ live rule now owned elsewhere - archive it per the rule above: move it verbatim 
 
 ## Decisions
 
+### 2026-07-16 — Installed governance is toolkit-owned everywhere; divergence is always drift; refresh converges to the shipped set
+
+Status: Active (implementation plan:
+`docs/superpowers/plans/2026-07-16-strict-converge-and-review-split.md`)
+
+Decision: no legitimate "owner-modified" state exists for installed
+governance artifacts in governed repos. The owner never edits installed
+copies in place; every change is made in the toolkit and propagates by
+refresh. Any installed artifact that matches no shipped version is
+therefore drift — whoever wrote it — and `tools/refresh.py` restores it to
+the shipped set (drift is reported with the introducing commits, then
+corrected; retired artifacts are removed even when modified; uncommitted
+divergence still hits the dirty-tree refusal, so nothing uncommitted is
+ever machine-destroyed). The flag-and-keep ("owner-modified; left
+untouched") semantics are superseded. Lag — an installed copy matching an
+older shipped version — remains the expected steady state between
+refreshes and simply updates. Prevention ships alongside correction: the
+don't-edit invariant in `templates/AGENTS.template.md` generalizes from
+`AGENTS.md` to every refresh-installed artifact, shipped markdown
+artifacts carry a one-line provenance marker, and a blocking Claude Code
+pre-edit hook covers the one harness with verified blocking hooks.
+
+Owner wording (2026-07-16), verbatim: "we need to stop governance drift
+before we can rely on governance to stop code / docs drift. P1." And: "I
+will NEVER make an out-of-band edit to a gov. doc in a repo. I own the
+toolkit. if I need to make a change, it will need to be global, justified,
+and intentional. I will make the change here and push it to all repos when
+I refresh them. I will not be a source of drift anymore than I will allow
+an agen to be. I will also not accept 'eh, just leave it. it's harmless'
+for out-of-compliance docs. NO, not harmless. fodder for bad agent
+decisions. I'm routinely managing 5-10 concurrent agents. I will miss
+things if the rules are lax."
+
+Earned by a field incident (2026-07, Powershell-Token-Killer commit
+4f99fd5): an agent edited the installed review playbook in place after an
+owner remark; refresh's classification would have attributed that drift to
+the owner and left it standing, and no shipped rule forbade the edit — the
+don't-edit invariant covered only `AGENTS.md`, and the broader rule lived
+only in this repo's own guidance, which never ships.
+
+Supersedes: the flag-and-keep clause of the 2026-07-08 consolidation's
+replace-if-unmodified/retired classes (the rest of that entry stands);
+amends the 2026-07-03 playbooks decision's closing clause ("never-overwrite
+protects owner-modified playbooks") — no protected modified state exists.
+
+### 2026-07-16 — Review playbook split: codereview (conformance) and openreview (goal-first), owner-invoked by name
+
+Status: Active (implementation plan:
+`docs/superpowers/plans/2026-07-16-strict-converge-and-review-split.md`)
+
+Decision: the single cross-harness review playbook splits into two, each
+invoked by the owner by name; no auto-selection heuristic ships. codereview
+keeps the existing per-finding conformance loop (verify a fix against its
+finding record — priming on the record is intentional there). openreview is
+a whole-change review dispatched with exactly one substantive question —
+"Is the code as implemented the best way to achieve the goal?" — plus
+mechanical coordinates only (repo, pinned base/head SHAs, worktree
+isolation, verdict schema); no plan summary, checklist, or prior findings.
+Findings an openreview pass returns enter the codereview intake/triage
+machinery.
+
+Owner wording (2026-07-16), verbatim: "the key is that Mythos level models
+like you work better with less constraint, so the review loop goes from
+'does the code match the plan' narrowly to 'does the code accomplish the
+goal in the best way possible' more broadly. that won't always be the best
+route to take, so we need codified flavors of review." And: "how about we
+ditch the one rule and split it into two: codereview and openreview, and I
+call them when I want them?"
+
+Provenance: the goal-first framing was field-authored in
+Powershell-Token-Killer (commit 4f99fd5) and is upstreamed by this
+decision; its per-model hardcoding ("when the reviewer is Claude") is not
+adopted — flavor is chosen by invocation name, never by model detection.
+The reviewloop playbook, its wrapper, and its skill retire from the
+shipped set.
+
 ### 2026-07-12 — Draft-all harness artifacts stands; "smallest guidance set" means no token bloat, not fewer support files
 
 Status: Active
