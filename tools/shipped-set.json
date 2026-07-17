@@ -156,7 +156,9 @@
       "source": "templates/playbooks/git.md",
       "target": ".agents/playbooks/git.md",
       "class": "replace",
-      "formerly": []
+      "formerly": [
+        "00597cffc6fb4d1f1311bbd5f7e6e155131733d4dae7c11df8686c78ff44f68e"
+      ]
     },
     {
       "source": "templates/skills/shared/catchup/SKILL.md",
