@@ -143,14 +143,17 @@
       "target": ".agents/playbooks/codereview.md",
       "class": "replace",
       "formerly": [
-        "e633a1dbfccfe1e561621767fcaf0d39e4cbb2c147bd838345f365e054f805d7"
+        "e633a1dbfccfe1e561621767fcaf0d39e4cbb2c147bd838345f365e054f805d7",
+        "90acfc0f9a79e9d981aa1189cd73d8feaaf20b13d91b7e56df5224d0e6f674ef"
       ]
     },
     {
       "source": "templates/playbooks/openreview.md",
       "target": ".agents/playbooks/openreview.md",
       "class": "replace",
-      "formerly": []
+      "formerly": [
+        "9fad921abe2c8836ff6045372d41b719cf0dbb01ff1dcd689999bd1e2ef2dd36"
+      ]
     },
     {
       "source": "templates/playbooks/git.md",
