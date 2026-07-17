@@ -862,6 +862,41 @@ Supersedes:
 Nothing; extends the 2026-07-08 refresh behavior (flag semantics unchanged).
 
 
+### 2026-07-17 - Owner gates are self-contained; owner-facing reports open with an executive summary
+
+Status: Active
+
+Decision:
+Two owner-communication rules, canonical home `templates/AGENTS.template.md`
+(new `## Owner Gates` section; amended `## Final Response`). Installed copies
+propagate on the owner's next self-refresh; the template/copy lag is the
+expected steady state.
+
+1. Self-contained gates: any question put to the owner (plan decision,
+   approval, contested finding) is written for an owner arriving cold, hours
+   later, with no session memory — one short message carrying a line or two
+   of context, the question, what concretely changes under each option, and
+   the recommended option with its reason. It states what stays blocked until
+   the ruling lands; silence never authorizes proceeding. An ask answerable
+   only by scrolling back, opening a plan document, or re-reading a
+   transcript is malformed.
+2. Executive summary first: owner-facing final responses open with a short
+   executive summary — what changed, what was validated, any remaining risk,
+   anything awaiting the owner — bottom line first, in plain English;
+   supporting detail follows the summary, never precedes it.
+
+Reason:
+Owner direction this session (2026-07-17): decision gates were surfacing as
+bare questions after long autonomous stretches, answerable only by
+transcript archaeology. Approved wording: "yes I want the exec summary req
+and self-contained gate."
+
+Supersedes:
+Nothing; generalizes the `plan` operator's existing chat-ask rule (roughly
+25-50 plain-English words, one decision at a time) to all owner gates, and
+tightens `## Final Response` from "explain" to summary-first ordering.
+
+
 ## Open Decisions (deferred - not yet adopted)
 
 These are assessed findings the owner chose to record for a future decision
