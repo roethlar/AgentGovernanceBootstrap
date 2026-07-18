@@ -57,6 +57,12 @@ headless entry, JSON output mode, bounded smoke test — exactly as the
 (that section is the canonical recipe; do not duplicate it here). Dispatch
 headless, one-shot, in the harness's JSON output mode.
 
+Tier routing is fixed: `openreview` always dispatches the harness's
+owner-confirmed **frontier** pair at **max** effort (see the `codereview`
+playbook's "Reviewer tiers and routing") — no escalation headroom exists
+above it, so a contested round resolves by owner adjudication, never a
+stronger redispatch.
+
 ## Verdict contract (structured, fail-closed)
 
 The reviewer returns its verdict in the JSON envelope. Its result payload must
