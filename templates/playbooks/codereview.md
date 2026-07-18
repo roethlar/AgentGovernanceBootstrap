@@ -125,14 +125,77 @@ thing a capable agent already does when a human says "codereview this with grok"
 4. **Use the verified incantation** to run the review. Probing is bounded to
    `--help`/`--version`/the trivial smoke prompt — never arbitrary commands.
 
-**Optional session cache (convenience, not source of truth).** Once verified, you may
-record an incantation in a gitignored machine-local file,
-`.agents/review/harnesses.local.json`, to skip re-probing next session. Harness
-availability and CLI syntax are machine-specific, so a `*.local.*` file is the correct
-home (consistent with the repo's treatment of `settings.local.json` as untracked
-machine state). The cache is advisory and **self-authored** — never hand-maintained;
-the source of truth is "re-derive by probing," so a stale cache self-corrects on the
-next smoke test.
+**Session cache (`.agents/review/harnesses.local.json`, machine-local).** Once
+verified, record the incantation in this gitignored machine-local file to skip
+re-probing next session (the incantation half is convenience, not source of
+truth). Harness availability and CLI syntax are machine-specific, so a
+`*.local.*` file is the correct home (consistent with the repo's treatment of
+`settings.local.json` as untracked machine state); `.gitignore` carries
+`.agents/review/*.local.json`, and the cache is **self-authored** — never
+hand-maintained. The source of truth for incantations is "re-derive by
+probing," so a stale cache self-corrects on the next smoke test.
+
+For **tier routing** the cache is load-bearing, not optional: it is the only
+place tier→(model, effort) resolution exists — committed text stays
+model-free. Each harness entry is keyed by harness version and additionally
+carries:
+
+```json
+"transport": "mcp | cli",
+"tiers": {
+  "standard": {"model": "<id>", "effort": "<level>", "flags": ["..."],
+               "confirmed": "<harness version>"},
+  "frontier": {"model": "<id>", "effort": "<level>", "flags": ["..."],
+               "confirmed": "<harness version>",
+               "grade": "competitive | fallback"}
+}
+```
+
+The probe additionally discovers the model-selection and effort flags and
+verifies the pinned model resolves, then **proposes** this mapping; the
+**owner confirms it once per harness version**, and the confirmation is
+recorded in the entry (`grade` is owner-declared, frontier-only). A
+single-model harness may still differentiate tiers by effort; only when both
+pairs are genuinely identical does it record the same pair under both tiers,
+explicitly. `transport` is `mcp` where a verified MCP registration exists for
+the harness, else `cli` — MCP is preferred where verified (thread continuity
+gives the repair-delta natively; parameterized invocation retires flag
+drift; no shell-quoting layer), but registrations are machine-local user
+config: committed text names transports, never server registrations.
+
+Cache validity is **lazy** — no per-session ping. A hit on unchanged harness
+version + profile skips the full probe; each tier's pin is then validated,
+envelope and pin together, on its **first real dispatch** of the session. A
+model-not-found, connection, or equivalent error invalidates that cache
+entry, forces a re-probe, and retries the dispatch once. Model IDs retire
+without harness version bumps, so the cache never becomes the sole
+unverified pin.
+
+Effort binds at dispatch boundaries: on the MCP route effort is fixed at
+conversation creation and follow-ups inherit it, so a redispatch that keeps
+the pinned pair rides the in-thread repair-delta at cached-input prices,
+while any tier or effort change necessarily opens a fresh conversation at
+cold-prime cost — which the fresh-session rule for escalations already
+mandates.
+
+### Dispatch provenance: the `Reviewer:` line
+
+Every finding record and index row carries one provenance line:
+
+```text
+Reviewer: <harness> / <resolved model id> / <effort> / <tier>
+  [escalated: <ordered list of ALL matched triggers>]
+```
+
+`escalated:` lists **every** matched trigger in order (e.g.
+`escalated: T1,T2,T5`), never one arbitrarily chosen ID; an owner force is
+recorded as `escalated: owner`; a frontier-ceiling reopen records
+`T5 (ceiling)`. The line is copied from the **invocation transcript** — the
+MCP result envelope or the CLI JSON stream — never from the reviewer's
+prose. **A review with no transcript is not a review**: an unreachable
+server, a failed call, or absent transcript metadata means the dispatch
+failed, whatever text came back. Dispatch is a direct tool call — no model
+sits in the router seat to improvise around a dead server.
 
 ## Reviewer tiers and routing
 
@@ -273,11 +336,12 @@ see the gate below):
    harness's JSON mode guarantees a valid *envelope*, not that the model filled the
    *payload* to schema — hence the inner parse, not envelope-validity alone.)
 4. **Record the verdict** into `.agents/review/findings/<id>.md` `## Reviewer
-   comments` **before acting** — the durable trail. Capture: reviewer **harness name +
-   version**, **reviewed head SHA + base SHA**, **`guard_confirmed`**, the
-   **verdict**, a UTC **timestamp**, and the comments. Flip the finding **Status** and
-   the index row. State whether this record is committed (it should be, as part of the
-   verification history).
+   comments` **before acting** — the durable trail. Capture: the **`Reviewer:`
+   provenance line** (transcript-sourced; see "Dispatch provenance"), reviewer
+   **harness name + version**, **reviewed head SHA + base SHA**,
+   **`guard_confirmed`**, the **verdict**, a UTC **timestamp**, and the
+   comments. Flip the finding **Status** and the index row. State whether this
+   record is committed (it should be, as part of the verification history).
 5. **Act on the recorded verdict:**
    - **accepted** → the branch is ready for an **owner-gated** merge. Do not merge,
      push, or rewrite history on agent authority; leave the branch (or hand off a
@@ -390,9 +454,11 @@ Anything uncertain, out of scope, or overlapping another finding the reviewer sh
 grade explicitly. Empty if nothing.
 
 ## Reviewer comments
-Reviewer harness + version, reviewed/base SHA, guard_confirmed, verdict, UTC
-timestamp, and the comments. On reopen the coder addresses these and re-runs the
-review.
+`Reviewer: <harness> / <resolved model id> / <effort> / <tier>` — plus
+`escalated: <ordered trigger list>` when routing escalated — copied from the
+invocation transcript, never from reviewer prose. Then: reviewer harness +
+version, reviewed/base SHA, guard_confirmed, verdict, UTC timestamp, and the
+comments. On reopen the coder addresses these and re-runs the review.
 ```
 
 ## Status index: `.agents/review/index.md`
@@ -415,10 +481,14 @@ Per-finding detail: see `.agents/review/findings/<id>.md`.
 
 ## Findings
 
-| ID    | Severity | Impact (one line)            | Status | Branch |
-|-------|----------|------------------------------|--------|--------|
-| sec-1 | HIGH     | <observable consequence>     | `[ ]`  |        |
-| ...   | ...      | ...                          | ...    | ...    |
+| ID    | Severity | Impact (one line)            | Status | Branch | Reviewer |
+|-------|----------|------------------------------|--------|--------|----------|
+| sec-1 | HIGH     | <observable consequence>     | `[ ]`  |        |          |
+| ...   | ...      | ...                          | ...    | ...    | ...      |
+
+The Reviewer column carries the same transcript-sourced provenance line as the
+finding record, compacted: `<harness>/<model>/<effort>/<tier>` plus
+`esc:<triggers>` when routing escalated.
 ```
 
 Add one line to `.agents/state.md` while a loop is active, e.g. "Active review loop:

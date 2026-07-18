@@ -13,3 +13,8 @@ Desktop.ini
 # evals/results/*.json records only transcript_path + transcript_bytes + parsed
 # telemetry (see evals/README.md and the Phase 0 plan).
 evals/results/transcripts/
+
+# Reviewer session cache: machine-local harness incantations (model/effort
+# flags, transport) discovered by probing. Untracked machine state — see the
+# codereview playbook's "Session cache" section.
+.agents/review/*.local.json
