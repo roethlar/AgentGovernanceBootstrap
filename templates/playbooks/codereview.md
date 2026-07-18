@@ -187,6 +187,20 @@ while any tier or effort change necessarily opens a fresh conversation at
 cold-prime cost — which the fresh-session rule for escalations already
 mandates.
 
+### Self-permissioning launch
+
+The reviewer launches with its minimal tool set granted **at launch** — never by
+editing `settings.json` or otherwise widening persistent config. A dispatch that
+needs the owner to loosen a trust setting by hand is broken, not a step. The set
+is bounded and strictly narrower than the coder's — read-only inspection plus a
+disposable `git worktree`, no write: reading the workspace, driving its own
+worktree, and running the verification command. On Claude Code that is
+`--allowedTools Read Grep Glob "Bash(git:*)" "Bash(<verify-cmd>)"`; every harness
+has an equivalent launch-scoped grant, recorded in the entry's `flags`. Transport
+only decides where the grant rides — `cli`: the orchestrator passes it per
+invocation; `mcp`: the same flags live in the server's registration command — so
+both self-permission and the `mcp`-preferred default is unaffected.
+
 ### Dispatch provenance: the `Reviewer:` line
 
 Every finding record and index row carries one provenance line:

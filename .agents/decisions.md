@@ -34,6 +34,32 @@ live rule now owned elsewhere - archive it per the rule above: move it verbatim 
 
 ## Decisions
 
+### 2026-07-18 — Reviewer dispatch is self-permissioning; the owner never hand-grants tools
+
+Status: Active
+
+Decision: a review dispatch grants the reviewer its tool set **at launch**, never
+by an owner editing `settings.json` or widening persistent config. The set is
+bounded and strictly narrower than the coder's — read-only inspection, a
+disposable `git worktree`, and the verification command; no write. On Claude Code
+the grant is `--allowedTools Read Grep Glob "Bash(git:*)" "Bash(<verify-cmd>)"`;
+every harness has an equivalent launch-scoped grant, carried in the harness cache
+entry's `flags`. Transport is not a special case: on `cli` the orchestrator passes
+the grant per invocation, on `mcp` the same flags live in the server's
+registration command — both self-permission, so the `mcp`-preferred default is
+unaffected. Canonical home: the "Self-permissioning launch" rule in
+`templates/playbooks/codereview.md`, pointed to from
+`templates/playbooks/openreview.md`.
+
+Provenance: field incident 2026-07-18 (ai-rpg-engine) — codex, dispatching Claude
+Code as an MCP reviewer, stalled because the reviewer lacked its tools and the
+fallback assumption was that the owner would grant them by hand in `settings.json`.
+Owner ruling (2026-07-18), verbatim: "it should have just invoked with
+--allowedTools … I need less work not more." A reviewer's tool set is narrow and
+safe, so a hand-grant is pure friction; the launch-scoped grant removes it. The
+owner further confirmed MCP-as-server carries the grant in its registration args
+("yes it can"), so no transport needs a `settings.json` fallback.
+
 ### 2026-07-17 — Review economy: tiered reviewer routing adopted (D1–D3); D4 dissolved
 
 Status: Active
