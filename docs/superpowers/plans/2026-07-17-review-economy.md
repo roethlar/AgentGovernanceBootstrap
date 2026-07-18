@@ -150,13 +150,25 @@ without a confirmed pair block fail-closed per the rule above):
 |--------------|------------------------|----------------------------------|-------------------|
 | Claude       | sonnet-5 @ high        | sonnet-5 @ xhigh (competitive)   | sonnet-5 @ max    |
 | OpenAI       | gpt-5.6-terra @ high   | gpt-5.6-sol @ xhigh (competitive)| gpt-5.6-sol @ max |
-| Grok         | grok-4.5 @ high        | grok-4.5 @ xhigh (fallback)      | unconfirmed       |
-| Gemini (agy) | gemini-3.5-flash @ high| gemini-3.1-pro @ high (fallback) | unconfirmed       |
+| Grok         | grok-4.5 @ high        | grok-4.5 @ xhigh (fallback)      | grok-4.5 @ max (fallback) |
+| Gemini (agy) | gemini-3.5-flash @ high| gemini-3.1-pro @ high (fallback) | gemini-3.1-pro @ high (fallback, carve-out) |
+
+Amended 2026-07-18 (owner adjudication of finding OR3): the Grok and
+Gemini openreview cells were previously "unconfirmed" while the same
+pairs were owner-confirmed as fallback frontier for codereview — an
+inconsistency, since the 2026-07-17 ruling declared grok/agy fallback
+frontier models without scoping the confirmation to one playbook.
+The cells above now carry the owner-confirmed fallback pairs; the
+Gemini cell inherits the existing carve-out (no max/xhigh exposed).
+Fallback-grade cells dispatch only when a competitive-grade pair is
+unavailable or the owner names them, and the grade is recorded in the
+outcome (see openreview.md).
 
 Claude re-confirms on opus-5 release (standing
 once-per-harness-version mechanism; no automation).
 The `tiers` block each playbook commits carries that playbook's
-confirmed pairs.
+confirmed pairs, and each frontier entry carries
+`openreview_confirmed` marking per-playbook confirmation (OR3).
 
 There are exactly two tiers, only tiers issue verdicts, and there is
 **no third role**. The former transport role (a cheapest-model slot for

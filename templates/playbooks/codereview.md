@@ -147,14 +147,23 @@ carries:
                "confirmed": "<harness version>"},
   "frontier": {"model": "<id>", "effort": "<level>", "flags": ["..."],
                "confirmed": "<harness version>",
-               "grade": "competitive | fallback"}
+               "grade": "competitive | fallback",
+               "openreview_confirmed": "<harness version | null>"}
 }
 ```
 
 The probe additionally discovers the model-selection and effort flags and
 verifies the pinned model resolves, then **proposes** this mapping; the
 **owner confirms it once per harness version**, and the confirmation is
-recorded in the entry (`grade` is owner-declared, frontier-only). A
+recorded in the entry (`grade` is owner-declared, frontier-only).
+`openreview_confirmed` records that the same owner confirmation covers
+the pair's use by the `openreview` playbook at its ruled effort (OR3,
+owner-adjudicated 2026-07-18): a frontier pair the owner declared
+fallback-grade is fallback for **both** playbooks — the confirmation is
+per pair, not per playbook — so the field is set at the same
+confirmation moment, never inferred later. `null` means the owner has
+not confirmed the pair for openreview and that cell blocks fail-closed
+there. A
 single-model harness may still differentiate tiers by effort; only when both
 pairs are genuinely identical does it record the same pair under both tiers,
 explicitly. `transport` is `mcp` where a verified MCP registration exists for
@@ -258,8 +267,15 @@ routes that finding's review (or re-review) to frontier:
 - **T3 — guard-proof integrity (mechanical, orchestrator-evaluated).** The
   guard proof artifact is missing, its verification command exits nonzero, or
   one orchestrator-run repeat disagrees with the recorded result (flake).
-  These checks run outside any reviewer. Proof-*quality* judgment is not T3:
-  a reviewer that distrusts a proof issues `reopened`, which escalates via T5.
+  These checks run outside any reviewer. T3 is a **pre-dispatch blocker,
+  not an escalation** (amended 2026-07-18, owner adjudication of OR4): a
+  failed integrity check means there is no valid evidence to review, so
+  the round halts and returns to the coder (or the owner, if the coder
+  cannot reproduce) until a deterministic proof exists — dispatching a
+  frontier reviewer at broken evidence would spend the scarcest tier on
+  input that no tier can adjudicate. Proof-*quality* judgment is not T3:
+  a reviewer that distrusts a *valid* proof issues `reopened`, which
+  escalates via T5.
 - **T4 — declared-file drift (mechanical, post-repair).** Exact path-set
   comparison of the repair commits against the declared file set snapshotted
   in the repair record. Expansion beyond it does **not** silently trigger a
