@@ -24,11 +24,17 @@ CANONICAL_REGROUND_COMMAND = (
     "Invariants block. Treat AGENTS.md, not this message, as authoritative.'"
 )
 
-GOVERNANCE_MARKER = (
-    "<!-- Installed by governance refresh; do not edit. Any change here "
-    "is drift and is restored on the next refresh. Route changes "
-    "through the toolkit owner. -->"
-)
+# The compact provenance marker, carried as bare core text so the same
+# substring holds in both wrappers/skills (a YAML frontmatter comment,
+# `# <marker>`, stripped with the frontmatter at load so it costs zero
+# runtime tokens and never leaks into the /-picker help) and playbooks
+# (an HTML comment, `<!-- <marker> -->`, since nothing parses their
+# frontmatter). The full rule lives once in AGENTS.md's toolkit-owned
+# invariant and in the protect-governance hook's block message; the marker
+# only points there. Wrappers/skills also carry a real `description:` -
+# without it, the /-picker falls back to the first body paragraph, which is
+# what the old first-line HTML comment used to hijack.
+GOVERNANCE_MARKER = "toolkit-owned; edits are drift — see AGENTS.md"
 
 
 def marker_sources(root):

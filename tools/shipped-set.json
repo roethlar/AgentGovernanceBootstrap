@@ -81,7 +81,8 @@
       "class": "replace",
       "formerly": [
         "7420230497bb6e75dacfd9f1328f9034c0151b828f1dd8d03883f9de9f9161a9",
-        "ae600ab5da21acdb5e1fcf5beb06d35c38e30596f46f060d9e5b0e4957487e35"
+        "ae600ab5da21acdb5e1fcf5beb06d35c38e30596f46f060d9e5b0e4957487e35",
+        "148147a1d45ed405977f6a732feec9db25d29a3ba02d77f3320094b66807b944"
       ]
     },
     {
@@ -89,7 +90,8 @@
       "target": ".claude/commands/decision.md",
       "class": "replace",
       "formerly": [
-        "c6d68a38c857890e2fd313dc0448bba0d894f7c39a3cea5a557c424d4da49105"
+        "c6d68a38c857890e2fd313dc0448bba0d894f7c39a3cea5a557c424d4da49105",
+        "390d7b6f04dcfdfa1e65396593d51ad71b7916b057e367cc737adae2820f7037"
       ]
     },
     {
@@ -98,7 +100,8 @@
       "class": "replace",
       "formerly": [
         "322bed67010ed0b829ea34633e8bcba54ee125820b0a41719bc78ab9d01bc5a5",
-        "fad07c35ff6350ca359dc64b166296d6940e42d3ccea38d18035d449ded53519"
+        "fad07c35ff6350ca359dc64b166296d6940e42d3ccea38d18035d449ded53519",
+        "ecea437bc66f4bab0a4642390eb8afb9fc18679ec6f91455ff97e8b3b03a7c4d"
       ]
     },
     {
@@ -107,7 +110,8 @@
       "class": "replace",
       "formerly": [
         "c8e3da533eb92abc6aacf995fe4e2fbc231ad10a4ca1fabcc1d98f6c236f5a99",
-        "dd7f9a20875d832a80920bebeff981abbef03162b4b201d7e4ba76c0d15a8813"
+        "dd7f9a20875d832a80920bebeff981abbef03162b4b201d7e4ba76c0d15a8813",
+        "2ef227ad54fe3fed28aefcd7e36fcc20513621b2f21019f4d6c9b22c7e8b979b"
       ]
     },
     {
@@ -116,7 +120,8 @@
       "class": "replace",
       "formerly": [
         "7eeca1e480fafcb6b9618f2c11225584f253c7e1d19258d9d3073a4ff556630c",
-        "a0cb06a240031bce367b2b3385a1e79527837c77c36c9f0d1a6d66dc2cd6c2eb"
+        "a0cb06a240031bce367b2b3385a1e79527837c77c36c9f0d1a6d66dc2cd6c2eb",
+        "60e4eb1a918f0715f9cd28d7b5ef83afc6f29f5e8fbd17790635a90ddf752adb"
       ]
     },
     {
@@ -124,7 +129,8 @@
       "target": ".claude/commands/playbook.md",
       "class": "replace",
       "formerly": [
-        "68bc100abb6836af03bf4fd57ee07a639c3b30b1284e044ae6e66c180a7dc774"
+        "68bc100abb6836af03bf4fd57ee07a639c3b30b1284e044ae6e66c180a7dc774",
+        "1f74a6293729eae11ebb40f3905135b9b1d41c45f922be5565a653ee39e14992"
       ]
     },
     {
@@ -135,7 +141,8 @@
         "bc11013e02545070fb37bedee4e0cfa5112628bfcd9ae26194dcab2c1d2ec954",
         "28decbbb513d3c0897fee4692aab8549b787a9b1ecd4a1602ee2e13136d4be19",
         "2e6715044d644845298bca940f949b3a7d19acb473ce3b741d57e5a29ad1d26e",
-        "8d0c1b792f657addc5f13e493839897ec53255108012561d7e7b690080078867"
+        "8d0c1b792f657addc5f13e493839897ec53255108012561d7e7b690080078867",
+        "22d2179564632bba37f1948e5a448328416ec47f3b28b1ec67b9d513d5e3f670"
       ]
     },
     {
@@ -144,7 +151,8 @@
       "class": "replace",
       "formerly": [
         "e633a1dbfccfe1e561621767fcaf0d39e4cbb2c147bd838345f365e054f805d7",
-        "90acfc0f9a79e9d981aa1189cd73d8feaaf20b13d91b7e56df5224d0e6f674ef"
+        "90acfc0f9a79e9d981aa1189cd73d8feaaf20b13d91b7e56df5224d0e6f674ef",
+        "c7230557817a838b928d0566c6dcac7713fb9bfbab9a21c03f0ca45bca90269b"
       ]
     },
     {
@@ -152,7 +160,8 @@
       "target": ".agents/playbooks/openreview.md",
       "class": "replace",
       "formerly": [
-        "9fad921abe2c8836ff6045372d41b719cf0dbb01ff1dcd689999bd1e2ef2dd36"
+        "9fad921abe2c8836ff6045372d41b719cf0dbb01ff1dcd689999bd1e2ef2dd36",
+        "1f3e4b4e4ce2f46f3da9f61b0f0235e18effa7130bd8139165670e9bdb5b4f81"
       ]
     },
     {
@@ -160,7 +169,8 @@
       "target": ".agents/playbooks/git.md",
       "class": "replace",
       "formerly": [
-        "00597cffc6fb4d1f1311bbd5f7e6e155131733d4dae7c11df8686c78ff44f68e"
+        "00597cffc6fb4d1f1311bbd5f7e6e155131733d4dae7c11df8686c78ff44f68e",
+        "f6ca208237c04a8be08cf296b07b73ba535943c63591b987250a89cac379b6c6"
       ]
     },
     {
@@ -168,7 +178,8 @@
       "target": ".agents/skills/catchup/SKILL.md",
       "class": "replace",
       "formerly": [
-        "b83cead80ca65d3d7e1b42a350fd679298cddcb34ab1ad91bfb4462b1cbcec59"
+        "b83cead80ca65d3d7e1b42a350fd679298cddcb34ab1ad91bfb4462b1cbcec59",
+        "6cd56df652df06350d2768b1e9c064adf3f9118dfffde0327658dee6b1c50594"
       ]
     },
     {
@@ -177,7 +188,8 @@
       "class": "replace",
       "formerly": [
         "6b41450a060dadc0707bbd73cb580e1d610ae8b412317e6a63e9e87804abeda1",
-        "88c61071181a6c670a2b758eb79d5bc3edee394131e50bc34d07c58ca78cb4e0"
+        "88c61071181a6c670a2b758eb79d5bc3edee394131e50bc34d07c58ca78cb4e0",
+        "c5efbcb3921b8e24117d7577b816e53344b19e1f8c10c819546f3a344544022c"
       ]
     },
     {
@@ -186,7 +198,8 @@
       "class": "replace",
       "formerly": [
         "3c9278a91df2b0b93c27a3cb59d6c77cb86f46da68cf6b0bbbf4e0686e2942bd",
-        "b82d2f80ba294ad5e0615664058f30c6d8984587a7f1fd31bd762a8f09c9dccc"
+        "b82d2f80ba294ad5e0615664058f30c6d8984587a7f1fd31bd762a8f09c9dccc",
+        "4b8502530773291ab1af4e6474a109627e15b5f5e7ea91cac17838083da5a3fb"
       ]
     },
     {
@@ -194,7 +207,8 @@
       "target": ".agents/skills/decision/SKILL.md",
       "class": "replace",
       "formerly": [
-        "28658ded7a970cb76b05ae0d9d7e2f274a578992e91e4a482a5c423364fbd469"
+        "28658ded7a970cb76b05ae0d9d7e2f274a578992e91e4a482a5c423364fbd469",
+        "8c77c719e1fc61989a93f73b38231ed1784848ddd7478a60b755f64cbd7b8878"
       ]
     },
     {
@@ -203,7 +217,8 @@
       "class": "replace",
       "formerly": [
         "bb60b5c05cfee5e9773a58417868338726de7ee8e975baf1eedad6a40f082a45",
-        "65983aaeef6ef8f487d28c65bfa10196dcb6eeb31534db2aa1c78e1b9e517c76"
+        "65983aaeef6ef8f487d28c65bfa10196dcb6eeb31534db2aa1c78e1b9e517c76",
+        "215233e02c685385f6b66c6ed840d706156eac0b12eb3b9755d783378261332d"
       ]
     },
     {
@@ -211,7 +226,8 @@
       "target": ".agents/skills/playbook/SKILL.md",
       "class": "replace",
       "formerly": [
-        "89f16d93a44c6f961309b4de0338638d5a2758c9459dad911da20b608276d233"
+        "89f16d93a44c6f961309b4de0338638d5a2758c9459dad911da20b608276d233",
+        "64791b170d5b8b47514aa789e4330207e953d5693ed3c1e5d0f8502382c20dbf"
       ]
     },
     {
@@ -220,44 +236,57 @@
       "class": "replace",
       "formerly": [
         "3b4b1700e33f6700f50503f857ee7f56294ea1bc66b29069a52fa0e49a43e3c6",
-        "52e8d17bb4c69e7a1b63877eb0a1cf19d2e2622cf8b9dd620960748c008fc892"
+        "52e8d17bb4c69e7a1b63877eb0a1cf19d2e2622cf8b9dd620960748c008fc892",
+        "69db84a8f5b7ba0a1d013d9e8b02ff352465cf87eadb4970bb8168d97b23f2fc"
       ]
     },
     {
       "source": "templates/skills/shared/codereview/SKILL.md",
       "target": ".agents/skills/codereview/SKILL.md",
       "class": "replace",
-      "formerly": []
+      "formerly": [
+        "5860b4d492b78b18827f366e48bd96573c5935b655ddf94eb32129181088a8eb"
+      ]
     },
     {
       "source": "templates/skills/shared/openreview/SKILL.md",
       "target": ".agents/skills/openreview/SKILL.md",
       "class": "replace",
-      "formerly": []
+      "formerly": [
+        "9c4fd4e4bea8413475cb7ee8c8019b8a74be3914621feb8bc4acc5c5da360b56"
+      ]
     },
     {
       "source": "templates/skills/shared/git/SKILL.md",
       "target": ".agents/skills/git/SKILL.md",
       "class": "replace",
-      "formerly": []
+      "formerly": [
+        "15351ce8e677fed6121b5d486e9f72e15973a28c89f7d7b4403187bebc45b3b8"
+      ]
     },
     {
       "source": "templates/commands/claude/codereview.md",
       "target": ".claude/commands/codereview.md",
       "class": "replace",
-      "formerly": []
+      "formerly": [
+        "d31de12ab2d7eb5ddbbf34725f705523d0ef982d39be46d8adb0d0f2bfe1d16e"
+      ]
     },
     {
       "source": "templates/commands/claude/openreview.md",
       "target": ".claude/commands/openreview.md",
       "class": "replace",
-      "formerly": []
+      "formerly": [
+        "e20579956c5aebf0744a21f15d0db93738ae770c843a40e31f892d4d85ff7f80"
+      ]
     },
     {
       "source": "templates/commands/claude/git.md",
       "target": ".claude/commands/git.md",
       "class": "replace",
-      "formerly": []
+      "formerly": [
+        "152efb879d443b45d86b7c7c1fed640990d289f57e2fca374dc87b8185e72232"
+      ]
     },
     {
       "source": "templates/hooks/claude/protect-governance.py",
