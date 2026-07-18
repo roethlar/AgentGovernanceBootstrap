@@ -8,6 +8,7 @@ is governed by the no-rule-without-provenance discipline, not CI grep).
 
 import json
 import os
+import re
 import subprocess
 import sys
 import tempfile
@@ -273,6 +274,64 @@ class ShippedShimsAndWrappers(unittest.TestCase):
         self.assertNotIn("/home/", text)
         self.assertIn("no write authority", text)
         self.assertLess(len(text), 2000)
+
+
+class PlaybookModelFreedom(unittest.TestCase):
+    """Committed playbooks name no concrete model IDs (review-economy
+    decision, 2026-07-17). Tier routing binds to owner-confirmed pins in
+    `.agents/review/harnesses.local.json`; the curated denylist lives beside
+    the model facts in docs/harness-capabilities.md so both are updated in
+    the same edit. This is a structural lint against a curated list, not a
+    prose-pin test: the list is data, the wording stays free."""
+
+    DENYLIST_DOC = ROOT / "docs" / "harness-capabilities.md"
+
+    def load_denylist(self):
+        text = self.DENYLIST_DOC.read_text(encoding="utf-8")
+        m = re.search(r"```model-id-denylist\n(.*?)```", text, re.S)
+        self.assertIsNotNone(
+            m, "model-id-denylist fenced block missing from " + str(self.DENYLIST_DOC))
+        tokens = [ln.strip() for ln in m.group(1).splitlines()]
+        tokens = [t for t in tokens if t and not t.startswith("#")]
+        self.assertTrue(tokens, "model-id-denylist block is empty")
+        return tokens
+
+    @staticmethod
+    def token_pattern(token):
+        # Left word boundary always; right boundary too unless the token is
+        # a family prefix ending in '-' (e.g. 'grok-' must catch 'grok-4.5').
+        pat = r"(?<![a-z0-9])" + re.escape(token.lower())
+        if not token.endswith("-"):
+            pat += r"(?![a-z0-9])"
+        return pat
+
+    def test_denylist_covers_known_families(self):
+        tokens = self.load_denylist()
+        for required in ("grok-", "gpt-", "gemini-", "claude-"):
+            self.assertIn(required, tokens)
+
+    def test_playbooks_name_no_concrete_model_ids(self):
+        tokens = self.load_denylist()
+        for path in sorted((TEMPLATES / "playbooks").glob("*.md")):
+            body = path.read_text(encoding="utf-8").lower()
+            for tok in tokens:
+                hit = re.search(self.token_pattern(tok), body)
+                self.assertIsNone(
+                    hit, "%s names denied model token %r" % (path.name, tok))
+
+    def test_codereview_carries_tier_semantics(self):
+        body = (TEMPLATES / "playbooks" / "codereview.md").read_text(encoding="utf-8")
+        self.assertIn("## Reviewer tiers and routing", body)
+        self.assertIn("harnesses.local.json", body)
+        self.assertIn("Reviewer: <harness> / <resolved model id> / <effort> / <tier>", body)
+        for trigger in ("T1", "T2", "T3", "T4", "T5"):
+            self.assertIn(trigger, body)
+
+    def test_openreview_routes_frontier_via_codereview_tiers(self):
+        body = (TEMPLATES / "playbooks" / "openreview.md").read_text(encoding="utf-8")
+        self.assertIn("frontier", body)
+        self.assertIn("Reviewer tiers and routing", body)
+        self.assertIn("owner-confirmed", body)
 
 
 if __name__ == "__main__":
