@@ -315,6 +315,22 @@ class RefreshTests(unittest.TestCase):
         self.assertNotIn("references missing path `.agents/machines.md`",
                          proc.stdout)
 
+    def test_lint_exempts_harness_session_cache_as_machine_local(self):
+        # .agents/review/harnesses.local.json is the machine-local,
+        # gitignored reviewer-tier session cache (review-economy plan,
+        # 2026-07-17): prose may name it, but it never exists in a
+        # committed tree — same class as .agents/machines.md.
+        (self.target / ".agents").mkdir()
+        (self.target / ".agents" / "state.md").write_text(
+            "tier probes cached in `.agents/review/harnesses.local.json`\n",
+            newline="\n")
+        commit_all(self.target, "state pointer")
+        proc = refresh(self.toolkit, self.target)
+        self.assertEqual(proc.returncode, 0, proc.stderr)
+        self.assertNotIn(
+            "references missing path `.agents/review/harnesses.local.json`",
+            proc.stdout)
+
     # -- plan/apply protocol ----------------------------------------------
 
     def test_plan_json_is_read_only_and_complete(self):

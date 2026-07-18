@@ -358,12 +358,16 @@ PATH_TOKEN = re.compile(r"`([^`\s]+)`")
 # The toolkit's own designated create-on-first-use homes: the template and
 # the decisions header name these before a repo's first rotation creates
 # them, so their absence is expected in every fresh repo, not a dead
-# reference (field finding, 2026-07-08).
+# reference (field finding, 2026-07-08). `.agents/review/harnesses.local.json`
+# is the machine-local, gitignored reviewer-tier session cache (review-economy
+# plan, 2026-07-17): governance prose legitimately names it, but it never
+# exists in a committed tree — same class as `.agents/machines.md`.
 LINT_EXEMPT_PATHS = frozenset({
     "docs/history",
     "docs/history/state-archive.md",
     "docs/history/decisions-archive.md",
     ".agents/machines.md",
+    ".agents/review/harnesses.local.json",
 })
 
 
