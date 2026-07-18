@@ -34,6 +34,79 @@ live rule now owned elsewhere - archive it per the rule above: move it verbatim 
 
 ## Decisions
 
+### 2026-07-17 — Review economy: tiered reviewer routing adopted (D1–D3); D4 dissolved
+
+Status: Active
+
+Decision: `codereview` runs a two-tier reviewer scheme — standard@high
+by default, frontier@xhigh on mechanical escalation (triggers T1–T5) or
+owner force; `openreview` pins frontier@max. Canonical mechanics live in
+`templates/playbooks/codereview.md` (tier semantics, escalation
+triggers, repair-delta redispatch, contested-record adjudicator offer)
+and `templates/playbooks/openreview.md` (frontier pin); committed text
+is model-free (curated-denylist lint), and concrete pins live in the
+machine-local, gitignored `.agents/review/harnesses.local.json`. Plan:
+`docs/superpowers/plans/2026-07-17-review-economy.md` (CLOSED with
+commit map). The plan's closed owner-gate text, recorded verbatim:
+
+D1 — default tiers per playbook. Owner directives (2026-07-17):
+two-tier structure and per-playbook defaults stand (`codereview` →
+standard, `openreview` → frontier); opus 4.8 joins standard (on par
+with sonnet 5); Luna is dropped — the transport role that briefly
+sheltered it is deleted; effort belongs in any capability comparison
+(fable-low judged weaker and costlier than sonnet-max — tentative);
+keep the scheme simple. Effort pins ruled and confirmed (owner,
+2026-07-17, superseding the same-day draft mapping): effort binds to
+tier, never to arrival path — `codereview` standard runs high;
+`codereview` frontier runs xhigh whether reached by escalation or owner
+force (an owner-forced frontier dispatch is the owner saying "this is
+hard", which is the xhigh case); `openreview` pins max. The monotonic
+ladder high < xhigh < max tracks review depth. openreview@max has no
+escalation headroom by design: a contested openreview round resolves by
+owner adjudication, never a stronger dispatch — above max sits the
+owner. D4 is dissolved (see below). Frontier pins ruled (owner,
+2026-07-17): Claude → claude-sonnet-5; OpenAI → gpt-5.6-sol. Grok and
+Gemini have no competitive frontier model; their frontier slots carry
+fallback-grade pins — grok-4.5 and gemini-3.1-pro — so the two-tier
+structure stays total on every harness, but a fallback-grade frontier
+verdict is not frontier-grade adjudication and the tiers entry says so
+via the frontier `grade` field; frontier routing on fallback-grade
+harnesses halts to the owner (ruled 2026-07-17, see the plan's
+Escalation triggers). Fable is out of frontier contention (already
+judged weaker and costlier than sonnet-max). Sonnet-5 serving as Claude
+frontier while opus 4.8 ≈ sonnet 5 sits in standard is legitimate under
+pair semantics: tier identity includes effort, so frontier@xhigh and
+standard@high differentiate even where model strength is on par.
+Standard pins ruled (owner, 2026-07-17), closing the routing table:
+Claude standard = sonnet-5 — single-model harness until opus-5
+releases; that release is a re-confirmation event under the
+once-per-harness-version rule, no automation. OpenAI standard =
+gpt-5.6-terra. Grok = single-model grok-4.5 in both slots,
+effort-differentiated (standard@high / frontier@xhigh). Gemini (agy) =
+gemini-3.5-flash @ high standard (flash ships low / medium / high only)
+and gemini-3.1-pro @ high frontier — the owner's exact levels: no xhigh
+pair exists on this harness, so Gemini's fallback frontier deviates
+from frontier→xhigh by harness limitation, and the owner-confirmed pair
+is authoritative where the ladder's level is not exposed. D1 is closed;
+no routing decisions remain open.
+
+D2 — reopen auto-escalation. Adopted: any reopened finding escalates
+one tier on redispatch — the cheapest defense against a standard-tier
+reviewer mis-judging its own reopened work; repair-delta scoping keeps
+the escalated call small. Shipped as trigger T5 with the frontier
+ceiling rule.
+
+D3 — archive the commissioning review. Adopted: the GPT-5.6 review that
+commissioned this work, previously machine-local outside the repo, is
+archived verbatim (SHA-verified copy) at
+`docs/history/2026-07-17-review-economy-commissioning-review_gpt-5.6.md`.
+
+D4 — xhigh selector. Dissolved (owner, 2026-07-17): xhigh binds to the
+frontier tier itself (see D1), so no selector — phrase, path list, or
+heuristic — exists or is needed. Escalation *is* the selector:
+complexity earns xhigh by defeating the standard reviewer, not by
+prediction. Recorded so it is not reopened.
+
 ### 2026-07-16 — `/git` operator family ships in the toolkit: delegated plain-English git workflows, dialog before anything irreversible
 
 Status: Active

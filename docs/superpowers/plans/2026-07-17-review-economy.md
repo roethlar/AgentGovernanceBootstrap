@@ -1,15 +1,31 @@
 # Review Economy: Tiered Reviewer Routing + Repair-Delta Re-Review
 
-Status: DRAFT 2026-07-17 — awaiting owner approval. Two cross-vendor
-review rounds run 2026-07-17, both triaged in "Plan review" below:
-round 1 grok 0.2.102 (pinned `grok-4.5`, headless CLI, 10 findings, all
-admitted); round 2 codex via MCP server (owner restored credits and
-registered `codex mcp-server`; 10 findings, all admitted — two of them
-defects introduced by round-1 fixes). All revisions folded into this
-draft. The codex round also motivated the "Invocation transport"
-subsection; the owner then validated the reverse direction
-(`claude mcp serve` called from codex, registered in the owner's global
-codex config), making MCP the preferred transport both ways.
+Status: CLOSED 2026-07-17 — landed: plan revisions `1fd1065` (grok
+round folded), `209cdb7` (owner-gate self-containment), `4ae68f6`
+(routing table closed: effort binds to tier, D4 dissolved, frontier +
+standard pins ruled); slice 1 `e4e98cf` (playbook tier semantics +
+escalation triggers T1–T5 + repair-delta redispatch + openreview
+frontier pin), slice 2 `ec7b62e` (session cache + dispatch provenance:
+`harnesses.local.json` tiers/transport schema, gitignored in the
+defining commit, probe-and-verify incantation discovery, `Reviewer:`
+line), slice 3 `2867940` (model-free playbook lint: curated denylist
+beside the capability record's model facts), slice 4 in the closing
+commit (D1–D3 recorded verbatim and D4 dissolution recorded in
+`.agents/decisions.md`; state updated; commissioning review archived
+SHA-verified at
+`docs/history/2026-07-17-review-economy-commissioning-review_gpt-5.6.md`).
+Two cross-vendor review rounds run 2026-07-17, both triaged in "Plan
+review" below: round 1 grok 0.2.102 (pinned `grok-4.5`, headless CLI,
+10 findings, all admitted); round 2 codex via MCP server (owner
+restored credits and registered `codex mcp-server`; 10 findings, all
+admitted — two of them defects introduced by round-1 fixes). All
+revisions folded into this draft. The codex round also motivated the
+"Invocation transport" subsection; the owner then validated the reverse
+direction (`claude mcp serve` called from codex, registered in the
+owner's global codex config), making MCP the preferred transport both
+ways. The final dogfood openreview over the landed range was
+owner-approved 2026-07-17 and runs after this closing commit; findings
+are triaged in chat, not appended here.
 
 ## Problem
 
@@ -39,9 +55,10 @@ plan as fact.
 
 ## Decisions (owner gates)
 
-- **D1 — default tiers per playbook.** **In discussion** — an earlier
-  "adopted as amended" stamp here was premature and is retracted.
-  Owner directives so far (2026-07-17): two-tier structure and
+- **D1 — default tiers per playbook.** **Ruled and closed** (owner,
+  2026-07-17; an earlier "adopted as amended" stamp was premature and
+  was retracted before the rulings below closed it).
+  Owner directives (2026-07-17): two-tier structure and
   per-playbook defaults stand (`codereview` → standard, `openreview` →
   frontier); opus 4.8 joins **standard** (on par with sonnet 5);
   **Luna is dropped** — the transport role that briefly sheltered it
@@ -85,13 +102,14 @@ plan as fact.
   limitation, and the owner-confirmed pair is authoritative where the
   ladder's level is not exposed. D1 is closed; no routing decisions
   remain open.
-- **D2 — reopen auto-escalation.** Any reopened finding escalates one
-  tier on redispatch. Recommendation: adopt — it is the cheapest defense
+- **D2 — reopen auto-escalation.** Adopted: any reopened finding
+  escalates one tier on redispatch — it is the cheapest defense
   against a standard-tier reviewer mis-judging its own reopened work,
   and repair-delta scoping (below) keeps the escalated call small.
-- **D3 — archive the commissioning review.** Copy the GPT-5.6 review
-  into `docs/history/` for provenance (it currently lives outside the
-  repo at a machine-local path). Recommendation: adopt.
+- **D3 — archive the commissioning review.** Adopted: the GPT-5.6
+  review is copied verbatim (SHA-verified) into
+  `docs/history/2026-07-17-review-economy-commissioning-review_gpt-5.6.md`
+  (it previously lived outside the repo at a machine-local path).
 - **D4 — xhigh selector.** Dissolved (owner, 2026-07-17): xhigh
   binds to the frontier tier itself (see D1), so no selector —
   phrase, path list, or heuristic — exists or is needed. Escalation

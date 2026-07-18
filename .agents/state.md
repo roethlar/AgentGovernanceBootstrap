@@ -8,6 +8,23 @@ machine-local facts are labeled or omitted.
 
 ## Now
 
+- 2026-07-17: the review-economy plan is CLOSED with a commit map
+  (`docs/superpowers/plans/2026-07-17-review-economy.md`). `codereview`
+  now runs tiered reviewer routing — standard@high default,
+  frontier@xhigh on mechanical escalation (T1–T5) or owner force;
+  `openreview` pins frontier@max with no headroom (above max sits the
+  owner). Committed playbook text is model-free (curated-denylist lint
+  in `tests/test_templates.py`); concrete pins and per-tier transport
+  (`mcp`/`cli`) live in the machine-local, gitignored
+  `.agents/review/harnesses.local.json`; every dispatch records a
+  `Reviewer:` provenance line with all matched triggers. Owner rulings
+  (D1 routing table, D2 reopen escalation, D3 archive, D4 dissolved)
+  recorded verbatim in `.agents/decisions.md` (2026-07-17); the GPT-5.6
+  commissioning review is archived in `docs/history/`. This repo's
+  installed copies lag until the owner's next self-refresh (owner-only).
+  Dogfood: a final openreview over the landed range is owner-approved
+  (2026-07-17) and runs after the closing commit; its findings are
+  triaged in chat per the plan contract.
 - 2026-07-16: the `/git` operator family plan is CLOSED with a commit map
   (`docs/superpowers/plans/2026-07-16-git-operators.md`). The toolkit
   ships a `git` playbook + `/git` wrapper + shared skill — delegated
