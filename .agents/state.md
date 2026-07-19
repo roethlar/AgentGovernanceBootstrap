@@ -8,6 +8,38 @@ machine-local facts are labeled or omitted.
 
 ## Now
 
+- 2026-07-18: owner-driven token-burn audit from local telemetry (this
+  machine): since the 2026-07-17 15:00 (local) allotment reset,
+  Claude-side burn is ~181M weighted sonnet-equiv; ~88% was interactive
+  orchestrator sessions running review rounds inline on the premium
+  interactive default (fable) — review labor landed inline after codex
+  credits ran out (owner, in-session, 2026-07-17 ~21:30). Codex-side
+  reviews ran pinned as designed (~6.2B raw, 98% cache hits). Root
+  cause: claude was never a governed reviewer lane —
+  `harnesses.local.json` entries are empty skeletons or absent across
+  governed repos (machine-local state was load-bearing), and inline
+  labor has no pin step. GH #6 (Vela) compounds it: MCP transport
+  qualified by a model-only probe while reviewer children cannot use
+  tool grants on Claude Code 2.1.214 — 9,378,752 tokens / 291 requests /
+  zero verdicts. Owner rulings this session: no per-machine config
+  edits; no load-bearing per-repo local state ("any solution that
+  doesn't fix the problem globally is rejected"); no playbook leakage
+  into AGENTS.md; probe/qualification machinery is too much engineering.
+- 2026-07-18 PENDING (awaiting owner go — nothing landed): collapse
+  reviewer dispatch to a shipped launch block: literal owner-maintained
+  commands with pinned model ids in `templates/playbooks/codereview.md`
+  (standard / frontier / claude lanes) + terminal-failure rule (a failed
+  launch — retired model, credits, permission denial — stops, records
+  one line, asks the owner; never improvise transports, agents, or
+  settings around a dead lane); `harnesses.local.json` demoted to
+  optional command override (absent = shipped defaults apply); delete
+  transport preference, probe cache, and the self-permissioning
+  MCP-equivalence claim (closes #6 by deletion; MCP readmitted only by
+  passing an actual review); one test: every launch command in shipped
+  text carries an explicit model flag. Supersession note: this reverses
+  the 2026-07-17 review-economy rule that committed playbook text is
+  model-free (curated-denylist lint in `tests/test_templates.py`) — that
+  lint and the recorded decision must be amended in the same change.
 - 2026-07-17: the review-economy plan is CLOSED with a commit map
   (`docs/superpowers/plans/2026-07-17-review-economy.md`). `codereview`
   now runs tiered reviewer routing — standard@high default,
@@ -25,38 +57,6 @@ machine-local facts are labeled or omitted.
   Dogfood: a final openreview over the landed range is owner-approved
   (2026-07-17) and runs after the closing commit; its findings are
   triaged in chat per the plan contract.
-- 2026-07-16: the `/git` operator family plan is CLOSED with a commit map
-  (`docs/superpowers/plans/2026-07-16-git-operators.md`). The toolkit
-  ships a `git` playbook + `/git` wrapper + shared skill — delegated
-  plain-English git operations (`push`, `reconcile`, `add-remote`,
-  `branch-cleanup`), facts first, dialog before anything irreversible,
-  history rewriting never offered — protected by the pre-edit hook and
-  converged by refresh. Owner rulings recorded verbatim in
-  `.agents/decisions.md` (2026-07-16), including the standing scope
-  principle that anything built in this repo is part of the product.
-  Governed repos receive `/git` at the owner's next fleet refresh; this
-  repo's installed copies lag until the owner's next self-refresh
-  (owner-only).
-- 2026-07-16: the strict-converge + review-split plan is CLOSED with a
-  commit map
-  (`docs/superpowers/plans/2026-07-16-strict-converge-and-review-split.md`);
-  owner rulings archived verbatim (2026-07-16 rotation in
-  `docs/history/decisions-archive.md`). Refresh now converges every
-  governed repo to the shipped set (divergence = drift, restored with
-  commit provenance; uncommitted divergence refuses); the don't-edit
-  invariant covers every installed artifact; shipped wrappers/playbooks/
-  skills carry a provenance marker; a blocking Claude Code pre-edit hook
-  ships (live-checked positive). Playbooks: `codereview` (per-finding
-  conformance) + `openreview` (unprimed goal-first whole-change), owner-
-  invoked by name; `reviewloop` retired. This repo's installed copies lag
-  until the owner's next self-refresh (owner-only). Fleet note: refresh
-  Powershell-Token-Killer only after this toolkit state — its edited
-  reviewloop copy is upstreamed here and will be drift-removed there.
-  Dogfood 2026-07-16: openreview with codex over the landed range returned
-  four findings; all admitted and fixed with guard proofs (commit map in
-  the CLOSED plan's Status line). The per-finding codereview verification
-  round (re-dispatching a reviewer per fix) was not run — available on an
-  owner go.
 - Steady state as of `0d05c97` (2026-07-12): the 2026-07-08 zero-based
   consolidation is landed; the product shape is owned by
   `.agents/repo-guidance.md` (Mission Detail). Every 2026-07-10 plan is

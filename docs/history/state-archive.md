@@ -827,3 +827,45 @@ profiles, approval-gate question; plan CLOSED with the commit map:
   Status line: bootstrap asks for the section's values at the approval
   gate vs installs silent defaults. The decisions entry stays Open until
   the plan lands.
+
+## Rotated 2026-07-18 (handoff) — 2026-07-16 plans landed and absorbed
+
+Disposition: both 2026-07-16 entries are CLOSED with commit maps, and the
+strict-converge entry's fleet note is spent — Powershell-Token-Killer's
+installed set now postdates the 2026-07-17 review-economy templates
+(registration-era `harnesses.local.json` schema present there), so the
+refresh-ordering caveat no longer gates anything. The two `## Now`
+entries, verbatim:
+
+- 2026-07-16: the `/git` operator family plan is CLOSED with a commit map
+  (`docs/superpowers/plans/2026-07-16-git-operators.md`). The toolkit
+  ships a `git` playbook + `/git` wrapper + shared skill — delegated
+  plain-English git operations (`push`, `reconcile`, `add-remote`,
+  `branch-cleanup`), facts first, dialog before anything irreversible,
+  history rewriting never offered — protected by the pre-edit hook and
+  converged by refresh. Owner rulings recorded verbatim in
+  `.agents/decisions.md` (2026-07-16), including the standing scope
+  principle that anything built in this repo is part of the product.
+  Governed repos receive `/git` at the owner's next fleet refresh; this
+  repo's installed copies lag until the owner's next self-refresh
+  (owner-only).
+- 2026-07-16: the strict-converge + review-split plan is CLOSED with a
+  commit map
+  (`docs/superpowers/plans/2026-07-16-strict-converge-and-review-split.md`);
+  owner rulings archived verbatim (2026-07-16 rotation in
+  `docs/history/decisions-archive.md`). Refresh now converges every
+  governed repo to the shipped set (divergence = drift, restored with
+  commit provenance; uncommitted divergence refuses); the don't-edit
+  invariant covers every installed artifact; shipped wrappers/playbooks/
+  skills carry a provenance marker; a blocking Claude Code pre-edit hook
+  ships (live-checked positive). Playbooks: `codereview` (per-finding
+  conformance) + `openreview` (unprimed goal-first whole-change), owner-
+  invoked by name; `reviewloop` retired. This repo's installed copies lag
+  until the owner's next self-refresh (owner-only). Fleet note: refresh
+  Powershell-Token-Killer only after this toolkit state — its edited
+  reviewloop copy is upstreamed here and will be drift-removed there.
+  Dogfood 2026-07-16: openreview with codex over the landed range returned
+  four findings; all admitted and fixed with guard proofs (commit map in
+  the CLOSED plan's Status line). The per-finding codereview verification
+  round (re-dispatching a reviewer per fix) was not run — available on an
+  owner go.
