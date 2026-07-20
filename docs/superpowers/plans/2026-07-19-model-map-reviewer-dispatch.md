@@ -255,3 +255,11 @@ contradicted the Slice 1 hostile fixtures). Adjudication:
   not loop; the owner either stands on the sizing (recorded here) or
   grants the larger remedy. No round 3 dispatched — the owner capped
   this pass at one validation round.
+- Owner ruling (2026-07-19): **stand**. The adjudicated sizing holds; the
+  larger remedy is declined with rationale — the standalone resolver has
+  no independent source of truth (codex cannot enumerate models; names
+  come only from the pinned map), and the live acceptance harness buys
+  earlier notice of a retired slug for a failure mode codex already
+  reports loudly at first dispatch. F1/F8 are closed at owner sizing.
+  Plan is final as of this ruling; next gate is owner go-ahead to
+  implement.
