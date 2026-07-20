@@ -214,6 +214,19 @@ at owner sizing, marked owner-accepted):
 - One deliberate map-corruption demo showing the loud stop firing and
   naming the failed constraint without echoing content.
 
+Captured (2026-07-19, implementation session):
+
+- Raw-link reachability: `curl -sI` against the public raw
+  `master/AGENTS.md` URL returned `HTTP/2 200`.
+- Live dispatch: `/codereview codex terra` ran end-to-end — map fetched
+  from the public raw URL, fetch-contract steps 1–5 passed, `terra`
+  resolved to `gpt-5.6-terra`, review dispatched and returned findings
+  (the round-3 review recorded below is itself this live transcript).
+- Corruption demo: fed the validator a map whose slug violates the
+  charset rule; output was
+  `LOUD STOP: dispatch blocked — fetch contract failed (charset)` —
+  constraint named, offending content not echoed.
+
 ## Plan review
 
 Round 1 — codex (MCP, read-only, unpinned default model — the disease this
