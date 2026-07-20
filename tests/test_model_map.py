@@ -46,6 +46,10 @@ def _reject_duplicates(pairs):
     return dict(pairs)
 
 
+def _reject_constant(name):
+    raise MapRejected("parse")
+
+
 def validate_model_map(raw):
     """Apply the fetch contract, in contract order, to raw fetched bytes.
 
@@ -56,9 +60,15 @@ def validate_model_map(raw):
     # 1. Size cap — before any parsing touches the bytes.
     if len(raw) > SIZE_CAP:
         raise MapRejected("size-cap")
-    # 2. Strict parse — UTF-8, duplicate keys anywhere are fatal (F9).
+    # 2. Strict parse — UTF-8, duplicate keys anywhere are fatal (F9);
+    # non-JSON constants (NaN/Infinity) are a parse failure, not data
+    # (review round 3, terra finding 2).
     try:
-        doc = json.loads(raw.decode("utf-8"), object_pairs_hook=_reject_duplicates)
+        doc = json.loads(
+            raw.decode("utf-8"),
+            object_pairs_hook=_reject_duplicates,
+            parse_constant=_reject_constant,
+        )
     except MapRejected:
         raise
     except (UnicodeDecodeError, ValueError):
@@ -66,7 +76,10 @@ def validate_model_map(raw):
     # 3. Shape — object; version 1; nicknames an object of objects.
     if not isinstance(doc, dict):
         raise MapRejected("shape")
-    if doc.get("version") != 1:
+    # JSON true must not satisfy version 1: bool is an int subtype in
+    # Python (review round 3, terra finding 1).
+    version = doc.get("version")
+    if isinstance(version, bool) or version != 1:
         raise MapRejected("version")
     nicknames = doc.get("nicknames")
     if not isinstance(nicknames, dict):
@@ -152,6 +165,17 @@ class StrictParseTests(unittest.TestCase):
                '{"sol": {"codex": "%s", "codex": "b"}}}' % EVIL)
         _reject(self, raw.encode(), "duplicate-key")
 
+    def test_nan_constant_rejected(self):
+        # json.loads accepts bare NaN by default; the fetch contract
+        # must not (review round 3, terra finding 2).
+        raw = '{"version": NaN, "nicknames": {"sol": {"codex": "%s"}}}' % EVIL
+        _reject(self, raw.encode(), "parse")
+
+    def test_infinity_constant_rejected(self):
+        raw = ('{"version": 1, "nicknames": '
+               '{"sol": {"codex": "%s"}}, "x": -Infinity}' % EVIL)
+        _reject(self, raw.encode(), "parse")
+
 
 class ShapeTests(unittest.TestCase):
     def test_non_object_top_level_rejected(self):
@@ -163,6 +187,12 @@ class ShapeTests(unittest.TestCase):
 
     def test_string_version_rejected(self):
         _reject(self, json.dumps({"version": "1", "nicknames": {}}).encode(),
+                "version")
+
+    def test_boolean_version_rejected(self):
+        # bool is an int subtype in Python: True == 1 must not pass the
+        # version pin (review round 3, terra finding 1).
+        _reject(self, json.dumps({"version": True, "nicknames": {}}).encode(),
                 "version")
 
     def test_missing_nicknames_rejected(self):
