@@ -8,55 +8,23 @@ machine-local facts are labeled or omitted.
 
 ## Now
 
-- 2026-07-18: owner-driven token-burn audit from local telemetry (this
-  machine): since the 2026-07-17 15:00 (local) allotment reset,
-  Claude-side burn is ~181M weighted sonnet-equiv; ~88% was interactive
-  orchestrator sessions running review rounds inline on the premium
-  interactive default (fable) — review labor landed inline after codex
-  credits ran out (owner, in-session, 2026-07-17 ~21:30). Codex-side
-  reviews ran pinned as designed (~6.2B raw, 98% cache hits). Root
-  cause: claude was never a governed reviewer lane —
-  `harnesses.local.json` entries are empty skeletons or absent across
-  governed repos (machine-local state was load-bearing), and inline
-  labor has no pin step. GH #6 (Vela) compounds it: MCP transport
-  qualified by a model-only probe while reviewer children cannot use
-  tool grants on Claude Code 2.1.214 — 9,378,752 tokens / 291 requests /
-  zero verdicts. Owner rulings this session: no per-machine config
-  edits; no load-bearing per-repo local state ("any solution that
-  doesn't fix the problem globally is rejected"); no playbook leakage
-  into AGENTS.md; probe/qualification machinery is too much engineering.
-- 2026-07-18 PENDING (awaiting owner go — nothing landed): collapse
-  reviewer dispatch to a shipped launch block: literal owner-maintained
-  commands with pinned model ids in `templates/playbooks/codereview.md`
-  (standard / frontier / claude lanes) + terminal-failure rule (a failed
-  launch — retired model, credits, permission denial — stops, records
-  one line, asks the owner; never improvise transports, agents, or
-  settings around a dead lane); `harnesses.local.json` demoted to
-  optional command override (absent = shipped defaults apply); delete
-  transport preference, probe cache, and the self-permissioning
-  MCP-equivalence claim (closes #6 by deletion; MCP readmitted only by
-  passing an actual review); one test: every launch command in shipped
-  text carries an explicit model flag. Supersession note: this reverses
-  the 2026-07-17 review-economy rule that committed playbook text is
-  model-free (curated-denylist lint in `tests/test_templates.py`) — that
-  lint and the recorded decision must be amended in the same change.
-- 2026-07-17: the review-economy plan is CLOSED with a commit map
-  (`docs/superpowers/plans/2026-07-17-review-economy.md`). `codereview`
-  now runs tiered reviewer routing — standard@high default,
-  frontier@xhigh on mechanical escalation (T1–T5) or owner force;
-  `openreview` pins frontier@max with no headroom (above max sits the
-  owner). Committed playbook text is model-free (curated-denylist lint
-  in `tests/test_templates.py`); concrete pins and per-tier transport
-  (`mcp`/`cli`) live in the machine-local, gitignored
-  `.agents/review/harnesses.local.json`; every dispatch records a
-  `Reviewer:` provenance line with all matched triggers. Owner rulings
-  (D1 routing table, D2 reopen escalation, D3 archive, D4 dissolved)
-  recorded verbatim in `.agents/decisions.md` (2026-07-17); the GPT-5.6
-  commissioning review is archived in `docs/history/`. This repo's
-  installed copies lag until the owner's next self-refresh (owner-only).
-  Dogfood: a final openreview over the landed range is owner-approved
-  (2026-07-17) and runs after the closing commit; its findings are
-  triaged in chat per the plan contract.
+- 2026-07-19: model-map reviewer dispatch is landed through Slice 4
+  (records) of
+  `docs/superpowers/plans/2026-07-19-model-map-reviewer-dispatch.md`:
+  the fleet-global `.agents/model-map.json` (owner-granted nickname →
+  per-harness model id; seeded `sol`/`terra` on codex) is the single
+  sanctioned committed home for model slugs; reviewer dispatch resolves
+  nicknames through the map at launch; playbook model-freedom governs
+  templates with the map as the explicit lint boundary (F11);
+  `.claude/commands/review.md` returns to the shipped set as a pure
+  alias (`templates/commands/claude/review.md`, F6) — this repo's
+  installed copies converge at the owner's next self-refresh
+  (owner-only). Supersessions recorded as dated amendments in
+  `.agents/decisions.md` (2026-07-19);
+  `docs/harness-capabilities.md` points at the map. Remaining before
+  plan closure: Slice 5 — converge proof (`tools/refresh.py` against a
+  scratch clone of a governed repo; the alias must install, not
+  vanish) and recorded evidence, then the commit map.
 - Steady state as of `0d05c97` (2026-07-12): the 2026-07-08 zero-based
   consolidation is landed; the product shape is owned by
   `.agents/repo-guidance.md` (Mission Detail). Every 2026-07-10 plan is

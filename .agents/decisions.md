@@ -34,6 +34,43 @@ live rule now owned elsewhere - archive it per the rule above: move it verbatim 
 
 ## Decisions
 
+### 2026-07-19 — Model slugs get one committed home: fleet-global `.agents/model-map.json`; reviewer dispatch resolves nicknames through the map
+
+Status: Active
+
+Decision: concrete model slugs have exactly one sanctioned committed
+home — the fleet-global `.agents/model-map.json`, mapping owner-granted
+nicknames to per-harness model ids (seeded from the owner's confirmed
+pins: `sol` → codex `gpt-5.6-sol`, `terra` → codex `gpt-5.6-terra`).
+Reviewer dispatch resolves nicknames through the map at launch;
+nicknames never select tier — `<effort>` selects effort within whatever
+tier the trigger machinery dispatches (F5). Playbook model-freedom
+(curated-denylist lint) governs templates; the map is the explicit lint
+boundary (F11). `.claude/commands/review.md` returns to the shipped set
+as a pure alias command (`templates/commands/claude/review.md`, F6).
+Plan: `docs/superpowers/plans/2026-07-19-model-map-reviewer-dispatch.md`.
+
+Supersession amendments (the plan's F5 matrix, recorded as dated
+amendments):
+
+- 2026-07-17 D1/D2, "concrete pins live in machine-local, gitignored
+  `.agents/review/harnesses.local.json`" — **superseded for model
+  slugs**: slugs move to the fleet-global map. Harness flags,
+  transports, and capability grades remain machine-local, unchanged.
+- 2026-07-17 D1, default reviewer tiers and trigger-driven escalation —
+  **untouched**: `<effort>` selects effort within whatever tier the
+  trigger machinery dispatches; nicknames never select tier (F5).
+- 2026-07-17, "committed text is model-free" (curated-denylist lint) —
+  **amended**: model-freedom governs templates; the map is the single
+  sanctioned committed home for slugs; the lint boundary is explicit
+  (F11).
+- 2026-07-16, `review` operator split with `.claude/commands/review.md`
+  retired (archived entry, `docs/history/decisions-archive.md`) —
+  **amended**: the path returns as a pure alias command (F6). The
+  archived text stays verbatim; this entry is the amendment record.
+- 2026-07-18, reviewer dispatch is self-permissioning — **untouched**:
+  grants remain launch-scoped; the map feeds only the model id.
+
 ### 2026-07-18 — Reviewer dispatch is self-permissioning; the owner never hand-grants tools
 
 Status: Active
@@ -62,7 +99,9 @@ owner further confirmed MCP-as-server carries the grant in its registration args
 
 ### 2026-07-17 — Review economy: tiered reviewer routing adopted (D1–D3); D4 dissolved
 
-Status: Active
+Status: Active, as amended 2026-07-19 — model slugs superseded into the
+fleet-global `.agents/model-map.json` (see the 2026-07-19 entry);
+harness flags, transports, and capability grades remain machine-local
 
 Decision: `codereview` runs a two-tier reviewer scheme — standard@high
 by default, frontier@xhigh on mechanical escalation (triggers T1–T5) or
