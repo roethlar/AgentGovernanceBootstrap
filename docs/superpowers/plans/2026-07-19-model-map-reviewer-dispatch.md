@@ -263,3 +263,21 @@ contradicted the Slice 1 hostile fixtures). Adjudication:
   reports loudly at first dispatch. F1/F8 are closed at owner sizing.
   Plan is final as of this ruling; next gate is owner go-ahead to
   implement.
+
+Round 3 — terra adversarial review over the implementation diff
+(2026-07-19, post-implementation, fresh conversation, read-only): two
+findings, both CONFIRMED against validator source. Numbering is
+round-local; these are **not** the plan-table F1/F2 above (the rework
+commit subject "terra F1/F2" uses the round-local labels).
+
+- R3-1: JSON `true` satisfied the version pin — `bool` is an `int`
+  subtype in Python, so `True == 1`. Reworked: explicit
+  `isinstance(version, bool)` guard ahead of the equality check.
+- R3-2: `json.loads` accepts bare `NaN`/`Infinity`/`-Infinity` by
+  default; the fetch contract's strict-parse step (step 2) did not
+  forbid them. Reworked: `parse_constant` hook raises
+  `MapRejected("parse")`.
+
+Both remedies landed with two hostile fixtures each, sited beside their
+siblings (commit 0581bde; model-map suite 28-green, full suite
+153-green). No contested items; round closed same day.
