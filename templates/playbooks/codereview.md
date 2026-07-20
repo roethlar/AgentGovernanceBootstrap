@@ -257,6 +257,56 @@ A fallback-grade frontier is the same class at more effort, not a strictly
 stronger adjudicator — the grade drives the halt rule under "Escalation
 triggers" below.
 
+## Model map and dispatch grammar
+
+Concrete model slugs have exactly one committed home fleet-wide:
+`.agents/model-map.json`, a strict versioned nickname→slug map in the
+toolkit repo, fetched by downstream clones from the public raw `master`
+link. No playbook, command, skill, or shim ever names a slug — the
+model-denylist lint enforces that boundary, and the map file is its sole
+deliberate exemption. Nicknames select models only: never tier, effort,
+or eligibility. Where the tier section above resolves a pair from the
+machine-local cache, the cache keeps flags, transport, capability grades,
+and the owner's tier confirmation; the slug text itself now reads from
+the map at invocation time.
+
+Dispatch grammar: `/codereview <harness> <nickname> <effort>`, with
+`/review` as a pure alias of `codereview`. A nickname unknown to the map,
+or missing an entry for the dispatched harness, blocks loud — nothing
+guesses, nothing falls back across harnesses.
+
+**Fetch contract** — applied by the dispatching agent to the fetched
+bytes (`curl -fsS --max-time 10` into a scratch file), in order:
+
+1. **Size cap**: reject files over 16 KiB.
+2. **Strict parse**: `json.loads` with an `object_pairs_hook` that
+   rejects duplicate keys anywhere in the document.
+3. **Shape**: top level is an object; `"version"` equals `1`;
+   `"nicknames"` is an object of objects.
+4. **Charset**: every nickname, harness key, and slug matches
+   `^[a-z0-9][a-z0-9._-]{0,63}$`; exact lowercase, no case folding.
+5. **Closed harness set**: harness keys outside `codex`, `claude`,
+   `gemini` are a hard failure, not ignored.
+
+Validation runs before any fetched byte reaches model-visible context; on
+success exactly one validated slug enters context, never the raw
+document. **Loud stop:** any failed step stops the dispatch and names the
+failed constraint only — no cached fallback, no last-known-good, no
+default model, and never an echo of fetched content. The executable form
+of this contract is `tests/test_model_map.py` in the toolkit repo; there
+is no standalone runtime resolver (owner sizing, 2026-07-19).
+
+**Session-only override.** The owner may name a slug inline for one
+session. It is used verbatim, never written to the map, a template, or
+the harness cache, and the dispatch record carries
+`(inline, session-only)` provenance so no artifact can launder an
+override into a pin. `/harness-update` is the sole write path to the map
+— normal commit flow, never a dispatch-time write.
+
+The map supplies the model id and nothing else: launch-scoped grants
+(self-permissioning, 2026-07-18) and `openreview_confirmed` eligibility
+are untouched by resolution.
+
 ## Escalation triggers (standard → frontier)
 
 `codereview` dispatches standard by default. Mechanical triggers are evaluated

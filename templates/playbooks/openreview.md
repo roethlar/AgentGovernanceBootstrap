@@ -78,6 +78,11 @@ blocks that harness fail-closed for this playbook and routes to the
 owner; the orchestrator never infers openreview eligibility from a
 codereview-only confirmation.
 
+Model naming rides the `codereview` playbook's "Model map and dispatch
+grammar" section (canonical): nickname→slug resolution and its fetch
+contract apply here unchanged, and a resolved nickname confers nothing —
+`openreview_confirmed` above remains the only eligibility gate.
+
 ## Verdict contract (structured, fail-closed)
 
 The reviewer returns its verdict in the JSON envelope. Its result payload must

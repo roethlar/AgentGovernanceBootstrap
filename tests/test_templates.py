@@ -283,12 +283,15 @@ class ShippedShimsAndWrappers(unittest.TestCase):
 
 
 class PlaybookModelFreedom(unittest.TestCase):
-    """Committed playbooks name no concrete model IDs (review-economy
-    decision, 2026-07-17). Tier routing binds to owner-confirmed pins in
-    `.agents/review/harnesses.local.json`; the curated denylist lives beside
-    the model facts in docs/harness-capabilities.md so both are updated in
-    the same edit. This is a structural lint against a curated list, not a
-    prose-pin test: the list is data, the wording stays free."""
+    """Shipped template text names no concrete model IDs (review-economy
+    decision, 2026-07-17; scope widened to all templates — commands,
+    skills, shims — by F11 of the 2026-07-19 model-map plan). The single
+    deliberate exemption is `.agents/model-map.json`, the fleet-global
+    nickname→slug map: slugs live there and nowhere else in committed
+    text. The curated denylist lives beside the model facts in
+    docs/harness-capabilities.md so both are updated in the same edit.
+    This is a structural lint against a curated list, not a prose-pin
+    test: the list is data, the wording stays free."""
 
     DENYLIST_DOC = ROOT / "docs" / "harness-capabilities.md"
 
@@ -316,14 +319,22 @@ class PlaybookModelFreedom(unittest.TestCase):
         for required in ("grok-", "gpt-", "gemini-", "claude-"):
             self.assertIn(required, tokens)
 
-    def test_playbooks_name_no_concrete_model_ids(self):
+    def test_shipped_template_text_names_no_concrete_model_ids(self):
+        # F11: every shipped template — playbooks, commands, skills,
+        # shims — not just templates/playbooks/*.md.
         tokens = self.load_denylist()
-        for path in sorted((TEMPLATES / "playbooks").glob("*.md")):
+        paths = sorted(TEMPLATES.rglob("*.md"))
+        playbooks_only = list((TEMPLATES / "playbooks").glob("*.md"))
+        self.assertGreater(
+            len(paths), len(playbooks_only),
+            "F11 scope regression: scan reaches only playbooks")
+        for path in paths:
             body = path.read_text(encoding="utf-8").lower()
             for tok in tokens:
                 hit = re.search(self.token_pattern(tok), body)
                 self.assertIsNone(
-                    hit, "%s names denied model token %r" % (path.name, tok))
+                    hit, "%s names denied model token %r"
+                    % (path.relative_to(TEMPLATES), tok))
 
     def test_codereview_carries_tier_semantics(self):
         body = (TEMPLATES / "playbooks" / "codereview.md").read_text(encoding="utf-8")
@@ -332,6 +343,11 @@ class PlaybookModelFreedom(unittest.TestCase):
         self.assertIn("Reviewer: <harness> / <resolved model id> / <effort> / <tier>", body)
         for trigger in ("T1", "T2", "T3", "T4", "T5"):
             self.assertIn(trigger, body)
+        # Model-map contract section (2026-07-19 plan, Slice 2).
+        self.assertIn("## Model map and dispatch grammar", body)
+        self.assertIn(".agents/model-map.json", body)
+        self.assertIn("/codereview <harness> <nickname> <effort>", body)
+        self.assertIn("session-only", body)
 
     def test_openreview_routes_frontier_via_codereview_tiers(self):
         body = (TEMPLATES / "playbooks" / "openreview.md").read_text(encoding="utf-8")
