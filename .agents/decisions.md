@@ -34,6 +34,26 @@ live rule now owned elsewhere - archive it per the rule above: move it verbatim 
 
 ## Decisions
 
+### 2026-07-22 — Issue-queue and feedback items are worked one at a time behind an explicit owner go (R1)
+
+Status: Active
+
+Decision: GitHub issues and other feedback filed against this repo are
+addressed by putting each item to the owner individually as an Owner Gates
+ask with decisive options; nothing is implemented without a clear, explicit
+per-item go. A general instruction such as "fix them" is not standing batch
+authority. This generalizes to any queue of findings, sites, or fixes: one
+owner decision at a time, one item per commit.
+
+Receipt: the 2026-07-22 batch-implementation incident. Ten unapproved
+commits editing fleet templates self-classified as docs, were pushed, and
+were owner-ordered reverted; the remote was reset to `881e63b` and the
+reverted work preserved only in the local tag
+`backup-2026-07-22-governance-edits`.
+
+Landed: the issue-queue process lives in `.agents/repo-guidance.md`
+(Mission Detail); this entry is the owner ruling (R1) behind it.
+
 ### 2026-07-19 — Model slugs get one committed home: fleet-global `.agents/model-map.json`; reviewer dispatch resolves nicknames through the map
 
 Status: Active

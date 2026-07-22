@@ -11,7 +11,10 @@ process it ships. The product (post the 2026-07-08 zero-based consolidation):
 templates, including the `AGENTS.template.md` this repo's own `AGENTS.md` is
 a verbatim copy of), and `tools/refresh.py` + `tools/shipped-set.json` (the
 deterministic per-repo governance refresh). Feedback arrives as GitHub
-issues on this repo (`.github/ISSUE_TEMPLATE/`). The intended outcome is
+issues on this repo (`.github/ISSUE_TEMPLATE/`); each issue is put to the
+owner one at a time as an Owner Gates ask and acted on only on an explicit
+per-item go — a general "fix them" is not standing batch authority. The
+intended outcome is
 repo-specific agent guidance that helps fresh agents turn plain-English
 tasks into working, validated code with minimal drift.
 
