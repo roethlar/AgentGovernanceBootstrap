@@ -14,7 +14,7 @@ These outrank everything below. After a context compaction, re-read this block f
 
 @.agents/repo-guidance.md
 
-Repo-specific rules live in `.agents/repo-guidance.md`, imported above (read it directly if your harness does not process `@` imports). It extends this file and never overrides it — flag any genuine conflict.
+Repo-specific rules live in `.agents/repo-guidance.md`, imported above (read it directly if your harness does not process `@` imports). It extends this file and never overrides AGENTS.md or any refresh-installed artifact — it may set repo policy on when an operator or tool is invoked, but never rewrite an installed artifact's semantics; flag any genuine conflict.
 
 ## Universal Invariants
 
@@ -40,7 +40,7 @@ Repo-specific rules live in `.agents/repo-guidance.md`, imported above (read it 
 ## Source Of Truth
 
 1. Human request.
-2. `AGENTS.md`, extended by `.agents/repo-guidance.md` (extends, never overrides).
+2. `AGENTS.md`, extended by `.agents/repo-guidance.md` (extends, never overrides AGENTS.md or any refresh-installed artifact).
 3. `.agents/state.md` for current work; `.agents/decisions.md` for settled decisions; approved `.agents/playbooks/*`.
 4. Current code, tests, and CI as evidence for behavior.
 5. Existing docs, only when consistent with current repo evidence.
