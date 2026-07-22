@@ -8,6 +8,18 @@ below, each site's decisions go to the owner one at a time in plain
 English, and a site becomes implementable only after its own explicit go
 is recorded here (per-site status lines below) or in `.agents/decisions.md`.
 
+Owner rulings, second pass (2026-07-22, verbatim: "1-5 yes, 6 no, 7 yes,
+8 what?, 9-10 yes. gemini shim can go."): Sites 1–5, 7, 9, 10 are
+APPROVED for implementation; Site 3 lands the recommended
+probe-plus-terminal-stop branch; Site 4's sign-off on relabeling owner
+attestations is given. Site 6 as drafted is REJECTED and replaced by the
+owner's tunable communication-level spec (recorded under Site 6). Site 8
+is PENDING — the owner asked for a plainer explanation before ruling.
+GEMINI shim: retire (Site 10). ExchangeAdminWeb ran-or-redate: still
+awaiting the owner. Implementation of approved sites is dispatched to
+Opus 4.8 agents, one site at a time, one finding per commit; each site
+appends its implemented commit list under its heading.
+
 ## Provenance
 
 Produced 2026-07-22 by a 60-agent review (eight parallel lenses over the
@@ -218,7 +230,30 @@ ritual "go". Both were ruled on 2026-07-22 (R3; and the owner filed issue
 Decision for the owner: approve the R3 recording plus reword, and the
 issue-#8 reword — two asks.
 
-## Site 6 — Owner communication: move the rules to where they apply
+## Site 6 — Owner communication: tunable per-repo communication level
+
+REPLACED 2026-07-22 by owner ruling (verbatim): "this needs to be tunable
+like the push policy. 1-5, 1 being eli5, 2 plain english one at a time,
+3 normal user, 4-5 devops/jargon".
+
+Replacement spec: communication style becomes a per-repo tunable exactly
+like the push policy — a small repo-owned policy file (`.agents/`
+alongside `push-policy.md`, seeded the same way the push policy is
+seeded, with the same kind of machine-readable marker line) carrying a
+level 1–5: 1 = explain like I'm five; 2 = plain English, one decision at
+a time; 3 = normal user; 4–5 = devops shorthand and jargon acceptable.
+Level definitions live in the policy file itself. Template/bootstrap
+default: level 3 (normal user). This repo's file: level 2 (matches the
+owner's standing instruction here). The Owner Gates structural contract
+(context, the question, what changes under each option, recommendation)
+is level-independent; the 25–50-word plain-English styling in the plan
+operator becomes a pointer to the communication level. Level-independent
+riders landing with this site because they are settled rulings about
+content rather than style: the 2026-07-17 summary-first Final Response
+amendment (decided, never landed) and R2 (never end on a bare blocker;
+name the next item and proposed action).
+
+Original drafted content (superseded, kept for the findings' evidence):
 
 Problem: plain-English/one-decision-at-a-time binds only plan decisions;
 the final-summary rule you approved 2026-07-17 was never actually landed.
@@ -280,6 +315,12 @@ Decision for the owner: approve the relocation and the three deletions —
 four independent cuts, ~5 KB total.
 
 ## Site 8 — Stale operator surface: three-quarters of users get wrong instructions
+
+PENDING 2026-07-22 — owner ruling deferred ("8 what?"); a plainer
+explanation goes to the owner before any of this site lands. Standing
+recommendation for the force-phrase pick: reserve the word "frontier" so
+the old spoken phrase keeps working and can never collide with a
+nickname.
 
 Problem: the 2026-07-19 model-map rework updated the Claude Code wrappers
 but not the shared skills and playbook text every other harness reads.
@@ -356,8 +397,9 @@ unreachable facts; two procedures contradict their own steps.
 - `templates/shims/GEMINI.template.md` — ships fleet-wide with no
   recorded positive check on any gemini-family harness, against README's
   shipped-only-where-verified claim and the 2026-07-08 adapters ruling.
-  Direction: owner picks — retire the shim, or record a live check that
-  earns it back.
+  Owner ruled 2026-07-22: retire ("gemini shim can go") — move it to the
+  shipped set's retired list with its outgoing hashes per the maintenance
+  rule; it re-enters only on a recorded positive live check.
 - `.agents/decisions.md:660` (2026-06-28 entry, Active) — directs
   implementers at artifacts retired 2026-07-08 (the pre-edit tripwire and
   a retired repo-map file). Direction: dated amendment blockquote naming <!-- plan-lint: allow -->
@@ -385,7 +427,9 @@ unreachable facts; two procedures contradict their own steps.
   refresh commit.
 - `.agents/state.md:45` — the ExchangeAdminWeb deferral date (2026-07-20)
   lapsed with no recorded resolution. Direction: one owner ask — ran or
-  re-deferred; rotate or re-date accordingly.
+  re-deferred; rotate or re-date accordingly. HELD: still awaiting the
+  owner's answer as of 2026-07-22; implement nothing for this item until
+  it lands.
 - `.agents/state.md:33` — records the 2026-07-10 self-refresh as latest;
   five later refreshes supersede it. Direction: rotate the superseded
   lines to the state archive at the next drift/handoff; git owns refresh
