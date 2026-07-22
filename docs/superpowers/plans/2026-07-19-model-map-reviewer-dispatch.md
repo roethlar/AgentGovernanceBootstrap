@@ -1,6 +1,14 @@
 # Model-Map Reviewer Dispatch: Fleet-Global Nickname Map, Loud-Stop Resolution
 
-Status: OPEN
+Status: CLOSED 2026-07-22 — landed: plan rework `9808696`, owner ruling on
+contested F1/F8 `22b9a01`; slice 1 `dac2c2c` (fleet-global map +
+fetch-contract lint), slice 2 `1dcea6a` (playbook model-map contract + F11
+lint scope), slice 3 `e8f2fc2` (command surfaces + shipped-set surgery),
+slice 4 `d412438` (records: supersession amendments, capabilities pointer,
+state handoff); review round 3 rework `0581bde` and record `81e67a3`; F8
+runtime evidence `582d149`; slice 5 converge proof recorded in the commit
+that closes this plan. This repo's own installed governance converges at
+the owner's next self-refresh (owner-only action).
 
 Draft 2026-07-19. Codex review round 1 (2026-07-19) returned REJECT — 10
 findings, all admitted; ledger below. Rework round same day on owner
@@ -10,8 +18,9 @@ owner's engineering appetite, withdraws the advisory-trigger proposal (F3),
 and adds owner-pass finding F11. Round 2 (codex diff-validation, one
 round per owner cap) returned REJECT: five findings closed, four
 admitted gaps folded post-round, and F1/F8 re-litigation of owner-sized
-remedies contested to the owner — ledger below. Implementation blocked
-until the owner gates the reworked plan.
+remedies contested to the owner — ledger below. The owner gated the
+reworked plan; implementation landed across the five slices in the status
+line above.
 
 ## Problem
 
@@ -226,6 +235,26 @@ Captured (2026-07-19, implementation session):
   charset rule; output was
   `LOUD STOP: dispatch blocked — fetch contract failed (charset)` —
   constraint named, offending content not echoed.
+
+Slice 5 converge run (2026-07-22, throwaway clones of the governed repo
+`vela`; `tools/refresh.py --toolkit <this repo> --no-sync`, classification
+read via `--plan-json`):
+
+- Retired-era start state (the installed alias set to the pre-Slice-3
+  content whose hash is `6b34abb8…`, recovered from toolkit history at
+  `f4d322d`): classified `updates`, never `removes`; after the run the
+  alias is present, byte-equal to `templates/commands/claude/review.md`,
+  and git-tracked.
+- Absent start state: classified `installs`; same post-run assertions hold.
+- Current start state: no action planned; the alias survives the run.
+- Bite proof: the same harness run against a throwaway toolkit clone whose
+  `shipped-set.json` re-adds `.claude/commands/review.md` to `retired[]`
+  alongside its artifact entry — the exact F6 collision — classifies the
+  alias into both `updates` and `removes`, and the file is gone from the
+  governed repo after a run that still exits 0. The proof therefore
+  discriminates: it fails on the collision and passes on the shipped set.
+  The tracked toolkit was never mutated.
+- Full suite green at the same commit: 153 tests, python3.14.
 
 ## Plan review
 
