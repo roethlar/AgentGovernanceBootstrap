@@ -104,6 +104,11 @@ Decision for the owner: adopt the ship-effect plan gate, the one-sentence
 issue process, and the owner-approved qualifier — three small rewordings,
 presented separately.
 
+Implemented 2026-07-22: 380e81d reword plan gate to a ship-effect test;
+d9c10d7 record the issue-queue working process (repo-guidance sentence +
+R1 decisions entry); cc6fea2 qualify approved guidance as owner-approved
+and non-self-licensing.
+
 ## Site 2 — Issue #5: plug the three shadow-rule channels
 
 Problem: process rules can escape governance three ways — saved outside
