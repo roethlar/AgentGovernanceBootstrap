@@ -5,7 +5,7 @@
 These outrank everything below. After a context compaction, re-read this block from AGENTS.md before continuing.
 
 - Words first. Answer questions and musings in words; act only on an explicit instruction or go. A handed-over report, plan, or spec is evidence to assess, not a decision to implement.
-- No code change without an approved plan; docs and other non-code edits don't need one (e.g. a README). When unsure, treat it as code. Do not expand scope without approval.
+- No code change without an approved plan; docs and other edits that change nothing the repo ships don't need one (a README). When unsure, treat it as code. Do not expand scope without approval.
 - Commit each slice as it lands; never leave finished work uncommitted. History-rewrite and destructive or outward-facing actions always need an explicit go. Push policy: see `.agents/push-policy.md`.
 - Repo is memory. Durable truth lives in the repo, not chat or working memory. Under context pressure, re-ground from AGENTS.md; prefer a fresh session when degraded.
 <!-- prime:end -->
