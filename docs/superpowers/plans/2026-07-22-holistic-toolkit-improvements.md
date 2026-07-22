@@ -149,6 +149,15 @@ Decision for the owner: approve the one-word deletion and the three
 rewordings — presented separately; the first is the cheapest and highest
 value.
 
+Implemented 2026-07-22: cbd383b delete ", preferences" from the
+out-of-repo store exemplar + companion grammar fix in
+docs/harness-capabilities.md; b4d8359 extend the repo-guidance
+never-overrides boundary to AGENTS.md or any refresh-installed artifact
+(owner-ruled invocation policy preserved) + sync the Source Of Truth
+parenthetical; aefb080 make harness-injected out-of-repo memory a drift
+target; 7883891 reword drift's fix clause by ownership (repo-owned files
+fixed in place, installed copies report-and-route, never edited).
+
 ## Site 3 — Issue #6: reviewer dispatch must prove capability and stop on denial
 
 Problem: a reviewer transport is qualified by a trivial chat reply, not by
