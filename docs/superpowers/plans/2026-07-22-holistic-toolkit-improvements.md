@@ -336,11 +336,12 @@ four independent cuts, ~5 KB total.
 
 ## Site 8 — Stale operator surface: three-quarters of users get wrong instructions
 
-PENDING 2026-07-22 — owner ruling deferred ("8 what?"); a plainer
-explanation goes to the owner before any of this site lands. Standing
-recommendation for the force-phrase pick: reserve the word "frontier" so
-the old spoken phrase keeps working and can never collide with a
-nickname.
+APPROVED 2026-07-22 after re-explanation (owner, verbatim: "yeah, that's
+fine. I never used frontier in practice."): the whole site lands, with
+the force-phrase pick resolved as recommended — "frontier" becomes a
+reserved word in the dispatch grammar (forces the frontier tier, is never
+a valid nickname; the map lint rejects a map that defines it), so the old
+spoken phrase keeps working.
 
 Problem: the 2026-07-19 model-map rework updated the Claude Code wrappers
 but not the shared skills and playbook text every other harness reads.
@@ -446,10 +447,12 @@ unreachable facts; two procedures contradict their own steps.
   toolkit sha is recoverable from any governed repo's last governance
   refresh commit.
 - `.agents/state.md:45` — the ExchangeAdminWeb deferral date (2026-07-20)
-  lapsed with no recorded resolution. Direction: one owner ask — ran or
-  re-deferred; rotate or re-date accordingly. HELD: still awaiting the
-  owner's answer as of 2026-07-22; implement nothing for this item until
-  it lands.
+  lapsed with no recorded resolution. RESOLVED 2026-07-22 — owner
+  confirmed the rollout ran ("yes exchangeadminweb ran. at least one of
+  the GH issues was from that run."; GitHub issue #7's header confirms:
+  filed from ExchangeAdminWeb running the shipped governance). Direction:
+  mark the rollout DONE alongside the other four repos and rotate the
+  lapsed ## Next entry verbatim to the state archive.
 - `.agents/state.md:33` — records the 2026-07-10 self-refresh as latest;
   five later refreshes supersede it. Direction: rotate the superseded
   lines to the state archive at the next drift/handoff; git owns refresh
