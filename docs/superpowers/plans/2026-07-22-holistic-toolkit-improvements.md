@@ -186,6 +186,12 @@ tokens, 291 requests, no verdict (issue #6, Vela).
 Decision for the owner: choose capability-probe-plus-terminal-stop, the
 2026-07-18 collapse proposal, or both; then the one-line T3 fix.
 
+Implemented 2026-07-22: 7f80a71 rework the reviewer probe to prove a repo read
+plus one allowlisted command through the real self-permissioning child path and
+make a permission/tool denial terminal after one fresh-process retry (owner
+approved this branch; the 2026-07-18 collapse alternative was not implemented);
+e1b62db drop the stale "T1–T5 alike" appositive from the fallback-grade halt.
+
 ## Site 4 — Evidence: stop recording say-so as verified fact
 
 Problem: an escape clause lets a conversational owner statement upgrade an
