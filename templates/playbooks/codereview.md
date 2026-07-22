@@ -114,16 +114,36 @@ thing a capable agent already does when a human says "codereview this with grok"
    (`<agent> exec --help`, `<agent> chat --help`, whichever the top level lists) to
    find the non-interactive flag and how to pass a prompt. Note the harness's JSON
    output flag here too (e.g. `--output-format json`) — the verdict contract uses it.
-3. **Bounded smoke-test.** Run the candidate incantation with a trivial prompt (e.g.
-   `<agent> exec "say OK"`) under bounds: a **timeout** (a hung process is a failed
-   probe, not a wait); **non-interactive detection** (if it opens a TUI / alternate
-   screen / waits on a TTY, the incantation is wrong — try the next candidate); and
-   run it **from a real git repo** (a canned prompt in an arbitrary temp dir hides
-   launch requirements — e.g. codex refuses a non-trusted dir and needs
-   `--skip-git-repo-check`, agy must run from the real repo cwd). Treat a launch
-   refusal as a flag to adjust, not a dead end.
-4. **Use the verified incantation** to run the review. Probing is bounded to
-   `--help`/`--version`/the trivial smoke prompt — never arbitrary commands.
+3. **Capability smoke-test — through the real child path.** A probe that only
+   proves the process launches is what cost issue #6: a bare `<agent> exec "say
+   OK"` returned while the reviewer child could not read the repo or run the
+   guard, and 291 request variants chased one missing capability with no verdict.
+   So run the candidate incantation **with the same self-permissioning launch
+   grant the real review carries** (see "Self-permissioning launch") and make the
+   child prove, in that one shot, the two capabilities the review actually
+   depends on: **read a repo file** (e.g. print a line of a known committed file)
+   and **run one allowlisted command** (e.g. the verification command, or a
+   trivial `git` invocation from the grant) — then echo a token that appears only
+   if both succeeded. A probe that skips either capability, or that runs outside
+   the real grant, does not qualify the transport. Keep the usual bounds: a
+   **timeout** (a hung process is a failed probe, not a wait); **non-interactive
+   detection** (if it opens a TUI / alternate screen / waits on a TTY, the
+   incantation is wrong — try the next candidate); and run it **from the real git
+   repo** (a canned prompt in an arbitrary temp dir hides launch requirements —
+   e.g. codex refuses a non-trusted dir and needs `--skip-git-repo-check`, agy
+   must run from the real repo cwd).
+4. **Permission/tool denial is terminal.** Distinguish two failure kinds. A bare
+   incantation error — wrong flag, TUI opened, untrusted dir — is a flag to
+   adjust: try the next candidate. But a **permission or tool denial** — the
+   child reaching the repo read or the allowlisted command and being *refused*
+   it — means the capability the review needs is not available on this transport,
+   and retrying variants only burns the quota issue #6 measured. Retry **once in
+   a fresh process**; if the denial repeats, **record it, report the transport
+   unsupported, and stop** — do not search for a workaround.
+5. **Use the verified incantation** to run the review. Probing is bounded to
+   `--help`/`--version`/the capability smoke prompt (a repo read plus the
+   allowlisted verification command) — never arbitrary commands beyond that
+   grant.
 
 **Session cache (`.agents/review/harnesses.local.json`, machine-local).** Once
 verified, record the incantation in this gitignored machine-local file to skip
