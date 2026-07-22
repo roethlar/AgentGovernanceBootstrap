@@ -379,10 +379,10 @@ frontier for that dispatch and is recorded as `escalated: owner` — never by
 hand-editing the cache.
 
 **Fallback-grade halt.** Where the confirmed frontier entry carries
-`"grade": "fallback"`, any trigger that would route to frontier — T1–T5
-alike — instead halts the finding as contested to the owner: escalation must
-buy a strictly stronger adjudicator, and auto-dispatching the same class at
-more effort is escalation theater. At the halt the owner either accepts the
+`"grade": "fallback"`, any trigger that would route to frontier instead halts
+the finding as contested to the owner: escalation must buy a strictly stronger
+adjudicator, and auto-dispatching the same class at more effort is escalation
+theater. At the halt the owner either accepts the
 fallback dispatch (recorded `escalated: <triggers> (fallback accepted:
 owner)`) or re-dispatches on a competitive-frontier harness via the owner
 phrase — provider switching stays owner-only.
