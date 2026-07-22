@@ -60,7 +60,7 @@ Verify-once ledger:
 
 ## Operational harness facts
 
-- **User-level durable guidance paths** (for cross-repo owner preferences —
+- **User-level durable guidance paths** (for cross-repo owner identity facts —
   the sanctioned out-of-repo store): Claude Code `~/.claude/CLAUDE.md`;
   codex `~/.codex/AGENTS.md`; agy `~/.gemini/GEMINI.md` (global file load
   verified 2026-06-29; combines with repo-level guidance in the system
