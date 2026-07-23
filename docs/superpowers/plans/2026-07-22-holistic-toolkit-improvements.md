@@ -265,6 +265,18 @@ ritual "go". Both were ruled on 2026-07-22 (R3; and the owner filed issue
 Decision for the owner: approve the R3 recording plus reword, and the
 issue-#8 reword — two asks.
 
+Implemented 2026-07-22: 17980c1 reword the current-state entry-point
+invariant so `.agents/state.md` is kept current by the working agent as work
+lands, never owner-gated (handoff/drift keep their deliberate-pass roles),
+and land the R3 owner ruling as a decisions entry with issue #7 as receipt;
+a80a2c7 reword the "Words first" bullet so an owner's completion report
+inside an approved, already-scoped workflow is the go for that workflow's
+next defined step while new scope, changed risk, and separately gated actions
+still stop (net length roughly flat), landing the issue-#8 qualification as a
+decisions entry and a dated amendment on the 2026-06-10 answer-with-words
+hardening that reopens it for completion reports only.
+Skipped: none.
+
 ## Site 6 — Owner communication: tunable per-repo communication level
 
 REPLACED 2026-07-22 by owner ruling (verbatim): "this needs to be tunable
