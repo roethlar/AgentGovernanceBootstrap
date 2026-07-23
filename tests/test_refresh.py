@@ -1064,5 +1064,62 @@ class RealManifestEquivalenceTests(unittest.TestCase):
                                      [t for t, _ in plan.restore], art["target"])
 
 
+class FormerlyListMaintenance(unittest.TestCase):
+    """Audits the real manifest against the real toolkit git history — a
+    deliberate, read-only exception to the hermetic-fixture rule above.
+
+    The manifest's MAINTENANCE RULE requires every change to a shipped
+    source to append the outgoing version's normalized hash to that
+    artifact's formerly[] in the same commit. Issue #9 (2026-07-23) is
+    what silently skipping it does: refresh.py flags a genuinely governed
+    repo's AGENTS.md as a foreign governance file. This test makes the
+    omission loud: every unique committed version of every
+    formerly[]-bearing source must be either the current version or
+    listed in formerly[]. Deletion commits (source absent) are skipped;
+    hashing them would record the empty file as a shipped version and
+    widen the update boundary to any empty target."""
+
+    @staticmethod
+    def _bnhash(data: bytes) -> str:
+        return hashlib.sha256(data.replace(b"\r\n", b"\n")).hexdigest()
+
+    def test_every_historical_source_version_is_known(self):
+        root = TOOLS.parent
+        probe = subprocess.run(
+            ["git", "-C", str(root), "rev-parse", "--is-inside-work-tree"],
+            capture_output=True, text=True)
+        if probe.returncode != 0 or probe.stdout.strip() != "true":
+            self.skipTest("toolkit is not a git checkout")
+        shipped = json.loads((TOOLS / "shipped-set.json").read_text(encoding="utf-8"))
+        violations = []
+        for art in shipped["artifacts"]:
+            if "formerly" not in art:
+                continue
+            src = art["source"]
+            known = set(art["formerly"])
+            cur = self._bnhash((root / src).read_bytes())
+            commits = subprocess.run(
+                ["git", "-C", str(root), "log", "--format=%H", "--", src],
+                capture_output=True, text=True).stdout.split()
+            seen = set()
+            for commit in commits:
+                blob = subprocess.run(
+                    ["git", "-C", str(root), "show", "{}:{}".format(commit, src)],
+                    capture_output=True)
+                if blob.returncode != 0:  # source absent at this commit
+                    continue
+                h = self._bnhash(blob.stdout)
+                if h in seen:
+                    continue
+                seen.add(h)
+                if h != cur and h not in known:
+                    violations.append("{} @ {}: {}".format(src, commit[:7], h))
+        self.assertEqual(
+            [], violations,
+            "shipped source versions missing from formerly[] - append the "
+            "outgoing nhash in the same commit as the source change "
+            "(manifest MAINTENANCE RULE): " + "; ".join(violations))
+
+
 if __name__ == "__main__":
     unittest.main()
