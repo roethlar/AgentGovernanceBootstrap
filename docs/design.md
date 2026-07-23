@@ -93,13 +93,11 @@ deletion are deterministic work; judgment stays in the bootstrap flow.
 ## Verify-once gate for harness adapters
 
 An adapter ships for a harness only after a live check confirms its
-mechanism actually fires there; positives and negatives are recorded in
-`docs/harness-capabilities.md`. Current state: Claude Code carries the one
-shipped hook (compaction re-ground — the only mechanism shape that survives
-the event it guards, since in-context anchors compact away with the context)
-and the wrapper set; codex needs no shim (loads `AGENTS.md` natively) and
-its session-start hook has never been observed firing; grok/agy repo-level
-configs are unverified; gemini is unchecked.
+mechanism actually fires there; the current per-harness inventory of
+positives and negatives lives in `docs/harness-capabilities.md`. The
+compaction re-ground hook is the design's centerpiece because it is the
+only mechanism shape that survives the event it guards — in-context anchors
+compact away with the context.
 
 ## Authority model
 
