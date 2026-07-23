@@ -20,14 +20,6 @@
 ## Earned Practices
 <!-- Repo-specific working rules earned by real incidents, in generalized
      wording a future agent can apply without chat context. -->
-
-## Owner Communication
-<!-- One profile line tuning owner-facing chat output (answers, summaries,
-     decision asks) and plan-document register. The owner chooses at the
-     approval gate from the five profiles in
-     approval-summary.template.md; never pre-fill from context. Write the
-     chosen profile WITH its one-line definition so this file stands
-     alone; never copy the full menu here. A profile never changes any
-     safety, approval, or verification rule. -->
-- Profile: default — owner chat: plain-English executive summary, no
-  jargon; plans: token-dense, detailed, written for agents.
+<!-- Owner-communication level is not a section here: it is tuned per repo
+     in .agents/comms-policy.md, seeded at bootstrap like the push policy
+     (a 1-5 level behind a machine-readable marker line). -->

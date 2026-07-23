@@ -155,10 +155,7 @@ intact.
    examples, and flag anything unverifiable. A fresh authoritative file that
    launders stale facts is worse than the old file it replaced. It extends
    `AGENTS.md` and never overrides it — a genuine conflict is a defect to
-   flag. Draft the Owner Communication line as `default` with its one-line
-   definition; the approval summary asks the owner to choose among the five
-   profiles (never pre-fill), and the drafted line is updated to the
-   owner's choice before the commit.
+   flag.
 2. `.agents/state.md` from its template — current truth only: what is true
    now, active work, blockers, next action. No historical narrative; honor
    the template's write rules (volatile facts stamped `as of <commit>`,
@@ -169,7 +166,10 @@ intact.
 4. `.agents/push-policy.md` from `templates/push-policy.template.md`
    (default `ask`). The approval summary asks the owner to choose; never
    pre-fill the choice from context.
-5. Only if this repo's governance contains rules earned from real, citable
+5. `.agents/comms-policy.md` from `templates/comms-policy.template.md`
+   (default level 3 — normal user). The approval summary asks the owner to
+   choose the communication level; never pre-fill the choice from context.
+6. Only if this repo's governance contains rules earned from real, citable
    incidents that other repos would benefit from: draft the harvest note for
    the feedback step (Step 8) — expected outcome is NO report, hard cap of
    three ideas, never a "nothing found" file.

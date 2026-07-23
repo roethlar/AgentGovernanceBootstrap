@@ -55,6 +55,7 @@ enter the commit and must not be listed as committed.>
 - `.agents/state.md`
 - `.agents/decisions.md`
 - `.agents/push-policy.md`
+- `.agents/comms-policy.md`
 - <migration runs: supersession banners on superseded files>
 
 ### Committed — shipped set (installed by `tools/refresh.py --stage-only`)
@@ -102,17 +103,17 @@ To change it, reply with a number when you approve:
 
 ## Owner Communication
 
-Communication profile will be set to: **1 — default**.
+Communication level will be set to: **3 — normal user** (default).
 
 To change it, reply with a number when you approve:
 
-  1 — default: Plain-English executive summary for the owner; token-dense, detailed implementation plans for agents. (default)
-  2 — devops: Technical jargon acceptable in owner chat, summary-first; detailed plans.
-  3 — student: Accessible and instructive owner chat — explains the why, defines terms on first use; plans carry rationale spelled out.
-  4 — expert: Terse practitioner shorthand in owner chat, density over ceremony; token-dense, detailed plans.
-  5 — brief: Plain-English headlines only — the outcome and the decision, detail on request; token-dense, detailed plans.
+  1 — explain like I'm five: no jargon at all; short sentences; define every term; one idea at a time.
+  2 — plain English, one decision at a time: no devops jargon; each owner decision on its own, roughly 25-50 plain words.
+  3 — normal user: plain language with common technical terms; concise, no hand-holding. (default)
+  4 — devops shorthand: technical jargon and abbreviations acceptable; density over ceremony.
+  5 — devops / jargon, terse: maximal shorthand; assumes deep familiarity.
 
-<Do NOT pre-select or infer the option from prior decisions, context, or the decisions log. Write the default (1) here and wait for the owner's answer at approval time. Before the commit, update the drafted `.agents/repo-guidance.md` Owner Communication line to the chosen profile with its one-line definition — the drafted file carries only that line, never this menu.>
+<Do NOT pre-select or infer the level from prior decisions, context, or the decisions log. Write the default (3) here and wait for the owner's answer at approval time. Before the commit, update the marker line in the drafted `.agents/comms-policy.md` (`<!-- comms-level: N -->`) to the chosen level; the level definitions stay in that file, which the owner never has to leave to apply.>
 
 ## Risks, Limitations, Or Open Questions
 
