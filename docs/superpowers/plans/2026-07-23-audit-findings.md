@@ -321,7 +321,7 @@ Had the verdict been rebuild, the Pass 1/2 tables above are the requirements bas
 Each item lands only behind a per-item owner go; one item per commit. F1–F3 (the routed STALE/CONTRADICTED verdicts) go to the owner one at a time with problem / proposed change / cost-risk / recommendation.
 
 - F1 (STALE) Amend the 2026-06-10 PowerShell entry: the discover script was deleted 2026-07-08; discovery is the bootstrap.md live checklist. **LANDED 2026-07-23** (owner go; amendment appended to the entry).
-- F2 (STALE) Amend the 2026-06-09/10 pilot fold-in: annotate the manifest-schema bullet with its 2026-07-08 retirement.
+- F2 (STALE) Amend the 2026-06-09/10 pilot fold-in: annotate the manifest-schema bullet with its 2026-07-08 retirement. **LANDED 2026-07-23** (owner go; bullet annotated in place).
 - F3 (CONTRADICTED) Amend the 2026-07-09 Codex evaluation: record that `codex mcp-server` was adopted as the preferred transport 2026-07-17 (`ec7b62e`).
 - F4 (HOLDS-UNSHIPPED) Paperwork rule: add one generalized completion-bookkeeping clause to `templates/AGENTS.template.md`, or amend the entry to record deliberate local scope.
 - F5 (HOLDS-UNSHIPPED) Draft-all: amend the entry's mechanism wording (refresh installs, not bootstrap drafting); ship the one-line gloss beside the invariant or record it as deliberately local.

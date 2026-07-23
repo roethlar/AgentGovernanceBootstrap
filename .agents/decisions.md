@@ -1122,7 +1122,7 @@ The following were adopted during/after the three external pilots and the self-i
 - Fresh-eyes reframed as consistency-not-truth + external-claims question.
 - Windows Python probe order + Store-stub detection.
 - Cwd-independent Step 0 (`git -C`, ls-remote).
-- Manifest schema shipped beside discover.py.
+- Manifest schema shipped beside discover.py. (Retired 2026-07-08: discover.py and its manifest/schema machinery were deleted in the zero-based consolidation; the schema survives only as `docs/history/artifact-manifest.md`. Noted 2026-07-23 by the decisions-as-claims audit, F2.)
 - "Answer with words" hardened with explicit artifact-is-evidence-not-decision clause.
 
 All other pilot observations that did not yield a new durable rule were left as history in `docs/history/pilot-findings_exchangeadminweb_2026-06-10.md` and the per-pilot review files.
