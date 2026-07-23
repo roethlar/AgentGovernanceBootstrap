@@ -8,30 +8,16 @@ machine-local facts are labeled or omitted.
 
 ## Now
 
-- 2026-07-22: the holistic toolkit improvement plan is CLOSED —
-  `docs/superpowers/plans/2026-07-22-holistic-toolkit-improvements.md`
-  carries the per-site commit maps (the `Implemented 2026-07-22:` line
-  under each site heading). All ten sites landed one at a time on
-  recorded per-site owner gos (second-pass rulings in the plan header;
-  Site 6 as the owner's tunable communication-level spec). GitHub issues
-  #5–#8 are closed with commit receipts, each fix verified at HEAD
-  first, per the 2026-07-22 owner ruling in `.agents/decisions.md`:
-  paperwork follows technical work — verified-fixed bookkeeping proceeds
-  without an owner ask.
-- 2026-07-22: model-map reviewer dispatch is CLOSED with its commit map in
-  `docs/superpowers/plans/2026-07-19-model-map-reviewer-dispatch.md`:
-  the fleet-global `.agents/model-map.json` (owner-granted nickname →
-  per-harness model id; seeded `sol`/`terra` on codex) is the single
-  sanctioned committed home for model slugs; reviewer dispatch resolves
-  nicknames through the map at launch; playbook model-freedom governs
-  templates with the map as the explicit lint boundary (F11);
-  `.claude/commands/review.md` returns to the shipped set as a pure
-  alias (`templates/commands/claude/review.md`, F6). Supersessions
-  recorded as dated amendments in `.agents/decisions.md` (2026-07-19);
-  `docs/harness-capabilities.md` points at the map. The Slice 5 converge
-  run (evidence in the plan's Verification section) proves the alias
-  installs or updates rather than vanishing, and discriminates: the same
-  harness fails against a mutant toolkit carrying the F6 collision.
+- Steady state as of `b7448e2` (2026-07-22): the holistic toolkit
+  improvement plan and the model-map reviewer dispatch plan are both
+  CLOSED, each with its per-finding commit map in its plan doc under
+  `docs/superpowers/plans/` (rotation details in
+  `docs/history/state-archive.md`). GitHub issues #5–#8 are closed with
+  commit receipts, each fix verified at HEAD first. Newest Active
+  rulings in `.agents/decisions.md`: paperwork follows technical work
+  (verified-fixed bookkeeping proceeds without an owner ask), and owner
+  communication is a per-repo 1–5 tunable in `.agents/comms-policy.md`
+  (this repo: level 2).
 - Steady state as of `0d05c97` (2026-07-12): the 2026-07-08 zero-based
   consolidation is landed; the product shape is owned by
   `.agents/repo-guidance.md` (Mission Detail). Every 2026-07-10 plan is
