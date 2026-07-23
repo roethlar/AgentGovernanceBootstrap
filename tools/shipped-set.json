@@ -66,16 +66,6 @@
       ]
     },
     {
-      "source": "templates/shims/GEMINI.template.md",
-      "target": "GEMINI.md",
-      "class": "replace",
-      "formerly": [
-        "918b1c90559355ef78f33fdf3562f2b021ef8bdfd8a5c8415e5decd44934de55",
-        "30bd521b505a07f399d8b3a8f7d455c49c33a1405711dc4d00feb3bfac8eb102",
-        "ba2ba831a62079adfbb4a4d005e9c961346a2be33e3b6d110e711497c506bfe2"
-      ]
-    },
-    {
       "source": "templates/commands/claude/catchup.md",
       "target": ".claude/commands/catchup.md",
       "class": "replace",
@@ -341,7 +331,8 @@
         "9a9d0f77734006628f8b95ff5cef6ea818429f1f585c53943532b3c87ef316dd",
         "107368242e292dceaa374afc52463ef68fcf286baa0038a6d7fc7ec5fe07c602",
         "614fe03824266e72ce7d9b12c9b2d9d2417d6f1c3c74952fd158e6ce00beb31c",
-        "8c786c9936ddf927a53455795b3af525dbf5c1db0e67b996e2ef78ade9e27db1"
+        "8c786c9936ddf927a53455795b3af525dbf5c1db0e67b996e2ef78ade9e27db1",
+        "010f53e6ab8b3f1a62865e649e2aa7508a1c5a77f468fff3d52d5f961335c017"
       ]
     },
     {
@@ -413,6 +404,16 @@
         "f2fae64cf284776af135405c048a2925256c70e899f6048fb44d855979d3183c",
         "7c9ecd7ce0ed63e78fa9c0c94092cf5c0e19e2254454e5e7e8a922ad8e37c340",
         "878cba5f5dcaad8bfbc7ff97324683a1f4c3238a36e8a9b01cfa0ad67dcc2c42"
+      ]
+    },
+    {
+      "target": "GEMINI.md",
+      "comment": "Retired 2026-07-22 (owner ruling, 'gemini shim can go'): shipped fleet-wide with no recorded positive live check on any gemini-family harness, against the shipped-only-where-verified rule. Re-enters only on a recorded positive live check. formerly[] carries the past shipped hashes plus the outgoing version's nhash (per the maintenance rule) so deployed copies are cleanly removed rather than reported as drift. The source template templates/shims/GEMINI.template.md stays on disk (guarded by tests/test_templates.py) so re-entry is a one-line move back to artifacts[].",
+      "formerly": [
+        "918b1c90559355ef78f33fdf3562f2b021ef8bdfd8a5c8415e5decd44934de55",
+        "30bd521b505a07f399d8b3a8f7d455c49c33a1405711dc4d00feb3bfac8eb102",
+        "ba2ba831a62079adfbb4a4d005e9c961346a2be33e3b6d110e711497c506bfe2",
+        "336cc4fbf19beaada7ccf9986414fa91851a8d7a07dfb3ccbe800a69eed0ab49"
       ]
     }
   ],

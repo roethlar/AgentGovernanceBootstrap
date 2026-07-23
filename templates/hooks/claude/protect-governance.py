@@ -20,7 +20,6 @@ import sys
 PROTECTED = frozenset({
     "AGENTS.md",
     "CLAUDE.md",
-    "GEMINI.md",
     ".claude/commands/catchup.md",
     ".claude/commands/decision.md",
     ".claude/commands/drift.md",
