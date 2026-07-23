@@ -39,6 +39,7 @@ PROTECTED = frozenset({
     ".agents/playbooks/openreview.md",
     ".agents/playbooks/harness-update.md",
     ".agents/playbooks/git.md",
+    ".agents/playbooks/drift.md",
     ".agents/skills/catchup/SKILL.md",
     ".agents/skills/handoff/SKILL.md",
     ".agents/skills/drift/SKILL.md",

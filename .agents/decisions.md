@@ -387,6 +387,15 @@ Changes: `templates/AGENTS.template.md` (drift operator line) and
 volatile-facts examples and state the never-record rule. Reaches governed
 repos at the owner's next fleet refresh.
 
+Amendment (2026-07-22): the never-record push-status wording named above as
+living on the `drift` operator line in `templates/AGENTS.template.md` was
+relocated verbatim, together with the rest of the drift state-hygiene
+checklist, into the new `templates/playbooks/drift.md` playbook (Site 7 of the
+2026-07-22 holistic-improvements plan — the drift bullet keeps only its first
+sentence plus a pointer, to save per-session tokens fleet-wide). The rule is
+unchanged; only its home moved. The `drift` operator's change site for this
+decision is now the playbook, not the AGENTS.template.md bullet.
+
 Declined alongside (owner, 2026-07-11): a fifth `manual` push-policy option
 ("agents never push, never ask; the owner handles propagation"). The
 2026-06-27 four-option policy set stands unchanged.

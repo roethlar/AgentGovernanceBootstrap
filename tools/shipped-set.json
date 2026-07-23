@@ -163,6 +163,12 @@
       "formerly": []
     },
     {
+      "source": "templates/playbooks/drift.md",
+      "target": ".agents/playbooks/drift.md",
+      "class": "replace",
+      "formerly": []
+    },
+    {
       "source": "templates/playbooks/openreview.md",
       "target": ".agents/playbooks/openreview.md",
       "class": "replace",
