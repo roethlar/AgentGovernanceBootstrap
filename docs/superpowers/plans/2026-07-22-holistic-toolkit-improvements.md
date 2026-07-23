@@ -223,6 +223,21 @@ Decision for the owner: approve deleting the escape clause; approve the
 amendment relabeling your prior attestations as assumptions (this
 corrects records built on your words — it needs your explicit sign-off).
 
+Implemented 2026-07-22: 98898cf delete "or explicit human approval" from
+the label-assumptions invariant so owner say-so no longer settles
+external-system facts; b35247e append a dated amendment below the
+2026-07-18 decisions entry downgrading the "yes it can" MCP
+registration-args clause to a falsified assumption (issue #6, Claude Code
+2.1.214; original text untouched, launch-scoped-grant ruling stands) and
+delete the matching cli↔mcp equivalence sentence from the codereview
+playbook's Self-permissioning launch section; be12578 relabel the three
+attestation parentheticals in docs/harness-capabilities.md (lines 40, 43,
+57) as assumed with an explicit "no probe" marker. Note: lines 43/57 are
+agy self-attestations (the prose reads "agy attests", recalled+web
+grade), not owner attestations as the finding loosely grouped them — the
+true attributor was preserved rather than mislabeled "owner-attested".
+Skipped: none.
+
 ## Site 5 — Issues #7/#8: ungate routine bookkeeping and completion reports
 
 Problem: keeping the state record current requires an owner-invoked
