@@ -325,6 +325,36 @@ the final-summary rule you approved 2026-07-17 was never actually landed.
 Decision for the owner: two rewordings, both implementing rulings you
 already made; confirm and they land.
 
+Implemented 2026-07-22 (replacement spec): 933512e add the tunable
+communication-level policy file — `templates/comms-policy.template.md`
+(default level 3) and this repo's `.agents/comms-policy.md` (level 2), each
+carrying the 1–5 level definitions inline behind a machine-readable
+comms-level marker line, mirroring the push-policy mechanics — and record
+the owner's verbatim level spec in `.agents/decisions.md`; 17fb23f seed and
+ask the level through `procedures/bootstrap.md` Step 4 and the
+`templates/approval-summary.template.md` Owner Communication question
+(reworded to 1–5, default 3, comms-policy.md added to the committed
+drafts), replacing the superseded 2026-07-12 named-profile surfaces (the
+Owner Communication section removed from
+`templates/repo-guidance.template.md`); d4db44a repoint the plan-operator
+styling sentence in `templates/AGENTS.template.md` at the communication
+level and amend the 2026-07-10 plan-contract decision; 8a61c72 reword
+`templates/AGENTS.template.md` `## Final Response` to the 2026-07-17
+summary-first shape plus R2 (never end on a bare blocker while queued work
+remains), record R2 in `.agents/decisions.md`, and note the 2026-07-17
+Final Response amendment finally landed.
+
+Note: the named-profile owner-communication system (2026-07-12 plan,
+CLOSED) was found live in the templates and is superseded by the owner's
+2026-07-22 replacement ruling, so its surfaces were converted to the level
+mechanism rather than left as a parallel duplicate. The Owner Gates
+structural contract was left level-independent per the spec; the Final
+Response register clause ("in plain English") was replaced by a deferral to
+the communication level rather than kept hardcoded, so it does not
+contradict levels 4–5.
+
+Skipped: none.
+
 ## Site 7 — Dead weight: cut ~5 KB with zero semantic loss
 
 Problem: the fleet pays per session for text that is duplicated or only
