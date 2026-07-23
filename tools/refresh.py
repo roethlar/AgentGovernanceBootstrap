@@ -791,7 +791,9 @@ def main(argv=None) -> int:
     if changed:
         try:
             apply_plan(target, plan)
-        except RuntimeError as exc:
+        except (RuntimeError, OSError) as exc:
+            # OSError caught alike: a mid-loop write failure returns a clean
+            # refusal instead of a traceback, and never reaches the commit.
             print("refresh: refusing unsafe write - {}".format(exc), file=sys.stderr)
             return 4
         stage(target, plan)
@@ -800,6 +802,23 @@ def main(argv=None) -> int:
             # and out of the governance commit, then the created commit is
             # verified to touch exactly the planned paths.
             paths = touched_paths(plan)
+            # Crash check: apply+stage must have landed every planned path in
+            # the index before we commit. A partial apply that left a path
+            # written but unstaged would otherwise be misread as "current" on
+            # the next run and never committed; refuse here instead. Exempt in
+            # --stage-only, where the bootstrap flow stages more and makes the
+            # single scoped commit itself. --no-renames so a retired path whose
+            # content matches a new artifact is not collapsed into a rename and
+            # dropped from the staged list (same hazard as the post-commit
+            # verification below).
+            staged = set(git(target, "diff", "--cached", "--no-renames",
+                             "--name-only", "--", *paths).stdout.splitlines())
+            staged.discard("")
+            if staged != set(paths):
+                print("refresh: staged set does not cover the plan (expected {}; "
+                      "staged {}). Nothing was committed.".format(
+                          sorted(set(paths)), sorted(staged)), file=sys.stderr)
+                return 4
             msg = "governance refresh: toolkit {}\n\n{}".format(toolkit_sha, summarize(plan, ""))
             if plan_record is not None:
                 msg += "\n\ntoolkit-sha: {}\nplan-digest: {}".format(

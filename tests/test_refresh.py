@@ -6,7 +6,9 @@ for the sync unit test). No test touches the real toolkit's shipped set or
 any real remote.
 """
 
+import contextlib
 import hashlib
+import io
 import json
 import os
 import subprocess
@@ -423,6 +425,58 @@ class RefreshTests(unittest.TestCase):
         self.assertEqual(len(self.commits()), n)
         staged = run_git(self.target, "diff", "--cached", "--name-only").split()
         self.assertIn("AGENTS.md", staged)
+
+    # -- apply crash safety (mid-loop failure never half-commits) ---------
+
+    def _run_main_inprocess(self, mod, *extra):
+        argv = [str(self.target), "--toolkit", str(self.toolkit), "--no-sync",
+                *extra]
+        out, err = io.StringIO(), io.StringIO()
+        with contextlib.redirect_stdout(out), contextlib.redirect_stderr(err):
+            rc = mod.main(argv)
+        return rc, out.getvalue(), err.getvalue()
+
+    def test_apply_oserror_is_caught_not_crashed(self):
+        # apply_plan raising OSError mid-loop is caught alike RuntimeError: a
+        # clean exit-4 refusal, no traceback, no commit.
+        mod = self._refresh_mod()
+        orig = mod.apply_plan
+        self.addCleanup(setattr, mod, "apply_plan", orig)
+        def boom(*_a, **_k):
+            raise OSError("disk full mid-apply")
+        mod.apply_plan = boom
+        n = len(self.commits())
+        rc, _out, err = self._run_main_inprocess(mod)
+        self.assertEqual(rc, 4, err)
+        self.assertIn("refusing unsafe write", err)
+        self.assertEqual(len(self.commits()), n)
+
+    def test_staged_set_gap_refuses_commit(self):
+        # Simulate a partial apply: files land on disk but never reach the
+        # index. The crash check must refuse before committing rather than
+        # letting the next run misread them as current.
+        mod = self._refresh_mod()
+        orig = mod.stage
+        self.addCleanup(setattr, mod, "stage", orig)
+        mod.stage = lambda *_a, **_k: None
+        n = len(self.commits())
+        rc, _out, err = self._run_main_inprocess(mod)
+        self.assertEqual(rc, 4, err)
+        self.assertIn("staged set does not cover the plan", err)
+        self.assertEqual(len(self.commits()), n)
+
+    def test_crash_check_is_exempt_in_stage_only(self):
+        # The crash check guards the commit; --stage-only makes no commit (the
+        # bootstrap flow does), so the same staged-set gap must not refuse.
+        mod = self._refresh_mod()
+        orig = mod.stage
+        self.addCleanup(setattr, mod, "stage", orig)
+        mod.stage = lambda *_a, **_k: None
+        n = len(self.commits())
+        rc, out, err = self._run_main_inprocess(mod, "--stage-only")
+        self.assertEqual(rc, 0, err)
+        self.assertEqual(len(self.commits()), n)
+        self.assertIn("staged only", out)
 
     def test_dirty_toolkit_notes_default_mode_and_refuses_apply(self):
         with open(str(self.toolkit / "templates" / "shims" / "CLAUDE.template.md"),
