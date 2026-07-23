@@ -15,8 +15,10 @@ work, batch triage, and reviewer models that wander without a rubric. For an
 unprimed whole-change judgment — "is this the best way to achieve the goal?" —
 use the `openreview` playbook instead; the owner chooses per invocation, by name.
 
-Invoke it with `codereview <agent>` (in Claude Code: the tab-completable `/codereview
-<agent>`). This file is durable guidance; it defers to this repo's `AGENTS.md` and
+Invoke it with `codereview <harness> <nickname> <effort>` (in Claude Code: the
+tab-completable `/codereview <harness> <nickname> <effort>`; see "Model map and
+dispatch grammar" for how `<nickname>` resolves to a model). This file is durable
+guidance; it defers to this repo's `AGENTS.md` and
 `.agents/` layout wherever they overlap. Where this playbook and the repo's
 invariants disagree, the invariants win.
 
@@ -53,9 +55,13 @@ work stays repository policy, per `AGENTS.md` (Git Safety).
 
 ## Operator
 
-`codereview <agent>` is the harness-neutral entry. In Claude Code it is the
-tab-completable slash command `/codereview <agent>`; on another harness the owner
-speaks "codereview \<agent\>". `<agent>` names the reviewer harness to dispatch.
+`codereview <harness> <nickname> <effort>` is the harness-neutral entry. In Claude
+Code it is the tab-completable slash command `/codereview <harness> <nickname>
+<effort>`; on another harness the owner speaks it aloud. `<harness>` names the
+reviewer harness to dispatch; `<nickname>` selects the model through the map and
+`<effort>` sets the effort level (see "Model map and dispatch grammar"). The
+`<agent>` shorthand used elsewhere in this playbook is the same reviewer-harness
+token.
 
 The flow is **synchronous by construction**: the coder dispatches the reviewer and
 blocks on its verdict before acting on that finding. There is therefore **no
