@@ -173,11 +173,12 @@ class RefreshTests(unittest.TestCase):
 
     def test_foreign_agents_md_is_flagged_never_replaced(self):
         # No committed version of this AGENTS.md ever matched a shipped
-        # hash: a foreign governance file is a migration, not drift.
+        # hash: a foreign governance file is a migration, not drift. A flagged
+        # core file means the repo did not converge - distinct exit 5.
         (self.target / "AGENTS.md").write_text("# My own house rules\n", newline="\n")
         commit_all(self.target, "foreign agents")
         proc = refresh(self.toolkit, self.target)
-        self.assertEqual(proc.returncode, 0)
+        self.assertEqual(proc.returncode, 5, proc.stderr)
         self.assertEqual((self.target / "AGENTS.md").read_text(), "# My own house rules\n")
         self.assertIn("FLAG AGENTS.md", proc.stdout)
         self.assertIn("bootstrap procedure", proc.stdout)
@@ -903,7 +904,10 @@ class RefreshTests(unittest.TestCase):
             newline="\n")
         commit_all(self.target, "fresh governance, no archives yet")
         proc = refresh(self.toolkit, self.target)
-        self.assertEqual(proc.returncode, 0)
+        # This AGENTS.md diverges from current and has no governed history, so
+        # it flags foreign (exit 5); the point here is that lint still skips
+        # AGENTS.md and the archive paths - no LINT line.
+        self.assertEqual(proc.returncode, 5, proc.stderr)
         self.assertNotIn("LINT", proc.stdout)
 
     def test_lint_never_blocks_commit_or_exit(self):
@@ -953,7 +957,8 @@ class RefreshTests(unittest.TestCase):
         (self.target / "AGENTS.md").write_text("# Mine\nforeign\n", newline="\n")
         commit_all(self.target, "foreign agents")
         proc = refresh(self.toolkit, self.target)
-        self.assertEqual(proc.returncode, 0)
+        # A flagged core file is not a converged repo: exit 5, not 0.
+        self.assertEqual(proc.returncode, 5, proc.stderr)
         self.assertIn("ATTENTION: AGENTS.md was NOT replaced.", proc.stdout)
         self.assertIn("bootstrap", proc.stdout)
         # non-TTY: never asks, never hangs

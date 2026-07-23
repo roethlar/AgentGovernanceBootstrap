@@ -44,6 +44,16 @@ message records the toolkit commit it synced to. --stage-only stages and
 stops (the bootstrap procedure then stages the approved judgment drafts and
 makes the single scoped commit covering both groups). Neither mode pushes.
 
+Exit codes:
+  0  converged, or a read-only plan/preview - nothing left to reconcile
+  2  usage error, or the target/toolkit is not a usable git repository
+  3  refused: uncommitted changes on a path the run would touch
+  4  refused: manifest failed validation, an unsafe destination, an approved
+     plan that no longer matches, or an apply that did not land cleanly
+  5  applied, but a core (replace-whole) governance file was flagged foreign
+     and left unreplaced - the repo is not converged; run bootstrap. Distinct
+     from 0 so a script can tell an ungoverned repo from a converged one.
+
 Python 3.10+, stdlib only.
 """
 
@@ -728,8 +738,10 @@ def main(argv=None) -> int:
         print("refresh: {} does not look like the toolkit (no tools/shipped-set.json)".format(toolkit), file=sys.stderr)
         return 2
 
-    # Preflight: every fatal read happens before the first write, so a
-    # nonzero exit always means "nothing changed" — never half-committed.
+    # Preflight: the fatal reads here happen before the first write, so these
+    # refusals leave the tree untouched. (Exit 5 is not such a refusal — it
+    # reports a foreign core file after other artifacts may already have been
+    # installed and committed.)
     policy_path = target / ".agents" / "push-policy.md"
     policy_line = None
     if policy_path.exists():
@@ -858,6 +870,10 @@ def main(argv=None) -> int:
             offer_bootstrap(candidates, prompt, target)
         else:
             print(non_tty_commands(candidates, prompt, target, toolkit))
+        # A flagged core (replace-whole) file means the repo did not converge
+        # to the shipped set: distinct exit 5 so a script can tell an
+        # ungoverned repo from a clean converged run (exit 0).
+        return 5
     return 0
 
 
