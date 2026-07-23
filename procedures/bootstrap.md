@@ -3,9 +3,11 @@
 You are an agent in a target repo. The owner started you with a one-line
 prompt pointing at this file. Follow it top to bottom. The single approval
 gate is the approval summary near the end — do not pause to ask the owner to
-approve each step. Before that gate, nothing in the TARGET repository
-changes — no files, index entries, commits, remotes, or settings; the one
-sanctioned pre-approval write anywhere is Step 0's sync of the local
+approve each step. Before that gate, nothing tracked in the TARGET
+repository changes — no tracked files, index entries, commits, remotes, or
+settings; the one sanctioned pre-approval write inside the target is the
+self-ignored `.bootstrap-tmp/` scratch directory that holds Step 4's drafts,
+and the one sanctioned write outside it is Step 0's sync of the local
 toolkit clone, which never touches the target.
 
 The repo you are pointed at *is* the target — including this toolkit repo
