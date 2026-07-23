@@ -592,26 +592,6 @@ Add one line to `.agents/state.md` while a loop is active, e.g. "Active review l
 see `.agents/review/index.md`." Remove it when the loop is done. `state.md` points;
 it does not copy the table.
 
-## Calibration anti-patterns
-
-These are the failure modes that make a two-role loop produce motion without signal.
-Name them when they appear; they are process defects, not code defects.
-
-- **Reviewer inflation.** Returning a finding on every pass because "no issues" feels
-  like not doing the job. Cure: an empty findings table is a valid result; every
-  admitted finding needs a predicted observable failure.
-- **Author capitulation.** Accepting every finding as valid and implementing a change
-  for each. Cure: the coder must judge each finding and route wrong ones to a contested
-  verdict instead of fixing them.
-- **Severity decoration.** Tagging findings CRITICAL/HIGH without an impact line.
-  Cure: no impact line, no high severity — downgrade or decline.
-- **Churn without evidence.** A "fix" that no test can distinguish from the original.
-  Cure: the guard proof; if reverting the fix breaks nothing, the change is churn and
-  should be reopened or declined.
-- **Convergence read as correctness.** Treating two roles agreeing as proof the code is
-  right. Cure: agreement is not the gate; the guard proof is. The recorded verdict
-  carries the proof, not the consensus.
-
 ## Anti-patterns
 
 - **Broad sweeps.** "Fix sec-1..sec-9 in one commit" kills bisection. Owner-request
