@@ -789,6 +789,19 @@ files, with a pure-adapter message distinct from the portability message; add a
 content. The hook stays advisory, non-blocking, Claude Code + Codex only — the
 cross-harness floor is unchanged.
 
+> Amended 2026-07-22: the two mechanisms this Enforcement paragraph names —
+> the advisory AGENTS.md/CLAUDE.md pre-edit tripwire and the governance-lint
+> check over the generated per-repo repo map — were both retired in the
+> 2026-07-08 zero-based consolidation (their targets sit in the retired list
+> of `tools/shipped-set.json`). The principle is unchanged and now enforced
+> structurally rather than advisorily: harness entry and config files
+> (`CLAUDE.md`, the operator wrappers, the hook settings) are shipped
+> artifacts, so `tools/refresh.py` byte-verifies every governed repo against
+> the shipped set and restores any durable content injected into an adapter
+> as drift, and `.claude/hooks/protect-governance.py` blocks edits to those
+> PROTECTED targets in the first place. Implementers should ground on that
+> surviving substrate, not on the retired tripwire or repo-map lint.
+
 Earned by a design near-miss caught in this session's review: to make the
 verification command reliably visible under a strict-portable `AGENTS.md`, an
 auto-load via a Claude-Code-only `@`-import was proposed and rejected for the
