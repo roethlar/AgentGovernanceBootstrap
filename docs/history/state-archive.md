@@ -929,3 +929,21 @@ fleet-global `.agents/model-map.json` (see `.agents/decisions.md`,
   Dogfood: a final openreview over the landed range is owner-approved
   (2026-07-17) and runs after the closing commit; its findings are
   triaged in chat per the plan contract.
+
+## Rotated 2026-07-22 (Site 10 holistic plan) — ExchangeAdminWeb rollout resolved
+
+Disposition: RESOLVED 2026-07-22 — the owner confirmed the rollout ran
+("yes exchangeadminweb ran. at least one of the GH issues was from that
+run."), and GitHub issue #7's header confirms it was filed from
+ExchangeAdminWeb running the shipped governance. The deferral date
+(2026-07-20) had lapsed with no recorded resolution; the rollout is now
+marked DONE in `## Now` alongside the other four repos. The `## Next`
+entry, verbatim:
+
+- **ExchangeAdminWeb**, the last legacy rollout repo, deferred by the owner
+  to **2026-07-20** (re-affirmed 2026-07-09): run `tools/refresh.py`,
+  resolve FLAG lines; oldest instance — 2026-06-22-era template, no
+  repo-guidance.md, so it needs the bootstrap procedure's carve-out, the
+  same path qbit-mobile exercised (carve-out done, owner report
+  2026-07-12). The owner's fleet refresh (run by 2026-07-12) propagated
+  the 2026-07-10/11 template changes to governed repos.

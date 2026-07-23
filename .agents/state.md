@@ -54,18 +54,13 @@ machine-local facts are labeled or omitted.
   owner's next refresh (owner-only rule, `292a4d2`). The
   reviewloop-branches Open item was closed as adopted and archived
   2026-07-12 (`76c1e5f`). Rollout DONE for vela, Blit_v2, ai-rpg-engine,
-  Powershell-Token-Killer (details in `docs/history/state-archive.md`).
-  Per-harness capability record: `docs/harness-capabilities.md`.
+  Powershell-Token-Killer, and ExchangeAdminWeb (details in
+  `docs/history/state-archive.md`). Per-harness capability record:
+  `docs/harness-capabilities.md`.
 
 ## Next
 
-- **ExchangeAdminWeb**, the last legacy rollout repo, deferred by the owner
-  to **2026-07-20** (re-affirmed 2026-07-09): run `tools/refresh.py`,
-  resolve FLAG lines; oldest instance — 2026-06-22-era template, no
-  repo-guidance.md, so it needs the bootstrap procedure's carve-out, the
-  same path qbit-mobile exercised (carve-out done, owner report
-  2026-07-12). The owner's fleet refresh (run by 2026-07-12) propagated
-  the 2026-07-10/11 template changes to governed repos.
+- None recorded.
 
 ## Blockers
 
