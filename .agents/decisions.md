@@ -74,6 +74,26 @@ sentence in `templates/AGENTS.template.md` becomes a pointer to the level
 `docs/superpowers/plans/2026-07-22-holistic-toolkit-improvements.md`
 (Site 6).
 
+### 2026-07-22 — A response never ends on a bare blocker while queued work remains (R2)
+
+Status: Active
+
+Decision: while any queue still holds work, a response never ends without
+naming the next work item and a concrete proposed action. A bare "x is
+blocked on y" is not an acceptable ending — the reader is always left with
+what happens next and what the agent proposes to do about it. This is
+content, independent of the communication level: the level tunes register,
+not whether the next step is stated.
+
+Receipt: owner ruling R2 during the 2026-07-22 incident review. Bare-blocker
+endings after long autonomous stretches left the owner with a dead end and
+no proposed path forward.
+
+Landed: `templates/AGENTS.template.md` `## Final Response` section, reworded
+in the same change to open with a bottom-line-first executive summary
+(landing the 2026-07-17 amendment below) and to require the next-item +
+proposed-action ending.
+
 ### 2026-07-22 — Issue-queue and feedback items are worked one at a time behind an explicit owner go (R1)
 
 Status: Active
@@ -1123,6 +1143,8 @@ Nothing; extends the 2026-07-08 refresh behavior (flag semantics unchanged).
 ### 2026-07-17 - Owner gates are self-contained; owner-facing reports open with an executive summary
 
 Status: Active
+
+> Amended 2026-07-22 (Site 6 — comms level): item 2 (summary-first Final Response) is now actually landed — the `## Final Response` line in `templates/AGENTS.template.md` was reworded to the bottom-line-first executive-summary shape, having been decided here 2026-07-17 but never applied to that line. In the same change its register clause ("in plain English") was replaced by a deferral to the per-repo communication level in `.agents/comms-policy.md` (see the 2026-07-22 comms-level entry above); the summary-first structure and the "anything awaiting the owner" content are level-independent and unchanged. Item 1 (self-contained Owner Gates) already lives in the `## Owner Gates` section and is untouched.
 
 Decision:
 Two owner-communication rules, canonical home `templates/AGENTS.template.md`
