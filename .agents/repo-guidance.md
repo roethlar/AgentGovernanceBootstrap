@@ -38,20 +38,22 @@ is the provenance for the current shape.
 
 ## Verification
 
+Pick the interpreter with `procedures/bootstrap.md` Step 1's probe order —
+the floor is Python 3.10, so a bare `python3` fails where it resolves below
+that (a stock macOS `python3` is 3.9; on Windows use `py -3` from Git Bash,
+never the Microsoft Store stub). This machine's resolved interpreter path is
+in `.agents/machines.md`. The suite runs its subprocesses via the invoking
+interpreter, so run it with that same one.
+
 For changes to `tools/`, `tests/`, or `templates/`/`procedures/` content:
 
 ```bash
-python3 -m unittest discover -s tests -v
+<probed-python> -m unittest discover -s tests -v
 ```
 
-On Windows run it from Git Bash as `py -3 -m unittest discover -s tests -v`
-(stock `python3` on PATH is the Microsoft Store stub). The suite requires
-Python 3.10+ and runs its subprocesses via the invoking interpreter.
-
 For documentation-only changes, run `git diff --check`. Changes touching
-`docs/superpowers/plans/` additionally run the plan lint:
-`python3 -m unittest tests.test_plan_lint -v` (Windows, from Git Bash:
-`py -3 -m unittest tests.test_plan_lint -v`).
+`docs/superpowers/plans/` additionally run the plan lint
+`<probed-python> -m unittest tests.test_plan_lint -v`.
 
 ## Remotes & Sync
 
