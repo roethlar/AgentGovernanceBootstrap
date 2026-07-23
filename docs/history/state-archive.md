@@ -947,3 +947,19 @@ entry, verbatim:
   same path qbit-mobile exercised (carve-out done, owner report
   2026-07-12). The owner's fleet refresh (run by 2026-07-12) propagated
   the 2026-07-10/11 template changes to governed repos.
+
+## Rotated 2026-07-22 (Site 10 holistic plan) — 2026-07-10 self-refresh no longer latest
+
+Disposition: superseded. The `## Now` steady-state bullet recorded the
+2026-07-10 self-refresh as the latest state, with installed copies lagging
+by a single template change; later refreshes and template edits (the
+2026-07-16/17/19 review-split, review-economy, and model-map work, and this
+2026-07-22 holistic plan) supersede that lag quantification. Git owns
+refresh dates, so the lines are removed from `## Now`. The superseded lines,
+verbatim:
+
+- The owner ran this repo's self-refresh 2026-07-10 (`32b598a`, toolkit
+  `5574147`).
+- the change is template-side, so installed copies lag the templates by
+  that one change — the expected steady state until the owner's next refresh
+  (owner-only rule, `292a4d2`).

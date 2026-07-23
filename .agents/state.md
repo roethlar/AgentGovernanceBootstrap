@@ -46,12 +46,8 @@ machine-local facts are labeled or omitted.
   enumeration in the 2026-07-12 rotation in
   `docs/history/state-archive.md`); the 2026-07-09 external holistic
   review is fully triaged, with release engineering deferred by the
-  release-posture decision. The owner ran this repo's self-refresh
-  2026-07-10 (`32b598a`, toolkit `5574147`). New Active decision
-  2026-07-11 (`0d05c97`): push status is never recorded in state files —
-  git owns it; the change is template-side, so installed copies lag the
-  templates by that one change — the expected steady state until the
-  owner's next refresh (owner-only rule, `292a4d2`). The
+  release-posture decision. New Active decision 2026-07-11 (`0d05c97`):
+  push status is never recorded in state files — git owns it. The
   reviewloop-branches Open item was closed as adopted and archived
   2026-07-12 (`76c1e5f`). Rollout DONE for vela, Blit_v2, ai-rpg-engine,
   Powershell-Token-Killer, and ExchangeAdminWeb (details in
