@@ -1029,6 +1029,8 @@ The original PowerShell implementation of the discover/bootstrap helper is retir
 Reason:
 Post-pilot cleanup; the Python version is the supported one for cross-platform (including the Windows functional probe for Store stubs).
 
+> Amended 2026-07-08 (zero-based consolidation): `tools/discover.py` itself was deleted with its manifest/schema/golden machinery; the forward sentence above is historical. Discovery is now the agent-run live checklist in `procedures/bootstrap.md` (Step 2), with the salvaged probe order, ignore-aware detection, and CI rule; `tools/refresh.py` is the only shipped tool. Noted 2026-07-23 by the decisions-as-claims audit (F1).
+
 ### 2026-06-10 - Fresh-eyes verification as consistency-not-truth check
 
 Status: Active
