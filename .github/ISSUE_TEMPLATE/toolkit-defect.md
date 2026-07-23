@@ -17,7 +17,7 @@ labels: bug
   commit hash, never by pasting sensitive content.
 - Agents: file only on an explicit owner go. -->
 
-- **Source:** <the repo you were running in, and its HEAD commit — e.g. `SomeRepo @ abc1234`>
+- **Source:** <two commits — the repo you were running in @ its HEAD, and the toolkit @ the commit its governance came from (recoverable from that repo's last governance-refresh commit message) — e.g. `SomeRepo @ abc1234, toolkit @ def5678`>
 - **Severity:** <low / medium / high, with one clause on impact>
 - **Summary:** <one or two plain-English sentences — what breaks, and the consequence>
 - **Root cause:** <file/section and mechanism — why it misbehaves>
