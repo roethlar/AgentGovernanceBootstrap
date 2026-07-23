@@ -2283,3 +2283,98 @@ shipped set.
 > templates/AGENTS.template.md, the provenance markers and blocking hook in the
 > shipped templates; the review flavors live in templates/playbooks/codereview.md
 > and templates/playbooks/openreview.md. Entry text verbatim above.
+
+### 2026-07-19 — Model slugs get one committed home: fleet-global `.agents/model-map.json`; reviewer dispatch resolves nicknames through the map
+
+Status: Active
+
+Decision: concrete model slugs have exactly one sanctioned committed
+home — the fleet-global `.agents/model-map.json`, mapping owner-granted
+nicknames to per-harness model ids (seeded from the owner's confirmed
+pins: `sol` → codex `gpt-5.6-sol`, `terra` → codex `gpt-5.6-terra`).
+Reviewer dispatch resolves nicknames through the map at launch;
+nicknames never select tier — `<effort>` selects effort within whatever
+tier the trigger machinery dispatches (F5). Playbook model-freedom
+(curated-denylist lint) governs templates; the map is the explicit lint
+boundary (F11). `.claude/commands/review.md` returns to the shipped set
+as a pure alias command (`templates/commands/claude/review.md`, F6).
+Plan: `docs/superpowers/plans/2026-07-19-model-map-reviewer-dispatch.md`.
+
+Supersession amendments (the plan's F5 matrix, recorded as dated
+amendments):
+
+- 2026-07-17 D1/D2, "concrete pins live in machine-local, gitignored
+  `.agents/review/harnesses.local.json`" — **superseded for model
+  slugs**: slugs move to the fleet-global map. Harness flags,
+  transports, and capability grades remain machine-local, unchanged.
+- 2026-07-17 D1, default reviewer tiers and trigger-driven escalation —
+  **untouched**: `<effort>` selects effort within whatever tier the
+  trigger machinery dispatches; nicknames never select tier (F5).
+- 2026-07-17, "committed text is model-free" (curated-denylist lint) —
+  **amended**: model-freedom governs templates; the map is the single
+  sanctioned committed home for slugs; the lint boundary is explicit
+  (F11).
+- 2026-07-16, `review` operator split with `.claude/commands/review.md`
+  retired (archived entry, `docs/history/decisions-archive.md`) —
+  **amended**: the path returns as a pure alias command (F6). The
+  archived text stays verbatim; this entry is the amendment record.
+- 2026-07-18, reviewer dispatch is self-permissioning — **untouched**:
+  grants remain launch-scoped; the map feeds only the model id.
+
+> Archived 2026-07-23: Superseded by the 2026-07-23 ruling "The owner's
+> dispatch word is final; no committed model lists" (owner: "deleted"). The
+> map, its fetch-contract lint, the model-denylist lint, and the
+> `harness-update` operator were deleted in the same change; dispatch is
+> literal-or-ask per the shipped playbooks' Dispatch grammar section. Entry
+> text verbatim above.
+
+### 2026-07-09 — Codex 0.144 new surface evaluated; reviewloop keeps `codex exec`+stdin dispatch
+
+Status: Active (evaluation only; no product change).
+
+Decision: the Codex CLI's newer surface (`codex-cli 0.144.0` on this machine)
+was evaluated against the reviewer-dispatch contract in
+`.agents/playbooks/reviewloop.md`, and the `codex exec` + prompt-piped-via-stdin
+dispatch is **retained unchanged**. Three new subcommands were assessed —
+`codex review` (first-party non-interactive review), `codex plugin` (plugin
+management), and `codex mcp-server` (run Codex as an MCP stdio server):
+
+- **`codex mcp-server` was tested** (MCP `initialize` + `tools/list` over stdio, <!-- lint: allow (MCP protocol method, not a repo path) -->
+  bounded, inspection-only — no agent turn invoked). It speaks protocol
+  `2025-06-18`, identifies as `codex-mcp-server` `0.144.0`, and exposes exactly
+  two tools: `codex` (required `prompt`; structured `sandbox` =
+  `read-only`|`workspace-write`|`danger-full-access`, `approval-policy`,
+  `model`, `cwd`; output `{threadId, content}`) and `codex-reply` (continue via
+  `threadId`). It is a viable *alternative* reviewer transport — structured
+  `sandbox: read-only` enforcement at the harness boundary, and no stdin-vs-argv
+  hang — but it is **not adopted**: (1) it returns free-form `content`, not the
+  fail-closed JSON *verdict envelope* our contract parses, so the verdict-parsing
+  responsibility is unchanged; and (2) its `threadId`/`codex-reply` model is
+  stateful, whereas the loop's atomic unit is one-shot per finding. Adopting it
+  would be a design change, not a swap.
+- **`codex review`** is noted but not adopted: it is not a drop-in for our
+  custom verdict schema, guard-proof-in-a-worktree, and pinned base/head SHA
+  contract.
+
+No change was needed regardless: `reviewloop.md` derives the reviewer
+incantation **live, per session, by probing** and names harnesses only as
+examples, so CLI drift self-corrects — there is no hardcoded incantation to
+update. The one durable, hard-won fact (`docs/harness-capabilities.md`,
+`.agents/repo-guidance.md`) — pipe the prompt via **stdin**, not argv, or it
+hangs — still holds under `codex exec`.
+
+Reason: owner asked whether the new Codex options affect this repo's reviewer
+dispatch. Recorded here so the evaluation and its evidence are not
+re-litigated, without touching the probe-driven design that already handles
+CLI drift.
+
+Supersedes: nothing.
+
+> Archived 2026-07-23: closed as ephemera under the 2026-07-23 ruling —
+> harness-version evaluations are not durable record. Its durable facts
+> (pipe the prompt via stdin; probe live, never hardcode) live in
+> docs/harness-capabilities.md and .agents/repo-guidance.md. Separately
+> falsified in practice before archival: `codex mcp-server` was adopted as
+> the preferred transport 2026-07-17 (commit ec7b62e) without this entry
+> being amended — the decisions-as-claims audit's CONTRADICTED verdict (F3).
+> Entry text verbatim above.

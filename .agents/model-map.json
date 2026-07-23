@@ -1,7 +1,0 @@
-{
-  "version": 1,
-  "nicknames": {
-    "sol": { "codex": "gpt-5.6-sol" },
-    "terra": { "codex": "gpt-5.6-terra" }
-  }
-}

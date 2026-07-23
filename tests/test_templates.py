@@ -282,59 +282,14 @@ class ShippedShimsAndWrappers(unittest.TestCase):
         self.assertLess(len(text), 2000)
 
 
-class PlaybookModelFreedom(unittest.TestCase):
-    """Shipped template text names no concrete model IDs (review-economy
-    decision, 2026-07-17; scope widened to all templates — commands,
-    skills, shims — by F11 of the 2026-07-19 model-map plan). The single
-    deliberate exemption is `.agents/model-map.json`, the fleet-global
-    nickname→slug map: slugs live there and nowhere else in committed
-    text. The curated denylist lives beside the model facts in
-    docs/harness-capabilities.md so both are updated in the same edit.
-    This is a structural lint against a curated list, not a prose-pin
-    test: the list is data, the wording stays free."""
-
-    DENYLIST_DOC = ROOT / "docs" / "harness-capabilities.md"
-
-    def load_denylist(self):
-        text = self.DENYLIST_DOC.read_text(encoding="utf-8")
-        m = re.search(r"```model-id-denylist\n(.*?)```", text, re.S)
-        self.assertIsNotNone(
-            m, "model-id-denylist fenced block missing from " + str(self.DENYLIST_DOC))
-        tokens = [ln.strip() for ln in m.group(1).splitlines()]
-        tokens = [t for t in tokens if t and not t.startswith("#")]
-        self.assertTrue(tokens, "model-id-denylist block is empty")
-        return tokens
-
-    @staticmethod
-    def token_pattern(token):
-        # Left word boundary always; right boundary too unless the token is
-        # a family prefix ending in '-' (e.g. 'grok-' must catch 'grok-4.5').
-        pat = r"(?<![a-z0-9])" + re.escape(token.lower())
-        if not token.endswith("-"):
-            pat += r"(?![a-z0-9])"
-        return pat
-
-    def test_denylist_covers_known_families(self):
-        tokens = self.load_denylist()
-        for required in ("grok-", "gpt-", "gemini-", "claude-"):
-            self.assertIn(required, tokens)
-
-    def test_shipped_template_text_names_no_concrete_model_ids(self):
-        # F11: every shipped template — playbooks, commands, skills,
-        # shims — not just templates/playbooks/*.md.
-        tokens = self.load_denylist()
-        paths = sorted(TEMPLATES.rglob("*.md"))
-        playbooks_only = list((TEMPLATES / "playbooks").glob("*.md"))
-        self.assertGreater(
-            len(paths), len(playbooks_only),
-            "F11 scope regression: scan reaches only playbooks")
-        for path in paths:
-            body = path.read_text(encoding="utf-8").lower()
-            for tok in tokens:
-                hit = re.search(self.token_pattern(tok), body)
-                self.assertIsNone(
-                    hit, "%s names denied model token %r"
-                    % (path.relative_to(TEMPLATES), tok))
+class PlaybookReviewMechanics(unittest.TestCase):
+    """Structural pins for the reviewer-dispatch mechanics in the shipped
+    playbooks (review-economy decision 2026-07-17, as amended 2026-07-23):
+    tier semantics, escalation triggers, dispatch grammar. The 2026-07-23
+    owner ruling deleted the model map, the denylist lint, and the
+    nickname machinery: dispatch is literal-or-ask and no committed list
+    of models may exist. These are structural assertions, not prose-pin
+    tests: the wording stays free, the load-bearing markers must exist."""
 
     def test_codereview_carries_tier_semantics(self):
         body = (TEMPLATES / "playbooks" / "codereview.md").read_text(encoding="utf-8")
@@ -343,17 +298,19 @@ class PlaybookModelFreedom(unittest.TestCase):
         self.assertIn("Reviewer: <harness> / <resolved model id> / <effort> / <tier>", body)
         for trigger in ("T1", "T2", "T3", "T4", "T5"):
             self.assertIn(trigger, body)
-        # Model-map contract section (2026-07-19 plan, Slice 2).
-        self.assertIn("## Model map and dispatch grammar", body)
-        self.assertIn(".agents/model-map.json", body)
-        self.assertIn("/codereview <harness> <nickname> <effort>", body)
+        # Dispatch grammar (2026-07-23 ruling: the owner's literal word is
+        # used verbatim; no map, no denylist, no nickname resolution).
+        self.assertIn("## Dispatch grammar", body)
+        self.assertIn("/codereview <harness> <model> <effort>", body)
         self.assertIn("session-only", body)
+        self.assertNotIn(".agents/model-map.json", body)
+        self.assertNotIn("nickname", body)
 
     def test_openreview_routes_frontier_via_codereview_tiers(self):
         body = (TEMPLATES / "playbooks" / "openreview.md").read_text(encoding="utf-8")
         self.assertIn("frontier", body)
         self.assertIn("Reviewer tiers and routing", body)
-        self.assertIn("owner-confirmed", body)
+        self.assertIn("owner-named", body)
 
 
 if __name__ == "__main__":

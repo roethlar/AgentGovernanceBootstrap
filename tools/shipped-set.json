@@ -170,15 +170,8 @@
     "9eaf18f233f7f1ef5c1a24c4da2832a8f26795d61a1b704e7b31394ea334214e",
     "276c912072cb2e51de7dd0765dabee7b917150329f761d7d6f23ab514feb14e2",
     "3309887734ea9f05a9dd7d4547a97deda1274a2889b3e9a1db5663a1a27e9de1",
-    "925268ef9e7ea2d962dc7edfd5180daa01675b323a2fb205801d9cc0cbc5ca36"
-   ]
-  },
-  {
-   "source": "templates/playbooks/harness-update.md",
-   "target": ".agents/playbooks/harness-update.md",
-   "class": "replace",
-   "formerly": [
-    "fd23460c00093805eab07421f1653503fb9f868f140b886499c7decd398ebfa6"
+    "925268ef9e7ea2d962dc7edfd5180daa01675b323a2fb205801d9cc0cbc5ca36",
+    "16cf92985caea5c2b82a05a970eaf53788494bdcb624587ac236c8e545331b2c"
    ]
   },
   {
@@ -198,7 +191,8 @@
     "dcb642d998c8eb4c57b01203cad0422c355ac14e63825aaca9d5f8e8168761b6",
     "49d5faf163d9078bc6b15ef4c5014db0ff1052383de2827027da9d344aa3e968",
     "8fe95e3cf95da9399fe7ef99d386315913657bbc05d0796f065e7f2b3328e166",
-    "aedfcc750e54780715080cc4b9d42fb990a150ec5363eebdce494f0bc5b0eb07"
+    "aedfcc750e54780715080cc4b9d42fb990a150ec5363eebdce494f0bc5b0eb07",
+    "53c1ba9345398884708672ab5df351d4eed18a1617558d3ae76453b6f803669f"
    ]
   },
   {
@@ -283,7 +277,8 @@
    "class": "replace",
    "formerly": [
     "5860b4d492b78b18827f366e48bd96573c5935b655ddf94eb32129181088a8eb",
-    "a65c5c4c90c40064709d96bd043ec96068e39b1f2befd008da95941c0d2d6c12"
+    "a65c5c4c90c40064709d96bd043ec96068e39b1f2befd008da95941c0d2d6c12",
+    "7813b8e2ae1b03e09302ba2baa59815dc1478cf88757100d52b5c0bbde3bef9c"
    ]
   },
   {
@@ -292,14 +287,9 @@
    "class": "replace",
    "formerly": [
     "4ef18624df352399b9181ebabeef70f1142e2aef08f158cf0ae2f50f845ffbba",
-    "c3df5511c662823509d42a8511eb9e78d24c98bdab9fffcf1a12b6080f3213f5"
+    "c3df5511c662823509d42a8511eb9e78d24c98bdab9fffcf1a12b6080f3213f5",
+    "b90f7ff2fd8ae29b81877cb6630af37f54b2c1f5a867a54a0d59ba61b62def91"
    ]
-  },
-  {
-   "source": "templates/skills/shared/harness-update/SKILL.md",
-   "target": ".agents/skills/harness-update/SKILL.md",
-   "class": "replace",
-   "formerly": []
   },
   {
    "source": "templates/skills/shared/openreview/SKILL.md",
@@ -323,7 +313,8 @@
    "class": "replace",
    "formerly": [
     "d31de12ab2d7eb5ddbbf34725f705523d0ef982d39be46d8adb0d0f2bfe1d16e",
-    "bd1c9795cc33ea6b7b4a7127192a85dcccbadd2629214b0031ca0f39aea5bcff"
+    "bd1c9795cc33ea6b7b4a7127192a85dcccbadd2629214b0031ca0f39aea5bcff",
+    "513013ae687a4b4a6bc51533621ca946fb9ca2e22f407b67e2da80f85b3efa1d"
    ]
   },
   {
@@ -332,14 +323,9 @@
    "class": "replace",
    "formerly": [
     "631b2752e84f36caf2687f18078a563a81a4de99b5be62c39442ef97dc147f0e",
-    "6b34abb8a8b4c413f15e0bbf913edaad32d91c019ee8d593416df82ce946d59a"
+    "6b34abb8a8b4c413f15e0bbf913edaad32d91c019ee8d593416df82ce946d59a",
+    "c3d99233a41ba35776ec0fdb89ed8eb3b02082a471a1de5dddb05ddd1e347911"
    ]
-  },
-  {
-   "source": "templates/commands/claude/harness-update.md",
-   "target": ".claude/commands/harness-update.md",
-   "class": "replace",
-   "formerly": []
   },
   {
    "source": "templates/commands/claude/openreview.md",
@@ -367,7 +353,8 @@
     "614fe03824266e72ce7d9b12c9b2d9d2417d6f1c3c74952fd158e6ce00beb31c",
     "8c786c9936ddf927a53455795b3af525dbf5c1db0e67b996e2ef78ade9e27db1",
     "010f53e6ab8b3f1a62865e649e2aa7508a1c5a77f468fff3d52d5f961335c017",
-    "45f3681bc06f6679d87f68136479997c2199a84eaa58e203ecd0303cd5de3778"
+    "45f3681bc06f6679d87f68136479997c2199a84eaa58e203ecd0303cd5de3778",
+    "54ee3b5a5c055f019b567024057608681ea40de5c596309069511c4eea4be5e6"
    ]
   },
   {
@@ -449,6 +436,28 @@
     "30bd521b505a07f399d8b3a8f7d455c49c33a1405711dc4d00feb3bfac8eb102",
     "ba2ba831a62079adfbb4a4d005e9c961346a2be33e3b6d110e711497c506bfe2",
     "336cc4fbf19beaada7ccf9986414fa91851a8d7a07dfb3ccbe800a69eed0ab49"
+   ]
+  },
+  {
+   "target": ".agents/playbooks/harness-update.md",
+   "comment": "Retired 2026-07-23 (owner ruling): the fleet-global model map and its apparatus were deleted; reviewer dispatch is literal-or-ask with no committed model lists. formerly[] carries the past shipped hashes plus the outgoing version's nhash (per the maintenance rule) so deployed copies are cleanly removed rather than reported as drift.",
+   "formerly": [
+    "fd23460c00093805eab07421f1653503fb9f868f140b886499c7decd398ebfa6",
+    "876fed06d23573cbfb5d445db5d12c983447cd6f6c72794b245113044cc368e5"
+   ]
+  },
+  {
+   "target": ".agents/skills/harness-update/SKILL.md",
+   "comment": "Retired 2026-07-23 (owner ruling): the fleet-global model map and its apparatus were deleted; reviewer dispatch is literal-or-ask with no committed model lists. formerly[] carries the past shipped hashes plus the outgoing version's nhash (per the maintenance rule) so deployed copies are cleanly removed rather than reported as drift.",
+   "formerly": [
+    "b1f84920dec6d572bc31e8974ea5fd4d6f85c4558100d549d1c4b30411ea2a14"
+   ]
+  },
+  {
+   "target": ".claude/commands/harness-update.md",
+   "comment": "Retired 2026-07-23 (owner ruling): the fleet-global model map and its apparatus were deleted; reviewer dispatch is literal-or-ask with no committed model lists. formerly[] carries the past shipped hashes plus the outgoing version's nhash (per the maintenance rule) so deployed copies are cleanly removed rather than reported as drift.",
+   "formerly": [
+    "6b1cf48eeac06e856762c9439be8f0bd07b0a54cc0be15b092bf72f79ddd7f94"
    ]
   }
  ],

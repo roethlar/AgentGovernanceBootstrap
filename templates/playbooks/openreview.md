@@ -64,23 +64,23 @@ read-only-plus-disposable-worktree set to inspect the repo and run its bounded
 smoke test.
 
 Tier routing is fixed: `openreview` always dispatches the harness's
-owner-confirmed **frontier** pair at **max** effort (see the `codereview`
+owner-named **frontier** pair at **max** effort (see the `codereview`
 playbook's "Reviewer tiers and routing") — no escalation headroom exists
 above it, so a contested round resolves by owner adjudication, never a
 stronger redispatch. Eligibility is carried by the frontier entry's
 `openreview_confirmed` field (amended 2026-07-18, owner adjudication of
 OR3): the pair is dispatchable here only when that field matches the
-current harness version. A `fallback`-grade pair so confirmed is a
+current harness version. A `fallback`-grade pair so recorded is a
 legitimate openreview reviewer — dispatched when no competitive-grade
 harness is available or when the owner names it — and its grade is
 recorded in the outcome. A missing or `null` `openreview_confirmed`
-blocks that harness fail-closed for this playbook and routes to the
-owner; the orchestrator never infers openreview eligibility from a
-codereview-only confirmation.
+asks the owner once and records the answer per the `codereview` cache
+rules; the orchestrator never infers openreview eligibility from a
+codereview-only naming.
 
-Model naming rides the `codereview` playbook's "Model map and dispatch
-grammar" section (canonical): nickname→slug resolution and its fetch
-contract apply here unchanged, and a resolved nickname confers nothing —
+Model naming rides the `codereview` playbook's "Dispatch
+grammar" section (canonical): the owner's literal word is used verbatim,
+checked against no list — and a named model confers nothing:
 `openreview_confirmed` above remains the only eligibility gate.
 
 ## Verdict contract (structured, fail-closed)

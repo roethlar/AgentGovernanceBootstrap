@@ -88,34 +88,6 @@ Verify-once ledger:
 - Pin models explicitly; unpinned defaults bite. Grok as of 2026-07-08:
   default `grok-4.5` (alt `grok-composer-2.5-fast`); the former `grok-build`
   id no longer exists.
-- **Model-ID denylist (playbook lint).** Committed playbooks
-  (`templates/playbooks/*.md`) must stay model-free: tier routing binds to
-  owner-granted nicknames resolved through the fleet-global
-  `.agents/model-map.json` — the single sanctioned committed home for
-  model slugs (2026-07-19) — never to model names baked into governed
-  text (review-economy decision, 2026-07-17, as amended 2026-07-19;
-  harness flags, transports, and capability grades remain machine-local
-  in `.agents/review/harnesses.local.json`). The lint in
-  `tests/test_templates.py` reads the fenced list
-  below (one token per line, `#` comments allowed, matched case-insensitively
-  at a left word boundary). Extend it here whenever a new concrete model
-  family or codename enters the capability record — this list lives beside
-  the model facts precisely so the two are updated in the same edit.
-
-  ```model-id-denylist
-  # model-family prefixes
-  sonnet-
-  opus-
-  haiku-
-  gpt-
-  grok-
-  gemini-
-  claude-
-  # codenames seen in owner pins / vendor docs
-  composer
-  terra
-  luna
-  ```
 - agy's OAuth token is short-lived and does not refresh headless; re-auth
   interactively at session start if lapsed.
 - agy in a write-blocked workspace does not fail gracefully (it hunts for

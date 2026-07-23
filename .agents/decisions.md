@@ -34,6 +34,55 @@ live rule now owned elsewhere - archive it per the rule above: move it verbatim 
 
 ## Decisions
 
+### 2026-07-23 — The owner's dispatch word is final; no committed model lists; harness-version evaluations are not durable record
+
+Status: Active
+
+Decision: reviewer dispatch never overrides the owner's explicit word. A
+model named in a dispatch line — a slug, a family name, plain words — is
+used verbatim, checked against no map, denylist, cache, or other list. No
+committed list of models exists anywhere in this toolkit, and none may be
+created: lists rot within days, rot wastes dispatch tokens, and
+maintaining them is unpaid work the owner never ordered. Resolution aids
+(the machine-local harness cache) fill only gaps the owner left; they are
+convenience, never a gate, and an unrecorded tier asks the owner once and
+records the answer — no confirmation ritual. Review validity comes from
+the review record itself: environment quirks (hooks redirecting commands
+to other tools, wrappers, proxies, unfamiliar harnesses) are recorded as
+notes on the dispatch record, never treated as invalidation. Evaluations
+of harness-version surfaces are ephemeral and are not recorded as Active
+decisions; durable facts earned by an evaluation live in their canonical
+homes (`docs/harness-capabilities.md`, `.agents/repo-guidance.md`).
+
+Owner wording (2026-07-23), verbatim: "what I do not want is to have to
+fight governance. if I say codereview claude claude-fable-5 xhigh, I do
+not want the model telling me that model name isn't in the map. it's the
+literal model name. I do not want to maintain a list anywhere." Asked
+whether the map/denylist apparatus should be demoted or deleted, the
+owner ruled: "deleted."
+
+Landed, same change: `.agents/model-map.json` <!-- lint: allow (deleted in this change; named as the record of the deletion) --> and
+`tests/test_model_map.py` <!-- lint: allow (deleted in this change) --> deleted; the
+model-denylist lint and its data block removed (`tests/test_templates.py`,
+`docs/harness-capabilities.md`); the `harness-update` operator retired —
+its only content was map maintenance; playbook, command, and skill move
+to the retired list in `tools/shipped-set.json`, so deployed copies are
+removed on next refresh; `templates/playbooks/codereview.md` gains the
+literal-or-ask Dispatch grammar section; `templates/playbooks/openreview.md`,
+the `codereview`/`review` wrappers and skills updated; tier-pair recording
+simplified from owner-confirmation ritual to owner-named-or-asked-once;
+the transcript-conformance invalidation softened to a recorded note.
+
+Supersedes: the 2026-07-19 model-map ruling (moved to
+`docs/history/decisions-archive.md` in this change). The 2026-07-09 Codex
+0.144 evaluation entry is archived alongside it as ephemera under this
+ruling; its durable facts (pipe the prompt via stdin; probe live, never
+hardcode) already live in `docs/harness-capabilities.md` and
+`.agents/repo-guidance.md`. Amends: the 2026-07-17 review-economy entry
+(committed text is no longer lint-enforced model-free; the design still
+pins no models in committed text as a staleness defense, per the
+playbook's tier section).
+
 ### 2026-07-23 — A handoff ends by committing its own records; the shipped text now says so
 
 Status: Active
@@ -219,43 +268,6 @@ reworded to add the completion-report clause with the three stops (net length
 roughly flat); a dated amendment on the 2026-06-10 answer-with-words entry
 records the qualification.
 
-### 2026-07-19 — Model slugs get one committed home: fleet-global `.agents/model-map.json`; reviewer dispatch resolves nicknames through the map
-
-Status: Active
-
-Decision: concrete model slugs have exactly one sanctioned committed
-home — the fleet-global `.agents/model-map.json`, mapping owner-granted
-nicknames to per-harness model ids (seeded from the owner's confirmed
-pins: `sol` → codex `gpt-5.6-sol`, `terra` → codex `gpt-5.6-terra`).
-Reviewer dispatch resolves nicknames through the map at launch;
-nicknames never select tier — `<effort>` selects effort within whatever
-tier the trigger machinery dispatches (F5). Playbook model-freedom
-(curated-denylist lint) governs templates; the map is the explicit lint
-boundary (F11). `.claude/commands/review.md` returns to the shipped set
-as a pure alias command (`templates/commands/claude/review.md`, F6).
-Plan: `docs/superpowers/plans/2026-07-19-model-map-reviewer-dispatch.md`.
-
-Supersession amendments (the plan's F5 matrix, recorded as dated
-amendments):
-
-- 2026-07-17 D1/D2, "concrete pins live in machine-local, gitignored
-  `.agents/review/harnesses.local.json`" — **superseded for model
-  slugs**: slugs move to the fleet-global map. Harness flags,
-  transports, and capability grades remain machine-local, unchanged.
-- 2026-07-17 D1, default reviewer tiers and trigger-driven escalation —
-  **untouched**: `<effort>` selects effort within whatever tier the
-  trigger machinery dispatches; nicknames never select tier (F5).
-- 2026-07-17, "committed text is model-free" (curated-denylist lint) —
-  **amended**: model-freedom governs templates; the map is the single
-  sanctioned committed home for slugs; the lint boundary is explicit
-  (F11).
-- 2026-07-16, `review` operator split with `.claude/commands/review.md`
-  retired (archived entry, `docs/history/decisions-archive.md`) —
-  **amended**: the path returns as a pure alias command (F6). The
-  archived text stays verbatim; this entry is the amendment record.
-- 2026-07-18, reviewer dispatch is self-permissioning — **untouched**:
-  grants remain launch-scoped; the map feeds only the model id.
-
 ### 2026-07-18 — Reviewer dispatch is self-permissioning; the owner never hand-grants tools
 
 Status: Active
@@ -286,8 +298,9 @@ owner further confirmed MCP-as-server carries the grant in its registration args
 
 ### 2026-07-17 — Review economy: tiered reviewer routing adopted (D1–D3); D4 dissolved
 
-Status: Active, as amended 2026-07-19 — model slugs superseded into the
-fleet-global `.agents/model-map.json` (see the 2026-07-19 entry);
+Status: Active, as amended 2026-07-23 — the 2026-07-19 model-map amendment is itself superseded: the map, its lint, and the denylist are deleted (2026-07-23 "the owner's dispatch word is final"); tier pairs are recorded when the owner names or accepts them, no confirmation ritual. Harness flags, transports, and capability grades remain machine-local
+
+> Amended 2026-07-19 — model slugs superseded into the fleet-global `.agents/model-map.json` <!-- lint: allow (deleted 2026-07-23; named in a superseded amendment) --> (see the archived 2026-07-19 entry);
 harness flags, transports, and capability grades remain machine-local
 
 Decision: `codereview` runs a two-tier reviewer scheme — standard@high
@@ -533,48 +546,6 @@ Splitting the roles — a technical plan for agents, short plain-English asks
 in chat for the owner — fills both roles the owner named. The four
 2026-07-10 draft plans in `docs/superpowers/plans/` remain parked; their
 decisions are brought to the owner per this contract when unparked.
-
-### 2026-07-09 — Codex 0.144 new surface evaluated; reviewloop keeps `codex exec`+stdin dispatch
-
-Status: Active (evaluation only; no product change).
-
-Decision: the Codex CLI's newer surface (`codex-cli 0.144.0` on this machine)
-was evaluated against the reviewer-dispatch contract in
-`.agents/playbooks/reviewloop.md`, and the `codex exec` + prompt-piped-via-stdin
-dispatch is **retained unchanged**. Three new subcommands were assessed —
-`codex review` (first-party non-interactive review), `codex plugin` (plugin
-management), and `codex mcp-server` (run Codex as an MCP stdio server):
-
-- **`codex mcp-server` was tested** (MCP `initialize` + `tools/list` over stdio, <!-- lint: allow (MCP protocol method, not a repo path) -->
-  bounded, inspection-only — no agent turn invoked). It speaks protocol
-  `2025-06-18`, identifies as `codex-mcp-server` `0.144.0`, and exposes exactly
-  two tools: `codex` (required `prompt`; structured `sandbox` =
-  `read-only`|`workspace-write`|`danger-full-access`, `approval-policy`,
-  `model`, `cwd`; output `{threadId, content}`) and `codex-reply` (continue via
-  `threadId`). It is a viable *alternative* reviewer transport — structured
-  `sandbox: read-only` enforcement at the harness boundary, and no stdin-vs-argv
-  hang — but it is **not adopted**: (1) it returns free-form `content`, not the
-  fail-closed JSON *verdict envelope* our contract parses, so the verdict-parsing
-  responsibility is unchanged; and (2) its `threadId`/`codex-reply` model is
-  stateful, whereas the loop's atomic unit is one-shot per finding. Adopting it
-  would be a design change, not a swap.
-- **`codex review`** is noted but not adopted: it is not a drop-in for our
-  custom verdict schema, guard-proof-in-a-worktree, and pinned base/head SHA
-  contract.
-
-No change was needed regardless: `reviewloop.md` derives the reviewer
-incantation **live, per session, by probing** and names harnesses only as
-examples, so CLI drift self-corrects — there is no hardcoded incantation to
-update. The one durable, hard-won fact (`docs/harness-capabilities.md`,
-`.agents/repo-guidance.md`) — pipe the prompt via **stdin**, not argv, or it
-hangs — still holds under `codex exec`.
-
-Reason: owner asked whether the new Codex options affect this repo's reviewer
-dispatch. Recorded here so the evaluation and its evidence are not
-re-litigated, without touching the probe-driven design that already handles
-CLI drift.
-
-Supersedes: nothing.
 
 ### 2026-07-09 — Dead-path lint is git-aware: vouched deletions print a NOTE; no allowlists anywhere
 

@@ -46,7 +46,7 @@ is the re-run with rulings as inputs to verify, not constraints.
 - Tests: `/opt/homebrew/bin/python3.14 -m unittest discover -s tests -p
   "test_*.py"` (161 passing at plan time). Suite must stay green.
 - Reviewer dispatch exists (tiered routing D1–D3, 2026-07-17 ruling;
-  fleet model map `.agents/model-map.json`): bulk reading can be
+  fleet model map `.agents/model-map.json`): bulk reading can be <!-- plan-lint: allow (file deleted 2026-07-23 under the owner ruling this audit routed) -->
   dispatched to non-Claude reviewers to spare the owner's Claude budget.
   Use it for the per-ruling evidence passes; reserve the interactive
   session for adjudication.
