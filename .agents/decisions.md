@@ -34,6 +34,30 @@ live rule now owned elsewhere - archive it per the rule above: move it verbatim 
 
 ## Decisions
 
+### 2026-07-22 — Paperwork follows technical work: verified-fixed bookkeeping proceeds without an owner ask
+
+Status: Active
+
+Decision: once technical work is landed and verified, the agent performs
+the follow-on bookkeeping in the same motion — record closes, tracker
+issue closes, state syncs — without waiting for the owner to order it.
+This extends R3 (records kept current by the working agent, never
+owner-gated) beyond repo files to tracker paperwork: closing a GitHub
+issue whose fix is verified at HEAD is completion bookkeeping for
+already-approved work, not new scope, and needs no fresh ask. Genuinely
+new external actions — anything beyond recording the completion of
+already-approved work — still stop. Applied same day: issues #5–#8
+closed with commit receipts after per-fix verification at HEAD.
+
+Owner wording (2026-07-22), verbatim: "if it's fixed, then close the
+issue. this is a symptom of the same problem I just complained about. do
+the paperwork after the technical work. don't wait for the human to tell
+you to do what this whole repo exists to do."
+
+Refines: R1 (2026-07-22 holistic plan) — per-site implementation
+decisions still go to the owner one at a time; this ruling governs the
+paperwork after a fix is landed and verified.
+
 ### 2026-07-22 — Owner communication is a per-repo tunable level (1–5), seeded like the push policy; supersedes the named-profile design
 
 Status: Active

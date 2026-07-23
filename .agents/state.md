@@ -14,9 +14,10 @@ machine-local facts are labeled or omitted.
   under each site heading). All ten sites landed one at a time on
   recorded per-site owner gos (second-pass rulings in the plan header;
   Site 6 as the owner's tunable communication-level spec). GitHub issues
-  #5–#8 remain open: per R1, each issue's closure goes to the owner one
-  at a time as an Owner Gates ask. Next action: put issue #5's closure
-  to the owner.
+  #5–#8 are closed with commit receipts, each fix verified at HEAD
+  first, per the 2026-07-22 owner ruling in `.agents/decisions.md`:
+  paperwork follows technical work — verified-fixed bookkeeping proceeds
+  without an owner ask.
 - 2026-07-22: model-map reviewer dispatch is CLOSED with its commit map in
   `docs/superpowers/plans/2026-07-19-model-map-reviewer-dispatch.md`:
   the fleet-global `.agents/model-map.json` (owner-granted nickname →
