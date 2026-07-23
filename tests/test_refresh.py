@@ -302,6 +302,23 @@ class RefreshTests(unittest.TestCase):
         self.assertEqual(proc.returncode, 4, proc.stderr)
         self.assertIn("duplicate", proc.stderr)
 
+    def test_manifest_target_in_both_artifacts_and_retired_refused(self):
+        # A path in both artifacts and retired would be installed (write) then
+        # removed (unlink) in the same run: the shipped file gets deleted and
+        # the deletion committed fleet-wide. Validation must catch the overlap
+        # before any write. The target repo already has the current core file,
+        # so without the guard the retired-branch removal deletes it.
+        (self.target / "AGENTS.md").write_text(CUR_AGENTS, newline="\n")
+        commit_all(self.target, "current agents present")
+        self._mutate_manifest(lambda d: d["retired"].append(
+            {"target": "AGENTS.md", "formerly": [nhash(CUR_AGENTS)]}))
+        n = len(self.commits())
+        proc = refresh(self.toolkit, self.target)
+        self.assertEqual(proc.returncode, 4, proc.stderr)
+        self.assertIn("both artifacts and retired", proc.stderr)
+        self.assertEqual((self.target / "AGENTS.md").read_text(), CUR_AGENTS)
+        self.assertEqual(len(self.commits()), n)
+
     def test_lint_exempts_machines_md_as_create_on_first_use(self):
         # .agents/machines.md is a designated create-on-first-use home
         # (the per-machine facts file): its absence in a fresh repo is

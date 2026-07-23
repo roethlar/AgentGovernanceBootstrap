@@ -202,10 +202,19 @@ def validate_manifest(shipped: dict, toolkit: Path) -> "list[str]":
             if not _HEX64.match(h):
                 errors.append("malformed hash for {}: {!r}".format(tgt, h))
     for ret in shipped.get("retired", []):
-        check_rel("retired target", ret.get("target", ""))
+        rt = ret.get("target", "")
+        check_rel("retired target", rt)
+        if rt in seen:
+            # A target in both artifacts and retired would be installed
+            # (write) and then removed (unlink) in the same run, committing a
+            # fleet-wide deletion of a shipped file. Fold retired targets into
+            # the same duplicate-set as the artifacts above so the overlap
+            # exits before any write.
+            errors.append("target listed in both artifacts and retired: {}".format(rt))
+        seen.add(rt)
         for h in ret.get("formerly", []):
             if not _HEX64.match(h):
-                errors.append("malformed hash for retired {}: {!r}".format(ret.get("target"), h))
+                errors.append("malformed hash for retired {}: {!r}".format(rt, h))
     return errors
 
 
