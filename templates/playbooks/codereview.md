@@ -69,9 +69,12 @@ quick/wait toggle and no Strict/Faster WIP mode** — the prior async loop's
 parallelism knobs do not apply here. One finding is dispatched, reviewed, recorded,
 and acted on before the next is dispatched.
 
-`codereview <agent> frontier` is the only routing modifier: it forces the
-**frontier** tier for that dispatch (see "Reviewer tiers and routing") and the
-record carries `escalated: owner`. Provider choice stays in `<agent>` — no
+`frontier` is a reserved word in the `<nickname>` slot: `codereview <harness>
+frontier` forces the **frontier** tier for that dispatch (see "Reviewer tiers
+and routing") instead of resolving as a nickname, and the record carries
+`escalated: owner`. It is the only routing modifier, and the map may not define
+a `frontier` nickname — the model-map lint rejects one — so the reserved word
+can never collide with a real model. Provider choice stays in `<harness>` — no
 phrase silently re-routes to a different harness.
 
 ## Deriving the reviewer incantation (probe-and-verify)
@@ -223,11 +226,12 @@ and rot in an installed artifact is drift:
 
 - **standard** — the owner-confirmed best-value (model, effort) pair on the
   dispatched harness; sufficient for the tightly framed conformance verdicts
-  this playbook issues. `codereview` dispatches standard at **high** effort.
+  this playbook issues. Standard defaults to **high** effort when `<effort>`
+  is omitted.
 - **frontier** — an owner-confirmed pair strictly stronger than standard *as
-  configured*; required for escalated findings. `codereview` dispatches
-  frontier at **xhigh** effort, whether frontier was reached by escalation or
-  owner force. Where the harness does not expose the ruled level, the
+  configured*; required for escalated findings. Frontier defaults to **xhigh**
+  effort when `<effort>` is omitted, whether frontier was reached by escalation
+  or owner force. Where the harness does not expose the ruled level, the
   owner-confirmed pair is authoritative as recorded.
 
 Effort is part of tier identity: capability ordering holds only for configured
@@ -268,7 +272,12 @@ the map at invocation time.
 Dispatch grammar: `/codereview <harness> <nickname> <effort>`, with
 `/review` as a pure alias of `codereview`. A nickname unknown to the map,
 or missing an entry for the dispatched harness, blocks loud — nothing
-guesses, nothing falls back across harnesses.
+guesses, nothing falls back across harnesses. `<effort>` is optional; when
+omitted the routed tier's default applies (standard → high, frontier →
+xhigh; see "Reviewer tiers and routing"). `frontier` is a reserved word in
+the `<nickname>` slot: it forces the frontier tier rather than resolving as a
+model (see the Operator section), so the map may not define a `frontier`
+nickname — the fetch contract below rejects a map that does.
 
 **Fetch contract** — applied by the dispatching agent to the fetched
 bytes (`curl -fsS --max-time 10` into a scratch file), in order:
@@ -282,6 +291,8 @@ bytes (`curl -fsS --max-time 10` into a scratch file), in order:
    `^[a-z0-9][a-z0-9._-]{0,63}$`; exact lowercase, no case folding.
 5. **Closed harness set**: harness keys outside `codex`, `claude`,
    `gemini` are a hard failure, not ignored.
+6. **Reserved nicknames**: a `frontier` nickname is rejected — it is the
+   dispatch grammar's reserved tier-forcing word, never a model.
 
 Validation runs before any fetched byte reaches model-visible context; on
 success exactly one validated slug enters context, never the raw
@@ -349,9 +360,10 @@ routes that finding's review (or re-review) to frontier:
   session** of the same harness and records `escalated: T5 (ceiling)`.
   Switching provider requires an explicit owner dispatch.
 
-**Owner override.** The operator phrase `codereview <agent> frontier` forces
-frontier for that dispatch and is recorded as `escalated: owner` — never by
-hand-editing the cache.
+**Owner override.** The operator phrase `codereview <harness> frontier` — with
+`frontier` the reserved nickname-slot word (see "Operator") — forces frontier
+for that dispatch and is recorded as `escalated: owner`, never by hand-editing
+the cache.
 
 **Fallback-grade halt.** Where the confirmed frontier entry carries
 `"grade": "fallback"`, any trigger that would route to frontier instead halts

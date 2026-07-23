@@ -23,6 +23,9 @@ MAP_PATH = ROOT / ".agents" / "model-map.json"
 
 SIZE_CAP = 16 * 1024
 KNOWN_HARNESSES = frozenset({"codex", "claude", "gemini"})
+# Nicknames reserved by the dispatch grammar: they force routing behaviour,
+# never a model, so the map may not define them (codereview playbook, Site 8).
+RESERVED_NICKNAMES = frozenset({"frontier"})
 TOKEN_RE = re.compile(r"^[a-z0-9][a-z0-9._-]{0,63}$")
 
 # A sentinel planted in every hostile fixture; no stop message may echo it.
@@ -55,7 +58,7 @@ def validate_model_map(raw):
 
     Returns the parsed document; raises MapRejected(constraint) on the
     first failed rule. Constraint names: size-cap, parse, duplicate-key,
-    shape, version, charset, harness-set.
+    shape, version, charset, reserved-nickname, harness-set.
     """
     # 1. Size cap — before any parsing touches the bytes.
     if len(raw) > SIZE_CAP:
@@ -90,6 +93,11 @@ def validate_model_map(raw):
         # 4. Charset — exact lowercase, no case folding (F9).
         if not TOKEN_RE.fullmatch(nickname):
             raise MapRejected("charset")
+        # 4a. Reserved nicknames — the dispatch grammar owns these words as
+        # routing modifiers (e.g. `frontier` forces the frontier tier), so a
+        # map defining one would let a model masquerade as the modifier.
+        if nickname in RESERVED_NICKNAMES:
+            raise MapRejected("reserved-nickname")
         for harness, slug in entry.items():
             if not isinstance(slug, str):
                 raise MapRejected("shape")
@@ -254,6 +262,28 @@ class HarnessSetTests(unittest.TestCase):
         raw = json.dumps(
             {"version": 1, "nicknames": {"sol": {"OpenAI": EVIL}}})
         _reject(self, raw.encode(), "charset")
+
+
+class ReservedNicknameTests(unittest.TestCase):
+    def test_frontier_nickname_rejected(self):
+        # `frontier` is the dispatch grammar's tier-forcing reserved word; a
+        # map that defines it as a nickname must be rejected so no model can
+        # masquerade as the routing modifier (Site 8, owner ruling 2026-07-22).
+        raw = json.dumps(
+            {"version": 1, "nicknames": {"frontier": {"codex": EVIL}}})
+        _reject(self, raw.encode(), "reserved-nickname")
+
+    def test_charset_precedes_reserved(self):
+        # An uppercase 'Frontier' fails charset first; the reserved check sees
+        # only lowercase tokens.
+        raw = json.dumps(
+            {"version": 1, "nicknames": {"Frontier": {"codex": EVIL}}})
+        _reject(self, raw.encode(), "charset")
+
+    def test_non_reserved_nickname_accepted(self):
+        raw = json.dumps(
+            {"version": 1, "nicknames": {"sol": {"codex": "gpt-5.6-sol"}}})
+        validate_model_map(raw.encode())
 
 
 if __name__ == "__main__":
