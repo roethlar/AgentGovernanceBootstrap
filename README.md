@@ -13,9 +13,8 @@ Every governed repo gets the same two-layer setup:
 - `.agents/` — everything repo-specific: `repo-guidance.md` (rules, reading
   order, the verification command), `state.md` (current work, with rotation
   to an archive), `decisions.md` (settled decisions), `push-policy.md`,
-  and playbooks (`codereview`, the cross-harness per-finding review loop;
-  `openreview`, the unprimed goal-first whole-change review; and `git`,
-  plain-English delegated git operations).
+  and the operator playbooks (the shipped set is enumerated in
+  `tools/shipped-set.json`, this repo's manifest).
 
 Plus harness adapters (shims like `CLAUDE.md`/`GEMINI.md`, operator command
 wrappers, and two hooks — the Claude Code compaction re-ground and the
