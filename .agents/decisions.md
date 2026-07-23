@@ -421,6 +421,8 @@ the owner refreshes this repo deliberately — removes the foot-gun.
 
 Status: Active
 
+> Amended 2026-07-22 (Site 6 — comms level): the fixed styling of the chat ask — "roughly 25-50 plain-English words … no jargon" — is superseded by the per-repo communication level in `.agents/comms-policy.md` (see the 2026-07-22 comms-level entry above). The plan-operator bullet now points at that level for register; the contract's structure is unchanged — plans stay agent-facing, and owner decisions still come in chat one decision at a time, never a batch, each stating the problem, the change, and the cost or risk. Level 2 reproduces the original "one decision at a time, plain words" register, so this repo's asks are unchanged.
+
 Decision: A plan document is written for agents, never for the owner. It must
 be self-contained and implementable by a completely cold, less-capable agent
 than the one that wrote it: technical, free of human-facing summary prose,
