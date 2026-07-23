@@ -54,6 +54,28 @@ reverted work preserved only in the local tag
 Landed: the issue-queue process lives in `.agents/repo-guidance.md`
 (Mission Detail); this entry is the owner ruling (R1) behind it.
 
+### 2026-07-22 — State and governance files are kept current by the working agent as work lands, never gated on a human (R3)
+
+Status: Active
+
+Decision: `.agents/state.md` and the governance files exist for agents and
+for humans doing forensics. The working agent keeps them current as part of
+the work, as it lands; that upkeep is never gated on a human and never waits
+for an owner to invoke an operator. `handoff` and `drift` retain their
+distinct deliberate-pass roles — a fast save-my-place snapshot, and the
+state-hygiene sweep — but ordinary currency of the record does not depend on
+either being invoked.
+
+Receipt: GitHub issue #7. A falsified `.agents/state.md` entry could only be
+corrected by asking the owner, because the only state.md write paths named in
+the guidance lived inside owner-invoked operators — routine bookkeeping was
+gated on a human it should never have needed.
+
+Landed: `templates/AGENTS.template.md` current-state entry-point invariant
+reworded so state.md is kept current by the working agent as work lands,
+never owner-gated (`handoff`/`drift` keep their deliberate-pass roles); this
+entry is the owner ruling (R3) behind it.
+
 ### 2026-07-19 — Model slugs get one committed home: fleet-global `.agents/model-map.json`; reviewer dispatch resolves nicknames through the map
 
 Status: Active
