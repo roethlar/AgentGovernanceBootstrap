@@ -76,6 +76,38 @@ reworded so state.md is kept current by the working agent as work lands,
 never owner-gated (`handoff`/`drift` keep their deliberate-pass roles); this
 entry is the owner ruling (R3) behind it.
 
+### 2026-07-22 — An owner's completion report inside an approved, scoped workflow is the go for that workflow's next defined step (issue #8)
+
+Status: Active
+
+Decision: when the owner reports a step complete inside an approved,
+already-scoped workflow ("it's done", "that ran"), the report is the go for
+the next step that workflow already defines — no separate ritual "go" is
+demanded before continuing. The stops still bind: new scope, a changed risk,
+and separately gated actions each still require their own explicit go, and a
+handed-over report, plan, or spec remains evidence to assess rather than a
+decision to implement. A completion report advances only the workflow's own
+next defined step, never new or separately gated work.
+
+Receipt: GitHub issue #8. An owner's mid-workflow completion report was
+treated as merely informational and a ritual "go" was demanded before the
+already-scoped next step. The same 2026-07-22 incident showed the opposite
+failure — a continuation stretched into standing batch authority — so the
+rule threads both: the report advances the defined next step, and nothing
+beyond it.
+
+Reopens: qualifies the 2026-06-10 "Answer-with-words rule hardened;
+artifact-is-evidence-not-decision" decision, for completion reports only.
+That decision's "reply in plain English and stop / ask for the go, and stop"
+still governs questions, musings, and any step not already defined by an
+approved workflow; a dated amendment recording this qualification is appended
+to that entry.
+
+Landed: `templates/AGENTS.template.md` Prime Invariants "Words first" bullet
+reworded to add the completion-report clause with the three stops (net length
+roughly flat); a dated amendment on the 2026-06-10 answer-with-words entry
+records the qualification.
+
 ### 2026-07-19 — Model slugs get one committed home: fleet-global `.agents/model-map.json`; reviewer dispatch resolves nicknames through the map
 
 Status: Active
@@ -849,6 +881,8 @@ Prevents an agent from treating a just-received defect report or plan as an auto
 
 Supersedes:
 Softer prior wording of the same intent.
+
+> Amended 2026-07-22 (Site 5 — issue #8): qualified for completion reports only. When the owner reports a step complete inside an approved, already-scoped workflow, that report is the go for the next step the workflow already defines — no separate ritual "go" is required. "Reply in plain English and stop" / "ask for the go, and stop" still governs questions, musings, and any step not already defined by an approved workflow; new scope, a changed risk, and separately gated actions still stop. See the 2026-07-22 issue-#8 entry above.
 
 ### 2026-06-10 - PowerShell helper retired
 
