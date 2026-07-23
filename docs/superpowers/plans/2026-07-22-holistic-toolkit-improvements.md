@@ -1,12 +1,13 @@
 # Holistic Toolkit Improvement: Ten Verified Sites
 
-Status: OPEN — drafted 2026-07-22 from the owner-commissioned multi-agent
-review. The owner approved the ten-site assessment and ordered it saved
-(owner words, 2026-07-22: "good. save plans for all of these."). That
-approval covers this document, not implementation: per owner ruling R1
-below, each site's decisions go to the owner one at a time in plain
-English, and a site becomes implementable only after its own explicit go
-is recorded here (per-site status lines below) or in `.agents/decisions.md`.
+Status: CLOSED 2026-07-22 — all ten sites are implemented on their
+recorded per-site gos, one finding per commit; each site's commit map is
+the `Implemented 2026-07-22:` line under its heading (Site 6 landed as
+the owner's replacement communication-level spec). Drafted 2026-07-22
+from the owner-commissioned multi-agent review; the owner approved the
+ten-site assessment and ordered it saved (owner words, 2026-07-22:
+"good. save plans for all of these."), and per-site decisions then went
+to the owner one at a time per ruling R1 below.
 
 Owner rulings, second pass (2026-07-22, verbatim: "1-5 yes, 6 no, 7 yes,
 8 what?, 9-10 yes. gemini shim can go."): Sites 1–5, 7, 9, 10 are

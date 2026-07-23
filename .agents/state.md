@@ -8,23 +8,15 @@ machine-local facts are labeled or omitted.
 
 ## Now
 
-- 2026-07-22: owner-commissioned holistic toolkit review is complete and
-  saved as
+- 2026-07-22: the holistic toolkit improvement plan is CLOSED —
   `docs/superpowers/plans/2026-07-22-holistic-toolkit-improvements.md`
-  (Status: OPEN): ten verified improvement sites from a 60-agent
-  adversarial review (39 findings confirmed at `881e63b`), covering the
-  open GitHub issues #5–#8, the plan-gate product hole, reviewer-dispatch
-  capability probing, evidence discipline, the owner-communication
-  contract, template dead weight, stale cross-harness surfaces, refresh
-  hardening, and record drift. NO site is approved for implementation:
-  per the owner rulings recorded in that plan (R1–R5), each site's
-  decisions go to the owner one at a time and land only on an explicit
-  per-site go. Context: earlier on 2026-07-22 an unapproved batch
-  implementation of issues #5–#8 (ten commits) was pushed and
-  owner-ordered reverted — remote reset to `881e63b`; the reverted work
-  survives only in the local tag `backup-2026-07-22-governance-edits`.
-  Issues #5–#8 remain open on GitHub. Next action: put Site 1's first
-  decision (the ship-effect plan gate) to the owner.
+  carries the per-site commit maps (the `Implemented 2026-07-22:` line
+  under each site heading). All ten sites landed one at a time on
+  recorded per-site owner gos (second-pass rulings in the plan header;
+  Site 6 as the owner's tunable communication-level spec). GitHub issues
+  #5–#8 remain open: per R1, each issue's closure goes to the owner one
+  at a time as an Owner Gates ask. Next action: put issue #5's closure
+  to the owner.
 - 2026-07-22: model-map reviewer dispatch is CLOSED with its commit map in
   `docs/superpowers/plans/2026-07-19-model-map-reviewer-dispatch.md`:
   the fleet-global `.agents/model-map.json` (owner-granted nickname →

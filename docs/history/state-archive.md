@@ -963,3 +963,29 @@ verbatim:
 - the change is template-side, so installed copies lag the templates by
   that one change — the expected steady state until the owner's next refresh
   (owner-only rule, `292a4d2`).
+
+## Rotated 2026-07-22 (holistic plan closed) — ten-site implementation landed
+
+The 2026-07-22 holistic toolkit improvement plan is CLOSED with per-site
+commit maps under each site heading in the plan itself; the `## Now` entry
+tracking it as OPEN with no site approved was superseded by the per-site
+gos and landings that followed the same day. The superseded entry,
+verbatim:
+
+- 2026-07-22: owner-commissioned holistic toolkit review is complete and
+  saved as
+  `docs/superpowers/plans/2026-07-22-holistic-toolkit-improvements.md`
+  (Status: OPEN): ten verified improvement sites from a 60-agent
+  adversarial review (39 findings confirmed at `881e63b`), covering the
+  open GitHub issues #5–#8, the plan-gate product hole, reviewer-dispatch
+  capability probing, evidence discipline, the owner-communication
+  contract, template dead weight, stale cross-harness surfaces, refresh
+  hardening, and record drift. NO site is approved for implementation:
+  per the owner rulings recorded in that plan (R1–R5), each site's
+  decisions go to the owner one at a time and land only on an explicit
+  per-site go. Context: earlier on 2026-07-22 an unapproved batch
+  implementation of issues #5–#8 (ten commits) was pushed and
+  owner-ordered reverted — remote reset to `881e63b`; the reverted work
+  survives only in the local tag `backup-2026-07-22-governance-edits`.
+  Issues #5–#8 remain open on GitHub. Next action: put Site 1's first
+  decision (the ship-effect plan gate) to the owner.
