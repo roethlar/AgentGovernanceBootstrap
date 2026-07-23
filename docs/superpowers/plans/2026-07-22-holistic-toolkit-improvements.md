@@ -473,6 +473,29 @@ already nearly failed.
 Decision for the owner: these are code changes requiring plan-gated
 approval — approve as one slice sequence or per-fix.
 
+Implemented 2026-07-22: 432a930 validate_manifest folds retired targets into
+the duplicate-set so an artifacts/retired target overlap exits 4 before any
+write; 3562ab8 catch OSError on apply alike RuntimeError and add a
+--stage-only-exempt crash check that the staged index covers every planned
+path before the commit (--no-renames so a retired path matching a new artifact
+is not collapsed away); 63db061 distinct exit 5 when a core replace-whole file
+is flagged foreign, plus the module docstring exit-code table and the reworded
+stale preflight comment.
+Skipped: the formerly[] upkeep test — implemented faithfully (walk each
+source's per-commit git history, assert every historical version is
+membership-or-append, skip on shallow clones) it is red against the current
+manifest: 28 committed historical versions across four sources
+(`templates/AGENTS.template.md`, `templates/playbooks/codereview.md`,
+`templates/playbooks/openreview.md`,
+`templates/hooks/claude/protect-governance.py`) are recorded in neither
+formerly[] nor the current source. The cause is a longstanding
+append-at-boundaries practice plus recent sibling-site template edits (Sites
+3/4/7) that changed sources without appending outgoing hashes. Landing the
+guard green would require backfilling ~28 fleet-facing outgoing hashes —
+repairing other agents' omissions and changing fleet drift classification —
+which is outside Site 9's mechanical scope. Owner call: backfill the manifest
+then land the guard, or redefine the guard's notion of a shipped version.
+
 ## Site 10 — Records and procedures agents ground on
 
 Problem: the reading-order and startup surfaces contain falsified or
