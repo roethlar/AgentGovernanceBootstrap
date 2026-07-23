@@ -51,37 +51,6 @@ branches are this loop's INTERNAL mechanics — its atomic unit and guard-proof
 isolation — not a repository branch policy: whether the repo uses branches for other
 work stays repository policy, per `AGENTS.md` (Git Safety).
 
-## Governance alignment (read first)
-
-This playbook is reconciled with the standard `.agents/` governance so it does not
-create a parallel canon or bypass owner gates:
-
-- **Status nests under `.agents/`, it does not compete with it.** `.agents/state.md`
-  remains the single discoverable current-state entry point. The loop's status index
-  lives at `.agents/review/index.md`; `state.md` *points* to it while a loop is
-  active rather than duplicating the finding table (pointer doc points; it does not
-  keep a second copy of an enumeration another doc owns). There is no root
-  `REVIEW.md`.
-- **Merging into the main branch is owner-gated.** A reviewer "accepted" verdict
-  records that a branch passed review; it does **not** authorize the agent to merge
-  into the main branch. Default: leave the accepted branch (or hand off a
-  `merge-<id>` branch) for an owner-approved merge. Never merge, push, or rewrite
-  history without an explicit owner go (see the repo's Git Safety invariants).
-- **Disagreement is a recorded verdict, never a silent veto.** Declining a finding,
-  disputing one, or ruling a fix invalid are all logged outcomes that route to the
-  owner when the two roles cannot agree. An agent never quietly drops a finding or
-  overrides a critique without leaving the reason in the results trail. This keeps the
-  loop inside the repo's "answer with words, act only on an explicit go" invariant.
-- **Verification is the repo's observed command, not a hardcoded suite.** Run the
-  automated verification command recorded in this repo's `AGENTS.md` / `.agents/`
-  guidance before any commit. The example commands in this playbook are illustrative
-  only.
-- **Capabilities, not harness-specific tool or agent names.** Where this playbook
-  names `codex`/`agy`/`grok`, those are *examples* of reviewer harnesses, never
-  guarantees. Participation is exactly what the live probe (see below) verifies on
-  this machine today — headless launch, prompt intake, structured output; a harness
-  that fails the probe is not a reviewer here, whatever its documentation claims.
-
 ## Operator
 
 `codereview <agent>` is the harness-neutral entry. In Claude Code it is the
@@ -104,8 +73,11 @@ phrase silently re-routes to a different harness.
 The only harness-specific fact the loop needs is **how to run `<agent>` headless,
 non-interactive, one-shot**. This is **not** shipped as a human-maintained table and
 **not** derived by parsing `--help` prose into a committed regex — both rot or break
-silently. Instead derive it live, per harness, per session, by probing — the same
-thing a capable agent already does when a human says "codereview this with grok":
+silently. Every command shown below is illustrative only — the verification command
+in particular is always this repo's recorded one (see its `AGENTS.md` / `.agents/`
+guidance), never a literal copied from here. Instead derive it live, per harness, per
+session, by probing — the same thing a capable agent already does when a human says
+"codereview this with grok":
 
 1. **Presence + surface.** `command -v <agent>`; then `<agent> --help` and
    `<agent> --version`. The top-level help usually reveals whether the headless entry
