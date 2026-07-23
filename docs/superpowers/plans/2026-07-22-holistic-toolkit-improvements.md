@@ -104,10 +104,7 @@ Decision for the owner: adopt the ship-effect plan gate, the one-sentence
 issue process, and the owner-approved qualifier — three small rewordings,
 presented separately.
 
-Implemented 2026-07-22: 380e81d reword plan gate to a ship-effect test;
-d9c10d7 record the issue-queue working process (repo-guidance sentence +
-R1 decisions entry); cc6fea2 qualify approved guidance as owner-approved
-and non-self-licensing.
+Implemented 2026-07-22: 380e81d reword plan gate to a ship-effect test; d9c10d7 record the issue-queue working process (repo-guidance sentence + R1 decisions entry); cc6fea2 qualify approved guidance as owner-approved and non-self-licensing.
 
 ## Site 2 — Issue #5: plug the three shadow-rule channels
 
@@ -149,14 +146,7 @@ Decision for the owner: approve the one-word deletion and the three
 rewordings — presented separately; the first is the cheapest and highest
 value.
 
-Implemented 2026-07-22: cbd383b delete ", preferences" from the
-out-of-repo store exemplar + companion grammar fix in
-docs/harness-capabilities.md; b4d8359 extend the repo-guidance
-never-overrides boundary to AGENTS.md or any refresh-installed artifact
-(owner-ruled invocation policy preserved) + sync the Source Of Truth
-parenthetical; aefb080 make harness-injected out-of-repo memory a drift
-target; 7883891 reword drift's fix clause by ownership (repo-owned files
-fixed in place, installed copies report-and-route, never edited).
+Implemented 2026-07-22: cbd383b delete ", preferences" from the out-of-repo store exemplar + companion grammar fix in docs/harness-capabilities.md; b4d8359 extend the repo-guidance never-overrides boundary to AGENTS.md or any refresh-installed artifact (owner-ruled invocation policy preserved) + sync the Source Of Truth parenthetical; aefb080 make harness-injected out-of-repo memory a drift target; 7883891 reword drift's fix clause by ownership (repo-owned files fixed in place, installed copies report-and-route, never edited).
 
 ## Site 3 — Issue #6: reviewer dispatch must prove capability and stop on denial
 
@@ -186,11 +176,7 @@ tokens, 291 requests, no verdict (issue #6, Vela).
 Decision for the owner: choose capability-probe-plus-terminal-stop, the
 2026-07-18 collapse proposal, or both; then the one-line T3 fix.
 
-Implemented 2026-07-22: 7f80a71 rework the reviewer probe to prove a repo read
-plus one allowlisted command through the real self-permissioning child path and
-make a permission/tool denial terminal after one fresh-process retry (owner
-approved this branch; the 2026-07-18 collapse alternative was not implemented);
-e1b62db drop the stale "T1–T5 alike" appositive from the fallback-grade halt.
+Implemented 2026-07-22: 7f80a71 rework the reviewer probe to prove a repo read plus one allowlisted command through the real self-permissioning child path and make a permission/tool denial terminal after one fresh-process retry (owner approved this branch; the 2026-07-18 collapse alternative was not implemented); e1b62db drop the stale "T1–T5 alike" appositive from the fallback-grade halt.
 
 ## Site 4 — Evidence: stop recording say-so as verified fact
 
@@ -223,19 +209,7 @@ Decision for the owner: approve deleting the escape clause; approve the
 amendment relabeling your prior attestations as assumptions (this
 corrects records built on your words — it needs your explicit sign-off).
 
-Implemented 2026-07-22: 98898cf delete "or explicit human approval" from
-the label-assumptions invariant so owner say-so no longer settles
-external-system facts; b35247e append a dated amendment below the
-2026-07-18 decisions entry downgrading the "yes it can" MCP
-registration-args clause to a falsified assumption (issue #6, Claude Code
-2.1.214; original text untouched, launch-scoped-grant ruling stands) and
-delete the matching cli↔mcp equivalence sentence from the codereview
-playbook's Self-permissioning launch section; be12578 relabel the three
-attestation parentheticals in docs/harness-capabilities.md (lines 40, 43,
-57) as assumed with an explicit "no probe" marker. Note: lines 43/57 are
-agy self-attestations (the prose reads "agy attests", recalled+web
-grade), not owner attestations as the finding loosely grouped them — the
-true attributor was preserved rather than mislabeled "owner-attested".
+Implemented 2026-07-22: 98898cf delete "or explicit human approval" from the label-assumptions invariant so owner say-so no longer settles external-system facts; b35247e append a dated amendment below the 2026-07-18 decisions entry downgrading the "yes it can" MCP registration-args clause to a falsified assumption (issue #6, Claude Code 2.1.214; original text untouched, launch-scoped-grant ruling stands) and delete the matching cli↔mcp equivalence sentence from the codereview playbook's Self-permissioning launch section; be12578 relabel the three attestation parentheticals in docs/harness-capabilities.md (lines 40, 43, 57) as assumed with an explicit "no probe" marker. Note: lines 43/57 are agy self-attestations (the prose reads "agy attests", recalled+web grade), not owner attestations as the finding loosely grouped them — the true attributor was preserved rather than mislabeled "owner-attested".
 Skipped: none.
 
 ## Site 5 — Issues #7/#8: ungate routine bookkeeping and completion reports
@@ -265,16 +239,7 @@ ritual "go". Both were ruled on 2026-07-22 (R3; and the owner filed issue
 Decision for the owner: approve the R3 recording plus reword, and the
 issue-#8 reword — two asks.
 
-Implemented 2026-07-22: 17980c1 reword the current-state entry-point
-invariant so `.agents/state.md` is kept current by the working agent as work
-lands, never owner-gated (handoff/drift keep their deliberate-pass roles),
-and land the R3 owner ruling as a decisions entry with issue #7 as receipt;
-a80a2c7 reword the "Words first" bullet so an owner's completion report
-inside an approved, already-scoped workflow is the go for that workflow's
-next defined step while new scope, changed risk, and separately gated actions
-still stop (net length roughly flat), landing the issue-#8 qualification as a
-decisions entry and a dated amendment on the 2026-06-10 answer-with-words
-hardening that reopens it for completion reports only.
+Implemented 2026-07-22: 17980c1 reword the current-state entry-point invariant so `.agents/state.md` is kept current by the working agent as work lands, never owner-gated (handoff/drift keep their deliberate-pass roles), and land the R3 owner ruling as a decisions entry with issue #7 as receipt; a80a2c7 reword the "Words first" bullet so an owner's completion report inside an approved, already-scoped workflow is the go for that workflow's next defined step while new scope, changed risk, and separately gated actions still stop (net length roughly flat), landing the issue-#8 qualification as a decisions entry and a dated amendment on the 2026-06-10 answer-with-words hardening that reopens it for completion reports only.
 Skipped: none.
 
 ## Site 6 — Owner communication: tunable per-repo communication level
@@ -325,24 +290,7 @@ the final-summary rule you approved 2026-07-17 was never actually landed.
 Decision for the owner: two rewordings, both implementing rulings you
 already made; confirm and they land.
 
-Implemented 2026-07-22 (replacement spec): 933512e add the tunable
-communication-level policy file — `templates/comms-policy.template.md`
-(default level 3) and this repo's `.agents/comms-policy.md` (level 2), each
-carrying the 1–5 level definitions inline behind a machine-readable
-comms-level marker line, mirroring the push-policy mechanics — and record
-the owner's verbatim level spec in `.agents/decisions.md`; 17fb23f seed and
-ask the level through `procedures/bootstrap.md` Step 4 and the
-`templates/approval-summary.template.md` Owner Communication question
-(reworded to 1–5, default 3, comms-policy.md added to the committed
-drafts), replacing the superseded 2026-07-12 named-profile surfaces (the
-Owner Communication section removed from
-`templates/repo-guidance.template.md`); d4db44a repoint the plan-operator
-styling sentence in `templates/AGENTS.template.md` at the communication
-level and amend the 2026-07-10 plan-contract decision; 8a61c72 reword
-`templates/AGENTS.template.md` `## Final Response` to the 2026-07-17
-summary-first shape plus R2 (never end on a bare blocker while queued work
-remains), record R2 in `.agents/decisions.md`, and note the 2026-07-17
-Final Response amendment finally landed.
+Implemented 2026-07-22 (replacement spec): 933512e add the tunable communication-level policy file — `templates/comms-policy.template.md` (default level 3) and this repo's `.agents/comms-policy.md` (level 2), each carrying the 1–5 level definitions inline behind a machine-readable comms-level marker line, mirroring the push-policy mechanics — and record the owner's verbatim level spec in `.agents/decisions.md`; 17fb23f seed and ask the level through `procedures/bootstrap.md` Step 4 and the `templates/approval-summary.template.md` Owner Communication question (reworded to 1–5, default 3, comms-policy.md added to the committed drafts), replacing the superseded 2026-07-12 named-profile surfaces (the Owner Communication section removed from `templates/repo-guidance.template.md`); d4db44a repoint the plan-operator styling sentence in `templates/AGENTS.template.md` at the communication level and amend the 2026-07-10 plan-contract decision; 8a61c72 reword `templates/AGENTS.template.md` `## Final Response` to the 2026-07-17 summary-first shape plus R2 (never end on a bare blocker while queued work remains), record R2 in `.agents/decisions.md`, and note the 2026-07-17 Final Response amendment finally landed.
 
 Note: the named-profile owner-communication system (2026-07-12 plan,
 CLOSED) was found live in the templates and is superseded by the owner's
@@ -391,19 +339,7 @@ Invariants opener, and the Source Of Truth closing sentence.
 Decision for the owner: approve the relocation and the three deletions —
 four independent cuts, ~5 KB total.
 
-Implemented 2026-07-22: 4a055f2 relocate the drift operator's target scope and
-state-hygiene checklist verbatim into a new `templates/playbooks/drift.md`
-(provenance marker, shipped-set artifacts entry targeting
-`.agents/playbooks/drift.md`, protect-governance PROTECTED lockstep), trim the
-AGENTS.template.md drift bullet to its first sentence plus a pointer, and amend
-the 2026-07-11 push-status decision noting its change-site line relocated
-verbatim; 8758f1b delete the codereview Calibration anti-patterns section
-(restated earlier in the same file); 1dac1e6 delete the codereview Governance
-alignment section (re-taught AGENTS.md invariants) and fold the illustrative
-example-commands clause into the probe intro (the first example site); 7c82d98
-replace openreview's duplicated verdict-extraction prose with a one-line pointer
-to codereview's canonical verdict-contract handling, keeping openreview's own
-schema and fail-closed set.
+Implemented 2026-07-22: 4a055f2 relocate the drift operator's target scope and state-hygiene checklist verbatim into a new `templates/playbooks/drift.md` (provenance marker, shipped-set artifacts entry targeting `.agents/playbooks/drift.md`, protect-governance PROTECTED lockstep), trim the AGENTS.template.md drift bullet to its first sentence plus a pointer, and amend the 2026-07-11 push-status decision noting its change-site line relocated verbatim; 8758f1b delete the codereview Calibration anti-patterns section (restated earlier in the same file); 1dac1e6 delete the codereview Governance alignment section (re-taught AGENTS.md invariants) and fold the illustrative example-commands clause into the probe intro (the first example site); 7c82d98 replace openreview's duplicated verdict-extraction prose with a one-line pointer to codereview's canonical verdict-contract handling, keeping openreview's own schema and fail-closed set.
 Skipped: none.
 
 ## Site 8 — Stale operator surface: three-quarters of users get wrong instructions
@@ -442,6 +378,9 @@ but not the shared skills and playbook text every other harness reads.
 Decision for the owner: the force-phrase spelling is yours; the other
 three are factual corrections — confirm and they land.
 
+Implemented 2026-07-22: 8bd416f sync the codereview shared skill and the playbook's intro/Operator grammar to `codereview <harness> <nickname> <effort>` (skill stays the pointer, the Claude command wrapper stays the pair's canonical body; the review pair was already current); d989054 reserve `frontier` as a dispatch-grammar word that forces the frontier tier instead of resolving as a nickname, add the model-map lint's reserved-nickname rejection plus the frontier-rejection fixture (guard-proven on a throwaway copy), and reword the tier-effort text as defaults-when-`<effort>`-omitted; c93fda2 correct the harness-update playbook's map-propagation claim to the live-fetch contract (the map is not in the shipped set — downstream clones fetch it live from raw `master` at dispatch time); 01c1230 replace the README's stale three-playbook enumeration with a pointer to `tools/shipped-set.json`.
+Skipped: the lockstep wrapper/skill pair test (item 1) — not approved; it would reopen the 2026-07-08 prose-pin retirement, so it is recorded here as future work per the Site 8 ruling.
+
 ## Site 9 — Refresh hardening: four mechanical gaps
 
 Problem: the update program trusts by construction things that have
@@ -473,28 +412,8 @@ already nearly failed.
 Decision for the owner: these are code changes requiring plan-gated
 approval — approve as one slice sequence or per-fix.
 
-Implemented 2026-07-22: 432a930 validate_manifest folds retired targets into
-the duplicate-set so an artifacts/retired target overlap exits 4 before any
-write; 3562ab8 catch OSError on apply alike RuntimeError and add a
---stage-only-exempt crash check that the staged index covers every planned
-path before the commit (--no-renames so a retired path matching a new artifact
-is not collapsed away); 63db061 distinct exit 5 when a core replace-whole file
-is flagged foreign, plus the module docstring exit-code table and the reworded
-stale preflight comment.
-Skipped: the formerly[] upkeep test — implemented faithfully (walk each
-source's per-commit git history, assert every historical version is
-membership-or-append, skip on shallow clones) it is red against the current
-manifest: 28 committed historical versions across four sources
-(`templates/AGENTS.template.md`, `templates/playbooks/codereview.md`,
-`templates/playbooks/openreview.md`,
-`templates/hooks/claude/protect-governance.py`) are recorded in neither
-formerly[] nor the current source. The cause is a longstanding
-append-at-boundaries practice plus recent sibling-site template edits (Sites
-3/4/7) that changed sources without appending outgoing hashes. Landing the
-guard green would require backfilling ~28 fleet-facing outgoing hashes —
-repairing other agents' omissions and changing fleet drift classification —
-which is outside Site 9's mechanical scope. Owner call: backfill the manifest
-then land the guard, or redefine the guard's notion of a shipped version.
+Implemented 2026-07-22: 432a930 validate_manifest folds retired targets into the duplicate-set so an artifacts/retired target overlap exits 4 before any write; 3562ab8 catch OSError on apply alike RuntimeError and add a --stage-only-exempt crash check that the staged index covers every planned path before the commit (--no-renames so a retired path matching a new artifact is not collapsed away); 63db061 distinct exit 5 when a core replace-whole file is flagged foreign, plus the module docstring exit-code table and the reworded stale preflight comment.
+Skipped: the formerly[] upkeep test — implemented faithfully (walk each source's per-commit git history, assert every historical version is membership-or-append, skip on shallow clones) it is red against the current manifest: 28 committed historical versions across four sources (`templates/AGENTS.template.md`, `templates/playbooks/codereview.md`, `templates/playbooks/openreview.md`, `templates/hooks/claude/protect-governance.py`) are recorded in neither formerly[] nor the current source. The cause is a longstanding append-at-boundaries practice plus recent sibling-site template edits (Sites 3/4/7) that changed sources without appending outgoing hashes. Landing the guard green would require backfilling ~28 fleet-facing outgoing hashes — repairing other agents' omissions and changing fleet drift classification — which is outside Site 9's mechanical scope. Owner call: backfill the manifest then land the guard, or redefine the guard's notion of a shipped version.
 
 ## Site 10 — Records and procedures agents ground on
 
@@ -556,28 +475,7 @@ unreachable facts; two procedures contradict their own steps.
 Decision for the owner: mostly factual corrections; the GEMINI shim
 (retire vs verify) and the ExchangeAdminWeb date are genuine owner calls.
 
-Implemented 2026-07-22: 07cde7a reword the Session Startup hook bullet to
-governance hooks (Claude Code only) and drop the dead harness-capabilities
-pointer; 63f7628 delete the stale per-harness inventory from the design.md
-verify-once section, keeping the compaction-re-ground rationale; e6adb28
-retire the GEMINI shim (artifacts entry moved to retired[] with the past
-hashes plus the outgoing nhash per the maintenance rule; GEMINI.md dropped
-from the protect-governance PROTECTED set to stay in lockstep and that hook
-source's outgoing nhash appended too; the source template
-`templates/shims/GEMINI.template.md` left on disk, guarded by
-tests/test_templates, for one-line re-entry); c8ce9b5 amend the 2026-06-28
-pure-adapter decision to the surviving enforcement substrate (refresh
-byte-verify + the protect hook); 0b53b32 reword the bootstrap header no-write
-clause to "nothing tracked changes" and sanction the `.bootstrap-tmp/` scratch
-dir; 4794a56 stop a dogfood bootstrap at the approval summary when resident
-governance reserves self-refresh to the owner; e9eb14b rehearse carve-out
-commit 1 in the throwaway clone before the fresh-eyes refresh so the expected
-foreign-core FLAG no longer loops a cold agent; 3383308 repoint the
-repo-guidance verification command at the interpreter probe order (machines.md
-keeps the machine facts); a804cb6 make the defect-template Source field demand
-the toolkit commit; 8395d49 mark the ExchangeAdminWeb rollout DONE and rotate
-its lapsed `## Next` entry verbatim to the state archive; 16bea62 rotate the
-superseded 2026-07-10 self-refresh lines verbatim to the state archive.
+Implemented 2026-07-22: 07cde7a reword the Session Startup hook bullet to governance hooks (Claude Code only) and drop the dead harness-capabilities pointer; 63f7628 delete the stale per-harness inventory from the design.md verify-once section, keeping the compaction-re-ground rationale; e6adb28 retire the GEMINI shim (artifacts entry moved to retired[] with the past hashes plus the outgoing nhash per the maintenance rule; GEMINI.md dropped from the protect-governance PROTECTED set to stay in lockstep and that hook source's outgoing nhash appended too; the source template `templates/shims/GEMINI.template.md` left on disk, guarded by tests/test_templates, for one-line re-entry); c8ce9b5 amend the 2026-06-28 pure-adapter decision to the surviving enforcement substrate (refresh byte-verify + the protect hook); 0b53b32 reword the bootstrap header no-write clause to "nothing tracked changes" and sanction the `.bootstrap-tmp/` scratch dir; 4794a56 stop a dogfood bootstrap at the approval summary when resident governance reserves self-refresh to the owner; e9eb14b rehearse carve-out commit 1 in the throwaway clone before the fresh-eyes refresh so the expected foreign-core FLAG no longer loops a cold agent; 3383308 repoint the repo-guidance verification command at the interpreter probe order (machines.md keeps the machine facts); a804cb6 make the defect-template Source field demand the toolkit commit; 8395d49 mark the ExchangeAdminWeb rollout DONE and rotate its lapsed `## Next` entry verbatim to the state archive; 16bea62 rotate the superseded 2026-07-10 self-refresh lines verbatim to the state archive.
 Skipped: none.
 
 ---
