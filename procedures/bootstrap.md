@@ -12,7 +12,10 @@ toolkit clone, which never touches the target.
 
 The repo you are pointed at *is* the target — including this toolkit repo
 itself (a dogfood / self-application run is a normal in-place run whose
-inventory largely returns "already canonical").
+inventory largely returns "already canonical"; but where the target's own
+resident governance reserves self-refresh to the owner, a dogfood run stops
+at the approval summary in Step 6 and does not carry out Step 7's
+install-and-commit — that self-refresh is the owner's action to run).
 
 Three rules govern everything you show and do here:
 
