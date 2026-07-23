@@ -117,6 +117,8 @@ safe, so a hand-grant is pure friction; the launch-scoped grant removes it. The
 owner further confirmed MCP-as-server carries the grant in its registration args
 ("yes it can"), so no transport needs a `settings.json` fallback.
 
+> Amended 2026-07-22 (Site 4 — Evidence): the closing provenance clause above — that MCP-as-server carries the grant in its registration args ("yes it can"), so no transport needs a `settings.json` fallback — is downgraded to a **falsified assumption**. It was recorded from owner say-so, not a probe; GitHub issue #6 and Claude Code 2.1.214 show the MCP registration args do not carry the launch grant on that harness, so the `cli`↔`mcp` self-permissioning equivalence does not hold there. The launch-scoped-grant ruling itself stands; only this provenance/equivalence clause is retracted. The matching equivalence sentence in `templates/playbooks/codereview.md` (Self-permissioning launch) is deleted alongside this amendment.
+
 ### 2026-07-17 — Review economy: tiered reviewer routing adopted (D1–D3); D4 dissolved
 
 Status: Active, as amended 2026-07-19 — model slugs superseded into the

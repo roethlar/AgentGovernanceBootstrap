@@ -216,10 +216,7 @@ is bounded and strictly narrower than the coder's — read-only inspection plus 
 disposable `git worktree`, no write: reading the workspace, driving its own
 worktree, and running the verification command. On Claude Code that is
 `--allowedTools Read Grep Glob "Bash(git:*)" "Bash(<verify-cmd>)"`; every harness
-has an equivalent launch-scoped grant, recorded in the entry's `flags`. Transport
-only decides where the grant rides — `cli`: the orchestrator passes it per
-invocation; `mcp`: the same flags live in the server's registration command — so
-both self-permission and the `mcp`-preferred default is unaffected.
+has an equivalent launch-scoped grant, recorded in the entry's `flags`.
 
 ### Dispatch provenance: the `Reviewer:` line
 
