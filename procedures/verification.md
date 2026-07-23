@@ -17,18 +17,27 @@ correctness.
 ## How (default form: throwaway-clone rehearsal)
 
 1. Build the rehearsal clone: `git clone <target-repo> <scratch>` - a local
-   clone into a throwaway directory, no network. On a migration, apply the
+   clone into a throwaway directory, no network. On a legacy carve-out
+   migration (a foreign `AGENTS.md` is being superseded), first rehearse
+   carve-out commit 1 in the clone exactly as `procedures/bootstrap.md`
+   Step 7 will run it: copy the judgment drafts to their final paths, apply
+   the prepared supersession banners, delete the legacy `AGENTS.md`, and
+   commit. Refresh refuses to install over a foreign `AGENTS.md`, so doing
+   commit 1 first is what keeps the next step's install from raising the
+   expected foreign-core FLAG. On a non-carve-out migration, just apply the
    prepared supersession banners in the clone.
 2. Install the shipped set in the clone:
    `<probed-python> <toolkit>/tools/refresh.py --stage-only <scratch>`.
    This rehearses the real install - the actual `AGENTS.md`, shims, skills,
    and wrappers land at their real paths, and refresh's validation and lint
-   run. Surface any FLAG line: a flag in the rehearsal is a bootstrap defect
-   to resolve before the approval summary, not noise. Only the scratch clone
-   changes; the target repo is untouched, so nothing changes in the target
-   before approval.
+   run. Surface any FLAG line: an unexpected flag in the rehearsal is a
+   bootstrap defect to resolve before the approval summary, not noise (the
+   foreign-core FLAG a carve-out would otherwise raise is pre-resolved by
+   commit 1 in step 1). Only the scratch clone changes; the target repo is
+   untouched, so nothing changes in the target before approval.
 3. Copy the judgment drafts from `.bootstrap-tmp/drafts/` to their final
-   paths in the clone.
+   paths in the clone (on a carve-out they were already placed by commit 1
+   in step 1; re-copying is idempotent).
 4. Start a fresh agent context with no knowledge of this session (a subagent
    with a clean context, or a new session), working IN the clone. Do not
    summarize the migration for it - that would defeat the test.
