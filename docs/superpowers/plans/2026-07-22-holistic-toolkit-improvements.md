@@ -1,5 +1,11 @@
 # Holistic Toolkit Improvement: Ten Verified Sites
 
+Scope caveat (2026-07-23): this review ran as a compliance audit —
+every Active ruling in `.agents/decisions.md` was treated as binding,
+so no finding that questioned a ruling could surface. Do not cite it as
+a holistic review. The corrected charter is
+`docs/superpowers/plans/2026-07-23-decisions-as-claims-audit.md`.
+
 Status: CLOSED 2026-07-22 — all ten sites are implemented on their
 recorded per-site gos, one finding per commit; each site's commit map is
 the `Implemented 2026-07-22:` line under its heading (Site 6 landed as
