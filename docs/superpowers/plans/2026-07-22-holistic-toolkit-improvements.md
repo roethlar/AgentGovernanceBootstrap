@@ -391,6 +391,21 @@ Invariants opener, and the Source Of Truth closing sentence.
 Decision for the owner: approve the relocation and the three deletions —
 four independent cuts, ~5 KB total.
 
+Implemented 2026-07-22: 4a055f2 relocate the drift operator's target scope and
+state-hygiene checklist verbatim into a new `templates/playbooks/drift.md`
+(provenance marker, shipped-set artifacts entry targeting
+`.agents/playbooks/drift.md`, protect-governance PROTECTED lockstep), trim the
+AGENTS.template.md drift bullet to its first sentence plus a pointer, and amend
+the 2026-07-11 push-status decision noting its change-site line relocated
+verbatim; 8758f1b delete the codereview Calibration anti-patterns section
+(restated earlier in the same file); 1dac1e6 delete the codereview Governance
+alignment section (re-taught AGENTS.md invariants) and fold the illustrative
+example-commands clause into the probe intro (the first example site); 7c82d98
+replace openreview's duplicated verdict-extraction prose with a one-line pointer
+to codereview's canonical verdict-contract handling, keeping openreview's own
+schema and fail-closed set.
+Skipped: none.
+
 ## Site 8 — Stale operator surface: three-quarters of users get wrong instructions
 
 APPROVED 2026-07-22 after re-explanation (owner, verbatim: "yeah, that's
