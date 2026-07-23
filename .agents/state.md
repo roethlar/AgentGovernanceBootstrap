@@ -8,6 +8,14 @@ machine-local facts are labeled or omitted.
 
 ## Now
 
+- In flight: the 2026-07-23 decisions-as-claims audit (plan:
+  `docs/superpowers/plans/2026-07-23-decisions-as-claims-audit.md`).
+  Pass 1 + Pass 2 complete in
+  `docs/superpowers/plans/2026-07-23-audit-findings.md` — 41 rulings
+  audited (16 HOLDS, 20 HOLDS-UNENFORCED, 2 HOLDS-UNSHIPPED, 2 STALE,
+  1 CONTRADICTED); architecture verdict: incremental surgery. Routed
+  verdicts (F1–F3) go to the owner one at a time; queued fixes F4+
+  await per-item owner go.
 - Steady state as of `b7448e2` (2026-07-22): the holistic toolkit
   improvement plan and the model-map reviewer dispatch plan are both
   CLOSED, each with its per-finding commit map in its plan doc under
@@ -35,7 +43,9 @@ machine-local facts are labeled or omitted.
 
 ## Next
 
-- None recorded.
+- Present the audit's routed verdicts (F1–F3: two STALE amendments, one
+  CONTRADICTED amendment) to the owner one at a time; then the Fix Queue
+  behind per-item owner go.
 
 ## Blockers
 

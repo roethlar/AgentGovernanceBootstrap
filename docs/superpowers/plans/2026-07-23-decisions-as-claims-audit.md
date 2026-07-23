@@ -1,8 +1,11 @@
 # Decisions-as-claims audit — re-run of the holistic review with the correct charter
 
-Status: APPROVED for execution; not yet started. Findings route to the
-owner one at a time (R1). No implementation without an explicit owner go
-per finding.
+Status: IN EXECUTION 2026-07-23 — Pass 1 and Pass 2 complete; findings
+landed in `docs/superpowers/plans/2026-07-23-audit-findings.md` (41
+entries audited: 16 HOLDS, 20 HOLDS-UNENFORCED, 2 HOLDS-UNSHIPPED,
+2 STALE, 1 CONTRADICTED; architecture verdict: incremental surgery).
+STALE/CONTRADICTED verdicts route to the owner one at a time (R1);
+Fix Queue items F4+ land only behind a per-item owner go.
 
 ## Why this plan exists
 
