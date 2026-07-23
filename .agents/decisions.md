@@ -34,6 +34,33 @@ live rule now owned elsewhere - archive it per the rule above: move it verbatim 
 
 ## Decisions
 
+### 2026-07-23 — A handoff ends by committing its own records; the shipped text now says so
+
+Status: Active
+
+The shipped handoff bullet told agents what to write — `.agents/state.md`
+`## Now` / `## Next`, machine facts to `.agents/machines.md` — and never
+to land it, and the paperwork-follows-work ruling (2026-07-22) lived only
+in this repo's decisions file, which downstream agents never see. So a
+fleet handoff ended with its records dirty and the commit bounced to the
+owner ("say the word if you want them committed"). Those files only
+function through git: the next session resumes from a clone, and other
+machines read `.agents/machines.md` at all only once it is pushed. An
+uncommitted handoff record is a handoff that never happened. The
+`templates/AGENTS.template.md` handoff bullet now ends the handoff with a
+bookkeeping commit of what it wrote, pushed per `.agents/push-policy.md`,
+no owner ask: committing the record is part of the save, not a decision
+to route.
+
+Owner verdict (2026-07-23), verbatim: "arguably the biggest bug" — on
+the downstream handoff closing "One note: the plan file, machines.md,
+and state.md are uncommitted in the working tree — say the word if you
+want them committed before you step away."
+
+Extends: the 2026-07-22 paperwork ruling — this ships its handoff
+consequence fleet-wide in the template instead of leaving it
+toolkit-local.
+
 ### 2026-07-22 — Paperwork follows technical work: verified-fixed bookkeeping proceeds without an owner ask
 
 Status: Active
