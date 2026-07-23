@@ -556,6 +556,30 @@ unreachable facts; two procedures contradict their own steps.
 Decision for the owner: mostly factual corrections; the GEMINI shim
 (retire vs verify) and the ExchangeAdminWeb date are genuine owner calls.
 
+Implemented 2026-07-22: 07cde7a reword the Session Startup hook bullet to
+governance hooks (Claude Code only) and drop the dead harness-capabilities
+pointer; 63f7628 delete the stale per-harness inventory from the design.md
+verify-once section, keeping the compaction-re-ground rationale; e6adb28
+retire the GEMINI shim (artifacts entry moved to retired[] with the past
+hashes plus the outgoing nhash per the maintenance rule; GEMINI.md dropped
+from the protect-governance PROTECTED set to stay in lockstep and that hook
+source's outgoing nhash appended too; the source template
+`templates/shims/GEMINI.template.md` left on disk, guarded by
+tests/test_templates, for one-line re-entry); c8ce9b5 amend the 2026-06-28
+pure-adapter decision to the surviving enforcement substrate (refresh
+byte-verify + the protect hook); 0b53b32 reword the bootstrap header no-write
+clause to "nothing tracked changes" and sanction the `.bootstrap-tmp/` scratch
+dir; 4794a56 stop a dogfood bootstrap at the approval summary when resident
+governance reserves self-refresh to the owner; e9eb14b rehearse carve-out
+commit 1 in the throwaway clone before the fresh-eyes refresh so the expected
+foreign-core FLAG no longer loops a cold agent; 3383308 repoint the
+repo-guidance verification command at the interpreter probe order (machines.md
+keeps the machine facts); a804cb6 make the defect-template Source field demand
+the toolkit commit; 8395d49 mark the ExchangeAdminWeb rollout DONE and rotate
+its lapsed `## Next` entry verbatim to the state archive; 16bea62 rotate the
+superseded 2026-07-10 self-refresh lines verbatim to the state archive.
+Skipped: none.
+
 ---
 
 ## Downgraded (WEAK) findings — recorded so they are not re-litigated
