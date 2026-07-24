@@ -528,6 +528,26 @@ class RefreshTests(unittest.TestCase):
         self.assertFalse((self.target / "AGENTS.md").exists())
         self.assertEqual(len(self.commits()), n)
 
+    def test_malformed_comms_policy_fails_before_any_write(self):
+        # Audit F10: the comms-level marker gets the same preflight the push
+        # policy has — a malformed marker fails before any write.
+        (self.target / ".agents").mkdir()
+        (self.target / ".agents" / "comms-policy.md").write_text(
+            "# Comms\nno marker here\n", newline="\n")
+        commit_all(self.target, "malformed comms policy")
+        proc = refresh(self.toolkit, self.target)
+        self.assertEqual(proc.returncode, 4, proc.stderr)
+        self.assertIn("comms-level", proc.stderr)
+        self.assertFalse((self.target / "AGENTS.md").exists())
+
+    def test_valid_comms_policy_marker_passes(self):
+        (self.target / ".agents").mkdir()
+        (self.target / ".agents" / "comms-policy.md").write_text(
+            "<!-- comms-level: 2 -->\n# Comms\n", newline="\n")
+        commit_all(self.target, "valid comms policy")
+        proc = refresh(self.toolkit, self.target)
+        self.assertEqual(proc.returncode, 0, proc.stderr)
+
     # -- filesystem containment ------------------------------------------
     # Writes must land exactly where the manifest names them: symlinked
     # components and unsafe manifest paths are refused with the tree

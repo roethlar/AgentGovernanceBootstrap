@@ -31,7 +31,10 @@ only by at most one trailing final newline matches - a file touched by
 insert-final-newline tooling is not a divergence (issue #1).
 
 Repo-owned files (.agents/state.md, decisions.md, repo-guidance.md,
-push-policy.md, plans, review trails, archives) are never touched.
+push-policy.md, comms-policy.md, machines.md, plans, review trails,
+archives) are never touched by reconcile — refresh's own mechanical
+repairs (recorded push-status lines, git-proven moved references,
+closed-decision archiving) are the only exception.
 
 Committability follows the recorded custody rules: git check-ignore per
 target path; a blanket harness-adapter-dir ignore (.claude/ etc.) gets the
@@ -1011,6 +1014,16 @@ def main(argv=None) -> int:
             print("refresh: {} is empty or malformed; fix the push policy before refreshing".format(policy_path), file=sys.stderr)
             return 4
         policy_line = policy_lines[-1]
+    comms_path = target / ".agents" / "comms-policy.md"
+    if comms_path.exists():
+        first = comms_path.read_text(encoding="utf-8").splitlines()
+        marker = re.match(r"^<!--\s*comms-level:\s*[1-5]\s*-->\s*$",
+                          first[0] if first else "")
+        if not marker:
+            print("refresh: {} must open with a `<!-- comms-level: N -->` marker "
+                  "(N 1-5); fix the communication policy before refreshing".format(comms_path),
+                  file=sys.stderr)
+            return 4
 
     sync_note = ""
     if not args.no_sync:
