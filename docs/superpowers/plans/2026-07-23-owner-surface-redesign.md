@@ -96,20 +96,39 @@ Design:
 
 ## Stage 2 — coherent update
 
-1. `tools/refresh.py` never spawns anything: the TTY harness offer is
-   removed (relocated to `new-project.py` in Stage 1). The foreign-core
-   banner stays and its resolution line changes from "run bootstrap" to
-   the setup procedure path / `new-project.py` line. Exit code 5 and the
-   quiet-run properties are unchanged.
-2. `update-governance` is the single owner-facing update verb; its
-   wrapper text already describes the run. It gains a plain-English
-   "what just happened" summary requirement (what was installed,
-   updated, restored, removed — one line each, from the script's own
-   output record).
-3. Multiples collapse by documentation, not deletion: README names
-   `new-project` (first time) and `update-governance` (after that) as
-   the only two governance commands an owner needs; `refresh.py` and
-   `bootstrap.md` are documented as machinery behind them.
+**Ruled shape (D3, 2026-07-23):** the update repairs or remediates — it
+never leaves the owner homework.
+
+1. **`--force` override.** A foreign core file (an `AGENTS.md` no
+   shipped version ever matched) blocks by default with one loud line
+   saying why; `--force` replaces it anyway (git history preserves the
+   old content). Owner word final, per the 2026-07-23 dispatch ruling.
+2. **Mechanical violations are repaired in the run.** Installed-file
+   drift (already restored today), retired files, gitignore rules,
+   dead references with moved targets, recorded push-status lines —
+   fixed, not reported. One summary line names what was repaired. This
+   amends the 2026-07-09 "lint remains advisory and read-only" ruling:
+   the lint's findings split into repair-now (mechanical) and
+   remediate-live (judgment); nothing is merely sprayed.
+3. **Judgment violations are remediated live by a disposable agent
+   session.** Stale rule text, contradicted records, prose needing
+   rewrites: refresh launches a harness session on the spot — scoped
+   to governance files only, never the repo's product work — printing
+   one plain sentence about why it is launching, and the session exits
+   when the remediation lands. No queue, no notes file, no follow-up
+   list, no `--verbose` rerun: queues are reserved for repo product
+   work; guidance updates are fresh, disposable sessions, not
+   distractions for a working agent (owner ruling, D3). This restores
+   the harness launch to refresh deliberately: it is the remediation
+   mechanism, with the why always printed — not a surprise offer.
+4. **Terse output.** One line per repo: updated / already current /
+   what was repaired or remediated. Built for the owner's
+   PowerShell `foreach` loop: no stall, no wall of text, done in one
+   pass.
+5. `update-governance` remains the agent-facing wrapper for the same
+   engine (an agent in-session runs refresh for the owner); the loop
+   and the wrapper are two front-doors to one engine — documented as
+   such in README so the "multiples" confusion dies.
 
 ## Stage 3 — vocabulary and guidance
 
@@ -150,9 +169,18 @@ Design:
   set, launches the detected harness in it, and primes the agent's
   kickoff prompt with `<hint>` so the setup conversation opens with a
   confirmation, not an interrogation.
-- D3 — Stage 2 shape: confirm refresh.py loses the spawn offer (banner
-  points at setup instead) and `update-governance` is the single update
-  verb. Recommendation: yes.
+- D3 — Stage 2 shape. **RULED 2026-07-23:** (1) `--force` replaces a
+  foreign core file on owner demand (default still refuses with one
+  plain line why); (2) mechanical violations are repaired in the run,
+  never reported-and-left; (3) judgment violations are remediated live
+  by a disposable governance-scoped agent session — no queue, no notes
+  file, no follow-up list; queues are for repo product work only;
+  (4) output is one terse line per repo, built for the owner's
+  PowerShell `foreach` loop. Amends 2026-07-09 (advisory lint; banner/
+  offer) — the harness launch becomes the deliberate remediation
+  mechanism with its reason always printed. Unblocks the parked F5
+  amendment (wording: refresh reconciles; the spawn is deliberate
+  remediation).
 - D4 — vocabulary: `drift` rename/fold/keep; `decision`/`plan`/
   `playbook` visibility; the `help` verb. Recommendation: fold `drift`'s
   hygiene into `handoff` and retire the word fleet-wide (installed
