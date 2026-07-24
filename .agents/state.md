@@ -10,11 +10,13 @@ machine-local facts are labeled or omitted.
 
 - In flight: owner-surface redesign (plan:
   `docs/superpowers/plans/2026-07-23-owner-surface-redesign.md`, all five
-  decisions ruled). Stage 1 built 2026-07-23: `tools/new-project` +
-  `tools/new-project.py` installer, `procedures/setup.md` greenfield
-  procedure, README install line, hermetic tests (suite 137 green).
-  Stage 2 (update overhaul) is next. The audit Fix Queue resumes
-  between stages (F5 wording settled by D3; F6 fits Stage 2).
+  decisions ruled). Stage 1 built 2026-07-23 (`tools/new-project` +
+  launcher + `procedures/setup.md`). Stage 2 complete 2026-07-23 in six
+  commits (2a–2f: self-target refusal + audit F6, `--force`, terse
+  one-line output, mechanical push-status repair, live remediation
+  sessions + `--no-remediate`, update-governance de-hard-coded); suite
+  147 green. Stage 3 (vocabulary) is next. The audit Fix Queue resumes
+  between stages (F5 open; F8+ queued).
 - Steady state as of this commit (2026-07-23): the model-map apparatus is
   deleted under the owner ruling "the owner's dispatch word is final; no
   committed model lists" — `.agents/model-map.json`, <!-- lint: allow (deleted in this change; named as the record of the deletion) --> its lint, the

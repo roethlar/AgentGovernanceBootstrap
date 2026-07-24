@@ -1,10 +1,12 @@
 # Owner-facing surface redesign — install, update, vocabulary, guidance
 
-Status: STAGE 1 BUILT 2026-07-23 — `tools/new-project.py` + `tools/new-project`
-launcher + `procedures/setup.md` + README install line landed with
-hermetic tests (suite: 137 green); end-to-end smoke verified (init,
-staged set, hint-primed launch lines). Stage 1 awaits the owner's first
-live run. Stage 2 next per D5.
+Status: STAGE 2 COMPLETE 2026-07-23 — Stage 1 built (8fd0676, b3791f8);
+Stage 2 landed in six commits: 2a self-target refusal + audit F6
+(9ad88a5), 2b --force override (b4f192a), 2c terse one-line output with
+detail in commit messages (57bff6d), 2d mechanical push-status repair
+(e5192ee), 2e live remediation sessions + --no-remediate (d15748d), 2f
+update-governance de-hard-coded (e4bce46, 0632cfe). Suite: 147 green.
+Stage 3 (vocabulary) next per D5.
 
 ## Why this plan exists (owner direction, 2026-07-23)
 
