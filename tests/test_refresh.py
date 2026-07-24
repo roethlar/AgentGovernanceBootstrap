@@ -390,6 +390,23 @@ class RefreshTests(unittest.TestCase):
         self.assertNotIn("launching", proc.stdout)
         self.assertFalse(log.exists())
 
+    def test_lint_only_reports_findings_and_changes_nothing(self):
+        # 2026-07-24: verification of remediations never needs a full refresh
+        # — read-only findings, exit 6 while judgment findings remain.
+        self.write_dead_ref_state()
+        n = len(self.commits())
+        proc = refresh(self.toolkit, self.target, "--lint-only")
+        self.assertEqual(proc.returncode, 6, proc.stderr)
+        self.assertIn("LINT .agents/state.md", proc.stdout)
+        self.assertEqual(len(self.commits()), n)
+        self.assertEqual("", run_git(self.target, "status", "--porcelain"))
+
+    def test_lint_only_clean_exits_zero(self):
+        refresh(self.toolkit, self.target)
+        proc = refresh(self.toolkit, self.target, "--lint-only")
+        self.assertEqual(proc.returncode, 0, proc.stderr)
+        self.assertIn("hygiene clean", proc.stdout)
+
     # -- replace-if-unmodified ------------------------------------------
 
     def test_unmodified_stale_artifact_updates(self):
