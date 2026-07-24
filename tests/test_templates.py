@@ -62,6 +62,41 @@ class ShippedSetIntegrity(unittest.TestCase):
         for art in shipped_set()["artifacts"]:
             self.assertTrue((ROOT / art["source"]).is_file(), art["source"])
 
+    def test_every_template_file_is_in_the_manifest_or_drafted(self):
+        # Completeness direction (owner evidence 2026-07-23: agents have let
+        # the manifest rot). Every TRACKED file under templates/ must be
+        # either a refresh-installed artifact or an explicitly
+        # bootstrap-drafted judgment form. Adding a template without
+        # choosing fails loudly. Tracked-only scan: machine junk
+        # (.DS_Store) is untracked and ignored.
+        BOOTSTRAP_DRAFTED = {
+            "approval-summary.template.md",
+            "state.template.md",
+            "decisions.template.md",
+            "repo-guidance.template.md",
+            "governance-inventory.template.md",
+            "push-policy.template.md",
+            "comms-policy.template.md",
+        }
+        KEPT_AFTER_RETIREMENT = {
+            # Retired 2026-07-22; source stays on disk so re-entry is a
+            # one-line move back to artifacts[] (see the retired comment).
+            "templates/shims/GEMINI.template.md",
+        }
+        manifest_sources = {a["source"] for a in shipped_set()["artifacts"]}
+        tracked = subprocess.run(
+            ["git", "-C", str(ROOT), "ls-files", "templates/"],
+            capture_output=True, text=True, check=True).stdout.splitlines()
+        unlisted = []
+        for rel in tracked:
+            f = ROOT / rel
+            if rel in manifest_sources or rel in KEPT_AFTER_RETIREMENT:
+                continue
+            if f.name in BOOTSTRAP_DRAFTED:
+                continue
+            unlisted.append(rel)
+        self.assertEqual([], unlisted)
+
     def test_targets_are_unique_and_disjoint_from_retired(self):
         s = shipped_set()
         targets = [a["target"] for a in s["artifacts"]]

@@ -9,15 +9,15 @@ machine-local facts are labeled or omitted.
 ## Now
 
 - In flight: owner-surface redesign (plan:
-  `docs/superpowers/plans/2026-07-23-owner-surface-redesign.md`, all five
-  decisions ruled). Stages 1–2 landed 2026-07-23 (`tools/new-project` +
-  launcher + `procedures/setup.md`; update overhaul 2a–2f + the
-  owner-driven remediation model). Stage 3 built: owner verb set
-  (`toolkit` guidance command), `drift` retired as an owner word
-  (hygiene rides `catchup`; wrapper/skill/playbook on the retired list),
-  handoff/plan procedure text in playbooks (template 1,977 → 1,783
-  words); suite 152 green. The audit Fix Queue resumes (F5 open; F8+
-  queued).
+  `docs/superpowers/plans/2026-07-23-owner-surface-redesign.md`, all
+  decisions ruled). Stages 1–3 landed 2026-07-23 (new-project installer;
+  update overhaul + owner-driven remediation; vocabulary with `toolkit`
+  verb and `drift` retired). Packaging stage built (pending owner commit
+  approval): publish rule is four whole paths (tools/, templates/,
+  procedures/, README.md), `tools/publish` owner-runnable launcher
+  (records the product repo in `.agents/machines.md` on first run),
+  manifest completeness test guards template drift. Suite 159 green.
+  The audit Fix Queue resumes (F8+ queued).
 - Steady state as of this commit (2026-07-23): the model-map apparatus is
   deleted under the owner ruling "the owner's dispatch word is final; no
   committed model lists" — `.agents/model-map.json`, <!-- lint: allow (deleted in this change; named as the record of the deletion) --> its lint, the

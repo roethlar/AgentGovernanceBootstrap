@@ -475,6 +475,14 @@ two rules govern different things. Consistent with the 2026-06-18
 standing-guarantee decision and the 2026-07-03 playbooks decision
 (unconditional, deterministic installation).
 
+> Amended 2026-07-23: the mechanism is refresh, not bootstrap drafting —
+> every refresh run converges the repo to the full shipped set,
+> unconditionally (bootstrap drafts only the per-repo judgment files;
+> `procedures/bootstrap.md:147-149`). The ruling's substance is
+> unchanged. The token-bloat gloss stays toolkit-local deliberately:
+> installed files are toolkit-owned, so a downstream agent cannot act on
+> the misreading. Noted by the decisions-as-claims audit (F5).
+
 ### 2026-07-11 — Push status is never recorded in state files; git is the only source
 
 Status: Active

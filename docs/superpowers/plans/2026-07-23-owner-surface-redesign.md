@@ -231,6 +231,34 @@ never leaves the owner homework.
   suite green per stage. Audit queue resumes between stages (F5's
   wording is settled by D3; F6 fits Stage 2).
 
+## Packaging stage — final toolkit shape (ruled 2026-07-23)
+
+**Vision (owner):** the repository where the toolkit is applied captures
+every durable decision; drift is the enemy; releasable means a user who
+downloads and runs it gets only the toolkit — none of the development
+record, none of the chat history. This repo's decisions are dev material:
+audited, never shipped.
+
+- **Two repos.** The development repo goes private. A public product
+  repo holds only the toolkit.
+- **Publish rule (owner-ruled, no lists):** the publish set is four whole
+  paths — `tools/`, `templates/`, `procedures/`, `README.md`. Nothing
+  derived, nothing enumerated: not from the shipped-set manifest (agents
+  have let it rot; owner evidence), not an allowlist to maintain. Dev
+  content (`.agents/`, `docs/`, `tests/`, `.github/`, `evals/`) lives
+  outside those paths by construction.
+- **`tools/publish` is owner-runnable** (owner ruling: not agent-only):
+  one command, hides the interpreter, copies the four paths into the
+  clean product-repo checkout, makes the release commit, pushes, and
+  reports in plain English. The owner needs no git knowledge; an agent
+  running "publish" uses the same script.
+- **Manifest completeness guard:** a test fails when any file under
+  `templates/` lacks a manifest entry (the reverse direction —
+  source-exists — is already covered). Manifest drift becomes a red
+  suite, not a silent gap.
+- **Cadence:** publish on the owner's word ("publish"); one release
+  commit per run. No version machinery until demand proves it.
+
 ## Explicit non-goals
 
 - No rebuild of refresh.py's reconcile engine, the shipped-set manifest,
@@ -238,14 +266,12 @@ never leaves the owner homework.
 - No change to the review playbooks beyond what the 2026-07-23 dispatch
   ruling already landed.
 - No hosted/web installer, no package-manager distribution.
-- The 2026-07-23 audit Fix Queue continues independently (F4 landed;
-  F5 parked on D3; F6+ behind per-item owner go).
-- **Packaging/distribution is DEFERRED (owner ruling 2026-07-23)** until
-  the product fixes land: the delivery-shape question (clean product
-  repo vs downloadable bundle; development history must not ship to
-  users) is parked, not decided. Standing rule recorded with it: the
-  product must not hard-code author-machine paths (`~/dev` and similar)
-  anywhere — every flow resolves its toolkit location at run time.
+- The 2026-07-23 audit Fix Queue continues independently (F1–F6 landed;
+  F8+ behind per-item owner go).
+- **Packaging/distribution was DEFERRED by owner ruling 2026-07-23 and
+  un-deferred the same day** — the ruled shape is the Packaging stage
+  above. The standing no-hard-coded-paths rule (`~/dev` and similar)
+  still binds it: every flow resolves its toolkit location at run time.
 
 ## Verification
 
