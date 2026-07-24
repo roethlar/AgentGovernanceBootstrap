@@ -1,11 +1,13 @@
 # Decisions-as-claims audit — re-run of the holistic review with the correct charter
 
-Status: IN EXECUTION 2026-07-23 — Pass 1 and Pass 2 complete; findings
-landed in `docs/superpowers/plans/2026-07-23-audit-findings.md` (41
-entries audited: 16 HOLDS, 20 HOLDS-UNENFORCED, 2 HOLDS-UNSHIPPED,
-2 STALE, 1 CONTRADICTED; architecture verdict: incremental surgery).
-STALE/CONTRADICTED verdicts route to the owner one at a time (R1);
-Fix Queue items F4+ land only behind a per-item owner go.
+Status: CLOSED 2026-07-23 — audit complete, Fix Queue drained. Findings:
+`docs/superpowers/plans/2026-07-23-audit-findings.md` (41 entries: 16
+HOLDS, 20 HOLDS-UNENFORCED, 2 HOLDS-UNSHIPPED, 2 STALE, 1 CONTRADICTED;
+architecture verdict: incremental surgery). Outcome: F1/F2 amendments,
+F3 resolved by the dispatch ruling (model-map apparatus deleted), F4
+shipped, F5 log amendment (shipped clause deliberately declined by the
+owner), F6 self-target refusal, F7 mooted, F8–F13 landed — commit per
+item in the findings file.
 
 ## Why this plan exists
 

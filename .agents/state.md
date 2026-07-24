@@ -8,16 +8,18 @@ machine-local facts are labeled or omitted.
 
 ## Now
 
-- In flight: owner-surface redesign (plan:
-  `docs/superpowers/plans/2026-07-23-owner-surface-redesign.md`, all
-  decisions ruled). Stages 1–3 landed 2026-07-23 (new-project installer;
+- Steady state as of this commit (2026-07-23): the decisions-as-claims
+  audit is CLOSED — 41 rulings audited (16 HOLDS, 20 HOLDS-UNENFORCED,
+  2 HOLDS-UNSHIPPED, 2 STALE, 1 CONTRADICTED; verdict: incremental
+  surgery), the full Fix Queue drained (commits per item in
+  `docs/superpowers/plans/2026-07-23-audit-findings.md`). The
+  owner-surface redesign Stages 1–3 landed (new-project installer;
   update overhaul + owner-driven remediation; vocabulary with `toolkit`
-  verb and `drift` retired). Packaging stage built (pending owner commit
-  approval): publish rule is four whole paths (tools/, templates/,
-  procedures/, README.md), `tools/publish` owner-runnable launcher
-  (records the product repo in `.agents/machines.md` on first run),
-  manifest completeness test guards template drift. Suite 159 green.
-  The audit Fix Queue resumes (F8+ queued).
+  verb, `drift` retired), the packaging stage is built (`tools/publish`,
+  manifest completeness guard), and the product is named Bixi. Remaining
+  external steps: create the public Bixi repo and first publish;
+  owner's self-refresh of this repo's installed copies.
+- Steady state as of this commit (2026-07-23): the model-map apparatus is
 - Steady state as of this commit (2026-07-23): the model-map apparatus is
   deleted under the owner ruling "the owner's dispatch word is final; no
   committed model lists" — `.agents/model-map.json`, <!-- lint: allow (deleted in this change; named as the record of the deletion) --> its lint, the
@@ -62,8 +64,9 @@ machine-local facts are labeled or omitted.
 
 ## Next
 
-- Resume the audit Fix Queue at F4 (paperwork-rule shipped clause) behind
-  per-item owner go.
+- Owner: create the public Bixi repo, then `tools/publish <path>` for the
+  first release; run a self-refresh here when convenient to bring this
+  repo's installed copies current (they lag the templates by design).
 
 ## Blockers
 
