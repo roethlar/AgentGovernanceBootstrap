@@ -1267,6 +1267,22 @@ class RefreshTests(unittest.TestCase):
             sys.path.remove(str(TOOLS))
         self.assertIn("no canonical remote reachable", note)
 
+    def test_sync_urls_prefers_clone_origin(self):
+        # 2026-07-24 packaging fix: a product clone syncs from ITS product
+        # home (its own origin), not from the dev repo's baked-in address.
+        sys.path.insert(0, str(TOOLS))
+        try:
+            import refresh as refresh_mod
+            remote = self.root / "remote.git"
+            subprocess.run(["git", "init", "-q", "--bare", str(remote)],
+                           check=True)
+            run_git(self.toolkit, "remote", "add", "origin", str(remote))
+            urls = refresh_mod.sync_urls(self.toolkit)
+            self.assertEqual(str(remote), urls[0])
+            self.assertIn("https://github.com/roethlar/Bixi.git", urls)
+        finally:
+            sys.path.remove(str(TOOLS))
+
     # -- bootstrap banner and offer ----------------------------------------
 
     def test_foreign_core_file_prints_banner_and_commands(self):
