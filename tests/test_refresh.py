@@ -226,29 +226,65 @@ class RefreshTests(unittest.TestCase):
             "## Now\n- see `docs/gone.md` for details\n", newline="\n")
         commit_all(self.target, "state with dead ref")
 
-    def test_lint_warns_trigger_live_remediation(self):
+    def test_tty_warns_launch_interactive_remediation(self):
+        # The interactive launch fires only at a real TTY: drive main()
+        # in-process with a fake terminal and a captured launch seam.
+        self.write_dead_ref_state()
+        mod = self._refresh_mod()
+        import io
+
+        class FakeTTY(io.StringIO):
+            def isatty(self):
+                return True
+
+        launched = {}
+        real = mod.remediate_live
+
+        def spy(candidates, prompt, target, run_fn=None):
+            return real(candidates, prompt, target,
+                        run_fn=lambda a: launched.setdefault("argv", a) and 0)
+
+        old = (sys.stdin, sys.stdout, sys.stderr,
+               mod.detect_harnesses, mod.remediate_live)
+        out = FakeTTY()
+        try:
+            sys.stdin, sys.stdout, sys.stderr = FakeTTY(), out, FakeTTY()
+            mod.detect_harnesses = lambda: [("claude", ("claude", "{prompt}"))]
+            mod.remediate_live = spy
+            code = mod.main([str(self.target), "--toolkit", str(self.toolkit),
+                             "--no-sync"])
+        finally:
+            (sys.stdin, sys.stdout, sys.stderr,
+             mod.detect_harnesses, mod.remediate_live) = old
+        self.assertEqual(0, code)
+        self.assertIn("launching an interactive claude session", out.getvalue())
+        argv = launched["argv"]
+        self.assertEqual("claude", argv[0])
+        self.assertIn("remediate-governance.md", argv[1])
+        self.assertIn("docs/gone.md", argv[1])
+        self.assertNotIn("LINT .agents/state.md", out.getvalue())
+
+    def test_non_tty_warns_print_lint_lines_even_with_harness(self):
+        # stdin DEVNULL is not a terminal: no interactive session, findings
+        # print instead.
         self.write_dead_ref_state()
         log = self.root / "launched.txt"
         path = self.make_stub("claude", log) + os.pathsep + os.environ.get("PATH", "")
         proc = self.refresh_env(self.target, path=path)
         self.assertEqual(proc.returncode, 0, proc.stderr)
-        self.assertIn("launching claude", proc.stdout)
-        self.assertIn("governance files only", proc.stdout)
-        self.assertIn("remediate-governance.md", log.read_text())
-        self.assertNotIn("LINT .agents/state.md", proc.stdout)
-
-    def test_warns_without_headless_harness_print_lint_lines(self):
-        self.write_dead_ref_state()
-        bindir = self.root / "bin-grok"
-        bindir.mkdir()
-        stub = bindir / "grok"
-        stub.write_text("#!/bin/sh\nexit 0\n", newline="\n")
-        stub.chmod(0o755)
-        path = str(bindir) + os.pathsep + "/usr/bin" + os.pathsep + "/bin"
-        proc = self.refresh_env(self.target, path=path)
-        self.assertEqual(proc.returncode, 0, proc.stderr)
         self.assertIn("LINT .agents/state.md", proc.stdout)
-        self.assertNotIn("launching", proc.stdout)
+        self.assertFalse(log.exists())
+
+    def test_remediate_live_launches_interactively(self):
+        mod = self._refresh_mod()
+        seen = {}
+        cands = [("claude", ("claude", "{prompt}"))]
+        name, code = mod.remediate_live(
+            cands, "FIX PROMPT", self.target,
+            run_fn=lambda a: seen.setdefault("argv", a) and 0)
+        self.assertEqual("claude", name)
+        self.assertEqual(0, code)
+        self.assertEqual(["claude", "FIX PROMPT"], seen["argv"])
 
     def test_no_remediate_flag_suppresses_launch(self):
         self.write_dead_ref_state()

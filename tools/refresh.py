@@ -689,46 +689,34 @@ def non_tty_commands(candidates, prompt: str, target: Path, toolkit: Path) -> st
     return "\n".join(lines)
 
 
-# Headless one-shot launch forms for live remediation sessions (2026-07-23
-# owner-surface D3): the session is disposable, scoped to governance files by
-# its kickoff prompt, and exits when done. codex takes the prompt via stdin —
-# argv hangs (durable fact, docs/harness-capabilities.md). Harnesses without a
-# verified headless one-shot form fall back to printed lint lines.
-REMEDIATE_HEADLESS = {
-    "claude": (["claude", "-p", "--dangerously-skip-permissions", "{prompt}"], "argv"),
-    "codex": (["codex", "exec", "--full-auto"], "stdin"),
-}
-
-
 def remediate_prompt(toolkit: Path, target: Path, warns) -> str:
     lines = ["Governance hygiene findings in this repo need judgment fixes:"]
     for rel, msg, _kind in warns:
         lines.append("- {}: {}".format(rel, msg))
     return ("Read {} in full and remediate these findings in {} per its "
-            "rules. Work autonomously: fix, commit per the repo's push "
-            "policy, then exit.\n\n{}").format(
+            "rules. Work autonomously — the owner may interact but is not "
+            "watching; ask only when a real decision is needed. Fix, commit "
+            "per the repo's push policy, then exit.\n\n{}").format(
                 toolkit / "procedures" / "remediate-governance.md",
                 target, "\n".join(lines))
 
 
 def remediate_live(candidates, prompt: str, target: Path, run_fn=None):
-    """Launch the first detected headless-capable harness as a disposable
-    remediation session. Returns (harness_name, exit_code), or (None, None)
-    when no detected harness has a headless form."""
-    for name, _shape in candidates:
-        if name not in REMEDIATE_HEADLESS:
-            continue
-        shape, mode = REMEDIATE_HEADLESS[name]
-        argv = launch_argv(shape, prompt) if mode == "argv" else list(shape)
-        print("  remediation: hygiene finding(s) need judgment fixes — "
-              "launching {} (disposable session, governance files only)".format(name))
-        if run_fn is None:
-            def run_fn(a, inp):
-                if inp is None:
-                    return subprocess.call(a, cwd=str(target))
-                return subprocess.call(a, cwd=str(target), input=inp, text=True)
-        return name, run_fn(argv, prompt if mode == "stdin" else None)
-    return None, None
+    """Launch the first detected harness as an INTERACTIVE disposable
+    remediation session (2026-07-23 owner-surface D3, amended same day:
+    interactive — the owner may talk to it, never headless fire-and-forget,
+    never something the owner must watch). Callers gate on isatty.
+    Returns (harness_name, exit_code), or (None, None) with no candidates."""
+    if not candidates:
+        return None, None
+    name, shape = candidates[0]
+    argv = launch_argv(shape, prompt)
+    print("  remediation: hygiene finding(s) need judgment fixes — "
+          "launching an interactive {} session in this repo (governance "
+          "files only; it works autonomously and exits when done)".format(name))
+    if run_fn is None:
+        run_fn = lambda a: subprocess.call(a, cwd=str(target))
+    return name, run_fn(argv)
 
 
 def offer_bootstrap(candidates, prompt: str, target: Path,
@@ -998,11 +986,14 @@ def main(argv=None) -> int:
         if kind == "note":
             print("  NOTE {}: {}".format(rel, msg))
     if warns and not args.no_remediate:
-        # Judgment findings are remediated live by a disposable session
-        # (2026-07-23 owner-surface D3) — never queued, never left as a list.
+        # Judgment findings are remediated live by an interactive disposable
+        # session (2026-07-23 owner-surface D3) — never queued, never left as
+        # a list. Interactive needs a real terminal; otherwise print.
         candidates = detect_harnesses()
-        prompt = remediate_prompt(toolkit, target, warns)
-        name, code = remediate_live(candidates, prompt, target)
+        name, code = (None, None)
+        if candidates and sys.stdin.isatty() and sys.stdout.isatty():
+            prompt = remediate_prompt(toolkit, target, warns)
+            name, code = remediate_live(candidates, prompt, target)
         if name is None:
             for rel, msg, _kind in warns:
                 print("  LINT {}: {}".format(rel, msg))

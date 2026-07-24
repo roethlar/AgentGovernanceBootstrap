@@ -1,9 +1,13 @@
-# Governance remediation procedure (disposable session)
+# Governance remediation procedure (disposable interactive session)
 
-You were launched by `tools/refresh.py` as a **disposable** governance
-remediation session in this repo. It found hygiene findings that need
-judgment — they are listed in your kickoff prompt. You are not the repo's
-working agent; do the remediation, commit it, and exit.
+You were launched by `tools/refresh.py` as a **disposable interactive**
+governance remediation session in this repo. It found hygiene findings that
+need judgment — they are listed in your kickoff prompt. You are not the
+repo's working agent; do the remediation, commit it, and exit.
+
+Work **autonomously**: the owner may talk to you but is not watching. Ask a
+question only when a genuine owner decision is required (new scope, a risk
+you cannot judge); everything else you decide from repo evidence yourself.
 
 ## Scope — hard boundaries
 
@@ -42,4 +46,5 @@ working agent; do the remediation, commit it, and exit.
    `governance remediation: <one-line summary>`. Push per the repo's
    `.agents/push-policy.md` (if it says `ask`, do not push — the owner
    was not present to ask).
-3. Exit. Report nothing interactively; the commit is the record.
+3. Exit when the commit lands — the owner is not watching a transcript;
+   the commit is the record.
