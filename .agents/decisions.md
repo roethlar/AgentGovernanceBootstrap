@@ -729,7 +729,7 @@ What changed, and what each change supersedes or amends:
   of the 2026-06-09 harvest decision and the 2026-06-22 dropbox/bug-report
   decisions; the harvest discipline (incident-earned, max three,
   no-report-is-normal) is retained verbatim in
-  `.github/ISSUE_TEMPLATE/`. `harvest/processed.md` archived; open/closed
+  `.github/ISSUE_TEMPLATE/`. `docs/history/harvest-processed-archive.md` archived; open/closed
   issues are the queue and ledger. The `agent-harvest` repo awaits owner
   archiving.
 - **The evals workstream is scrapped** — `evals/` and the instrument deleted

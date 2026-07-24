@@ -55,7 +55,6 @@ machine-local facts are labeled or omitted.
   `docs/history/state-archive.md`); the 2026-07-09 external holistic
   review is fully triaged, with release engineering deferred by the
   release-posture decision. New Active decision 2026-07-11 (`0d05c97`):
-  push status is never recorded in state files — git owns it. The
   reviewloop-branches Open item was closed as adopted and archived
   2026-07-12 (`76c1e5f`). Rollout DONE for vela, Blit_v2, ai-rpg-engine,
   Powershell-Token-Killer, and ExchangeAdminWeb (details in
