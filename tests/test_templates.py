@@ -377,6 +377,13 @@ class PlaybookReviewMechanics(unittest.TestCase):
         self.assertIn("Reviewer tiers and routing", body)
         self.assertIn("owner-named", body)
 
+    def test_codereview_carries_self_permissioning_launch(self):
+        # 2026-07-18 ruling; audit F9: the launch-scoped grant must not rot
+        # out of the shipped playbook (it has a falsified-assumption history).
+        body = (TEMPLATES / "playbooks" / "codereview.md").read_text(encoding="utf-8")
+        self.assertIn("Self-permissioning launch", body)
+        self.assertIn('--allowedTools Read Grep Glob "Bash(git:*)" "Bash(<verify-cmd>)"', body)
+
 
 if __name__ == "__main__":
     unittest.main()
