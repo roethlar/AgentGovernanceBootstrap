@@ -318,6 +318,35 @@ class ShippedShimsAndWrappers(unittest.TestCase):
         self.assertLess(len(text), 2000)
 
 
+class TemplateRuleDedup(unittest.TestCase):
+    """Section-level rule deduplication (2026-06-24 ruling; audit F8): one
+    full statement per rule in AGENTS.template.md, pointers elsewhere.
+    Guards the class that shipped a redundant re-enumeration in 2026-07."""
+
+    TEMPLATE = ROOT / "templates" / "AGENTS.template.md"
+
+    def body(self):
+        return self.TEMPLATE.read_text(encoding="utf-8")
+
+    def test_known_duplicate_pairs_keep_one_full_statement(self):
+        body = self.body()
+        for phrase in (
+            "flag the conflict instead of silently choosing",
+            "code verification is not required unless the docs affect",
+            "kept current by the working agent as work lands",
+        ):
+            self.assertEqual(1, body.count(phrase), phrase)
+
+    def test_no_substantial_line_appears_twice(self):
+        seen = {}
+        for ln in self.body().splitlines():
+            s = ln.strip()
+            if len(s) >= 80:
+                seen[s] = seen.get(s, 0) + 1
+        dupes = sorted(s for s, n in seen.items() if n > 1)
+        self.assertEqual([], dupes)
+
+
 class PlaybookReviewMechanics(unittest.TestCase):
     """Structural pins for the reviewer-dispatch mechanics in the shipped
     playbooks (review-economy decision 2026-07-17, as amended 2026-07-23):
