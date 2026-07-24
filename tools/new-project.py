@@ -101,7 +101,7 @@ def main(argv=None) -> int:
         print("  initialized git repo: {}".format(target))
 
     refresh = [sys.executable, str(toolkit / "tools" / "refresh.py"),
-               str(target), "--stage-only", "--no-sync"]
+               str(target), "--stage-only", "--no-sync", "--no-remediate"]
     proc = subprocess.run(refresh, capture_output=True, text=True)
     if proc.returncode != 0:
         print("new-project: governance install failed:", file=sys.stderr)

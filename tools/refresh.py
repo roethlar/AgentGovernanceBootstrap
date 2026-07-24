@@ -689,6 +689,48 @@ def non_tty_commands(candidates, prompt: str, target: Path, toolkit: Path) -> st
     return "\n".join(lines)
 
 
+# Headless one-shot launch forms for live remediation sessions (2026-07-23
+# owner-surface D3): the session is disposable, scoped to governance files by
+# its kickoff prompt, and exits when done. codex takes the prompt via stdin —
+# argv hangs (durable fact, docs/harness-capabilities.md). Harnesses without a
+# verified headless one-shot form fall back to printed lint lines.
+REMEDIATE_HEADLESS = {
+    "claude": (["claude", "-p", "--dangerously-skip-permissions", "{prompt}"], "argv"),
+    "codex": (["codex", "exec", "--full-auto"], "stdin"),
+}
+
+
+def remediate_prompt(toolkit: Path, target: Path, warns) -> str:
+    lines = ["Governance hygiene findings in this repo need judgment fixes:"]
+    for rel, msg, _kind in warns:
+        lines.append("- {}: {}".format(rel, msg))
+    return ("Read {} in full and remediate these findings in {} per its "
+            "rules. Work autonomously: fix, commit per the repo's push "
+            "policy, then exit.\n\n{}").format(
+                toolkit / "procedures" / "remediate-governance.md",
+                target, "\n".join(lines))
+
+
+def remediate_live(candidates, prompt: str, target: Path, run_fn=None):
+    """Launch the first detected headless-capable harness as a disposable
+    remediation session. Returns (harness_name, exit_code), or (None, None)
+    when no detected harness has a headless form."""
+    for name, _shape in candidates:
+        if name not in REMEDIATE_HEADLESS:
+            continue
+        shape, mode = REMEDIATE_HEADLESS[name]
+        argv = launch_argv(shape, prompt) if mode == "argv" else list(shape)
+        print("  remediation: hygiene finding(s) need judgment fixes — "
+              "launching {} (disposable session, governance files only)".format(name))
+        if run_fn is None:
+            def run_fn(a, inp):
+                if inp is None:
+                    return subprocess.call(a, cwd=str(target))
+                return subprocess.call(a, cwd=str(target), input=inp, text=True)
+        return name, run_fn(argv, prompt if mode == "stdin" else None)
+    return None, None
+
+
 def offer_bootstrap(candidates, prompt: str, target: Path,
                     input_fn=input, launch_fn=None):
     """One question at a real TTY; a valid number launches that harness
@@ -781,6 +823,9 @@ def main(argv=None) -> int:
     ap.add_argument("--force", action="store_true",
                     help="replace even foreign core governance files (git history preserves "
                          "the old content); uncommitted changes are still protected")
+    ap.add_argument("--no-remediate", action="store_true",
+                    help="never launch a live remediation session for lint findings; "
+                         "print them instead (CI and automated runs)")
     args = ap.parse_args(argv)
 
     if args.plan_json and args.apply:
@@ -947,8 +992,26 @@ def main(argv=None) -> int:
     print(terse_line(target, plan, sync_note, changed, commit_sha, args.stage_only))
     if git(toolkit, "status", "--porcelain", check=False).stdout.strip():
         print("  NOTE: toolkit tree is dirty; installed bytes may not match {}".format(toolkit_sha))
-    for rel, msg, kind in lint_governance(target):
-        print("  {} {}: {}".format("NOTE" if kind == "note" else "LINT", rel, msg))
+    findings = lint_governance(target)
+    warns = [(rel, msg, kind) for rel, msg, kind in findings if kind != "note"]
+    for rel, msg, kind in findings:
+        if kind == "note":
+            print("  NOTE {}: {}".format(rel, msg))
+    if warns and not args.no_remediate:
+        # Judgment findings are remediated live by a disposable session
+        # (2026-07-23 owner-surface D3) — never queued, never left as a list.
+        candidates = detect_harnesses()
+        prompt = remediate_prompt(toolkit, target, warns)
+        name, code = remediate_live(candidates, prompt, target)
+        if name is None:
+            for rel, msg, _kind in warns:
+                print("  LINT {}: {}".format(rel, msg))
+        elif code:
+            print("  remediation session exited nonzero ({}) — findings "
+                  "may remain; re-run to retry.".format(code))
+    elif warns:
+        for rel, msg, _kind in warns:
+            print("  LINT {}: {}".format(rel, msg))
 
     if core:
         print(banner_block(core))

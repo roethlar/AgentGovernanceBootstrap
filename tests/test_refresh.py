@@ -104,7 +104,7 @@ def make_target(root: Path) -> Path:
 def refresh(toolkit: Path, target: Path, *extra: str) -> "subprocess.CompletedProcess[str]":
     return subprocess.run(
         [sys.executable, str(REFRESH), str(target),
-         "--toolkit", str(toolkit), "--no-sync", *extra],
+         "--toolkit", str(toolkit), "--no-sync", "--no-remediate", *extra],
         capture_output=True, text=True, encoding="utf-8",
         stdin=subprocess.DEVNULL)
 
@@ -197,6 +197,86 @@ class RefreshTests(unittest.TestCase):
         proc = refresh(self.toolkit, self.target)
         self.assertEqual(proc.returncode, 0, proc.stderr)
         self.assertIn("unpushed", (self.target / ".agents" / "state.md").read_text())
+
+    # -- live remediation (2026-07-23 owner-surface D3) ---------------------
+
+    def refresh_env(self, target, *extra, path=None):
+        env = dict(os.environ)
+        if path is not None:
+            env["PATH"] = path
+        return subprocess.run(
+            [sys.executable, str(REFRESH), str(target),
+             "--toolkit", str(self.toolkit), "--no-sync", *extra],
+            capture_output=True, text=True, encoding="utf-8",
+            stdin=subprocess.DEVNULL, env=env)
+
+    def make_stub(self, name, log):
+        bindir = self.root / ("bin-" + name)
+        bindir.mkdir()
+        stub = bindir / name
+        stub.write_text("#!/bin/sh\necho \"$@\" >> {}\nexit 0\n".format(log),
+                        newline="\n")
+        stub.chmod(0o755)
+        return str(bindir)
+
+    def write_dead_ref_state(self):
+        refresh(self.toolkit, self.target)
+        (self.target / ".agents").mkdir(exist_ok=True)
+        (self.target / ".agents" / "state.md").write_text(
+            "## Now\n- see `docs/gone.md` for details\n", newline="\n")
+        commit_all(self.target, "state with dead ref")
+
+    def test_lint_warns_trigger_live_remediation(self):
+        self.write_dead_ref_state()
+        log = self.root / "launched.txt"
+        path = self.make_stub("claude", log) + os.pathsep + os.environ.get("PATH", "")
+        proc = self.refresh_env(self.target, path=path)
+        self.assertEqual(proc.returncode, 0, proc.stderr)
+        self.assertIn("launching claude", proc.stdout)
+        self.assertIn("governance files only", proc.stdout)
+        self.assertIn("remediate-governance.md", log.read_text())
+        self.assertNotIn("LINT .agents/state.md", proc.stdout)
+
+    def test_warns_without_headless_harness_print_lint_lines(self):
+        self.write_dead_ref_state()
+        bindir = self.root / "bin-grok"
+        bindir.mkdir()
+        stub = bindir / "grok"
+        stub.write_text("#!/bin/sh\nexit 0\n", newline="\n")
+        stub.chmod(0o755)
+        path = str(bindir) + os.pathsep + "/usr/bin" + os.pathsep + "/bin"
+        proc = self.refresh_env(self.target, path=path)
+        self.assertEqual(proc.returncode, 0, proc.stderr)
+        self.assertIn("LINT .agents/state.md", proc.stdout)
+        self.assertNotIn("launching", proc.stdout)
+
+    def test_no_remediate_flag_suppresses_launch(self):
+        self.write_dead_ref_state()
+        log = self.root / "launched.txt"
+        path = self.make_stub("claude", log) + os.pathsep + os.environ.get("PATH", "")
+        proc = self.refresh_env(self.target, "--no-remediate", path=path)
+        self.assertEqual(proc.returncode, 0, proc.stderr)
+        self.assertIn("LINT .agents/state.md", proc.stdout)
+        self.assertFalse(log.exists())
+
+    def test_note_only_findings_do_not_trigger_remediation(self):
+        # A git-vouched deletion prints a NOTE, never a launch.
+        refresh(self.toolkit, self.target)
+        (self.target / "docs").mkdir(exist_ok=True)
+        (self.target / "docs" / "gone.md").write_text("x\n", newline="\n")
+        (self.target / ".agents").mkdir(exist_ok=True)
+        (self.target / ".agents" / "state.md").write_text(
+            "## Now\n- see `docs/gone.md`\n", newline="\n")
+        commit_all(self.target, "state + doc")
+        run_git(self.target, "rm", "-q", "docs/gone.md")
+        commit_all(self.target, "delete the doc")
+        log = self.root / "launched.txt"
+        path = self.make_stub("claude", log) + os.pathsep + os.environ.get("PATH", "")
+        proc = self.refresh_env(self.target, path=path)
+        self.assertEqual(proc.returncode, 0, proc.stderr)
+        self.assertIn("NOTE .agents/state.md", proc.stdout)
+        self.assertNotIn("launching", proc.stdout)
+        self.assertFalse(log.exists())
 
     # -- replace-if-unmodified ------------------------------------------
 
