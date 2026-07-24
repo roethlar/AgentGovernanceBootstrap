@@ -127,7 +127,8 @@ class ShippedSetIntegrity(unittest.TestCase):
             self.assertIn(path, retired)
             self.assertTrue(retired[path]["formerly"], path)
         # JSON layer (2026-07-08): generated per-repo, so empty formerly =
-        # always flagged for by-hand removal, never machine-deleted.
+        # removal is always reported as drift (strict converge, 2026-07-16) —
+        # the file is removed with a report, git history preserving it.
         for path in (".agents/repo-map.json", ".agents/artifact-manifest.json"):
             self.assertIn(path, retired)
             self.assertEqual(retired[path]["formerly"], [], path)

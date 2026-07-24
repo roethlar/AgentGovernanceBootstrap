@@ -757,6 +757,15 @@ Procedures consolidated to one `procedures/bootstrap.md` (1,913 words, from
 transport procedures deleted). Rollout: vela first (owner pick), remaining
 repos on owner go; refresh flags route back as issues.
 
+> Amended 2026-07-23 (decisions-as-claims audit, F11): two mechanism
+> sentences in this entry are stale — since the 2026-07-16 strict-converge
+> ruling (archived at `docs/history/decisions-archive.md:2203`),
+> "replace-if-unmodified … else flag, never overwrite" reads as `replace`:
+> a divergent artifact is reported as drift with its introducing commits
+> and restored, and retired-list files are removed with a drift report
+> (git history preserving them). "Empty formerly-hashes = always flag,
+> never machine-delete" is likewise superseded.
+
 
 ### 2026-07-03 — Playbooks install unconditionally on every run, like wrappers and hooks
 
@@ -796,6 +805,12 @@ playbook artifact class. Amends the 2026-06-09 layout decision's "optional
 playbooks" wording: every shipped playbook lands at install time. The Push
 Policy approval-time question (2026-06-27) is unaffected: that is
 configuration the owner chose to be asked about, not installation.
+
+> Amended 2026-07-23 (decisions-as-claims audit, F11): "Never-overwrite
+> protects owner-modified playbooks" is stale — since the 2026-07-16
+> strict-converge ruling, an owner-modified playbook is reported as drift
+> and restored; only uncommitted content is protected (the dirty-tree
+> refusal). Installation stays unconditional.
 
 ### 2026-07-03 — Subdir-scoped bootstrap is not a supported mode; monorepo probe finding closed as not-applicable
 
@@ -1183,6 +1198,8 @@ Status: Active
 
 > Amended 2026-07-23: the operator vocabulary is now `catchup`, `handoff`, `decision`, `plan`, `playbook`, `toolkit` at owner level — `drift` retired as an owner word, `toolkit` added (see the 2026-07-23 owner-vocabulary entry). The on-every-route guarantee is unchanged.
 
+> Amended 2026-07-23 (decisions-as-claims audit, F11): the 2026-07-08 amendment below is itself stale — "replace-if-unmodified" is now `replace` with strict-converge semantics: an owner-modified wrapper is reported as drift with its introducing commits and restored, not "flagged, never touched".
+
 > Amended 2026-07-08 (zero-based consolidation — see the 2026-07-08 entry): the guarantee's mechanism is now refresh.py's replace-if-unmodified class, which strengthens never-overwrite: a provably-unmodified stale wrapper updates; an owner-modified one is flagged, never touched.
 
 Decision:
@@ -1262,6 +1279,15 @@ explicit interactive yes at a real TTY.
 
 Supersedes:
 Nothing; extends the 2026-07-08 refresh behavior (flag semantics unchanged).
+
+> Amended 2026-07-23 (decisions-as-claims audit, F11): "Exit code is
+> unchanged" is stale — core-flagged runs exit 5 since 2026-07-23
+> (`63db061`); and the banner's trigger narrowed from refusal "for any
+> reason" to foreign core files only (2026-07-16 restores
+> divergent-but-once-governed core files instead of flagging them).
+> Amended further the same day by owner-surface D3: the banner now names
+> `--force` as the replace-on-demand path, and harness discovery is the
+> wide probe-plus-"another" model, no fixed list.
 
 
 ### 2026-07-17 - Owner gates are self-contained; owner-facing reports open with an executive summary
