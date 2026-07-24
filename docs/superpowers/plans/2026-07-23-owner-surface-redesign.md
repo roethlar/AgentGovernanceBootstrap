@@ -68,12 +68,15 @@ owner has a working project with a first commit.
 Design:
 
 1. New toolkit script `tools/new-project.py` (stdlib-only, mirrors
-   refresh.py's interpreter floor and `git -C` discipline). Invocation:
-   `python3 <toolkit>/tools/new-project.py [target-dir]` (default: cwd;
-   Windows `py -3`). Documented in `README.md` as the one-line install.
-2. Mechanical phase (no agent, no questions): create the target dir if
-   named; refuse a non-empty non-git dir that already contains governance
-   (point at `tools/refresh.py` instead); `git init` if no `.git`;
+   refresh.py's interpreter floor and `git -C` discipline), behind the
+   executable launcher `tools/new-project` (D1). Invocation:
+   `new-project <path> [hint]` (D2a) — creates `<path>` if needed,
+   `git init` there, installs the governance set, launches the detected
+   harness with `<hint>` priming its kickoff prompt. Documented in
+   `README.md` as the one-line install.
+2. Mechanical phase (no agent, no questions): create the target dir;
+   refuse a non-empty dir that already contains governance (point at
+   `tools/refresh.py` instead); `git init` if no `.git`;
    invoke refresh.py's reconcile (`--stage-only`) against the target to
    install the shipped set uncommitted.
 3. Agent phase: probe PATH for a known harness (reuse
@@ -136,10 +139,17 @@ Design:
   Windows launcher (`.cmd`) is deferred until real demand (owner ruling:
   no current need); the launcher is the only documented entry line in
   `README.md`.
-- D2 — the setup question set: keep exactly the existing two (push
-  policy, comms level) or add/drop. Recommendation: keep exactly two;
-  verification stays detected-not-asked (the agent proposes, the owner
+- D2 — the setup question set. **RULED 2026-07-23:** three questions,
+  no more: **what are we building** (blank folder only; when a hint was
+  given on the command line the agent confirms it instead of asking),
+  **push policy**, **communication level**. Verification stays
+  detected-not-asked (the agent proposes once code exists, the owner
   corrects only if wrong).
+- D2a — invocation shape (ruled with D2): `new-project <path> [hint]`
+  — creates `<path>` if needed, `git init`, installs the governance
+  set, launches the detected harness in it, and primes the agent's
+  kickoff prompt with `<hint>` so the setup conversation opens with a
+  confirmation, not an interrogation.
 - D3 — Stage 2 shape: confirm refresh.py loses the spawn offer (banner
   points at setup instead) and `update-governance` is the single update
   verb. Recommendation: yes.
