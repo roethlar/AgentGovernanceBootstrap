@@ -6,7 +6,7 @@ These outrank everything below. After a context compaction, re-read this block f
 
 - Words first. Answer questions and musings in words; act only on an explicit instruction or go. A handed-over report, plan, or spec is evidence to assess, not a decision to implement — but an owner's completion report inside an approved, already-scoped workflow is the go for the next step that workflow already defines; new scope, changed risk, and separately gated actions still stop.
 - No code change without an approved plan; docs and other edits that change nothing the repo ships don't need one (a README). When unsure, treat it as code. Do not expand scope without approval.
-- Commit each slice as it lands; never leave finished work uncommitted. History-rewrite and destructive or outward-facing actions always need an explicit go. Push policy: see `.agents/push-policy.md`.
+- Commit each slice as it lands; never leave finished work uncommitted. When work is landed and verified, its paperwork closes in the same motion — tracker issues closed, records synced — no fresh ask; anything beyond recording already-approved work still stops. History-rewrite and destructive or outward-facing actions always need an explicit go. Push policy: see `.agents/push-policy.md`.
 - Repo is memory. Durable truth lives in the repo, not chat or working memory. Under context pressure, re-ground from AGENTS.md; prefer a fresh session when degraded.
 <!-- prime:end -->
 

@@ -134,6 +134,11 @@ Refines: R1 (2026-07-22 holistic plan) — per-site implementation
 decisions still go to the owner one at a time; this ruling governs the
 paperwork after a fix is landed and verified.
 
+> Amended 2026-07-23: the generalized form now ships fleet-wide — the
+> Prime Invariants commit bullet in `templates/AGENTS.template.md` closes
+> verified work's paperwork in the same motion, no fresh ask (decisions-
+> as-claims audit F4, owner go). No longer local-only.
+
 ### 2026-07-22 — Owner communication is a per-repo tunable level (1–5), seeded like the push policy; supersedes the named-profile design
 
 Status: Active
