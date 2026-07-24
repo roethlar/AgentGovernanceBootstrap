@@ -229,6 +229,17 @@ class RefreshTests(unittest.TestCase):
         self.assertIn("working-tree root", proc.stderr)
         self.assertFalse((sub / "AGENTS.md").exists())
 
+    def test_self_refresh_is_refused(self):
+        # 2026-07-10 ruling (audit F6): an agent running refresh against the
+        # toolkit repo itself is the incident the ruling named; the run
+        # refuses before any write.
+        head_before = run_git(self.toolkit, "rev-parse", "HEAD")
+        proc = refresh(self.toolkit, self.toolkit)
+        self.assertEqual(proc.returncode, 2, proc.stderr)
+        self.assertIn("owner-only", proc.stderr)
+        self.assertEqual(head_before, run_git(self.toolkit, "rev-parse", "HEAD"))
+        self.assertEqual("", run_git(self.toolkit, "status", "--porcelain"))
+
     def test_empty_push_policy_fails_before_any_write(self):
         (self.target / ".agents").mkdir()
         (self.target / ".agents" / "push-policy.md").write_text("", newline="\n")

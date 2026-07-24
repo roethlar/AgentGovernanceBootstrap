@@ -737,6 +737,11 @@ def main(argv=None) -> int:
     if not (toolkit / "tools" / "shipped-set.json").exists():
         print("refresh: {} does not look like the toolkit (no tools/shipped-set.json)".format(toolkit), file=sys.stderr)
         return 2
+    if target == toolkit:
+        print("refresh: refusing to run against the toolkit repo itself ({}).".format(target), file=sys.stderr)
+        print("Self-refresh is an owner-only action (2026-07-10 ruling): agents never update", file=sys.stderr)
+        print("this repo's own governance while working on the toolkit.", file=sys.stderr)
+        return 2
 
     # Preflight: the fatal reads here happen before the first write, so these
     # refusals leave the tree untouched. (Exit 5 is not such a refusal — it
