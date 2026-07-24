@@ -126,11 +126,16 @@ Design:
 
 ## Decisions for the owner (one at a time, chat)
 
-- D1 — Stage 1 name and invocation: `new-project` vs `setup-repo` vs
-  other; script-in-toolkit invocation (`python3
-  <toolkit>/tools/new-project.py`) vs a cloned-shim elsewhere.
-  Recommendation: `new-project`, script in toolkit (one remembered path,
-  documented in README; no shim layer to maintain).
+- D1 — Stage 1 name and invocation. **RULED 2026-07-23:** name is
+  `new-project`; the owner must never see or think about a Python
+  interpreter. Invocation is an executable launcher
+  `tools/new-project` (POSIX shell) that locates a working Python
+  (≥3.10, per the repo's documented probe order and floor) and execs
+  `tools/new-project.py` with it — a bad or missing interpreter is the
+  launcher's problem, reported in plain words, never the owner's. A
+  Windows launcher (`.cmd`) is deferred until real demand (owner ruling:
+  no current need); the launcher is the only documented entry line in
+  `README.md`.
 - D2 — the setup question set: keep exactly the existing two (push
   policy, comms level) or add/drop. Recommendation: keep exactly two;
   verification stays detected-not-asked (the agent proposes, the owner
