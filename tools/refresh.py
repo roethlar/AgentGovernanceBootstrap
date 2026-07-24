@@ -328,9 +328,9 @@ def classify(target_repo: Path, toolkit: Path, shipped: dict) -> Plan:
             plan.flags.append((
                 art["target"],
                 "matches no known template version and no committed version ever "
-                "did - a foreign governance file; refusing to replace. If this repo "
-                "has never been bootstrapped by the toolkit, run the bootstrap "
-                "procedure instead.",
+                "did - a foreign governance file; refusing to replace (re-run with "
+                "--force to replace anyway - git history preserves the old content - "
+                "or run the bootstrap procedure to migrate its content).",
             ))
         else:
             plan.restore.append((art["target"], src))
@@ -614,8 +614,11 @@ def banner_block(targets) -> str:
     lines = [bar]
     for t in targets:
         lines.append("  ATTENTION: {} was NOT replaced.".format(t))
-    lines.append("  It matches no known template version (hand-edited or foreign).")
-    lines.append("  Hand-repair is not the fix. The fix is the bootstrap procedure.")
+    lines.append("  It matches no known template version (hand-edited or foreign), so")
+    lines.append("  replacing it could destroy content the toolkit does not own.")
+    lines.append("  To replace it anyway — git history preserves the old content —")
+    lines.append("  re-run with --force. To migrate its content instead, run the")
+    lines.append("  bootstrap procedure.")
     lines.append(bar)
     return "\n".join(lines)
 
@@ -713,6 +716,9 @@ def main(argv=None) -> int:
                     help="read-only: write the operation record as JSON (or - for stdout) and change nothing")
     ap.add_argument("--apply", default=None, metavar="PLAN",
                     help="apply a --plan-json record, refusing if anything drifted since it was made")
+    ap.add_argument("--force", action="store_true",
+                    help="replace even foreign core governance files (git history preserves "
+                         "the old content); uncommitted changes are still protected")
     args = ap.parse_args(argv)
 
     if args.plan_json and args.apply:
@@ -774,6 +780,20 @@ def main(argv=None) -> int:
     plan = classify(target, toolkit, shipped)
     check_committability(target, plan, shipped)
     core = core_flags(plan, shipped)
+    if args.force and core:
+        # Owner override (2026-07-23, owner-surface D3): --force replaces a
+        # foreign core file on demand; the dirty-tree refusal above still
+        # protects uncommitted content, and git history preserves the old
+        # bytes. The replacement is loud in both the summary and the commit.
+        src_by_target = {a["target"]: toolkit / a["source"]
+                         for a in shipped["artifacts"]}
+        forced = set(core)
+        plan.flags = [(t, r) for t, r in plan.flags if t not in forced]
+        for t in sorted(forced):
+            plan.restore.append((t, src_by_target[t]))
+            plan.drift[t] = ("FORCED (--force): foreign core file replaced on "
+                             "owner demand; prior content preserved in git history")
+        core = []
 
     conflicts = dirty_conflicts(target, plan)
     if conflicts:

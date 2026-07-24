@@ -183,6 +183,30 @@ class RefreshTests(unittest.TestCase):
         self.assertIn("FLAG AGENTS.md", proc.stdout)
         self.assertIn("bootstrap procedure", proc.stdout)
 
+    def test_force_replaces_foreign_core_file(self):
+        # 2026-07-23 owner-surface D3: --force is the owner's
+        # just-do-what-I-said override for a foreign core file.
+        (self.target / "AGENTS.md").write_text("# Mine\nforeign\n", newline="\n")
+        commit_all(self.target, "foreign agents")
+        proc = refresh(self.toolkit, self.target, "--force")
+        self.assertEqual(proc.returncode, 0, proc.stderr)
+        self.assertEqual((self.target / "AGENTS.md").read_text(), CUR_AGENTS)
+        self.assertIn("FORCED", proc.stdout)
+        self.assertNotIn("ATTENTION", proc.stdout)
+        # The prior content is preserved in git history, one commit back.
+        self.assertIn("foreign", run_git(self.target, "show", "HEAD~1:AGENTS.md"))
+        # And the next default run converges clean: the file is now governed.
+        proc = refresh(self.toolkit, self.target)
+        self.assertEqual(proc.returncode, 0, proc.stderr)
+
+    def test_force_still_protects_uncommitted_content(self):
+        (self.target / "AGENTS.md").write_text("# Mine\nforeign\n", newline="\n")
+        commit_all(self.target, "foreign agents")
+        (self.target / "AGENTS.md").write_text("# uncommitted edit\n", newline="\n")
+        proc = refresh(self.toolkit, self.target, "--force")
+        self.assertEqual(proc.returncode, 3, proc.stderr)
+        self.assertEqual((self.target / "AGENTS.md").read_text(), "# uncommitted edit\n")
+
     def test_hand_edited_agents_md_in_governed_repo_is_restored(self):
         # Git history holds a formerly-shipped version, so the repo was
         # governed: the divergence is drift and converges back - no
