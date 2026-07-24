@@ -282,6 +282,126 @@ PUSH_STATUS_RE = re.compile(
     re.IGNORECASE)
 
 
+def _moved_target(target_repo, tok, _cache={}):
+    """The single rename target for a missing path, proven by git history,
+    or None. Mechanical only: zero or ambiguous targets stay judgment.
+    (No pathspec: rename records are keyed by the NEW path, so filtering by
+    the old one hides them.)"""
+    key = str(target_repo)
+    if key not in _cache:
+        proc = git(target_repo, "log", "--diff-filter=R", "--find-renames",
+                   "--name-status", "--format=", check=False)
+        pairs = {}
+        for line in proc.stdout.splitlines():
+            parts = line.split("\t")
+            if len(parts) == 3 and parts[0].startswith("R"):
+                pairs.setdefault(parts[1], set()).add(parts[2])
+        _cache[key] = pairs
+    targets = _cache[key].get(tok.rstrip("/"), set())
+    if len(targets) == 1:
+        t = next(iter(targets))
+        if (target_repo / t).exists():
+            return t
+    return None
+
+
+def repair_moved_references(target_repo: Path, plan: Plan) -> None:
+    """Mechanical lint repair (2026-07-23 owner-surface D3): a backticked
+    reference whose file MOVED — git history proves exactly one rename
+    target — is rewritten in place and joins the refresh commit. Lines
+    carrying a deliberate lint: allow marker are untouched, and dirty files
+    are never folded into a refresh commit."""
+    agents_dir = target_repo / ".agents"
+    if not agents_dir.is_dir():
+        return
+    for f in sorted(agents_dir.glob("*.md")):
+        rel = f.relative_to(target_repo).as_posix()
+        dirty = git(target_repo, "status", "--porcelain", "--", rel,
+                    check=False).stdout.strip()
+        if dirty:
+            continue
+        changed_lines = 0
+        out_lines = []
+        for line in f.read_text(encoding="utf-8").splitlines():
+            if "lint: allow" in line:
+                out_lines.append(line)
+                continue
+            for m in PATH_TOKEN.finditer(line):
+                tok = m.group(1)
+                if (not _lintable_repo_path(tok)
+                        or tok.rstrip("/") in LINT_EXEMPT_PATHS
+                        or (target_repo / tok.rstrip("/")).exists()):
+                    continue
+                moved = _moved_target(target_repo, tok)
+                if moved:
+                    line = line.replace("`" + tok + "`", "`" + moved + "`")
+                    changed_lines += 1
+            out_lines.append(line)
+        if changed_lines:
+            write_atomic(f, ("\n".join(out_lines) + "\n").encode("utf-8"))
+            plan.repairs.append((rel, "rewrote {} moved reference(s) "
+                                      "(rename proven by git history)".format(changed_lines)))
+
+
+def repair_closed_decisions(target_repo: Path, plan: Plan) -> None:
+    """Mechanical lint repair (2026-07-23 owner-surface D3): decisions.md
+    entries with Status Adopted/Superseded move verbatim to
+    docs/history/decisions-archive.md with a dated pointer — the lifecycle
+    rule is deterministic. Dirty files are never folded in."""
+    import datetime
+    decisions = target_repo / ".agents" / "decisions.md"
+    archive = target_repo / "docs" / "history" / "decisions-archive.md"
+    if not decisions.exists():
+        return
+    for f in (decisions, archive):
+        rel = f.relative_to(target_repo).as_posix()
+        dirty = git(target_repo, "status", "--porcelain", "--", rel,
+                    check=False).stdout.strip()
+        if dirty:
+            return
+    text = decisions.read_text(encoding="utf-8")
+    entries = list(re.finditer(r"^### (.+)$", text, re.M))
+    blocks = []  # (start, end) of closed entries, in document order
+    for i, em in enumerate(entries):
+        end = entries[i + 1].start() if i + 1 < len(entries) else len(text)
+        seg_end = end
+        m2 = re.search(r"^## ", text[em.end():end], re.M)
+        if m2:
+            seg_end = em.end() + m2.start()
+        seg = text[em.start():seg_end]
+        sm = re.search(r"^Status:\s*(\w+)", seg, re.M)
+        if sm and sm.group(1) in ("Adopted", "Superseded"):
+            blocks.append((em.start(), seg_end))
+    if not blocks:
+        return
+    moved = []
+    for start, end in blocks:
+        moved.append(text[start:end].strip("\n"))
+    kept = text[:blocks[0][0]]
+    for i in range(len(blocks) - 1):
+        kept += text[blocks[i][1]:blocks[i + 1][0]]
+    kept += text[blocks[-1][1]:]
+    kept = re.sub(r"\n{3,}", "\n\n", kept)
+    today = datetime.date.today().isoformat()
+    addition = "\n\n" + "\n\n".join(
+        m + "\n\n> Archived {} (refresh auto-archive): the entry carried a "
+        "closed status; the lifecycle rule moves closed entries here "
+        "verbatim.".format(today) for m in moved) + "\n"
+    archive.parent.mkdir(parents=True, exist_ok=True)
+    prior = (archive.read_text(encoding="utf-8")
+             if archive.exists() else "# Agent Decisions — Archive\n")
+    if not prior.endswith("\n"):
+        prior += "\n"
+    write_atomic(archive, (prior + addition).encode("utf-8"))
+    write_atomic(decisions, kept.encode("utf-8"))
+    plan.repairs.append((".agents/decisions.md",
+                         "auto-archived {} closed decision entr{} verbatim".format(
+                             len(moved), "y" if len(moved) == 1 else "ies")))
+    plan.repairs.append(("docs/history/decisions-archive.md",
+                         "received {} archived entr{}".format(
+                             len(moved), "y" if len(moved) == 1 else "ies")))
+
+
 def repair_push_status_lines(target_repo: Path, plan: Plan) -> None:
     """Mechanical repair (2026-07-23 owner-surface D3): delete recorded
     push-status lines from .agents/state.md in the run, never report them.
@@ -616,23 +736,62 @@ def stage(target_repo: Path, plan: Plan) -> None:
         git(target_repo, "add", "--", *paths)
 
 
-# Harness CLIs that can run the bootstrap procedure, with the interactive
-# launch shape ("{prompt}" is the kickoff slot). Seeded from the recorded
-# live behavior in docs/harness-capabilities.md; adding or changing an entry
-# is a provenance-bearing change (2026-07-08 standing rule). gemini renamed
-# agy per owner 2026-07-09.
-HARNESSES = [
-    ("claude", ("claude", "{prompt}")),
-    ("codex", ("codex", "{prompt}")),
-    ("agy", ("agy", "-i", "{prompt}")),
-    ("grok", ("grok", "{prompt}")),
+# Harness detection is a PATH probe, never a gate (owner ruling 2026-07-23):
+# a wide set of common agent CLI names is probed, plus any the owner recorded
+# on this machine (.agents/machines.md "harness-cli:" lines, written by the
+# offer's "another" option). A harness not probed is reached via "another"
+# and remembered after first use. Shape exceptions are one-liners for CLIs
+# that do not take a positional prompt (agy needs -i); everything else
+# launches as `<name> "<prompt>"`. Adding or changing an exception is a
+# provenance-bearing change (2026-07-08 standing rule).
+PROBE_HARNESSES = [
+    "claude", "codex", "agy", "grok", "kimi", "kimi-code", "hermes",
+    "cursor", "aider", "gemini", "goose", "opencode",
 ]
+SHAPE_EXCEPTIONS = {
+    "agy": ("agy", "-i", "{prompt}"),
+}
 
 
-def detect_harnesses(which=shutil.which):
+def detect_harnesses(which=shutil.which, target=None):
     """Harness CLIs actually installed right now - probed at offer time,
-    never remembered between runs."""
-    return [(name, shape) for name, shape in HARNESSES if which(name)]
+    never remembered between runs - plus the owner's recorded CLIs from the
+    repo's machines.md (still only when present on PATH right now)."""
+    names = [n for n in PROBE_HARNESSES if which(n)]
+    if target is not None:
+        machines = Path(target) / ".agents" / "machines.md"
+        if machines.exists():
+            text = machines.read_text(encoding="utf-8", errors="replace")
+            for m in re.finditer(r"harness-cli:\s*([A-Za-z0-9._-]+)", text):
+                name = m.group(1)
+                if name not in names and which(name):
+                    names.append(name)
+    return [(n, SHAPE_EXCEPTIONS.get(n, (n, "{prompt}"))) for n in names]
+
+
+def record_harness_cli(target_repo: Path, name: str) -> None:
+    """Remember an "another"-typed harness CLI in the repo's machines.md so
+    the next offer numbers it. Best-effort: a record failure never blocks
+    the launch."""
+    import datetime
+    machines = target_repo / ".agents" / "machines.md"
+    try:
+        machines.parent.mkdir(parents=True, exist_ok=True)
+        text = (machines.read_text(encoding="utf-8")
+                if machines.exists() else "# Machines\n")
+        if "harness-cli: {}".format(name) in text:
+            return
+        line = "- harness-cli: {} (recorded {}, refresh offer)".format(
+            name, datetime.date.today().isoformat())
+        if not text.endswith("\n"):
+            text += "\n"
+        write_atomic(machines, (text + line + "\n").encode("utf-8"))
+        git(target_repo, "add", "--", ".agents/machines.md", check=False)
+        git(target_repo, "commit", "-q", "-m",
+            "record harness CLI: {}".format(name), "--",
+            ".agents/machines.md", check=False)
+    except OSError:
+        pass
 
 
 def core_flags(plan: Plan, shipped: dict) -> list:
@@ -703,43 +862,36 @@ def remediate_prompt(toolkit: Path, target: Path, warns) -> str:
                 target, "\n".join(lines))
 
 
-def remediate_live(candidates, prompt: str, target: Path, run_fn=None):
-    """Launch the first detected harness as an INTERACTIVE disposable
-    remediation session (2026-07-23 owner-surface D3, amended same day:
-    interactive — the owner may talk to it, never headless fire-and-forget,
-    never something the owner must watch). Callers gate on isatty.
-    Returns (harness_name, exit_code), or (None, None) with no candidates."""
-    if not candidates:
-        return None, None
-    name, shape = candidates[0]
-    argv = launch_argv(shape, prompt)
-    print("  remediation: hygiene finding(s) need judgment fixes — "
-          "launching an interactive {} session in this repo (governance "
-          "files only; it asks how to remediate each finding, you "
-          "decide)".format(name))
-    if run_fn is None:
-        run_fn = lambda a: subprocess.call(a, cwd=str(target))
-    return name, run_fn(argv)
-
-
 def offer_bootstrap(candidates, prompt: str, target: Path,
-                    input_fn=input, launch_fn=None):
-    """One question at a real TTY; a valid number launches that harness
-    interactively in the target repo with the kickoff prompt; anything else
-    (q, empty, EOF, out-of-range) declines and changes nothing. Returns the
-    harness exit code, or None when declined. Callers gate on isatty - this
-    function is never reached non-interactively."""
+                    input_fn=input, launch_fn=None, question="Run bootstrap now?"):
+    """One question at a real TTY. A valid number launches that harness with
+    the kickoff prompt; "t" asks for a harness command and launches whatever
+    the owner types — verbatim, never gated by the probe list (owner ruling
+    2026-07-23), as `<name> "<prompt>"` — and records it in machines.md for
+    next time. Anything else (q, empty, EOF, out-of-range) declines and
+    changes nothing. Returns the harness exit code, or None when declined.
+    Callers gate on isatty - this function is never reached non-interactively."""
     menu = "  ".join("[{}] {}".format(i + 1, name)
                      for i, (name, _shape) in enumerate(candidates))
     try:
-        choice = input_fn("Run bootstrap now? Installed harnesses: "
-                          "{}  [q] no\n> ".format(menu)).strip()
+        choice = input_fn("{} Installed harnesses: {}  [t] another  [q] no\n> ".format(
+            question, menu)).strip()
     except EOFError:
         return None
-    if not choice.isdigit() or not (1 <= int(choice) <= len(candidates)):
-        return None
-    _name, shape = candidates[int(choice) - 1]
-    argv = launch_argv(shape, prompt)
+    if choice.lower() == "t":
+        try:
+            name = input_fn("harness command: ").strip()
+        except EOFError:
+            return None
+        if not name:
+            return None
+        argv = [name, prompt]
+        record_harness_cli(target, name)
+    else:
+        if not choice.isdigit() or not (1 <= int(choice) <= len(candidates)):
+            return None
+        _name, shape = candidates[int(choice) - 1]
+        argv = launch_argv(shape, prompt)
     if launch_fn is None:
         launch_fn = lambda a: subprocess.call(a, cwd=str(target))
     return launch_fn(argv)
@@ -924,6 +1076,8 @@ def main(argv=None) -> int:
     # Mechanical repairs run in every applying mode (never in read-only
     # --plan-json, which returns above) and join the refresh commit.
     repair_push_status_lines(target, plan)
+    repair_moved_references(target, plan)
+    repair_closed_decisions(target, plan)
     changed = bool(plan.install or plan.update or plan.restore or plan.remove
                    or plan.gitignore_repairs or plan.repairs)
     if changed:
@@ -989,18 +1143,21 @@ def main(argv=None) -> int:
         if kind == "note":
             print("  NOTE {}: {}".format(rel, msg))
     if warns and not args.no_remediate:
-        # Judgment findings are remediated live by an interactive disposable
-        # session (2026-07-23 owner-surface D3) — never queued, never left as
-        # a list. Interactive needs a real terminal; otherwise print.
-        candidates = detect_harnesses()
-        name, code = (None, None)
-        if candidates and sys.stdin.isatty() and sys.stdout.isatty():
+        # Judgment findings: explain why the run cannot fully converge (the
+        # LINT lines), then ASK whether to launch an interactive remediation
+        # session, and in which harness (2026-07-23 owner ruling: no
+        # automatic launches; the "another" option keeps any harness
+        # reachable). Non-TTY: print only.
+        for rel, msg, _kind in warns:
+            print("  LINT {}: {}".format(rel, msg))
+        print("  refresh cannot remediate these itself — they need judgment.")
+        code = None
+        if sys.stdin.isatty() and sys.stdout.isatty():
+            candidates = detect_harnesses(target=target)
             prompt = remediate_prompt(toolkit, target, warns)
-            name, code = remediate_live(candidates, prompt, target)
-        if name is None:
-            for rel, msg, _kind in warns:
-                print("  LINT {}: {}".format(rel, msg))
-        elif code:
+            code = offer_bootstrap(candidates, prompt, target,
+                                   question="Launch a remediation session now?")
+        if code:
             print("  remediation session exited nonzero ({}) — findings "
                   "may remain; re-run to retry.".format(code))
     elif warns:
@@ -1010,7 +1167,7 @@ def main(argv=None) -> int:
     if core:
         print(banner_block(core))
         prompt = bootstrap_prompt(toolkit, target)
-        candidates = detect_harnesses()
+        candidates = detect_harnesses(target=target)
         if candidates and sys.stdin.isatty() and sys.stdout.isatty():
             offer_bootstrap(candidates, prompt, target)
         else:

@@ -226,9 +226,10 @@ class RefreshTests(unittest.TestCase):
             "## Now\n- see `docs/gone.md` for details\n", newline="\n")
         commit_all(self.target, "state with dead ref")
 
-    def test_tty_warns_launch_interactive_remediation(self):
-        # The interactive launch fires only at a real TTY: drive main()
-        # in-process with a fake terminal and a captured launch seam.
+    def test_tty_warns_offer_then_launch_only_on_yes(self):
+        # No automatic launches (owner ruling 2026-07-23): the run prints
+        # why it cannot converge (LINT lines + plain sentence), then asks
+        # whether to launch; a decline launches nothing.
         self.write_dead_ref_state()
         mod = self._refresh_mod()
         import io
@@ -237,38 +238,34 @@ class RefreshTests(unittest.TestCase):
             def isatty(self):
                 return True
 
-        launched = {}
-        real = mod.remediate_live
-
-        def spy(candidates, prompt, target, run_fn=None):
-            return real(candidates, prompt, target,
-                        run_fn=lambda a: launched.setdefault("argv", a) and 0)
-
+        asked = {}
+        spy = lambda candidates, prompt, target, **kw: asked.setdefault(
+            "prompt", prompt) or 0
         old = (sys.stdin, sys.stdout, sys.stderr,
-               mod.detect_harnesses, mod.remediate_live)
+               mod.detect_harnesses, mod.offer_bootstrap)
         out = FakeTTY()
         try:
             sys.stdin, sys.stdout, sys.stderr = FakeTTY(), out, FakeTTY()
-            mod.detect_harnesses = lambda: [("claude", ("claude", "{prompt}"))]
-            mod.remediate_live = spy
+            mod.detect_harnesses = lambda target=None: [("claude", ("claude", "{prompt}"))]
+            mod.offer_bootstrap = spy
             code = mod.main([str(self.target), "--toolkit", str(self.toolkit),
                              "--no-sync"])
         finally:
             (sys.stdin, sys.stdout, sys.stderr,
-             mod.detect_harnesses, mod.remediate_live) = old
+             mod.detect_harnesses, mod.offer_bootstrap) = old
         self.assertEqual(0, code)
-        self.assertIn("launching an interactive claude session", out.getvalue())
-        argv = launched["argv"]
-        self.assertEqual("claude", argv[0])
-        self.assertIn("remediate-governance.md", argv[1])
-        self.assertIn("docs/gone.md", argv[1])
-        self.assertIn("ask the owner how to remediate", argv[1])
-        self.assertIn("Do not fix anything on your own authority", argv[1])
-        self.assertNotIn("LINT .agents/state.md", out.getvalue())
+        # the why was printed, then the session was offered with the
+        # owner-driven kickoff prompt
+        self.assertIn("LINT .agents/state.md", out.getvalue())
+        self.assertIn("cannot remediate these itself", out.getvalue())
+        prompt = asked["prompt"]
+        self.assertIn("remediate-governance.md", prompt)
+        self.assertIn("docs/gone.md", prompt)
+        self.assertIn("ask the owner how to remediate", prompt)
+        self.assertIn("Do not fix anything on your own authority", prompt)
 
     def test_non_tty_warns_print_lint_lines_even_with_harness(self):
-        # stdin DEVNULL is not a terminal: no interactive session, findings
-        # print instead.
+        # stdin DEVNULL is not a terminal: no offer, findings print instead.
         self.write_dead_ref_state()
         log = self.root / "launched.txt"
         path = self.make_stub("claude", log) + os.pathsep + os.environ.get("PATH", "")
@@ -277,16 +274,93 @@ class RefreshTests(unittest.TestCase):
         self.assertIn("LINT .agents/state.md", proc.stdout)
         self.assertFalse(log.exists())
 
-    def test_remediate_live_launches_interactively(self):
+    def test_offer_another_option_launches_typed_harness_and_records_it(self):
+        # The probe list is convenience, never a gate (owner ruling
+        # 2026-07-23): "t" + a typed name launches `<name> "<prompt>"`
+        # verbatim and records it in machines.md for next time.
+        mod = self._refresh_mod()
+        seen = {}
+        answers = iter(["t", "kimi"])
+        code = mod.offer_bootstrap(
+            [], "FIX PROMPT", self.target,
+            input_fn=lambda _q: next(answers),
+            launch_fn=lambda a: seen.setdefault("argv", a) and 0)
+        self.assertEqual(0, code)
+        self.assertEqual(["kimi", "FIX PROMPT"], seen["argv"])
+        machines = (self.target / ".agents" / "machines.md").read_text()
+        self.assertIn("harness-cli: kimi", machines)
+        # and the next detection numbers it (still PATH-checked)
+        names = [n for n, _s in mod.detect_harnesses(
+            which=lambda n: n == "kimi", target=self.target)]
+        self.assertIn("kimi", names)
+
+    def test_remediate_ask_declines_on_q_empty_junk(self):
         mod = self._refresh_mod()
         seen = {}
         cands = [("claude", ("claude", "{prompt}"))]
-        name, code = mod.remediate_live(
-            cands, "FIX PROMPT", self.target,
-            run_fn=lambda a: seen.setdefault("argv", a) and 0)
-        self.assertEqual("claude", name)
-        self.assertEqual(0, code)
-        self.assertEqual(["claude", "FIX PROMPT"], seen["argv"])
+        for junk in ("q", "", "x", "0", "9"):
+            seen.clear()
+            code = mod.offer_bootstrap(
+                cands, "P", self.target,
+                input_fn=lambda _q: junk,
+                launch_fn=lambda a: seen.setdefault("argv", a) and 0,
+                question="Launch a remediation session now?")
+            self.assertIsNone(code)
+            self.assertEqual({}, seen)
+
+    def test_moved_reference_is_repaired_in_the_run(self):
+        # Mechanical repair (D3): a reference whose file MOVED (git-proven,
+        # single target) is rewritten in place and joins the commit.
+        refresh(self.toolkit, self.target)
+        (self.target / "docs").mkdir(exist_ok=True)
+        (self.target / "docs" / "old.md").write_text("x\n", newline="\n")
+        (self.target / ".agents").mkdir(exist_ok=True)
+        (self.target / ".agents" / "state.md").write_text(
+            "## Now\n- see `docs/old.md`\n", newline="\n")
+        commit_all(self.target, "state + doc")
+        run_git(self.target, "mv", "docs/old.md", "docs/new.md")
+        commit_all(self.target, "move the doc")
+        proc = refresh(self.toolkit, self.target)
+        self.assertEqual(proc.returncode, 0, proc.stderr)
+        body = (self.target / ".agents" / "state.md").read_text()
+        self.assertIn("`docs/new.md`", body)
+        self.assertNotIn("`docs/old.md`", body)
+        self.assertIn("moved reference", last_commit_msg(self.target))
+        # no judgment finding remains: nothing printed, nothing to ask
+        self.assertNotIn("LINT .agents/state.md", proc.stdout)
+
+    def test_missing_reference_without_move_stays_judgment(self):
+        # No rename history: the finding stays a judgment warn, printed.
+        self.write_dead_ref_state()
+        proc = refresh(self.toolkit, self.target)
+        self.assertEqual(proc.returncode, 0, proc.stderr)
+        self.assertIn("LINT .agents/state.md", proc.stdout)
+        self.assertIn("`docs/gone.md`",
+                      (self.target / ".agents" / "state.md").read_text())
+
+    def test_closed_decision_is_auto_archived_verbatim(self):
+        refresh(self.toolkit, self.target)
+        (self.target / ".agents").mkdir(exist_ok=True)
+        (self.target / ".agents" / "decisions.md").write_text(
+            "# Decisions\n\n## Decisions\n\n"
+            "### 2026-01-01 - old rule\n\nStatus: Superseded\n\nOld text stays.\n\n"
+            "### 2026-01-02 - live rule\n\nStatus: Active\n\nLive text.\n",
+            newline="\n")
+        commit_all(self.target, "decisions with closed entry")
+        proc = refresh(self.toolkit, self.target)
+        self.assertEqual(proc.returncode, 0, proc.stderr)
+        decisions = (self.target / ".agents" / "decisions.md").read_text()
+        self.assertNotIn("old rule", decisions)
+        self.assertIn("live rule", decisions)
+        archive = (self.target / "docs" / "history" / "decisions-archive.md").read_text()
+        self.assertIn("### 2026-01-01 - old rule", archive)
+        self.assertIn("Status: Superseded", archive)
+        self.assertIn("Old text stays.", archive)
+        self.assertIn("> Archived ", archive)
+        self.assertIn("auto-archived", last_commit_msg(self.target))
+        # nothing left to flag
+        proc = refresh(self.toolkit, self.target)
+        self.assertNotIn("awaiting archive", proc.stdout + proc.stderr)
 
     def test_no_remediate_flag_suppresses_launch(self):
         self.write_dead_ref_state()
@@ -1088,6 +1162,9 @@ class RefreshTests(unittest.TestCase):
         self.assertNotIn("LINT .agents/repo-guidance.md", proc.stdout)
 
     def test_lint_flags_closed_decision_awaiting_archive(self):
+        # Superseded 2026-07-23 (owner-surface D3): a closed decision is no
+        # longer a printed finding — refresh auto-archives it verbatim in
+        # the run. This test now pins that outcome.
         ag = self.target / ".agents"
         ag.mkdir()
         (ag / "decisions.md").write_text(
@@ -1096,8 +1173,13 @@ class RefreshTests(unittest.TestCase):
         commit_all(self.target, "decisions")
         proc = refresh(self.toolkit, self.target)
         self.assertEqual(proc.returncode, 0)
-        self.assertIn("closed decision awaiting archive: Old rule", proc.stdout)
-        self.assertNotIn("Live rule", proc.stdout)
+        decisions = (ag / "decisions.md").read_text()
+        self.assertNotIn("Old rule", decisions)
+        self.assertIn("Live rule", decisions)
+        archive = (self.target / "docs" / "history" / "decisions-archive.md").read_text()
+        self.assertIn("### Old rule", archive)
+        self.assertIn("> Archived ", archive)
+        self.assertNotIn("awaiting archive", proc.stdout)
 
     def test_lint_skips_agents_md_and_create_on_first_use_archives(self):
         # Field finding 2026-07-08 (Move-SteamGame refresh): the template and

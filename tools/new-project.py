@@ -111,7 +111,7 @@ def main(argv=None) -> int:
     print("  governance set installed and staged (uncommitted).")
 
     prompt = kickoff_prompt(toolkit, target, hint)
-    candidates = detect_harnesses()
+    candidates = detect_harnesses(target=target)
     if sys.stdin.isatty() and sys.stdout.isatty() and candidates:
         code = offer_launch(candidates, prompt, target)
         if code is not None:

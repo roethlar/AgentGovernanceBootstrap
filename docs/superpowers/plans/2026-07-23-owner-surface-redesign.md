@@ -113,21 +113,32 @@ never leaves the owner homework.
    amends the 2026-07-09 "lint remains advisory and read-only" ruling:
    the lint's findings split into repair-now (mechanical) and
    remediate-live (judgment); nothing is merely sprayed.
-3. **Judgment violations are remediated in an interactive session the
-   owner drives.** Stale rule text, contradicted records, prose needing
-   rewrites: refresh launches an interactive harness session in the repo
-   on the spot — scoped to governance files only — printing one plain
-   sentence about why. The session presents each finding one at a time
-   with evidence and a recommendation and **asks the owner how to
-   remediate it**; the owner rules, the agent applies. It never
-   remediates autonomously and never ends on its own (owner ruling
-   2026-07-23: "the INTERACTIVE session stays INTERACTIVE. it does not
-   start working and end on its own. it needs to ask me questions about
-   how to remediate"). Interactive needs a real terminal; non-TTY runs
-   print the findings. No queue, no notes file, no follow-up list:
-   queues are reserved for repo product work; guidance updates stay out
-   of the working agent's way (owner ruling, D3). The harness launch is
-   the remediation mechanism, with the why always printed.
+3. **Judgment violations: refresh explains why, then ASKS.** First, the
+   mechanical class is repaired in the run and joins the refresh commit —
+   recorded push-status lines, references whose file git proves moved to
+   exactly one target (rewritten in place), and closed decisions awaiting
+   archive (moved verbatim per the lifecycle rule). What remains is rare:
+   refresh prints the findings and one plain sentence — it cannot
+   remediate these itself — then asks, at a real terminal, whether to
+   launch an interactive remediation session and in which harness (the
+   same one-question menu as the bootstrap offer; any other answer
+   changes nothing). **No automatic launches** (owner ruling 2026-07-23).
+   Harness discovery is a PATH probe, never a gate: a wide set of common
+   agent CLI names is probed, plus CLIs recorded per machine in
+   `.agents/machines.md`, and a `[t] another` option launches whatever
+   the owner types as `<name> "<prompt>"` and remembers it — no fixed
+   list may exclude a harness, and no invocation vagaries are required
+   (owner ruling 2026-07-23; shape exceptions like `agy -i` stay
+   one-liners in the toolkit). The session itself is interactive and
+   owner-driven: it presents each finding one at a time with evidence
+   and a recommendation and asks the owner how to remediate it; the
+   owner rules, the agent applies; it never remediates autonomously and
+   never ends on its own (owner ruling 2026-07-23: "the INTERACTIVE
+   session stays INTERACTIVE. it does not start working and end on its
+   own. it needs to ask me questions about how to remediate"). Non-TTY
+   runs print the findings only. No queue, no notes file, no follow-up
+   list, and nothing in `.agents/state.md` — that file is product state
+   (owner ruling 2026-07-23).
 4. **Terse output.** One line per repo: updated / already current /
    what was repaired or remediated. Built for the owner's
    PowerShell `foreach` loop: no stall, no wall of text, done in one
