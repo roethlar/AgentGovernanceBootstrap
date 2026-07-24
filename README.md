@@ -27,6 +27,10 @@ is verified to work (`docs/harness-capabilities.md`).
 <path-to-this-repo>/tools/new-project <project-dir> [hint]
 ```
 
+(Windows: `<path-to-this-repo>\tools\new-project.cmd <project-dir> [hint]` —
+verified on macOS/Linux; the Windows launcher follows the repo's documented
+Windows probe contract and is unverified live until its first Windows run.)
+
 Creates `<project-dir>` if needed, runs `git init`, installs the governance
 set, and offers to launch a detected agent harness in it — the agent asks
 three short questions (what are we building, push policy, communication

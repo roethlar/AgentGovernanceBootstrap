@@ -171,10 +171,13 @@ never leaves the owner homework.
   `tools/new-project` (POSIX shell) that locates a working Python
   (≥3.10, per the repo's documented probe order and floor) and execs
   `tools/new-project.py` with it — a bad or missing interpreter is the
-  launcher's problem, reported in plain words, never the owner's. A
-  Windows launcher (`.cmd`) is deferred until real demand (owner ruling:
-  no current need); the launcher is the only documented entry line in
-  `README.md`.
+  launcher's problem, reported in plain words, never the owner's.
+  Amended same day: **Windows is a primary environment** (owner
+  ruling), so a `tools/new-project.cmd` twin ships in Stage 1 — `py -3`
+  probe first, then `python3`/`python`, Microsoft Store stub treated as
+  absent — marked unverified-live until the owner's first Windows run
+  (no Windows machine reachable from the build machine). The launchers
+  are the only documented entry line in `README.md`.
 - D2 — the setup question set. **RULED 2026-07-23:** three questions,
   no more: **what are we building** (blank folder only; when a hint was
   given on the command line the agent confirms it instead of asking),
@@ -221,6 +224,12 @@ never leaves the owner homework.
 - No hosted/web installer, no package-manager distribution.
 - The 2026-07-23 audit Fix Queue continues independently (F4 landed;
   F5 parked on D3; F6+ behind per-item owner go).
+- **Packaging/distribution is DEFERRED (owner ruling 2026-07-23)** until
+  the product fixes land: the delivery-shape question (clean product
+  repo vs downloadable bundle; development history must not ship to
+  users) is parked, not decided. Standing rule recorded with it: the
+  product must not hard-code author-machine paths (`~/dev` and similar)
+  anywhere — every flow resolves its toolkit location at run time.
 
 ## Verification
 
