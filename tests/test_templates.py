@@ -251,9 +251,10 @@ class ShippedShimsAndWrappers(unittest.TestCase):
 
     def test_wrapper_set_covers_operators_and_update_governance(self):
         shipped = {p.stem for p in (TEMPLATES / "commands" / "claude").glob("*.md")}
-        for op in ("catchup", "handoff", "drift", "decision", "plan", "playbook"):
+        for op in ("catchup", "handoff", "decision", "plan", "playbook", "toolkit"):
             self.assertIn(op, shipped)
         self.assertIn("update-governance", shipped)
+        self.assertNotIn("drift", shipped)  # retired 2026-07-23 (owner-surface D4)
 
     def test_shared_skill_set_mirrors_the_wrapper_set(self):
         # Verified 2026-07-08 (live checks): codex 0.143.0 and grok discover

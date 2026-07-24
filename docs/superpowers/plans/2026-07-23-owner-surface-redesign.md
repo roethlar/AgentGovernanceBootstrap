@@ -1,12 +1,11 @@
 # Owner-facing surface redesign — install, update, vocabulary, guidance
 
-Status: STAGE 2 COMPLETE 2026-07-23 — Stage 1 built (8fd0676, b3791f8);
-Stage 2 landed in six commits: 2a self-target refusal + audit F6
-(9ad88a5), 2b --force override (b4f192a), 2c terse one-line output with
-detail in commit messages (57bff6d), 2d mechanical push-status repair
-(e5192ee), 2e live remediation sessions + --no-remediate (d15748d), 2f
-update-governance de-hard-coded (e4bce46, 0632cfe). Suite: 147 green.
-Stage 3 (vocabulary) next per D5.
+Status: STAGE 3 BUILT 2026-07-23 — presented for owner commit approval.
+Stage 1 built (8fd0676, b3791f8); Stage 2 landed in six commits plus the
+owner-driven remediation model (9ad88a5…7cfa130); Stage 3: owner verb set
+shipped (`toolkit` guidance command), `drift` retired as an owner word
+(hygiene rides `catchup`), operator section re-cut (template 1,977 →
+1,783 words). Suite: 152 green.
 
 ## Why this plan exists (owner direction, 2026-07-23)
 

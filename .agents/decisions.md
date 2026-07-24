@@ -34,6 +34,45 @@ live rule now owned elsewhere - archive it per the rule above: move it verbatim 
 
 ## Decisions
 
+### 2026-07-23 — Owner vocabulary: eight verbs; `drift` retires as a word
+
+Status: Active
+
+Decision: the owner-facing verb set is `catchup`, `handoff`,
+`review`/`codereview`, `openreview`, `git`, `new-project`,
+`update-governance`, and `toolkit`. `toolkit` is the guidance command —
+"what can I say here?" answered with the owner verbs, one plain line per
+verb (product-unique word by owner ruling: not `help`, not `menu`).
+`decision`/`plan`/`playbook` stay installed as agent-level vocabulary.
+`drift` retires as an owner word: its state-hygiene sweep rides
+`catchup` — the agent is already reading the state file to re-ground,
+and the sweep reports what it cleaned in one line — and its
+compare-a-claim-against-evidence skill stays agent-level mid-work
+practice (the flag-conflicts invariant covers it behaviorally). Nothing
+runs in the background: sessions end with handoff + quit, and nothing
+outlives the session. `handoff` is explicitly untouched: a seconds-fast
+snapshot (owner constraint, under 30 seconds). The `handoff` and `plan`
+operator bullets' procedure text moves to playbooks with one-line
+dispatch stubs — the per-session file drops ~200 words.
+
+Owner wording (2026-07-23), verbatim: "drift as a command is nonsensical.
+why call it the thing it prevents? when does someone use it?" — and
+"catchup and handoff are all I use outside of trying to use review."
+
+Landed, same change: `templates/playbooks/{catchup,handoff,plan}.md`
+created (hygiene sweep, handoff procedure, plan contract);
+`templates/commands/claude/toolkit.md` and its skill created; the drift
+wrapper, skill, and playbook move to the retired list in
+`tools/shipped-set.json` (deployed copies removed on next refresh);
+the AGENTS.template.md operator section re-cut to the owner verbs;
+the R3 invariant reworded; the catchup wrapper and skill repoint to the
+catchup playbook.
+
+Supersedes: the operator-vocabulary list in the 2026-06-18
+standing-guarantee entry (the guarantee itself — wrappers on every
+route — is unchanged). Amends: 2026-07-22 R3 (the `handoff`/`drift`
+deliberate-pass roles — the hygiene role moved to `catchup`).
+
 ### 2026-07-23 — The owner's dispatch word is final; no committed model lists; harness-version evaluations are not durable record
 
 Status: Active
@@ -240,6 +279,11 @@ Landed: `templates/AGENTS.template.md` current-state entry-point invariant
 reworded so state.md is kept current by the working agent as work lands,
 never owner-gated (`handoff`/`drift` keep their deliberate-pass roles); this
 entry is the owner ruling (R3) behind it.
+
+> Amended 2026-07-23: `drift` retires as an owner word (see the 2026-07-23
+> owner-vocabulary entry); the deliberate hygiene sweep now rides `catchup`.
+> `handoff`'s snapshot role is unchanged. The invariant was reworded in the
+> same change.
 
 ### 2026-07-22 — An owner's completion report inside an approved, scoped workflow is the go for that workflow's next defined step (issue #8)
 
@@ -459,11 +503,17 @@ repos at the owner's next fleet refresh.
 Amendment (2026-07-22): the never-record push-status wording named above as
 living on the `drift` operator line in `templates/AGENTS.template.md` was
 relocated verbatim, together with the rest of the drift state-hygiene
-checklist, into the new `templates/playbooks/drift.md` playbook (Site 7 of the
+checklist, into the new `templates/playbooks/drift.md` <!-- lint: allow (retired 2026-07-23, owner-surface D4; named in the historical amendment) --> playbook (Site 7 of the
 2026-07-22 holistic-improvements plan — the drift bullet keeps only its first
 sentence plus a pointer, to save per-session tokens fleet-wide). The rule is
 unchanged; only its home moved. The `drift` operator's change site for this
 decision is now the playbook, not the AGENTS.template.md bullet.
+
+> Amended 2026-07-23: the `drift` owner word is retired (owner-surface D4).
+> The state-hygiene sweep — including the delete-on-sight push-status rule,
+> which refresh also enforces mechanically in every run — now lives in
+> `templates/playbooks/catchup.md`; the sweep rides `catchup`. The rule is
+> unchanged; only its home moved again.
 
 Declined alongside (owner, 2026-07-11): a fifth `manual` push-policy option
 ("agents never push, never ask; the owner handles propagation"). The
@@ -1109,6 +1159,8 @@ The pre-pilot procedures and templates.
 ### 2026-06-18 - Operator command wrappers are a standing guarantee on every route
 
 Status: Active
+
+> Amended 2026-07-23: the operator vocabulary is now `catchup`, `handoff`, `decision`, `plan`, `playbook`, `toolkit` at owner level — `drift` retired as an owner word, `toolkit` added (see the 2026-07-23 owner-vocabulary entry). The on-every-route guarantee is unchanged.
 
 > Amended 2026-07-08 (zero-based consolidation — see the 2026-07-08 entry): the guarantee's mechanism is now refresh.py's replace-if-unmodified class, which strengthens never-overwrite: a provably-unmodified stale wrapper updates; an owner-modified one is flagged, never touched.
 

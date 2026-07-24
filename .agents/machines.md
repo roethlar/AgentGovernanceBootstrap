@@ -1,10 +1,10 @@
 # Machine Facts
 
 Machine-specific facts, one heading per machine, each fact dated. Written
-by `handoff`, pruned by `drift` (rule adopted 2026-07-10; see
-`.agents/decisions.md` archive and the `handoff`/`drift` operator bullets).
-Facts here are true on the named machine only — never treat them as
-repo-portable.
+by `handoff`, pruned by `catchup` (the hygiene sweep moved there when the
+`drift` word retired 2026-07-23, owner-surface D4; see
+`.agents/decisions.md`). Facts here are true on the named machine only —
+never treat them as repo-portable.
 
 ## nagatha (macOS)
 
