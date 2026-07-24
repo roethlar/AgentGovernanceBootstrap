@@ -24,3 +24,4 @@ never treat them as repo-portable.
   lines (tool results arrive as `type:user` lines — do not count them
   as prompts); `~/.codex/sessions/**/rollout-*.jsonl` carries
   `token_count` events. Codex credits exhausted 2026-07-17 ~21:30.
+- product-repo: /Users/michael/Dev/Bixi (recorded 2026-07-24, first publish)
