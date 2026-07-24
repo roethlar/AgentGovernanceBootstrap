@@ -270,6 +270,39 @@ class Plan:
         self.flags = []     # (target, reason)
         self.drift = {}     # target -> introducing-commit provenance line
         self.gitignore_repairs = []  # (line_no, old_line, new_lines)
+        self.repairs = []   # (target, note) - mechanical fixes outside the shipped set
+
+
+# Push-status lines are never recorded in state files (2026-07-11 ruling):
+# git owns that fact, so any recorded line is deleted on sight. Narrow,
+# high-precision patterns only — "push policy" lines are repo settings and
+# must survive.
+PUSH_STATUS_RE = re.compile(
+    r"unpushed|push[ -]status|push[ -]state|not yet pushed|pending push",
+    re.IGNORECASE)
+
+
+def repair_push_status_lines(target_repo: Path, plan: Plan) -> None:
+    """Mechanical repair (2026-07-23 owner-surface D3): delete recorded
+    push-status lines from .agents/state.md in the run, never report them.
+    The repair joins the refresh commit like any planned change."""
+    state = target_repo / ".agents" / "state.md"
+    if not state.exists():
+        return
+    dirty = git(target_repo, "status", "--porcelain", "--", ".agents/state.md",
+                check=False).stdout.strip()
+    if dirty:
+        # Never fold the owner's uncommitted edits into a refresh commit.
+        return
+    lines = state.read_text(encoding="utf-8").splitlines()
+    kept = [ln for ln in lines if not PUSH_STATUS_RE.search(ln)]
+    dropped = len(lines) - len(kept)
+    if not dropped:
+        return
+    write_atomic(state, ("\n".join(kept) + "\n").encode("utf-8"))
+    plan.repairs.append((".agents/state.md",
+                         "deleted {} recorded push-status line(s) — git owns "
+                         "that fact (2026-07-11)".format(dropped)))
 
 
 def _drift_provenance(target_repo: Path, rel: str) -> str:
@@ -523,6 +556,7 @@ def verify_record(record: dict, toolkit: Path, target: Path, plan: Plan) -> "lis
 
 def touched_paths(plan: Plan) -> list:
     paths = [t for t, _ in plan.install + plan.update + plan.restore] + list(plan.remove)
+    paths += [t for t, _ in plan.repairs]
     if plan.gitignore_repairs:
         paths.append(".gitignore")
     return paths
@@ -692,6 +726,8 @@ def terse_line(target: Path, plan: Plan, sync_note: str, changed: bool,
                              ("restored", plan.restore), ("removed", plan.remove)):
             if items:
                 parts.append("{} {}".format(len(items), label))
+        if plan.repairs:
+            parts.append("{} repaired".format(len(plan.repairs)))
         if plan.gitignore_repairs:
             parts.append(".gitignore repaired")
         where = "staged, uncommitted" if stage_only else "commit " + commit_sha
@@ -721,6 +757,8 @@ def summarize(plan: Plan, sync_note: str) -> str:
             lines.append("  removed: {}".format(t))
     for lineno, old, _repl in plan.gitignore_repairs:
         lines.append("  .gitignore: repaired blanket rule '{}' (line {})".format(old, lineno))
+    for t, note in plan.repairs:
+        lines.append("  repaired: {} ({})".format(t, note))
     for t, reason in plan.flags:
         lines.append("  FLAG {}: {}".format(t, reason))
     if not lines:
@@ -847,8 +885,11 @@ def main(argv=None) -> int:
                 print("  " + p, file=sys.stderr)
             return 4
 
+    # Mechanical repairs run in every applying mode (never in read-only
+    # --plan-json, which returns above) and join the refresh commit.
+    repair_push_status_lines(target, plan)
     changed = bool(plan.install or plan.update or plan.restore or plan.remove
-                   or plan.gitignore_repairs)
+                   or plan.gitignore_repairs or plan.repairs)
     if changed:
         try:
             apply_plan(target, plan)

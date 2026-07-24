@@ -159,6 +159,45 @@ class RefreshTests(unittest.TestCase):
         self.assertNotIn("updated:", proc.stdout)
         self.assertIn("updated: .claude/commands/tool.md", last_commit_msg(self.target))
 
+    def test_push_status_lines_are_repaired_in_the_run(self):
+        # 2026-07-23 owner-surface D3 + 2026-07-11 ruling: recorded
+        # push-status lines are deleted on sight, mechanically, in the run —
+        # while a push-POLICY line (a repo setting) survives.
+        refresh(self.toolkit, self.target)
+        (self.target / ".agents").mkdir(exist_ok=True)
+        (self.target / ".agents" / "state.md").write_text(
+            "# State\n\n## Now\n- unpushed commits: 3\n- Push policy is `always`.\n"
+            "- Real work item.\n", newline="\n")
+        commit_all(self.target, "state with push lines")
+        proc = refresh(self.toolkit, self.target)
+        self.assertEqual(proc.returncode, 0, proc.stderr)
+        body = (self.target / ".agents" / "state.md").read_text()
+        self.assertNotIn("unpushed", body)
+        self.assertIn("Push policy is `always`.", body)
+        self.assertIn("Real work item.", body)
+        self.assertIn("repaired: .agents/state.md", last_commit_msg(self.target))
+        self.assertIn("push-status", last_commit_msg(self.target))
+        committed = run_git(self.target, "show", "--no-renames",
+                            "--name-only", "--format=", "HEAD")
+        self.assertIn(".agents/state.md", committed)
+        # Idempotent: the next run has nothing to repair.
+        proc = refresh(self.toolkit, self.target)
+        self.assertIn("already current", proc.stdout)
+
+    def test_push_status_repair_skips_dirty_state_file(self):
+        # Never fold the owner's uncommitted state.md edits into a refresh
+        # commit: a dirty state file is left alone.
+        refresh(self.toolkit, self.target)
+        (self.target / ".agents").mkdir(exist_ok=True)
+        (self.target / ".agents" / "state.md").write_text(
+            "## Now\n- unpushed commits: 3\n", newline="\n")
+        commit_all(self.target, "state")
+        (self.target / ".agents" / "state.md").write_text(
+            "## Now\n- unpushed commits: 3\n- owner edit\n", newline="\n")
+        proc = refresh(self.toolkit, self.target)
+        self.assertEqual(proc.returncode, 0, proc.stderr)
+        self.assertIn("unpushed", (self.target / ".agents" / "state.md").read_text())
+
     # -- replace-if-unmodified ------------------------------------------
 
     def test_unmodified_stale_artifact_updates(self):
