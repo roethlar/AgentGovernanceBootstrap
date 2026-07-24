@@ -113,21 +113,21 @@ never leaves the owner homework.
    amends the 2026-07-09 "lint remains advisory and read-only" ruling:
    the lint's findings split into repair-now (mechanical) and
    remediate-live (judgment); nothing is merely sprayed.
-3. **Judgment violations are remediated live by a disposable interactive
-   agent session.** Stale rule text, contradicted records, prose needing
+3. **Judgment violations are remediated in an interactive session the
+   owner drives.** Stale rule text, contradicted records, prose needing
    rewrites: refresh launches an interactive harness session in the repo
-   on the spot — scoped to governance files only, never the repo's
-   product work — printing one plain sentence about why it is launching.
-   The session works autonomously and exits when the remediation lands;
-   the owner may talk to it but never has to watch it (owner ruling
-   2026-07-23, amended same day: **interactive** — never a headless
-   fire-and-forget the owner cannot engage, never a spectator stream).
-   Interactive needs a real terminal; non-TTY runs print the findings.
-   No queue, no notes file, no follow-up list, no `--verbose` rerun:
-   queues are reserved for repo product work; guidance updates are
-   fresh, disposable sessions, not distractions for a working agent
-   (owner ruling, D3). The harness launch is the remediation mechanism,
-   with the why always printed — not a surprise offer.
+   on the spot — scoped to governance files only — printing one plain
+   sentence about why. The session presents each finding one at a time
+   with evidence and a recommendation and **asks the owner how to
+   remediate it**; the owner rules, the agent applies. It never
+   remediates autonomously and never ends on its own (owner ruling
+   2026-07-23: "the INTERACTIVE session stays INTERACTIVE. it does not
+   start working and end on its own. it needs to ask me questions about
+   how to remediate"). Interactive needs a real terminal; non-TTY runs
+   print the findings. No queue, no notes file, no follow-up list:
+   queues are reserved for repo product work; guidance updates stay out
+   of the working agent's way (owner ruling, D3). The harness launch is
+   the remediation mechanism, with the why always printed.
 4. **Terse output.** One line per repo: updated / already current /
    what was repaired or remediated. Built for the owner's
    PowerShell `foreach` loop: no stall, no wall of text, done in one

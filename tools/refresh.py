@@ -693,10 +693,12 @@ def remediate_prompt(toolkit: Path, target: Path, warns) -> str:
     lines = ["Governance hygiene findings in this repo need judgment fixes:"]
     for rel, msg, _kind in warns:
         lines.append("- {}: {}".format(rel, msg))
-    return ("Read {} in full and remediate these findings in {} per its "
-            "rules. Work autonomously — the owner may interact but is not "
-            "watching; ask only when a real decision is needed. Fix, commit "
-            "per the repo's push policy, then exit.\n\n{}").format(
+    return ("Read {} in full. This is an INTERACTIVE session with the "
+            "owner: present each finding below one at a time — its evidence, "
+            "the options, your recommendation — and ask the owner how to "
+            "remediate it. The owner decides; you apply the decision. Do not "
+            "fix anything on your own authority and do not end the session; "
+            "the owner ends it. Findings in {}:\n\n{}").format(
                 toolkit / "procedures" / "remediate-governance.md",
                 target, "\n".join(lines))
 
@@ -713,7 +715,8 @@ def remediate_live(candidates, prompt: str, target: Path, run_fn=None):
     argv = launch_argv(shape, prompt)
     print("  remediation: hygiene finding(s) need judgment fixes — "
           "launching an interactive {} session in this repo (governance "
-          "files only; it works autonomously and exits when done)".format(name))
+          "files only; it asks how to remediate each finding, you "
+          "decide)".format(name))
     if run_fn is None:
         run_fn = lambda a: subprocess.call(a, cwd=str(target))
     return name, run_fn(argv)

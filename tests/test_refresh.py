@@ -262,6 +262,8 @@ class RefreshTests(unittest.TestCase):
         self.assertEqual("claude", argv[0])
         self.assertIn("remediate-governance.md", argv[1])
         self.assertIn("docs/gone.md", argv[1])
+        self.assertIn("ask the owner how to remediate", argv[1])
+        self.assertIn("Do not fix anything on your own authority", argv[1])
         self.assertNotIn("LINT .agents/state.md", out.getvalue())
 
     def test_non_tty_warns_print_lint_lines_even_with_harness(self):
