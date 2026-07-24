@@ -34,6 +34,19 @@ live rule now owned elsewhere - archive it per the rule above: move it verbatim 
 
 ## Decisions
 
+### 2026-07-23 — The product is named Bixi
+
+Status: Active
+
+Decision: the toolkit's public product name is **Bixi** (赑屃) — the
+dragon-turtle of Chinese myth who carries stone steles (durable
+inscriptions) on his back for eternity, chosen for exactly the product's
+purpose: the toolkit carries the durable record so nothing drifts. Owner
+wording (2026-07-23), verbatim: "Bixi it is. simple, cute, catchy, and we
+can create a turtle motif for the product page." The public product repo
+takes this name; the development repo's internal name is unchanged until
+the packaging stage ships.
+
 ### 2026-07-23 — Owner vocabulary: eight verbs; `drift` retires as a word
 
 Status: Active

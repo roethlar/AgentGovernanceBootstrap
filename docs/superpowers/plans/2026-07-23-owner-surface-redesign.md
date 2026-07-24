@@ -233,6 +233,13 @@ never leaves the owner homework.
 
 ## Packaging stage — final toolkit shape (ruled 2026-07-23)
 
+**Product name: Bixi (赑屃)** — the dragon-turtle of Chinese myth who
+carries stone steles (durable inscriptions) on his back for eternity.
+Chosen by the owner 2026-07-23: "simple, cute, catchy"; a turtle motif
+is planned for the product page. The public product repo takes this
+name; the publish machinery is name-agnostic (it mirrors into whatever
+checkout it is pointed at).
+
 **Vision (owner):** the repository where the toolkit is applied captures
 every durable decision; drift is the enemy; releasable means a user who
 downloads and runs it gets only the toolkit — none of the development
