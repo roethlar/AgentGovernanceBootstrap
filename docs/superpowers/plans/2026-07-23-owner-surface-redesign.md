@@ -132,19 +132,35 @@ never leaves the owner homework.
 
 ## Stage 3 — vocabulary and guidance
 
-1. Owner-facing verb set (everything else is machinery): `catchup`,
-   `handoff`, `review`/`codereview`, `openreview`, `git`, plus
-   `new-project` and `update-governance` from Stages 1–2. D4 decides
-   the fate of `drift` (rename to an intent-shaped word, fold its
-   state-hygiene pass into `handoff`/`update-governance`, or keep) and
-   whether `decision`/`plan`/`playbook` stay owner-visible.
-2. Guidance: a shipped `help` command + skill answering "what can I
-   say?" with the owner verb list in one plain line per verb (what it
-   does, when to say it). This is the missing "governance help."
-3. AGENTS.template.md operator section reflects the final verb set
-   (one-line bullets, dispatch shape per the audit's load-time finding
-   F12 — handoff/plan procedure text moves to playbooks if D4 keeps
-   those verbs).
+**Ruled shape (D4, 2026-07-23):**
+
+1. Owner-facing verb set, complete: `catchup`, `handoff`,
+   `review`/`codereview`, `openreview`, `git`, `new-project` (Stage 1),
+   `update-governance` (Stage 2), and `toolkit`. Everything else is
+   agent-level machinery — installed, working, but not owner vocabulary:
+   `decision`, `plan`, `playbook`.
+2. `toolkit` is the guidance command: "what can I say to this thing?"
+   answered with the owner verb list, one plain line per verb — the
+   missing governance help. The word is deliberately product-unique
+   (owner ruling: not `help`, not `menu`, not anything that could
+   collide with an existing command).
+3. `drift` retires as an owner word. Its hygiene sweep (state-file
+   rotation, parked-item re-verification, push-status-line deletion,
+   machine-fact pruning) **rides `catchup`**: the agent is already
+   reading the state file to re-ground, so it tidies in the same pass
+   and reports what it cleaned in one line. Nothing runs in the
+   background (owner ruling: sessions end with handoff + quit; nothing
+   outlives the session). Its compare-a-claim-against-evidence skill
+   stays as agent-level mid-work practice (the flag-conflicts invariant
+   already covers it behaviorally). The `drift` wrapper and skill
+   retire from the shipped set (deployed copies removed via the retired
+   list); the hygiene checklist folds into the `catchup` playbook.
+   `handoff` is explicitly untouched: it stays a seconds-fast snapshot
+   (owner constraint, <30s — the 2026-07-22 separation of hygiene from
+   handoff stands).
+4. AGENTS.template.md operator section shrinks to the owner verb set
+   (one-line bullets), with the audit's F12 load-time moves (handoff/
+   plan procedure text to playbooks) applied where verbs survive.
 
 ## Decisions for the owner (one at a time, chat)
 
@@ -181,12 +197,15 @@ never leaves the owner homework.
   mechanism with its reason always printed. Unblocks the parked F5
   amendment (wording: refresh reconciles; the spawn is deliberate
   remediation).
-- D4 — vocabulary: `drift` rename/fold/keep; `decision`/`plan`/
-  `playbook` visibility; the `help` verb. Recommendation: fold `drift`'s
-  hygiene into `handoff` and retire the word fleet-wide (installed
-  copies removed via the retired list); keep `decision`/`plan`/
-  `playbook` as agent-level (they cost nothing per the audit's
-  load-time table); add `help`.
+- D4 — vocabulary. **RULED 2026-07-23:** owner verbs are `catchup`,
+  `handoff` (untouched, <30s), `review`/`codereview`, `openreview`,
+  `git`, `new-project`, `update-governance`, and `toolkit` (the
+  guidance word — product-unique by owner ruling). `decision`/`plan`/
+  `playbook` stay installed as agent-level. `drift` retires as an owner
+  word: its hygiene sweep rides `catchup` (same state-file read, one
+  report line), nothing runs in the background, and its
+  compare-against-evidence skill stays agent-level; wrapper and skill
+  retire from the shipped set.
 - D5 — build order. Recommendation: Stage 1 → Stage 2 → Stage 3, each
   landing behind its own go, suite green per stage.
 
