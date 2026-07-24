@@ -932,6 +932,11 @@ in-repo harness-specific files. Affected guidance to reconcile in the plan:
 Open Decision (2026-06-22), and the verification-entry-point convention in
 `.agents/repo-map.json`.
 
+> Amended 2026-07-23 (decisions-as-claims audit, F13): the
+> `.agents/repo-facts.jsonl` corollary was **declined and never built** — no
+> such file was ever committed, no template exists; the only prior record was
+> a lint-allow annotation. Recorded here so the decline is not re-litigated.
+
 ### 2026-06-27 — Push policy delegated to `.agents/push-policy.md`; four standardized options; default: ask
 
 Status: Active
@@ -945,7 +950,7 @@ default (`ask`). `templates/approval-summary.template.md` has a Push Policy
 section that presents four standardized options at approval time and must ask
 the human — it may not pre-fill the choice from the decisions log or other
 context (the owner's approval-time reply is the only valid source).
-`procedures/bootstrap.md` Step 10 consults `.agents/push-policy.md` after
+`procedures/bootstrap.md` Step 7 item 4 (renumbered in the 2026-07-08 consolidation; cited as Step 10 originally) consults `.agents/push-policy.md` after
 committing. The options: 1 `always` (push after every commit); 2 `operators`
 (auto-push after operator-invoked commits — handoff/decision/drift/plan — ask
 otherwise); 3 `docs` (auto-push docs/state-only commits, ask for code/tool);
@@ -1026,6 +1031,8 @@ wording below is retained.
 Decision:
 Every bootstrapped repo converges on the same `.agents/` layout (AGENTS.md + .agents/state.md, .agents/decisions.md, repo-map.json, artifact-manifest.json, optional playbooks). Existing governance systems are migrated into it via inventory (migrate/supersede/leave verdicts), not left as parallel canon. Old governance files (when they stay) receive a short supersession banner at the top pointing to the replacement; content is retained as history.
 
+> Amended 2026-07-23 (audit F13): the current member list also includes `.agents/push-policy.md` (2026-06-27), `.agents/comms-policy.md` (2026-07-22), and `machines.md`; `review/` is a repo-optional addition. `repo-map.json` / `artifact-manifest.json` were retired 2026-07-08 (see the existing amendments above).
+
 Reason:
 This eliminates drift from competing sources of truth and gives every future agent (including in this toolkit repo) one discoverable current-state entry point plus one place for settled decisions. The layout is the outcome of the 2026-06-09 architecture restructure.
 
@@ -1052,6 +1059,8 @@ Status: Active
 
 Decision:
 Before listing any file as committable in an approval summary, run `git check-ignore` on its final path. Gitignored paths are proposed only as Local-only (copied into place but never `git add`ed, never `git add -f`). Custody values in artifact manifests record the custody each file will have once the approval commit lands, proven by git query: "tracked" for files on the Committed list (existing files via `git ls-files --error-unmatch` exiting 0; new files via `git check-ignore` exiting non-zero, proving them committable), "ignored" or "untracked" for Local-only files. Never set custody from path convention, and never record draft-time custody for a file the same commit will track. New files that are not ignored are listed under Committed and will be `git add`ed explicitly (never `-A`). (Refined 2026-06-10: the self-migration followed the earlier draft-time wording and recorded "untracked" for files its own commit made tracked.)
+
+> Amended 2026-07-23 (audit F13): the manifest-custody clause is superseded — `artifact-manifest.json` was retired 2026-07-08; custody is proven live by git at the approval gate, never recorded in a manifest.
 
 Reason:
 Respects owner intent expressed in .gitignore. Silent `git add -f` is forbidden. The bootstrap commit is always exactly the scoped list from the approved summary.
@@ -1128,7 +1137,7 @@ Many agent harnesses reset cwd between tool calls; a bare `cd` + `git fetch` can
 Status: Active
 
 Decision:
-CI / build markers recorded by discovery are accepted only for files that sit in a path the provider actually executes. The packet surfaces `suspectedMisplacedCi` and `ciBranchMismatches`. Before recording any "CI gates merges" claim or using a workflow command as the automated verification entry point, the agent must confirm both the executable-path condition and that the branch triggers match the repo's current branch. If either fails, record verification as local-only and flag the dead file in the approval summary.
+CI / build markers recorded by discovery are accepted only for files that sit in a path the provider actually executes. (Historical: the packet's `suspectedMisplacedCi` and `ciBranchMismatches` fields were discover.py machinery, deleted 2026-07-08; the rule survives at `procedures/bootstrap.md` "CI rule" — audit F13, 2026-07-23.) Before recording any "CI gates merges" claim or using a workflow command as the automated verification entry point, the agent must confirm both the executable-path condition and that the branch triggers match the repo's current branch. If either fails, record verification as local-only and flag the dead file in the approval summary.
 
 Reason:
 Prevents treating a plausible-looking but non-executed workflow file as live CI.
@@ -1165,6 +1174,13 @@ Direct response to the self-incident in which an agent read a softer rule and ex
 
 Supersedes:
 The prior, softer wording of the "answer with words" rule in this repo's AGENTS.md and the bootstrap contract.
+
+> Amended 2026-07-23 (decisions-as-claims audit, F13): this entry is the
+> same rule as the 2026-06-10 "Answer-with-words rule hardened;
+> artifact-is-evidence-not-decision" entry above, recorded twice the same
+> day — identical decision clause, identical rationale. That entry is
+> canonical; this one is retained as the duplicate record. No divergence:
+> both resolve to the single shipped invariant.
 
 ### 2026-06-09/10 - Pilot findings folded into canon (multiple)
 
