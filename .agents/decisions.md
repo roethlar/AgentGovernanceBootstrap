@@ -933,7 +933,7 @@ Open Decision (2026-06-22), and the verification-entry-point convention in
 `.agents/repo-map.json`.
 
 > Amended 2026-07-23 (decisions-as-claims audit, F13): the
-> `.agents/repo-facts.jsonl` corollary was **declined and never built** — no
+> `.agents/repo-facts.jsonl` <!-- lint: allow (declined artifact; named in the decline record) --> corollary was **declined and never built** — no
 > such file was ever committed, no template exists; the only prior record was
 > a lint-allow annotation. Recorded here so the decline is not re-litigated.
 
@@ -1031,7 +1031,7 @@ wording below is retained.
 Decision:
 Every bootstrapped repo converges on the same `.agents/` layout (AGENTS.md + .agents/state.md, .agents/decisions.md, repo-map.json, artifact-manifest.json, optional playbooks). Existing governance systems are migrated into it via inventory (migrate/supersede/leave verdicts), not left as parallel canon. Old governance files (when they stay) receive a short supersession banner at the top pointing to the replacement; content is retained as history.
 
-> Amended 2026-07-23 (audit F13): the current member list also includes `.agents/push-policy.md` (2026-06-27), `.agents/comms-policy.md` (2026-07-22), and `machines.md`; `review/` is a repo-optional addition. `repo-map.json` / `artifact-manifest.json` were retired 2026-07-08 (see the existing amendments above).
+> Amended 2026-07-23 (audit F13): the current member list also includes `.agents/push-policy.md` (2026-06-27), `.agents/comms-policy.md` (2026-07-22), and `.agents/machines.md`; `.agents/review/` is a repo-optional addition. `repo-map.json` / `artifact-manifest.json` were retired 2026-07-08 (see the existing amendments above).
 
 Reason:
 This eliminates drift from competing sources of truth and gives every future agent (including in this toolkit repo) one discoverable current-state entry point plus one place for settled decisions. The layout is the outcome of the 2026-06-09 architecture restructure.
