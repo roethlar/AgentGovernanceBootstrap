@@ -678,6 +678,30 @@ def offer_bootstrap(candidates, prompt: str, target: Path,
     return launch_fn(argv)
 
 
+def terse_line(target: Path, plan: Plan, sync_note: str, changed: bool,
+               commit_sha: str, stage_only: bool) -> str:
+    """The whole owner-facing result of a run in one line (2026-07-23
+    owner-surface D3): per-item detail lives in the commit message, never
+    behind a rerun flag. Healthy loop runs read as one line per repo."""
+    repo = target.name or str(target)
+    if not changed:
+        out = "refresh: {} — already current".format(repo)
+    else:
+        parts = []
+        for label, items in (("installed", plan.install), ("updated", plan.update),
+                             ("restored", plan.restore), ("removed", plan.remove)):
+            if items:
+                parts.append("{} {}".format(len(items), label))
+        if plan.gitignore_repairs:
+            parts.append(".gitignore repaired")
+        where = "staged, uncommitted" if stage_only else "commit " + commit_sha
+        out = "refresh: {} — {} ({}; details in the commit message)".format(
+            repo, ", ".join(parts), where)
+    if sync_note:
+        out += " — " + sync_note
+    return out
+
+
 def summarize(plan: Plan, sync_note: str) -> str:
     lines = []
     for label, items in (
@@ -876,16 +900,14 @@ def main(argv=None) -> int:
                       file=sys.stderr)
                 return 4
 
-    print("governance refresh against toolkit {}".format(toolkit_sha))
-    print(summarize(plan, sync_note))
+    commit_sha = ""
+    if changed and not args.stage_only:
+        commit_sha = git(target, "rev-parse", "--short", "HEAD").stdout.strip()
+    print(terse_line(target, plan, sync_note, changed, commit_sha, args.stage_only))
     if git(toolkit, "status", "--porcelain", check=False).stdout.strip():
         print("  NOTE: toolkit tree is dirty; installed bytes may not match {}".format(toolkit_sha))
     for rel, msg, kind in lint_governance(target):
         print("  {} {}: {}".format("NOTE" if kind == "note" else "LINT", rel, msg))
-    if changed and args.stage_only:
-        print("  (staged only - the bootstrap procedure makes the single scoped commit)")
-    if policy_line is not None:
-        print("push policy: {}".format(policy_line))
 
     if core:
         print(banner_block(core))

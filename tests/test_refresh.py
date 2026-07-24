@@ -42,6 +42,10 @@ def run_git(repo: Path, *args: str) -> str:
     return proc.stdout
 
 
+def last_commit_msg(repo: Path) -> str:
+    return run_git(repo, "log", "-1", "--format=%B")
+
+
 def init_repo(path: Path) -> None:
     path.mkdir(parents=True, exist_ok=True)
     subprocess.run(["git", "init", "-q", str(path)], check=True)
@@ -134,8 +138,26 @@ class RefreshTests(unittest.TestCase):
         n = len(self.commits())
         proc = refresh(self.toolkit, self.target)
         self.assertEqual(proc.returncode, 0)
-        self.assertIn("nothing to do", proc.stdout)
+        self.assertIn("already current", proc.stdout)
         self.assertEqual(len(self.commits()), n)
+
+    def test_stdout_is_one_terse_line_detail_in_commit_message(self):
+        # 2026-07-23 owner-surface D3: the owner runs refresh in a loop over
+        # many repos; stdout is one line per repo, and the per-item detail
+        # lives in the commit message — never behind a rerun flag.
+        (self.target / ".claude" / "commands").mkdir(parents=True)
+        (self.target / ".claude" / "commands" / "tool.md").write_text(OLD_TOOL, newline="\n")
+        commit_all(self.target, "old tool")
+        proc = refresh(self.toolkit, self.target)
+        self.assertEqual(proc.returncode, 0, proc.stderr)
+        lines = [ln for ln in proc.stdout.splitlines() if ln.strip()]
+        self.assertEqual(1, len(lines), proc.stdout)
+        self.assertIn("refresh: target", lines[0])
+        self.assertIn("1 updated", lines[0])
+        self.assertIn("3 installed", lines[0])
+        self.assertIn("details in the commit message", lines[0])
+        self.assertNotIn("updated:", proc.stdout)
+        self.assertIn("updated: .claude/commands/tool.md", last_commit_msg(self.target))
 
     # -- replace-if-unmodified ------------------------------------------
 
@@ -146,7 +168,7 @@ class RefreshTests(unittest.TestCase):
         proc = refresh(self.toolkit, self.target)
         self.assertEqual(proc.returncode, 0, proc.stderr)
         self.assertEqual((self.target / ".claude" / "commands" / "tool.md").read_text(), CUR_TOOL)
-        self.assertIn("updated: .claude/commands/tool.md", proc.stdout)
+        self.assertIn("updated: .claude/commands/tool.md", last_commit_msg(self.target))
 
     def test_diverged_artifact_is_restored_with_drift_report(self):
         # Strict converge (owner ruling 2026-07-16): content matching no
@@ -158,9 +180,9 @@ class RefreshTests(unittest.TestCase):
         proc = refresh(self.toolkit, self.target)
         self.assertEqual(proc.returncode, 0, proc.stderr)
         self.assertEqual((self.target / ".claude" / "commands" / "tool.md").read_text(), CUR_TOOL)
-        self.assertIn("restored: .claude/commands/tool.md", proc.stdout)
-        self.assertIn("DRIFT", proc.stdout)
-        self.assertIn("custom wrapper", proc.stdout)  # introducing commit subject
+        self.assertIn("restored: .claude/commands/tool.md", last_commit_msg(self.target))
+        self.assertIn("DRIFT", last_commit_msg(self.target))
+        self.assertIn("custom wrapper", last_commit_msg(self.target))  # introducing commit subject
 
     # -- replace-whole (AGENTS.md) --------------------------------------
 
@@ -180,7 +202,7 @@ class RefreshTests(unittest.TestCase):
         proc = refresh(self.toolkit, self.target)
         self.assertEqual(proc.returncode, 5, proc.stderr)
         self.assertEqual((self.target / "AGENTS.md").read_text(), "# My own house rules\n")
-        self.assertIn("FLAG AGENTS.md", proc.stdout)
+        self.assertIn("FLAG AGENTS.md", last_commit_msg(self.target))
         self.assertIn("bootstrap procedure", proc.stdout)
 
     def test_force_replaces_foreign_core_file(self):
@@ -191,7 +213,7 @@ class RefreshTests(unittest.TestCase):
         proc = refresh(self.toolkit, self.target, "--force")
         self.assertEqual(proc.returncode, 0, proc.stderr)
         self.assertEqual((self.target / "AGENTS.md").read_text(), CUR_AGENTS)
-        self.assertIn("FORCED", proc.stdout)
+        self.assertIn("FORCED", last_commit_msg(self.target))
         self.assertNotIn("ATTENTION", proc.stdout)
         # The prior content is preserved in git history, one commit back.
         self.assertIn("foreign", run_git(self.target, "show", "HEAD~1:AGENTS.md"))
@@ -218,8 +240,8 @@ class RefreshTests(unittest.TestCase):
         proc = refresh(self.toolkit, self.target)
         self.assertEqual(proc.returncode, 0, proc.stderr)
         self.assertEqual((self.target / "AGENTS.md").read_text(), CUR_AGENTS)
-        self.assertIn("restored: AGENTS.md", proc.stdout)
-        self.assertIn("hijack edit", proc.stdout)
+        self.assertIn("restored: AGENTS.md", last_commit_msg(self.target))
+        self.assertIn("hijack edit", last_commit_msg(self.target))
         self.assertNotIn("ATTENTION", proc.stdout)
 
     def test_uncommitted_diverged_artifact_refuses_before_restore(self):
@@ -512,7 +534,7 @@ class RefreshTests(unittest.TestCase):
         rc, out, err = self._run_main_inprocess(mod, "--stage-only")
         self.assertEqual(rc, 0, err)
         self.assertEqual(len(self.commits()), n)
-        self.assertIn("staged only", out)
+        self.assertIn("staged, uncommitted", out)
 
     def test_dirty_toolkit_notes_default_mode_and_refuses_apply(self):
         with open(str(self.toolkit / "templates" / "shims" / "CLAUDE.template.md"),
@@ -585,7 +607,7 @@ class RefreshTests(unittest.TestCase):
         commit_all(self.target, "extra trailing newline")
         proc = refresh(self.toolkit, self.target)
         self.assertEqual(proc.returncode, 0, proc.stderr)
-        self.assertIn("restored: .claude/commands/tool.md", proc.stdout)
+        self.assertIn("restored: .claude/commands/tool.md", last_commit_msg(self.target))
         self.assertNotIn("updated: .claude/commands/tool.md", proc.stdout)
         self.assertEqual(
             (self.target / ".claude" / "commands" / "tool.md").read_text(),
@@ -665,7 +687,7 @@ class RefreshTests(unittest.TestCase):
         proc = refresh(self.toolkit, self.target)
         self.assertEqual(proc.returncode, 0, proc.stderr)
         self.assertNotIn("FLAG CLAUDE.md", proc.stdout)
-        self.assertIn("nothing to do", proc.stdout)
+        self.assertIn("already current", proc.stdout)
         self.assertEqual((self.target / "CLAUDE.md").read_bytes(), CUR_SHIM.encode() + b"\n")
         self.assertEqual(len(self.commits()), n)
 
@@ -686,7 +708,7 @@ class RefreshTests(unittest.TestCase):
         proc = refresh(self.toolkit, self.target)
         self.assertEqual(proc.returncode, 0)
         self.assertEqual((self.target / ".claude" / "commands" / "tool.md").read_text(), CUR_TOOL)
-        self.assertIn("updated: .claude/commands/tool.md", proc.stdout)
+        self.assertIn("updated: .claude/commands/tool.md", last_commit_msg(self.target))
 
     def test_retired_artifact_minus_final_newline_is_removed(self):
         (self.target / ".claude").mkdir()
@@ -704,7 +726,7 @@ class RefreshTests(unittest.TestCase):
         commit_all(self.target, "double final newline")
         proc = refresh(self.toolkit, self.target)
         self.assertEqual(proc.returncode, 0, proc.stderr)
-        self.assertIn("restored: .claude/commands/tool.md", proc.stdout)
+        self.assertIn("restored: .claude/commands/tool.md", last_commit_msg(self.target))
         self.assertNotIn("updated: .claude/commands/tool.md", proc.stdout)
         self.assertEqual((self.target / ".claude" / "commands" / "tool.md").read_bytes(),
                          CUR_TOOL.encode())
@@ -718,7 +740,7 @@ class RefreshTests(unittest.TestCase):
         proc = refresh(self.toolkit, self.target)
         self.assertEqual(proc.returncode, 0)
         self.assertFalse((self.target / ".claude" / "old-hook.py").exists())
-        self.assertIn("removed: .claude/old-hook.py", proc.stdout)
+        self.assertIn("removed: .claude/old-hook.py", last_commit_msg(self.target))
 
     def test_modified_retired_artifact_is_removed_with_drift_report(self):
         (self.target / ".claude").mkdir()
@@ -727,9 +749,9 @@ class RefreshTests(unittest.TestCase):
         proc = refresh(self.toolkit, self.target)
         self.assertEqual(proc.returncode, 0, proc.stderr)
         self.assertFalse((self.target / ".claude" / "old-hook.py").exists())
-        self.assertIn("removed: .claude/old-hook.py", proc.stdout)
-        self.assertIn("DRIFT", proc.stdout)
-        self.assertIn("custom old hook", proc.stdout)
+        self.assertIn("removed: .claude/old-hook.py", last_commit_msg(self.target))
+        self.assertIn("DRIFT", last_commit_msg(self.target))
+        self.assertIn("custom old hook", last_commit_msg(self.target))
 
     def test_ignored_untracked_retired_file_refuses_not_deletes(self):
         # An ignored file never shows in `status --porcelain`, but deleting
@@ -774,8 +796,8 @@ class RefreshTests(unittest.TestCase):
         proc = refresh(self.toolkit, self.target)
         self.assertEqual(proc.returncode, 0, proc.stderr)
         self.assertFalse((self.target / ".agents" / "generated.json").exists())
-        self.assertIn("removed: .agents/generated.json", proc.stdout)
-        self.assertIn("DRIFT", proc.stdout)
+        self.assertIn("removed: .agents/generated.json", last_commit_msg(self.target))
+        self.assertIn("DRIFT", last_commit_msg(self.target))
 
     # -- committability / .gitignore -------------------------------------
 
@@ -797,8 +819,8 @@ class RefreshTests(unittest.TestCase):
         proc = refresh(self.toolkit, self.target)
         self.assertEqual(proc.returncode, 0)
         self.assertFalse((self.target / ".claude" / "settings.json").exists())
-        self.assertIn("FLAG .claude/settings.json", proc.stdout)
-        self.assertIn("never force-added", proc.stdout)
+        self.assertIn("FLAG .claude/settings.json", last_commit_msg(self.target))
+        self.assertIn("never force-added", last_commit_msg(self.target))
         gi = (self.target / ".gitignore").read_text()
         self.assertEqual(gi, "*.json\n")
 
@@ -834,7 +856,7 @@ class RefreshTests(unittest.TestCase):
         staged = run_git(self.target, "diff", "--cached", "--name-only").splitlines()
         self.assertIn("AGENTS.md", staged)
         self.assertIn(".agents/state.md", staged)  # pre-staged foreign path untouched
-        self.assertIn("staged only", proc.stdout)
+        self.assertIn("staged, uncommitted", proc.stdout)
 
     # -- governance lint (always on, read-only) ----------------------------
 
@@ -1011,7 +1033,7 @@ class RefreshTests(unittest.TestCase):
         commit_all(self.target, "edit tool")
         proc = refresh(self.toolkit, self.target)
         self.assertEqual(proc.returncode, 0)
-        self.assertIn("restored: .claude/commands/tool.md", proc.stdout)
+        self.assertIn("restored: .claude/commands/tool.md", last_commit_msg(self.target))
         self.assertNotIn("ATTENTION", proc.stdout)
 
     def _refresh_mod(self):
