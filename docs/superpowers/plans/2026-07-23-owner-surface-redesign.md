@@ -1,9 +1,9 @@
 # Owner-facing surface redesign — install, update, vocabulary, guidance
 
-Status: IN DESIGN 2026-07-23 — staged plan, pending owner decisions D1–D5
-(one at a time, in chat per the plan contract). No implementation without
-an explicit per-stage owner go. F5 of the 2026-07-23 audit findings is
-parked: its wording depends on D3.
+Status: APPROVED 2026-07-23 — all five decisions ruled in chat (D1–D5,
+recorded below). Build order per D5: Stage 1 → Stage 2 → Stage 3, each
+stage landing behind its own owner go, suite green per stage. F5 of the
+2026-07-23 audit findings resumes with D3's wording; F6 fits Stage 2.
 
 ## Why this plan exists (owner direction, 2026-07-23)
 
@@ -206,8 +206,10 @@ never leaves the owner homework.
   report line), nothing runs in the background, and its
   compare-against-evidence skill stays agent-level; wrapper and skill
   retire from the shipped set.
-- D5 — build order. Recommendation: Stage 1 → Stage 2 → Stage 3, each
-  landing behind its own go, suite green per stage.
+- D5 — build order. **RULED 2026-07-23:** Stage 1 → Stage 2 → Stage 3,
+  each landing behind its own owner go, one scoped commit per piece,
+  suite green per stage. Audit queue resumes between stages (F5's
+  wording is settled by D3; F6 fits Stage 2).
 
 ## Explicit non-goals
 
