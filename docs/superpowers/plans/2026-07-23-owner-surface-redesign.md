@@ -1,9 +1,10 @@
 # Owner-facing surface redesign — install, update, vocabulary, guidance
 
-Status: APPROVED 2026-07-23 — all five decisions ruled in chat (D1–D5,
-recorded below). Build order per D5: Stage 1 → Stage 2 → Stage 3, each
-stage landing behind its own owner go, suite green per stage. F5 of the
-2026-07-23 audit findings resumes with D3's wording; F6 fits Stage 2.
+Status: STAGE 1 BUILT 2026-07-23 — `tools/new-project.py` + `tools/new-project`
+launcher + `procedures/setup.md` + README install line landed with
+hermetic tests (suite: 137 green); end-to-end smoke verified (init,
+staged set, hint-primed launch lines). Stage 1 awaits the owner's first
+live run. Stage 2 next per D5.
 
 ## Why this plan exists (owner direction, 2026-07-23)
 

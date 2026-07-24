@@ -21,6 +21,19 @@ wrappers, and two hooks — the Claude Code compaction re-ground and the
 blocking protect-governance pre-edit deny), shipped only where the mechanism
 is verified to work (`docs/harness-capabilities.md`).
 
+## Install into a new project (one command)
+
+```sh
+<path-to-this-repo>/tools/new-project <project-dir> [hint]
+```
+
+Creates `<project-dir>` if needed, runs `git init`, installs the governance
+set, and offers to launch a detected agent harness in it — the agent asks
+three short questions (what are we building, push policy, communication
+level) and finishes setup with a first commit. The optional hint primes the
+agent ("a markdown todo CLI") so setup opens with a confirmation. The
+launcher finds a working Python itself; no interpreter knowledge needed.
+
 ## The two flows
 
 **Bootstrap (judgment — an agent session).** Open a fresh agent session in
