@@ -1,8 +1,10 @@
 # Agent State
 
 This file is the first place future agents should read for current repo state.
-Keep it short: `## Now` holds only live entries. At each `handoff`, rotate
-landed or superseded entries verbatim to `docs/history/state-archive.md`.
+Keep it short: `## Now` holds only live entries. The `catchup` hygiene sweep
+rotates landed or superseded entries verbatim to
+`docs/history/state-archive.md`; `handoff` is the fast snapshot and rotates
+nothing.
 Volatile facts carry `as of <commit>`; counts owned elsewhere are pointed to;
 machine-local facts are labeled or omitted.
 
