@@ -96,6 +96,14 @@ For documentation-only changes, run `git diff --check`. Changes touching
   2026-07-10, recorded in `.agents/decisions.md`). Installed copies lagging
   the templates is the expected steady state between owner-run refreshes —
   leave the lag alone; at most note it.
+  The owner performs a self-refresh **from the product clone**, whose
+  `refresh.py` sees this repo as an ordinary governed target:
+  `python3.14 <product-clone>/tools/refresh.py <this-repo>` (the clone path
+  is in `.agents/machines.md`; publish first if the release is behind, or
+  the run installs release-time templates). Running this repo's own
+  `tools/refresh.py` against itself is refused unconditionally with no
+  override flag — a deliberate enforcement guard (2026-07-23 audit F6,
+  `9ad88a5`, regression-tested), not a defect to work around.
 - Review playbooks ship at `templates/playbooks/codereview.md` (per-finding
   conformance loop) and `templates/playbooks/openreview.md` (unprimed
   goal-first whole-change review); both install into `.agents/playbooks/`

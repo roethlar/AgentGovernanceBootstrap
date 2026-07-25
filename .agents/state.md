@@ -73,11 +73,11 @@ machine-local facts are labeled or omitted.
 
 ## Next
 
-- Owner: run a self-refresh here when convenient to bring this repo's
-  installed copies current (they lag the templates by design, and now lag
-  by the 2026-07-25 `seeded[]` change too). Publishing the toolkit's own
-  updates to Bixi is `tools/publish <product-repo-path>`; the path is in
-  `.agents/machines.md`.
+- None recorded. (Self-refresh is no longer pending: released 2026-07-25
+  and verified current from the product clone that day — no template has
+  changed since `064c27e`, so installed copies carry zero lag. The
+  sanctioned self-refresh route is recorded in `.agents/repo-guidance.md`,
+  Earned Practices.)
 
 ## Blockers
 
