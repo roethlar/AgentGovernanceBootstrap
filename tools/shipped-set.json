@@ -507,6 +507,13 @@
     "4b8502530773291ab1af4e6474a109627e15b5f5e7ea91cac17838083da5a3fb",
     "f2dd9fd38c3e23f638edf2949f3943c835934486c2c9a9379ff4ae342f298c4d"
    ]
+  },
+  {
+   "target": ".agents/comms-policy.md",
+   "comment": "Retired 2026-07-25 (owner ruling): the owner-communication level is retired outright - it was set per repo and never governed a response, because AGENTS.md carried a pointer to a file nothing loads. Repo-owned rather than shipped, so formerly[] carries the one version templates/comms-policy.template.md ever had: a repo still on the default level matches and is removed cleanly, while a repo whose owner changed the level does not and is removed with a DRIFT report naming the introducing commits. Both stay recoverable from git history, and the dirty-tree refusal protects uncommitted edits. Without this entry the file would survive every future refresh as governance litter pointing at a mechanism that no longer exists.",
+   "formerly": [
+    "3a15f819064c08db272445409630c8aaf3cf4556ea8d4811cb3ef848a07d473e"
+   ]
   }
  ],
  "seeded": [
