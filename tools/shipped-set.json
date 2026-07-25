@@ -508,11 +508,6 @@
  ],
  "seeded": [
   {
-   "source": "templates/comms-policy.template.md",
-   "target": ".agents/comms-policy.md",
-   "action": "seeded at the default (level 3 - normal). Set this repo's level by editing the marker line; refresh never touches this file again."
-  },
-  {
    "source": "templates/push-policy.template.md",
    "target": ".agents/push-policy.md",
    "action": "seeded at the default (ask before pushing). Change it in that file if this repo should push without asking; refresh never touches this file again."

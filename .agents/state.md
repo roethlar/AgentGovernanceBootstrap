@@ -12,7 +12,7 @@ machine-local facts are labeled or omitted.
 
 - Landed 2026-07-25: governance refresh backfills absent repo-owned policy
   files. `tools/shipped-set.json` grew a `seeded` section
-  (`.agents/comms-policy.md`, `.agents/push-policy.md`); `tools/refresh.py`
+  (`.agents/push-policy.md`); `tools/refresh.py`
   installs a seeded target only when it is missing, reports it with an
   ACTION line, and ignores it forever once it exists. Closes the dangling
   references installed artifacts carried in repos governed before those
@@ -47,9 +47,8 @@ machine-local facts are labeled or omitted.
   `docs/history/state-archive.md`). GitHub issues #5–#8 are closed with
   commit receipts, each fix verified at HEAD first. Newest Active
   rulings in `.agents/decisions.md`: paperwork follows technical work
-  (verified-fixed bookkeeping proceeds without an owner ask), and owner
-  communication is a per-repo 1–5 tunable in `.agents/comms-policy.md`
-  (this repo: level 2).
+  (verified-fixed bookkeeping proceeds without an owner ask). The
+  owner-communication tunable recorded here was retired 2026-07-25.
 - Steady state as of `0d05c97` (2026-07-12): the 2026-07-08 zero-based
   consolidation is landed; the product shape is owned by
   `.agents/repo-guidance.md` (Mission Detail). Every 2026-07-10 plan is

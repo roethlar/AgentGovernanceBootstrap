@@ -75,12 +75,12 @@ Two flows:
   ⇒ update; anything else ⇒ drift, reported with its introducing commits
   and restored), `retired` (removed; drifted content is removed with a
   DRIFT report). A separate `seeded` section covers the repo-owned policy
-  files that installed artifacts reference unconditionally
-  (`.agents/comms-policy.md`, `.agents/push-policy.md`): absent ⇒ installed
+  file that installed artifacts reference unconditionally
+  (`.agents/push-policy.md`): absent ⇒ installed
   from its template at the documented default and reported with an ACTION
   line naming the owner's follow-up; present ⇒ ignored entirely, never
   hashed, updated, or removed. It exists because only bootstrap creates
-  those files, so a repo governed before they existed would otherwise carry
+  that file, so a repo governed before it existed would otherwise carry
   installed governance pointing at nothing (owner ruling 2026-07-25).
   A final cleanup step offers to remove directories left empty by retired
   files — git cannot report those, since it does not track directories, so

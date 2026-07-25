@@ -76,7 +76,6 @@ class ShippedSetIntegrity(unittest.TestCase):
             "repo-guidance.template.md",
             "governance-inventory.template.md",
             "push-policy.template.md",
-            "comms-policy.template.md",
         }
         KEPT_AFTER_RETIREMENT = {
             # Retired 2026-07-22; source stays on disk so re-entry is a

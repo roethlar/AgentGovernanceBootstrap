@@ -34,6 +34,36 @@ live rule now owned elsewhere - archive it per the rule above: move it verbatim 
 
 ## Decisions
 
+### 2026-07-25 — A configurable setting nothing reads is retired, not repaired
+
+Status: Active
+
+Decision: the owner-communication level (1–5) is retired outright — the
+policy file, its template, its bootstrap seeding, its approval-summary
+question, its refresh preflight, and the register deferrals in
+`templates/AGENTS.template.md` and the plan playbook. Owner wording
+(2026-07-25), verbatim: "scrap the whole comms thing. this is example 'if
+it's not being used, it's not worth keeping'".
+
+Evidence: the level was set to 2 in this repo and governed no response.
+`templates/AGENTS.template.md` carried a one-line pointer ("Register
+follows the repo's communication level") to a file nothing loads, so the
+definitions were never in context at the moment of writing. Demonstrated
+2026-07-25: an entire session ran at roughly level 4 length under a level 2
+setting, and the level entered consideration only when the owner raised it.
+
+Generalized rule this establishes: a setting is only worth keeping when
+something reads it at the moment it applies. Guidance one indirection away
+from its point of use does not bind — put the rule in text already loaded,
+or do not add the rule. When a configurable knob is found unread, the
+default response is deletion, not a louder pointer.
+
+Supersedes the 2026-07-22 tunable-level decision and the 2026-07-12
+named-profile design before it; both are archived in
+`docs/history/decisions-archive.md`. Two attempts at per-repo
+communication tuning, neither ever load-bearing. Plan:
+`docs/superpowers/plans/2026-07-25-retire-comms-policy.md`.
+
 ### 2026-07-25 — Refresh backfills absent repo-owned policy files
 
 Status: Active
@@ -47,14 +77,18 @@ removed — so owner edits stay owner-owned. Bootstrap remains the only
 surface that asks the owner for the value; seeding never pre-fills an
 answer, because it fires only where bootstrap already did not run.
 
-Evidence: `.agents/comms-policy.md` and `.agents/push-policy.md` were
-created only by `procedures/bootstrap.md` Step 4, while
-`templates/AGENTS.template.md` (push policy, communication level) and the
-plan and handoff playbooks reference them in every installed copy. Any repo
-governed before those files existed (push-policy 2026-06-27, comms-policy
-2026-07-22) that has only been refreshed since carried pointers to nothing,
-and the hygiene lint could not see it: `lint_governance()` excludes
-`AGENTS.md` by design and globs only top-level `.agents/*.md`.
+Evidence: `.agents/push-policy.md` was created only by
+`procedures/bootstrap.md` Step 4, while `templates/AGENTS.template.md` and
+the handoff playbook reference it in every installed copy. Any repo
+governed before that file existed (2026-06-27) that has only been refreshed
+since carried pointers to nothing, and the hygiene lint could not see it:
+`lint_governance()` excludes `AGENTS.md` by design and globs only top-level
+`.agents/*.md`.
+
+Amended 2026-07-25: the ruling landed covering two policy files; the
+communication-level file was retired the same day (see the entry above), so
+`seeded[]` now carries `.agents/push-policy.md` alone. The mechanism is
+unchanged.
 
 Landed: the `seeded` section of `tools/shipped-set.json` plus its handling
 in `tools/refresh.py` (`classify`, `validate_manifest`, `summarize`,
@@ -221,46 +255,6 @@ paperwork after a fix is landed and verified.
 > Prime Invariants commit bullet in `templates/AGENTS.template.md` closes
 > verified work's paperwork in the same motion, no fresh ask (decisions-
 > as-claims audit F4, owner go). No longer local-only.
-
-### 2026-07-22 — Owner communication is a per-repo tunable level (1–5), seeded like the push policy; supersedes the named-profile design
-
-Status: Active
-
-Decision: owner-facing communication register is a per-repo tunable on a
-1–5 scale, configured exactly the way the push policy is — a small
-repo-owned policy file, `.agents/comms-policy.md`, seeded at bootstrap
-from `templates/comms-policy.template.md` with a machine-readable marker
-line (`<!-- comms-level: N -->`) as its first line. The level definitions
-live in the policy file itself so it stands alone. The five levels: 1 =
-explain like I'm five; 2 = plain English, one decision at a time; 3 =
-normal user; 4 = devops shorthand; 5 = devops/jargon, terse.
-Template/bootstrap default is level 3 (normal user); the approval summary
-asks the owner to choose and never pre-fills. The level tunes register
-only — it never changes any safety, approval, or verification rule, and
-the Owner Gates structural contract is level-independent. This repo's own
-`.agents/comms-policy.md` is set to level 2.
-
-Owner wording (2026-07-22), verbatim: "this needs to be tunable like the
-push policy. 1-5, 1 being eli5, 2 plain english one at a time, 3 normal
-user, 4-5 devops/jargon".
-
-Supersedes: the 2026-07-12 named-profile owner-communication design
-(single `Profile:` line in `.agents/repo-guidance.md`, five named profiles
-`default`/`devops`/`student`/`expert`/`brief`, menu home
-`templates/approval-summary.template.md`), archived in
-`docs/history/decisions-archive.md` under the 2026-07-10 "Per-repo tuning
-for verbosity and technical level" entry. The named-profile surfaces are
-replaced: the `Owner Communication` section is removed from
-`templates/repo-guidance.template.md`, the approval-summary question is
-reworded to the 1–5 levels, and bootstrap Step 4 seeds
-`.agents/comms-policy.md` instead of drafting a repo-guidance profile line.
-
-Landed: `templates/comms-policy.template.md` (default level 3) and this
-repo's `.agents/comms-policy.md` (level 2); the plan-operator styling
-sentence in `templates/AGENTS.template.md` becomes a pointer to the level
-(see the 2026-07-10 plan-contract amendment). Plan:
-`docs/superpowers/plans/2026-07-22-holistic-toolkit-improvements.md`
-(Site 6).
 
 ### 2026-07-22 — A response never ends on a bare blocker while queued work remains (R2)
 

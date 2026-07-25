@@ -78,11 +78,10 @@ version, reported as a DRIFT line naming the commits that introduced it
 nothing uncommitted is ever destroyed). If it flags `AGENTS.md` as a foreign
 governance file, the repo needs the bootstrap flow above, not a refresh.
 
-A repo governed before the per-repo policy files existed gets them
-backfilled: refresh writes `.agents/comms-policy.md` (level 3) or
-`.agents/push-policy.md` (ask before pushing) if it is missing, and prints an
-ACTION line telling you what to set. Once the file exists — however you have
-edited it — refresh ignores it for good.
+A repo governed before the per-repo policy file existed gets it backfilled:
+refresh writes `.agents/push-policy.md` (ask before pushing) if it is
+missing, and prints an ACTION line telling you what to set. Once the file
+exists — however you have edited it — refresh ignores it for good.
 
 When retiring a file empties its directory, the run lists the empty
 directories and asks once — `[Y/n]`, Enter accepts — before removing them.
