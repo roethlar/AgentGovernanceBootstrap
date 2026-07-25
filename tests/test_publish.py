@@ -5,6 +5,7 @@ parent.parent resolution points at the fixture, and the product repo is a
 throwaway git repo. Push is exercised only in --no-push mode (no remotes).
 """
 import importlib.util
+import re
 import shutil
 import subprocess
 import sys
@@ -14,6 +15,10 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 SCRIPT = ROOT / "tools" / "publish.py"
+
+_spec = importlib.util.spec_from_file_location("_publish_under_test", SCRIPT)
+publish_mod = importlib.util.module_from_spec(_spec)
+_spec.loader.exec_module(publish_mod)
 
 
 def git(repo, *args, check=True):
@@ -40,6 +45,9 @@ class PublishTests(unittest.TestCase):
         (self.dev / "product").mkdir()
         (self.dev / "product" / "README.md").write_text("product front page\n")
         (self.dev / "README.md").write_text("dev-facing readme\n")
+        # The front page references assets by relative path.
+        (self.dev / "assets").mkdir()
+        (self.dev / "assets" / "logo.png").write_bytes(b"\x89PNG\r\n\x1a\n")
         (self.dev / "tools" / "keep.py").write_text("x = 1\n")
         # dev-only content that must never publish
         (self.dev / "docs").mkdir()
@@ -69,6 +77,8 @@ class PublishTests(unittest.TestCase):
         self.assertEqual("product front page\n",
                          (self.product / "README.md").read_text())
         self.assertFalse((self.product / "product").exists())
+        # assets ship, or every image on the front page is a broken link
+        self.assertTrue((self.product / "assets" / "logo.png").exists())
         self.assertTrue((self.product / "tools" / "keep.py").exists())
         self.assertTrue((self.product / "tools" / "publish.py").exists())
         # dev-only content never crosses
@@ -115,6 +125,24 @@ class PublishTests(unittest.TestCase):
         proc = self.run_publish("--no-push")
         self.assertEqual(0, proc.returncode, proc.stderr)
         self.assertEqual("front page v2\n", (self.product / "README.md").read_text())
+
+    def test_real_front_page_images_all_exist_and_are_published(self):
+        # Guards the shape of the failure, not a fixture: every relative path
+        # the real product README points at must exist in this repo AND fall
+        # under a published path, or it renders as a broken image on the
+        # public page.
+        readme = ROOT / "product" / "README.md"
+        refs = set(re.findall(r'(?:src|srcset)="([^"]+)"', readme.read_text(encoding="utf-8")))
+        refs |= set(re.findall(r'!\[[^\]]*\]\(([^)]+)\)', readme.read_text(encoding="utf-8")))
+        refs = {r for r in refs if not r.startswith(("http:", "https:", "#"))}
+        self.assertTrue(refs, "expected the front page to reference images")
+        published = {src for src, _dst in publish_mod.PUBLISH_PATHS}
+        for ref in sorted(refs):
+            with self.subTest(ref=ref):
+                self.assertTrue((ROOT / ref).is_file(),
+                                "{} is referenced but missing".format(ref))
+                self.assertTrue(any(ref == p or ref.startswith(p + "/") for p in published),
+                                "{} is referenced but not in the publish set".format(ref))
 
     def test_missing_product_readme_refuses_before_touching_the_product_repo(self):
         (self.dev / "product" / "README.md").unlink()
