@@ -65,12 +65,10 @@ machine-local facts are labeled or omitted.
 
 ## Next
 
-- Owner: publish, then self-refresh this repo from the product clone. The
-  2026-07-25 template changes (comms retirement, review dispatch) mean the
-  installed copies now lag: `AGENTS.md:83` and `.agents/playbooks/plan.md:15`
-  still point at the deleted `.agents/comms-policy.md`. The route is in
-  `.agents/repo-guidance.md`, Earned Practices; the zero-lag state recorded
-  here earlier that day ended with those edits.
+- None recorded. Released `e29bcac` and self-refreshed `8383229`
+  (2026-07-25), so installed copies match the templates and carry no comms
+  reference. The self-refresh route is in `.agents/repo-guidance.md`,
+  Earned Practices.
 
 ## Blockers
 
