@@ -1,9 +1,26 @@
 # Plan: fix the operator-attribution and stale-doc findings
 
-Status: Approved (owner go 2026-07-25) — remediate findings 1, 2, 3, and 5
-of the 2026-07-25 operator/doc audit. Finding 4 (`new-project` presentation)
-is deliberately excluded: it needs an owner judgment that has not been made.
-No open decision blocks the items below.
+Status: CLOSED 2026-07-25 — findings 1, 2, 3, and 5 remediated as specified.
+Finding 4 (`new-project` presentation) was deliberately excluded and remains
+open: it needs an owner judgment that has not been made.
+
+Commit map:
+
+- `a37e145` — Step 1, `templates/state.template.md` repointed at `catchup`
+  (both the rotation sentence and the parked-item re-verification line).
+- `a04b45f` — Step 2, `.agents/state.md` header repointed at `catchup`.
+- `6718107` — Step 3, duplicated bullet dropped; the superseded audit entry
+  rotated verbatim to `docs/history/state-archive.md`.
+- `6b7cbbd` — Step 4, `README.md`: retired `GEMINI.md` shim dropped,
+  `comms-policy.md` added to the `.agents/` enumeration.
+- Step 5 — the two empty directories were removed from the working tree.
+  No commit: both were untracked, so git records nothing.
+
+Verification at close: suite 175 green, `refresh --lint-only` clean,
+`git diff --check` clean. The plan lint initially failed this document for
+naming the two directories Step 5 deleted; both references now carry a
+same-line `plan-lint: allow` marker with its reason, since the plan is the
+record of what was removed.
 
 ## Findings and evidence
 
@@ -39,8 +56,8 @@ machines.md pruning). `AGENTS.md` agrees: the state-hygiene sweep rides
    the manifest's retired list, so refresh removes it from governed repos.
    Lines 13-17 enumerate `.agents/` without `comms-policy.md`, a peer of
    `push-policy.md` since 2026-07-22.
-5. **Leftover directories.** `.agents/skills/drift/` and
-   `.agents/skills/harness-update/` exist and are empty: `apply_plan()`
+5. **Leftover directories.** `.agents/skills/drift/` <!-- plan-lint: allow (removed by Step 5 of this plan; named as the record of what was removed) --> and
+   `.agents/skills/harness-update/` <!-- plan-lint: allow (removed by Step 5 of this plan; named as the record of what was removed) --> exist and are empty: `apply_plan()`
    unlinks a retired target but never prunes the emptied parent, so an
    agent listing `.agents/skills/` sees skills that do not exist. Both are
    untracked, so git cannot surface them.
