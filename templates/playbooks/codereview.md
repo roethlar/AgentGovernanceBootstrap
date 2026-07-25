@@ -261,7 +261,7 @@ there is no third role: no economy/cheap-model role exists for any review
 work — cheapness comes from routing, not from a weaker tier.
 
 A tier resolves to its (model ID, effort flags) pair at invocation time,
-from the version-keyed machine-local cache (see "Deriving the reviewer
+from the machine-local cache (see "Deriving the reviewer
 incantation"); each tier→pair mapping is recorded when the owner names or
 accepts it. A dispatch whose tier has no recorded pair asks the owner once and
 records the answer — nothing guesses, and nothing else blocks: an explicit
@@ -393,6 +393,7 @@ see the gate below):
    the JSON envelope. Its result payload must match:
    ```json
    {"verdict":"accepted|reopened|invalid","guard_confirmed":true,
+    "capability_ok":true,
     "reviewed_sha":"<head-sha>","base_sha":"<base-sha>","comments":["file:line — …"]}
    ```
    Parse the envelope's result field against this schema. **The orchestrator — never
@@ -400,7 +401,12 @@ see the gate below):
    checks, not the decision. **Fail closed:** any of {non-zero exit, missing/!valid
    JSON envelope, payload not matching the schema, `verdict` not in the enum,
    `reviewed_sha` ≠ the dispatched head SHA, `base_sha` ≠ the dispatched base SHA,
-   `guard_confirmed` not literally `true`} → the outcome is **not accepted**.
+   `guard_confirmed` not literally `true`, `capability_ok` not literally `true`}
+   → the outcome is **not accepted**. `capability_ok` is the folded-in transport
+   proof (see "Capability proof"): the reviewer sets it only after reading a repo
+   file and running one allowlisted command in the same shot, so its absence means
+   the child never had the capabilities the review depends on — exactly the issue
+   #6 failure mode, which the standalone smoke round used to catch.
    **Extraction before rejection:** a prose-wrapped payload is not a parse miss —
    scan it for candidate JSON objects, and when exactly one matches the schema, use
    it; the review already happened, and surrounding prose is never an input to
