@@ -70,7 +70,8 @@
     "831faf0f3173ad02a6d8ef8d66a8f850bd775c509a970235fffdb2151efc463c",
     "126070504b11a2771f70f125c8dbe385d64b716aaf313859acfa28844ab7c6f4",
     "7890d3cf59caba1a705d1f59868d4eb8b85c61f6f9ccc659daa02c67543cee6c",
-    "6cf8f0a2208840d0066ef19647f0276c4936924fc67c784df8a161eff3b42c1d"
+    "6cf8f0a2208840d0066ef19647f0276c4936924fc67c784df8a161eff3b42c1d",
+    "f28dea5ca9f896295b44937ac070a99b3ef4e7f2190097e1c90181f6f89fd52f"
    ]
   },
   {
@@ -369,7 +370,9 @@
    "source": "templates/playbooks/plan.md",
    "target": ".agents/playbooks/plan.md",
    "class": "replace",
-   "formerly": []
+   "formerly": [
+    "af885ab545c95e4f1d6f287b4c8ba92dcee5a3ff5259370dbba97630c9f0d759"
+   ]
   },
   {
    "source": "templates/commands/claude/toolkit.md",
