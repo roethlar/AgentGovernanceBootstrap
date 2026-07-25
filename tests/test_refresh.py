@@ -27,6 +27,7 @@ OLD_TOOL = "old tool wrapper\n"
 CUR_SETTINGS = '{"hooks": "current"}\n'
 OLD_SETTINGS = '{"hooks": "old"}\n'
 OLD_HOOK = "retired hook script\n"
+OLD_SKILL = "retired skill\n"
 CUR_SHIM = "@AGENTS.md"  # no final newline - the canonical shape that produced issue #1
 
 
@@ -85,6 +86,9 @@ def make_toolkit(root: Path) -> Path:
         "retired": [
             {"target": ".claude/old-hook.py", "formerly": [nhash(OLD_HOOK)]},
             {"target": ".agents/generated.json", "formerly": []},
+            # Nested: retiring this empties .agents/skills/ghost/, the shape
+            # that leaves litter in the field (drift, harness-update).
+            {"target": ".agents/skills/ghost/SKILL.md", "formerly": [nhash(OLD_SKILL)]},
         ],
         "machine_local_exclusions": {".claude": [".claude/settings.local.json"]},
     }
@@ -1586,7 +1590,8 @@ class PruneEmptyDirTests(unittest.TestCase):
     git cannot report it. Refresh offers to prune, never removes unasked
     (owner ruling 2026-07-25)."""
 
-    SHIPPED = {"artifacts": [{"target": "AGENTS.md"}],
+    SHIPPED = {"artifacts": [{"target": "AGENTS.md"},
+                             {"target": ".agents/skills/ghost/SKILL.md"}],
                "retired": [{"target": ".claude/old-hook.py"}],
                "seeded": [{"target": ".agents/policy.md"}]}
 
@@ -1603,26 +1608,34 @@ class PruneEmptyDirTests(unittest.TestCase):
     def tearDown(self):
         self._tmp.cleanup()
 
-    def test_governance_roots_are_the_manifest_first_segments(self):
-        self.assertEqual({".claude", ".agents"},
+    def test_candidates_are_only_directories_the_manifest_names(self):
+        # Not "every directory under .agents/ and .claude/": an adapter dir
+        # holds content the toolkit does not own.
+        self.assertEqual({".agents/skills", ".agents/skills/ghost"},
                          self.mod.governance_roots(self.SHIPPED))
 
     def test_empty_chain_collapses_in_one_pass_roots_excluded(self):
-        (self.target / ".agents" / "a" / "b").mkdir(parents=True)
+        (self.target / ".agents" / "skills" / "ghost").mkdir(parents=True)
         (self.target / ".claude").mkdir()
         found = self.mod.emptied_dirs(self.target, self.SHIPPED)
         # Both links of the chain, deepest first; the roots themselves never
         # appear even though .claude/ is empty.
-        self.assertEqual([".agents/a/b", ".agents/a"], found)
+        self.assertEqual([".agents/skills/ghost", ".agents/skills"], found)
 
     def test_directory_holding_anything_is_not_a_candidate(self):
-        (self.target / ".agents" / "keep").mkdir(parents=True)
-        (self.target / ".agents" / "keep" / "f.txt").write_text("x", newline="\n")
-        (self.target / ".agents" / "gone").mkdir()
-        self.assertEqual([".agents/gone"],
+        (self.target / ".agents" / "skills" / "ghost").mkdir(parents=True)
+        (self.target / ".agents" / "skills" / "keep").mkdir()
+        (self.target / ".agents" / "skills" / "keep" / "f.txt").write_text(
+            "x", newline="\n")
+        # ghost/ is empty and named; skills/ still holds keep/, which the
+        # manifest never names, so skills/ is not a candidate.
+        self.assertEqual([".agents/skills/ghost"],
                          self.mod.emptied_dirs(self.target, self.SHIPPED))
 
-    def test_directories_outside_the_governance_roots_are_ignored(self):
+    def test_unowned_empty_directories_are_never_offered(self):
+        # The vela case (2026-07-25): build trees under an adapter dir.
+        (self.target / ".claude" / "worktrees" / "wt" / "target" / "debug").mkdir(
+            parents=True)
         (self.target / "src" / "empty").mkdir(parents=True)
         self.assertEqual([], self.mod.emptied_dirs(self.target, self.SHIPPED))
 
@@ -1658,13 +1671,17 @@ class PruneEmptyDirTests(unittest.TestCase):
         self.assertIn("1 empty directory", seen[0])
         self.assertIn("3 empty directories", seen[1])
 
-    def test_non_interactive_run_reports_and_removes_nothing(self):
-        refresh(self.toolkit, self.target)
-        ghost = self.target / ".claude" / "ghost"
+    def test_retiring_the_last_file_offers_its_directory_but_removes_nothing(self):
+        # The real shape: a retired target empties its own directory, which
+        # git cannot report. Non-interactive, so it is offered, not removed.
+        ghost = self.target / ".agents" / "skills" / "ghost"
         ghost.mkdir(parents=True)
+        (ghost / "SKILL.md").write_text(OLD_SKILL, newline="\n")
+        commit_all(self.target, "a skill that is about to be retired")
         proc = refresh(self.toolkit, self.target)
         self.assertEqual(proc.returncode, 0, proc.stderr)
-        self.assertIn("empty: .claude/ghost", proc.stdout)
+        self.assertFalse((ghost / "SKILL.md").exists())
+        self.assertIn("empty: .agents/skills/ghost", proc.stdout)
         self.assertIn("left in place", proc.stdout)
         self.assertNotIn("pruned:", proc.stdout)
         self.assertTrue(ghost.is_dir())
