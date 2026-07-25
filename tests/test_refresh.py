@@ -379,8 +379,11 @@ class RefreshTests(unittest.TestCase):
         self.assertIn("LINT .agents/state.md", proc.stdout)
         self.assertFalse(log.exists())
 
-    def test_note_only_findings_do_not_trigger_remediation(self):
-        # A git-vouched deletion prints a NOTE, never a launch.
+    def test_note_only_findings_are_silent_and_do_not_trigger_remediation(self):
+        # A git-vouched deletion is never a warn and never a launch. Since
+        # 2026-07-25 it is also not printed on its own: a permanent
+        # historical reference carries no action, so a run with nothing
+        # actionable says nothing about it.
         refresh(self.toolkit, self.target)
         (self.target / "docs").mkdir(exist_ok=True)
         (self.target / "docs" / "gone.md").write_text("x\n", newline="\n")
@@ -394,7 +397,8 @@ class RefreshTests(unittest.TestCase):
         path = self.make_stub("claude", log) + os.pathsep + os.environ.get("PATH", "")
         proc = self.refresh_env(self.target, path=path)
         self.assertEqual(proc.returncode, 0, proc.stderr)
-        self.assertIn("NOTE .agents/state.md", proc.stdout)
+        self.assertNotIn("NOTE .agents/state.md", proc.stdout)
+        self.assertNotIn("LINT .agents/state.md", proc.stdout)
         self.assertNotIn("launching", proc.stdout)
         self.assertFalse(log.exists())
 
@@ -1166,8 +1170,12 @@ class RefreshTests(unittest.TestCase):
         commit_all(self.target, "state naming retired dir")
         proc = refresh(self.toolkit, self.target)
         self.assertEqual(proc.returncode, 0)
-        self.assertIn("NOTE .agents/state.md: historical: `drafts/` - deleted in ", proc.stdout)
+        # Not a warn, and with nothing actionable in the run, not printed
+        # at all (2026-07-25). The note surfaces only beside a real warn —
+        # covered by test_lint_notes_git_vouched_deletion_instead_of_warning,
+        # whose fixture carries both.
         self.assertNotIn("LINT .agents/state.md", proc.stdout)
+        self.assertNotIn("NOTE .agents/state.md", proc.stdout)
 
     def test_lint_skips_existing_commands_urls_and_placeholders(self):
         ag = self.target / ".agents"

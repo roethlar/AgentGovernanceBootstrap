@@ -34,6 +34,30 @@ live rule now owned elsewhere - archive it per the rule above: move it verbatim 
 
 ## Decisions
 
+### 2026-07-25 — Lint notes are context for warns, never standalone output
+
+Status: Active
+
+Decision: `lint_governance()`'s NOTE lines print only when the same run also
+has at least one warn. A git-vouched historical reference is permanent and
+carries no action, so printing it on every run of every repo is output the
+owner cannot clear by doing anything. The typo-safe distinction is unchanged:
+git history still decides note-vs-warn, warns still print, still set exit 6
+under `--lint-only`, and still drive remediation.
+
+Supersedes the print-always half of the 2026-07-09 direction ("no allowlists,
+consult history, print the note"). That direction's purpose — distinguish a
+deletion from a typo without an allowlist — is untouched; only the reporting
+half changes.
+
+Evidence: this repo carried five permanent notes that reprinted on every
+refresh, including runs reporting "already current". Owner wording
+(2026-07-25): "why am I getting the same notes every time".
+
+Same rule as the two rulings above it: output nobody acts on is waste, and a
+finding that can never be closed must not re-offer forever — consistent with
+the 2026-07-24 `lint: allow` marker rule.
+
 ### 2026-07-25 — A recorded reviewer pair never blocks a dispatch
 
 Status: Active
