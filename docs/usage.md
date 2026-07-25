@@ -84,6 +84,11 @@ backfilled: refresh writes `.agents/comms-policy.md` (level 3) or
 ACTION line telling you what to set. Once the file exists — however you have
 edited it — refresh ignores it for good.
 
+When retiring a file empties its directory, the run lists the empty
+directories and asks once — `[Y/n]`, Enter accepts — before removing them.
+Answer no and they stay. Runs that aren't interactive (loops, CI) list them
+and remove nothing.
+
 A repo you don't touch stays stale, and that's fine — it catches up the next
 time you work there.
 

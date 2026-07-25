@@ -82,6 +82,13 @@ Two flows:
   hashed, updated, or removed. It exists because only bootstrap creates
   those files, so a repo governed before they existed would otherwise carry
   installed governance pointing at nothing (owner ruling 2026-07-25).
+  A final cleanup step offers to remove directories left empty by retired
+  files — git cannot report those, since it does not track directories, so
+  the litter would otherwise survive every later run. Scope is the
+  manifest's own roots, bottom-up, empty-only, never a root itself; one
+  `[Y/n]` prompt at a real TTY, and automated runs report without removing.
+  Nothing is staged or committed, so a pruned directory can never
+  invalidate an approved plan record.
   Uncommitted changes on touched paths trigger the
   dirty-tree refusal, so nothing uncommitted is ever machine-destroyed;
   committed drift stays recoverable from git history. All matching is
