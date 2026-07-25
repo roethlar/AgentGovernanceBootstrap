@@ -380,6 +380,51 @@ def repo_with_deleted(tmp, token="docs/gone.md"):
     return root
 
 
+class LintablePathPredicateTests(unittest.TestCase):
+    """Direct cases for `refresh._lintable_repo_path`, which had none: it was
+    only ever reached through `_stale_paths`, and no fixture used a token that
+    contains a slash without being a path (issue #10)."""
+
+    NOT_PATHS = [
+        "10.0.0.1/30",            # IPv4 CIDR
+        "169.254/16",             # link-local prefix
+        "192.168.1.0/24",
+        "origin/master",          # git refs — remote names are arbitrary,
+        "upstream/main",          # so no name blocklist can enumerate them
+        "fix/mpx-1-multi-plex",
+        "gromgit/fuse/sshfs-mac",  # Homebrew tap
+        "lowerdir=/mnt/lower",    # mount option
+        "key=value/path",
+        "https://example.invalid/x",
+        "../outside/thing.md",
+        "/absolute/thing.md",
+    ]
+
+    PATHS = [
+        "docs/STATE.md",
+        "tools/refresh.py",
+        "templates/AGENTS.template.md",
+        ".agents/state.md",
+        "docs/history/",          # explicit directory
+        ".agents/playbooks/",
+        ".github/ISSUE_TEMPLATE/",
+    ]
+
+    def test_slash_bearing_non_paths_are_rejected(self):
+        for tok in self.NOT_PATHS:
+            with self.subTest(tok=tok):
+                self.assertFalse(refresh._lintable_repo_path(tok))
+
+    def test_real_repo_references_are_accepted(self):
+        for tok in self.PATHS:
+            with self.subTest(tok=tok):
+                self.assertTrue(refresh._lintable_repo_path(tok))
+
+    def test_extensionless_directory_without_a_slash_is_a_deliberate_miss(self):
+        # The accepted cost of the shape test: silence beats a false line.
+        self.assertFalse(refresh._lintable_repo_path("docs/history"))
+
+
 class StalePathTests(unittest.TestCase):
     def test_deleted_token_flagged_never_existed_allowed(self):
         with tempfile.TemporaryDirectory() as tmp:
