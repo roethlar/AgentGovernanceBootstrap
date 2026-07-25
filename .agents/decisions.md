@@ -34,6 +34,37 @@ live rule now owned elsewhere - archive it per the rule above: move it verbatim 
 
 ## Decisions
 
+### 2026-07-25 — A recorded reviewer pair never blocks a dispatch
+
+Status: Active
+
+Decision: review dispatch stops asking the owner for confirmations that
+change no outcome. Where a recorded tier pair is usable it is used, and any
+environment shift — a harness version change, a re-probed incantation — is a
+note on the dispatch record, never a gate; only a genuinely absent pair or a
+harness that rejects the model at dispatch stops and asks. The machine-local
+cache splits: the incantation stays version-keyed and re-probes itself
+automatically, while the tier→pair mapping carries no version key, because it
+is an owner judgment about server-side models that a CLI point release cannot
+invalidate. `openreview` eligibility rides the frontier pair's existing
+`grade` (competitive dispatches, fallback asks once), superseding the
+2026-07-18 OR3 `openreview_confirmed` field. The capability proof folds into
+the review dispatch as a `capability_ok` token in the verdict envelope
+instead of a separate paid round-trip.
+
+Evidence: a routine codex point release (0.144.5 → 0.145.0) invalidated the
+recorded pair and put two separate confirmations between the owner and a
+review, before any review ran. Owner wording (2026-07-25): "I still have a
+lot of friction with the review command".
+
+Generalized rule: a confirmation is worth asking only when the answer can
+change what happens next. Provenance is recorded either way, so a ritual that
+merely re-states what the record already carries is friction, not safety.
+Consistent with the 2026-07-23 ruling that deleted the fleet-global model map
+for the same reason. Unchanged and deliberately kept: fail-closed verdict
+parsing, the no-priming rule, pinned base/head SHAs, terminal permission
+denial, and finding intake triage.
+
 ### 2026-07-25 — A configurable setting nothing reads is retired, not repaired
 
 Status: Active
