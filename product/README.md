@@ -1,15 +1,11 @@
 <div align="center">
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="assets/bixi-avatar-dark.png">
-  <img src="assets/bixi-avatar.png" alt="Bixi — a dragon-turtle carrying a stone stele on its back" width="200">
+  <source media="(prefers-color-scheme: dark)" srcset="assets/bixi-banner-dark.png">
+  <img src="assets/bixi-banner-light.png" alt="Bixi — carries the durable record, so nothing drifts" width="620">
 </picture>
 
-# Bixi
-
-**Carries the durable record for a repository worked on by LLM coding
-agents, so nothing drifts.**
-
+Governance for repositories worked on by LLM coding agents.<br>
 Markdown and one JSON file · Python 3.10+, standard library only · no runtime
 dependency in governed repos
 
