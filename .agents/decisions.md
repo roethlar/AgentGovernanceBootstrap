@@ -34,6 +34,39 @@ live rule now owned elsewhere - archive it per the rule above: move it verbatim 
 
 ## Decisions
 
+### 2026-07-25 — An owner-typed push command is the authorization
+
+Status: Active
+
+Decision: when the owner invokes a push — `git push`, or the `git` playbook's
+push operation — it executes. No confirmation prompt, no second ask. Owner
+wording (2026-07-25), verbatim: "when I run /git push, I do not accept
+another prompt asking me if I want to push. the authorization comes in the
+command." The agent says what it is pushing where as it does it, never as a
+question.
+
+The push policy governs pushes the agent would make **on its own
+initiative**, after a commit. It does not re-gate an instruction the owner
+has already given. Read the other way, `ask` would make the push operator
+unable to push, and the operator word would mean nothing.
+
+Evidence: the shipped `git` playbook said a push "executes immediately:
+typing the operation is the instruction, consistent with the repo's push
+policy" — a main clause that a subordinate clause silently reversed under
+two of the four policies, with no statement of which wins. In the field an
+agent reached the right answer only by reasoning at length from the policy
+ladder; a less careful one would have read the main clause and pushed.
+Underspecified guidance on an irreversible outward-facing action is the
+defect, whichever way the coin lands.
+
+Same rule as the rulings above: a confirmation is worth asking only when the
+answer can change what happens next, and the owner typing the command has
+already answered.
+
+Note: a repo whose own guidance is stricter still wins — repo-specific rules
+outrank the playbook — so a repo carrying a list-then-wait push rule keeps
+prompting until that rule is changed there.
+
 ### 2026-07-25 — Lint notes are context for warns, never standalone output
 
 Status: Active
