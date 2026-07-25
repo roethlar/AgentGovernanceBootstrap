@@ -1,6 +1,6 @@
 # 2026-07-23 decisions-as-claims audit — findings
 
-Status: COMPLETE 2026-07-23 — every Fix Queue item is resolved: F1/F2 amendments landed, F3 resolved by the owner ruling that deleted the model-map apparatus, F4/F5/F6 landed, F7 mooted, F8–F13 landed (commit per item below). F5's shipped-clause half was deliberately declined by the owner (toolkit-local: installed files are toolkit-owned, so the misreading is inert downstream).
+Status: CLOSED 2026-07-23 — every Fix Queue item is resolved: F1/F2 amendments landed, F3 resolved by the owner ruling that deleted the model-map apparatus, F4/F5/F6 landed, F7 mooted, F8–F13 landed (commit per item below). F5's shipped-clause half was deliberately declined by the owner (toolkit-local: installed files are toolkit-owned, so the misreading is inert downstream).
 
 Method: re-run of the 2026-07-22 holistic review with rulings as claims, per `docs/superpowers/plans/2026-07-23-decisions-as-claims-audit.md`. Every entry under `## Decisions` in `.agents/decisions.md` was audited against current repo evidence (file contents, tests, git history), not against the ruling's own prose; "Landed:" and "Canonical home:" claims were verified, not trusted. The `## Open Decisions` queue is empty ("queue emptied 2026-07-12", `.agents/decisions.md:1259`), so no open entries were audited. Baseline at audit time: 161/161 tests green (`/opt/homebrew/bin/python3.14 -m unittest discover -s tests -p "test_*.py"`). Archived entries in `docs/history/decisions-archive.md` were out of scope.
 

@@ -1,7 +1,19 @@
 # Plan: retire the owner-communication level
 
-Status: Approved (owner ruling 2026-07-25) — scrap the comms mechanism
-entirely. "If it's not being used, it's not worth keeping."
+Status: CLOSED 2026-07-25 — removed as specified, in `5371f67` (toolkit
+sources, procedures, tooling, tests, records and docs) on top of `54e9d70`
+(the two shipped templates, with both outgoing nhashes appended to
+`formerly[]`).
+
+The removal landed as one commit rather than the per-group sequence below:
+deleting `templates/comms-policy.template.md` while `seeded[]` still listed
+it fails manifest validation, and the `.agents/` records reference the
+template, so any split produces a red intermediate commit.
+
+Verification at close: suite 182 (down two, the retired preflight tests),
+`refresh --lint-only` clean — the deleted paths named in `.agents/decisions.md`
+resolve to `historical: deleted in 5371f67` notes — and `git diff --check`
+clean.
 
 ## Why
 
