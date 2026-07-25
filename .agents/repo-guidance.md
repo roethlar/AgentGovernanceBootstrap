@@ -64,6 +64,15 @@ For documentation-only changes, run `git diff --check`. Changes touching
   purpose is covering GitHub being unreachable. It may lag GitHub; lag is
   expected, never a conflict (2026-06-10 decision; owner ruling
   2026-07-10). Canon propagates only via pushes to GitHub.
+- Product repo: Bixi, `https://github.com/roethlar/Bixi.git` — the clean
+  public release of this toolkit, first published 2026-07-24. This repo is
+  the development source; releases go out with `tools/publish`, which
+  mirrors the shipped set into a clean product-repo checkout. The local
+  checkout path is machine-specific and lives in `.agents/machines.md`,
+  written and re-read by `tools/publish.py` itself. The same URL leads
+  `tools/refresh.py`'s canonical fallback list — a clone's own origin is
+  tried ahead of that list — so a product clone refreshes from its own
+  public home rather than from here.
 - Push policy lives in `.agents/push-policy.md`.
 
 ## Earned Practices
