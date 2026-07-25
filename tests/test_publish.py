@@ -44,6 +44,7 @@ class PublishTests(unittest.TestCase):
         # README.md; the dev repo's own README.md never crosses.
         (self.dev / "product").mkdir()
         (self.dev / "product" / "README.md").write_text("product front page\n")
+        (self.dev / "product" / ".gitignore").write_text(".DS_Store\n")
         (self.dev / "README.md").write_text("dev-facing readme\n")
         # The front page references assets by relative path.
         (self.dev / "assets").mkdir()
@@ -143,6 +144,19 @@ class PublishTests(unittest.TestCase):
                                 "{} is referenced but missing".format(ref))
                 self.assertTrue(any(ref == p or ref.startswith(p + "/") for p in published),
                                 "{} is referenced but not in the publish set".format(ref))
+
+    def test_os_junk_in_the_product_repo_does_not_block_a_release(self):
+        proc = self.run_publish(self.product, "--no-push")
+        self.assertEqual(0, proc.returncode, proc.stderr)
+        self.assertTrue((self.product / ".gitignore").is_file())
+        # Finder and Explorer drop these just by opening the folder. Untracked,
+        # they trip the dirty-tree refusal and stop the next release; ignored,
+        # they are invisible to it.
+        (self.product / ".DS_Store").write_bytes(b"\x00")
+        (self.dev / "product" / "README.md").write_text("front page v2\n")
+        again = self.run_publish("--no-push")
+        self.assertEqual(0, again.returncode, again.stderr)
+        self.assertEqual("front page v2\n", (self.product / "README.md").read_text())
 
     def test_missing_product_readme_refuses_before_touching_the_product_repo(self):
         (self.dev / "product" / "README.md").unlink()
