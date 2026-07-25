@@ -16,7 +16,22 @@ it — toolkit changes that are not pushed do not propagate to your other
 machines. (Push the gitea mirror too when convenient; it is never
 authoritative.)
 
-## Bootstrapping a repo (first time, or migrating existing governance)
+## Starting a brand-new project (one command)
+
+```bash
+~/dev/AgentGovernanceBootstrap/tools/new-project <project-dir> [hint]
+```
+
+(Windows: `tools\new-project.cmd`.) It creates the directory, runs
+`git init`, installs the governance set staged but uncommitted, then offers
+to launch a detected agent harness there with a kickoff prompt pointing at
+`procedures/setup.md` — the agent asks the setup questions, drafts the
+judgment files, and makes the first commit. The optional hint is a one-line
+description of the project; it primes that conversation so it opens with a
+confirmation instead of an interrogation. If the directory already has
+governance the command refuses and tells you to refresh instead.
+
+## Bootstrapping a repo (an existing repo, with or without governance to migrate)
 
 Open a fresh agent session in the target repo and paste:
 

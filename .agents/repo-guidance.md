@@ -5,12 +5,21 @@
 ## Mission Detail
 
 This repo is AgentGovernanceBootstrap, the source of the portable governance
-process it ships. The product (post the 2026-07-08 zero-based consolidation):
-`procedures/bootstrap.md` (the single bootstrap/migration procedure) +
-`procedures/verification.md` (fresh-eyes), `templates/` (the drafting
-templates, including the `AGENTS.template.md` this repo's own `AGENTS.md` is
-a verbatim copy of), and `tools/refresh.py` + `tools/shipped-set.json` (the
-deterministic per-repo governance refresh). Feedback arrives as GitHub
+process it ships; its public release is the Bixi product repo (Remotes &
+Sync below). The product:
+
+- Entry points — `tools/new-project` (greenfield: create the repo, install
+  the set staged, hand off to an agent) and `tools/publish` (release to the
+  product repo).
+- Procedures — `procedures/setup.md` (the greenfield agent phase that
+  `new-project` launches), `procedures/bootstrap.md` (an existing repo,
+  including migrating governance it already has),
+  `procedures/remediate-governance.md`, and `procedures/verification.md`
+  (fresh-eyes).
+- `templates/` — the drafting templates, including the
+  `AGENTS.template.md` this repo's own `AGENTS.md` is a verbatim copy of.
+- `tools/refresh.py` + `tools/shipped-set.json` — the deterministic
+  per-repo governance refresh. Feedback arrives as GitHub
 issues on this repo (`.github/ISSUE_TEMPLATE/`); each issue is put to the
 owner one at a time as an Owner Gates ask and acted on only on an explicit
 per-item go — a general "fix them" is not standing batch authority. The
