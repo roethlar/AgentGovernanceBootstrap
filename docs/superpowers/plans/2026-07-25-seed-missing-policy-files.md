@@ -1,10 +1,26 @@
 # Plan: refresh seeds absent repo-owned policy files
 
-Status: Approved (owner ruling 2026-07-25) — governance refresh creates
-`.agents/comms-policy.md` and `.agents/push-policy.md` at their documented
-defaults when they are absent, reports each seeding loudly, and never touches
-either file again. Implementation may proceed under this ruling; no further
-owner decision is open.
+Status: CLOSED 2026-07-25 — implemented as specified, all four steps, no
+deviation. Governance refresh creates `.agents/comms-policy.md` and
+`.agents/push-policy.md` at their documented defaults when they are absent,
+reports each seeding with an ACTION line, and never touches either file
+again (owner ruling 2026-07-25).
+
+Commit map:
+
+- `a6f7486` — Step 1, `seeded[]` section in `tools/shipped-set.json` with
+  its semantics in the manifest comment.
+- `96ad6dd` — Step 2, `tools/refresh.py`: `classify`, `validate_manifest`,
+  `summarize`, `terse_line`, the ACTION lines, docstring exception.
+- `74f4a18` — Step 3, `SeedTests` in `tests/test_refresh.py`, with the
+  three-mutation guard proof run on throwaway copies.
+- `8765f2c` — Step 4, `docs/design.md`, `docs/usage.md`,
+  `.agents/decisions.md` (2026-07-25 ruling), `.agents/state.md`.
+
+Verification at close: suite 175 green, `refresh --lint-only` clean
+(historical NOTEs only), `git diff --check` clean, plus a live check on a
+throwaway repo covering both directions (absent → seeded with ACTION lines;
+owner-rewritten → untouched, "already current").
 
 ## Problem
 
