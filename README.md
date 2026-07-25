@@ -1,8 +1,10 @@
-# Bixi
+# AgentGovernanceBootstrap — development source for [Bixi](https://github.com/roethlar/Bixi)
 
-> **Bixi** (赑屃) is the dragon-turtle of Chinese myth, who carries stone
-> steles — durable inscriptions — on his back for eternity. That is this
-> toolkit's whole job: carry the durable record, so nothing drifts.
+This is the working repository. The released product is **Bixi** (赑屃, the
+dragon-turtle who carries stone steles for eternity); `tools/publish` mirrors
+`tools/`, `templates/`, `procedures/` and `product/README.md` into it. The
+public front page is [`product/README.md`](product/README.md) — edit that one
+for anything a newcomer reads.
 
 A personal governance toolkit for repositories maintained with LLM coding
 agents. It keeps code, docs, decisions, and agent behavior aligned so future
@@ -104,14 +106,12 @@ plus one JSON hook settings file.
 - `tools/refresh.py` + `tools/shipped-set.json` — the refresh mechanism and
   the manifest of what ships where.
 
-This repository is the released toolkit. Its development source — design
-notes, the per-harness verify-once record, the decision log, and the
-archives — lives in
-[AgentGovernanceBootstrap](https://github.com/roethlar/AgentGovernanceBootstrap):
+- `product/README.md` — the public front page, published as Bixi's
+  `README.md`. Not read by anything in this repo.
+- `docs/` — design notes, [`harness-capabilities.md`](docs/harness-capabilities.md)
+  (the per-harness verify-once record), usage, and `docs/history/` (archives).
 
-- [`docs/design.md`](https://github.com/roethlar/AgentGovernanceBootstrap/blob/master/docs/design.md)
-  and [`docs/usage.md`](https://github.com/roethlar/AgentGovernanceBootstrap/blob/master/docs/usage.md)
-- [`docs/harness-capabilities.md`](https://github.com/roethlar/AgentGovernanceBootstrap/blob/master/docs/harness-capabilities.md)
-  — which adapters are verified on which harness
-- [`.agents/decisions.md`](https://github.com/roethlar/AgentGovernanceBootstrap/blob/master/.agents/decisions.md)
-  — every settled decision, with the evidence that produced it
+Live repo state is tracked in [`.agents/state.md`](.agents/state.md);
+settled decisions in [`.agents/decisions.md`](.agents/decisions.md). The
+2026-07-08 zero-based consolidation that produced this shape is recorded in
+[`docs/superpowers/plans/2026-07-08-zero-based-consolidation.md`](docs/superpowers/plans/2026-07-08-zero-based-consolidation.md).

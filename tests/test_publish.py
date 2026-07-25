@@ -35,7 +35,11 @@ class PublishTests(unittest.TestCase):
             (self.dev / d).mkdir(parents=True)
         (self.dev / "templates" / "x" / "a.md").write_text("a\n")
         (self.dev / "procedures" / "p.md").write_text("p\n")
-        (self.dev / "README.md").write_text("readme\n")
+        # The product front page is a product-only file that publishes to
+        # README.md; the dev repo's own README.md never crosses.
+        (self.dev / "product").mkdir()
+        (self.dev / "product" / "README.md").write_text("product front page\n")
+        (self.dev / "README.md").write_text("dev-facing readme\n")
         (self.dev / "tools" / "keep.py").write_text("x = 1\n")
         # dev-only content that must never publish
         (self.dev / "docs").mkdir()
@@ -61,7 +65,10 @@ class PublishTests(unittest.TestCase):
         self.assertEqual(0, proc.returncode, proc.stderr)
         self.assertTrue((self.product / "templates" / "x" / "a.md").exists())
         self.assertTrue((self.product / "procedures" / "p.md").exists())
-        self.assertTrue((self.product / "README.md").exists())
+        # product/README.md publishes as the product repo's README.md
+        self.assertEqual("product front page\n",
+                         (self.product / "README.md").read_text())
+        self.assertFalse((self.product / "product").exists())
         self.assertTrue((self.product / "tools" / "keep.py").exists())
         self.assertTrue((self.product / "tools" / "publish.py").exists())
         # dev-only content never crosses
@@ -104,10 +111,20 @@ class PublishTests(unittest.TestCase):
         machines = (self.dev / ".agents" / "machines.md").read_text()
         self.assertIn("product-repo: " + str(self.product.resolve()), machines)
         # change something, re-run with NO path argument
-        (self.dev / "README.md").write_text("readme v2\n")
+        (self.dev / "product" / "README.md").write_text("front page v2\n")
         proc = self.run_publish("--no-push")
         self.assertEqual(0, proc.returncode, proc.stderr)
-        self.assertEqual("readme v2\n", (self.product / "README.md").read_text())
+        self.assertEqual("front page v2\n", (self.product / "README.md").read_text())
+
+    def test_missing_product_readme_refuses_before_touching_the_product_repo(self):
+        (self.dev / "product" / "README.md").unlink()
+        (self.product / "sentinel.txt").write_text("untouched\n")
+        git(self.product, "add", "-A")
+        git(self.product, "commit", "-q", "-m", "sentinel")
+        proc = self.run_publish(self.product, "--no-push")
+        self.assertEqual(2, proc.returncode)
+        self.assertIn("product/README.md", proc.stderr)
+        self.assertTrue((self.product / "sentinel.txt").exists())
 
     def test_nothing_to_release_is_a_clean_noop(self):
         self.assertEqual(0, self.run_publish(self.product, "--no-push").returncode)
