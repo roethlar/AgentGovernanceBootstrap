@@ -32,7 +32,6 @@ machine-local facts are labeled or omitted.
   recorded in `.agents/machines.md`). Remaining external step: the owner's
   self-refresh of this repo's installed copies.
 - Steady state as of this commit (2026-07-23): the model-map apparatus is
-- Steady state as of this commit (2026-07-23): the model-map apparatus is
   deleted under the owner ruling "the owner's dispatch word is final; no
   committed model lists" — `.agents/model-map.json`, <!-- lint: allow (deleted in this change; named as the record of the deletion) --> its lint, the
   model-denylist lint, and the `harness-update` operator are gone (the
@@ -41,14 +40,6 @@ machine-local facts are labeled or omitted.
   `templates/playbooks/codereview.md`; tier pairs are owner-named,
   recorded in the machine-local cache, no confirmation ritual. The
   2026-07-19 and 2026-07-09 (Codex eval) entries are archived.
-- In flight: the 2026-07-23 decisions-as-claims audit (plan:
-  `docs/superpowers/plans/2026-07-23-decisions-as-claims-audit.md`).
-  Pass 1 + Pass 2 complete in
-  `docs/superpowers/plans/2026-07-23-audit-findings.md` — 41 rulings
-  audited (16 HOLDS, 20 HOLDS-UNENFORCED, 2 HOLDS-UNSHIPPED, 2 STALE,
-  1 CONTRADICTED); architecture verdict: incremental surgery. Routed
-  verdicts F1–F3 resolved (F1/F2 amendments landed; F3 resolved by the
-  dispatch ruling); queued fixes F4+ await per-item owner go.
 - Steady state as of `b7448e2` (2026-07-22): the holistic toolkit
   improvement plan and the model-map reviewer dispatch plan are both
   CLOSED, each with its per-finding commit map in its plan doc under

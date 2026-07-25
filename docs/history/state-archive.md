@@ -1021,3 +1021,20 @@ receipts; the paperwork-follows-work ruling is Active in
   run (evidence in the plan's Verification section) proves the alias
   installs or updates rather than vanishing, and discriminates: the same
   harness fails against a mutant toolkit carrying the F6 collision.
+
+## Rotated 2026-07-25 (catchup sweep rule) — decisions-as-claims audit entry was superseded
+
+Rotated because the entry claimed live work that had already closed: the
+`## Now` entry above it records the audit as CLOSED with the full Fix Queue
+drained, and `docs/superpowers/plans/2026-07-23-audit-findings.md` opens
+`Status: COMPLETE 2026-07-23 — every Fix Queue item is resolved` with a
+landing commit on each of F4-F13. Verbatim:
+
+- In flight: the 2026-07-23 decisions-as-claims audit (plan:
+  `docs/superpowers/plans/2026-07-23-decisions-as-claims-audit.md`).
+  Pass 1 + Pass 2 complete in
+  `docs/superpowers/plans/2026-07-23-audit-findings.md` — 41 rulings
+  audited (16 HOLDS, 20 HOLDS-UNENFORCED, 2 HOLDS-UNSHIPPED, 2 STALE,
+  1 CONTRADICTED); architecture verdict: incremental surgery. Routed
+  verdicts F1–F3 resolved (F1/F2 amendments landed; F3 resolved by the
+  dispatch ruling); queued fixes F4+ await per-item owner go.
