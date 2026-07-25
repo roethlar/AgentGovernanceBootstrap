@@ -25,9 +25,10 @@ machine-local facts are labeled or omitted.
   owner-surface redesign Stages 1–3 landed (new-project installer;
   update overhaul + owner-driven remediation; vocabulary with `toolkit`
   verb, `drift` retired), the packaging stage is built (`tools/publish`,
-  manifest completeness guard), and the product is named Bixi. Remaining
-  external steps: create the public Bixi repo and first publish;
-  owner's self-refresh of this repo's installed copies.
+  manifest completeness guard), and the product is named Bixi. The public
+  Bixi repo and its first publish landed 2026-07-24 (product-repo path
+  recorded in `.agents/machines.md`). Remaining external step: the owner's
+  self-refresh of this repo's installed copies.
 - Steady state as of this commit (2026-07-23): the model-map apparatus is
 - Steady state as of this commit (2026-07-23): the model-map apparatus is
   deleted under the owner ruling "the owner's dispatch word is final; no
@@ -72,9 +73,11 @@ machine-local facts are labeled or omitted.
 
 ## Next
 
-- Owner: create the public Bixi repo, then `tools/publish <path>` for the
-  first release; run a self-refresh here when convenient to bring this
-  repo's installed copies current (they lag the templates by design).
+- Owner: run a self-refresh here when convenient to bring this repo's
+  installed copies current (they lag the templates by design, and now lag
+  by the 2026-07-25 `seeded[]` change too). Publishing the toolkit's own
+  updates to Bixi is `tools/publish <product-repo-path>`; the path is in
+  `.agents/machines.md`.
 
 ## Blockers
 
