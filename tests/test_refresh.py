@@ -1577,5 +1577,99 @@ class SeedTests(unittest.TestCase):
         self.assertFalse((self.root / "escape.md").exists())
 
 
+class PruneEmptyDirTests(unittest.TestCase):
+    """Retiring the last file in a directory leaves the directory behind and
+    git cannot report it. Refresh offers to prune, never removes unasked
+    (owner ruling 2026-07-25)."""
+
+    SHIPPED = {"artifacts": [{"target": "AGENTS.md"}],
+               "retired": [{"target": ".claude/old-hook.py"}],
+               "seeded": [{"target": ".agents/policy.md"}]}
+
+    def setUp(self):
+        self._tmp = tempfile.TemporaryDirectory()
+        self.root = Path(self._tmp.name)
+        self.toolkit = make_toolkit(self.root)
+        self.target = make_target(self.root)
+        sys.path.insert(0, str(TOOLS))
+        self.addCleanup(sys.path.remove, str(TOOLS))
+        import refresh as refresh_mod
+        self.mod = refresh_mod
+
+    def tearDown(self):
+        self._tmp.cleanup()
+
+    def test_governance_roots_are_the_manifest_first_segments(self):
+        self.assertEqual({".claude", ".agents"},
+                         self.mod.governance_roots(self.SHIPPED))
+
+    def test_empty_chain_collapses_in_one_pass_roots_excluded(self):
+        (self.target / ".agents" / "a" / "b").mkdir(parents=True)
+        (self.target / ".claude").mkdir()
+        found = self.mod.emptied_dirs(self.target, self.SHIPPED)
+        # Both links of the chain, deepest first; the roots themselves never
+        # appear even though .claude/ is empty.
+        self.assertEqual([".agents/a/b", ".agents/a"], found)
+
+    def test_directory_holding_anything_is_not_a_candidate(self):
+        (self.target / ".agents" / "keep").mkdir(parents=True)
+        (self.target / ".agents" / "keep" / "f.txt").write_text("x", newline="\n")
+        (self.target / ".agents" / "gone").mkdir()
+        self.assertEqual([".agents/gone"],
+                         self.mod.emptied_dirs(self.target, self.SHIPPED))
+
+    def test_directories_outside_the_governance_roots_are_ignored(self):
+        (self.target / "src" / "empty").mkdir(parents=True)
+        self.assertEqual([], self.mod.emptied_dirs(self.target, self.SHIPPED))
+
+    def test_prune_removes_deepest_first_and_survives_a_non_empty_dir(self):
+        (self.target / ".agents" / "a" / "b").mkdir(parents=True)
+        (self.target / ".agents" / "busy").mkdir()
+        (self.target / ".agents" / "busy" / "f.txt").write_text("x", newline="\n")
+        pruned = self.mod.prune_dirs(
+            self.target, [".agents/a/b", ".agents/busy", ".agents/a"])
+        self.assertEqual([".agents/a/b", ".agents/a"], pruned)
+        self.assertFalse((self.target / ".agents" / "a").exists())
+        self.assertTrue((self.target / ".agents" / "busy" / "f.txt").exists())
+
+    def test_confirm_defaults_to_yes_and_declines_on_anything_else(self):
+        self.assertTrue(self.mod.confirm_prune(1, input_fn=lambda _: ""))
+        self.assertTrue(self.mod.confirm_prune(2, input_fn=lambda _: "y"))
+        self.assertTrue(self.mod.confirm_prune(2, input_fn=lambda _: "YES"))
+        self.assertFalse(self.mod.confirm_prune(2, input_fn=lambda _: "n"))
+        self.assertFalse(self.mod.confirm_prune(2, input_fn=lambda _: "q"))
+
+        def eof(_):
+            raise EOFError
+        self.assertFalse(self.mod.confirm_prune(1, input_fn=eof))
+
+    def test_prompt_is_singular_for_one_and_plural_for_many(self):
+        seen = []
+
+        def capture(msg):
+            seen.append(msg)
+            return "n"
+        self.mod.confirm_prune(1, input_fn=capture)
+        self.mod.confirm_prune(3, input_fn=capture)
+        self.assertIn("1 empty directory", seen[0])
+        self.assertIn("3 empty directories", seen[1])
+
+    def test_non_interactive_run_reports_and_removes_nothing(self):
+        refresh(self.toolkit, self.target)
+        ghost = self.target / ".claude" / "ghost"
+        ghost.mkdir(parents=True)
+        proc = refresh(self.toolkit, self.target)
+        self.assertEqual(proc.returncode, 0, proc.stderr)
+        self.assertIn("empty: .claude/ghost", proc.stdout)
+        self.assertIn("left in place", proc.stdout)
+        self.assertNotIn("pruned:", proc.stdout)
+        self.assertTrue(ghost.is_dir())
+
+    def test_nothing_printed_when_no_directory_is_empty(self):
+        proc = refresh(self.toolkit, self.target)
+        self.assertNotIn("empty:", proc.stdout)
+        self.assertNotIn("left in place", proc.stdout)
+
+
 if __name__ == "__main__":
     unittest.main()
