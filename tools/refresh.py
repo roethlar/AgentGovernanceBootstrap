@@ -568,6 +568,10 @@ def check_committability(target_repo: Path, plan: Plan, shipped: dict) -> None:
         else:
             for lst in (plan.install, plan.update, plan.restore):
                 lst[:] = [(t, s) for t, s in lst if t != path]
+            # plan.seeded drives the counts, the commit summary and the ACTION
+            # line, so a skipped seed left there reports a file that was never
+            # written.
+            plan.seeded[:] = [t for t in plan.seeded if t != path]
             plan.flags.append((path, "ignored by '{}' ({}:{}) - unrecognized rule; skipped, never force-added".format(pattern, source, lineno)))
     # dedupe repairs (several paths may hit the same blanket line)
     plan.gitignore_repairs = sorted(set(

@@ -1532,6 +1532,22 @@ class SeedTests(unittest.TestCase):
         self.assertEqual(applied.returncode, 0, applied.stderr)
         self.assertEqual((self.target / SEED_TARGET).read_text(), SEED_TEMPLATE)
 
+    def test_seed_skipped_as_ignored_is_not_reported_as_seeded(self):
+        # check_committability drops an ignored target from the write lists;
+        # plan.seeded drives the counts, the commit summary and the ACTION
+        # line, so leaving it there reports a file that was never written.
+        (self.target / ".gitignore").write_text(
+            "policy.md\n", newline="\n")
+        commit_all(self.target, "ignore the policy path")
+        proc = refresh(self.toolkit, self.target)
+        self.assertEqual(proc.returncode, 0, proc.stderr)
+        self.assertFalse((self.target / SEED_TARGET).exists())
+        self.assertNotIn("seeded", proc.stdout)
+        self.assertNotIn("ACTION", proc.stdout)
+        msg = last_commit_msg(self.target)
+        self.assertNotIn("seeded: " + SEED_TARGET, msg)
+        self.assertIn("unrecognized rule", msg)
+
     def test_missing_seeded_source_refused_before_any_write(self):
         mutate_manifest(self.toolkit,
                         lambda d: d["seeded"][0].update(source="templates/gone.md"))
