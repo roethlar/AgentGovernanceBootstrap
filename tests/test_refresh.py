@@ -93,6 +93,14 @@ def make_toolkit(root: Path) -> Path:
     return tk
 
 
+def mutate_manifest(toolkit: Path, fn) -> None:
+    ss = toolkit / "tools" / "shipped-set.json"
+    data = json.loads(ss.read_text(encoding="utf-8"))
+    fn(data)
+    with open(str(ss), "w", newline="\n") as f:
+        json.dump(data, f)
+
+
 def make_target(root: Path) -> Path:
     tgt = root / "target"
     init_repo(tgt)
@@ -593,11 +601,7 @@ class RefreshTests(unittest.TestCase):
         self.assertEqual(list(outside_dir.iterdir()), [])
 
     def _mutate_manifest(self, fn):
-        ss = self.toolkit / "tools" / "shipped-set.json"
-        data = json.loads(ss.read_text(encoding="utf-8"))
-        fn(data)
-        with open(str(ss), "w", newline="\n") as f:
-            json.dump(data, f)
+        mutate_manifest(self.toolkit, fn)
 
     def test_manifest_traversal_target_refused(self):
         self._mutate_manifest(
@@ -1468,6 +1472,109 @@ class FormerlyListMaintenance(unittest.TestCase):
             "shipped source versions missing from formerly[] - append the "
             "outgoing nhash in the same commit as the source change "
             "(manifest MAINTENANCE RULE): " + "; ".join(violations))
+
+
+SEED_TEMPLATE = "<!-- policy-marker: default -->\ndefault policy body\n"
+SEED_TARGET = ".agents/policy.md"
+SEED_ACTION = "seeded at the default. Set it; refresh never touches it again."
+
+
+class SeedTests(unittest.TestCase):
+    """seeded[]: the repo-owned policy files installed artifacts reference
+    unconditionally are created when absent and ignored when present
+    (owner ruling 2026-07-25)."""
+
+    def setUp(self):
+        self._tmp = tempfile.TemporaryDirectory()
+        self.root = Path(self._tmp.name)
+        self.toolkit = make_toolkit(self.root)
+        self.target = make_target(self.root)
+        (self.toolkit / "templates" / "policy.template.md").write_text(
+            SEED_TEMPLATE, newline="\n")
+        mutate_manifest(self.toolkit, lambda d: d.setdefault("seeded", []).append(
+            {"source": "templates/policy.template.md", "target": SEED_TARGET,
+             "action": SEED_ACTION}))
+        commit_all(self.toolkit, "seeded section")
+
+    def tearDown(self):
+        self._tmp.cleanup()
+
+    def test_absent_target_is_seeded_and_reported(self):
+        proc = refresh(self.toolkit, self.target)
+        self.assertEqual(proc.returncode, 0, proc.stderr)
+        self.assertEqual((self.target / SEED_TARGET).read_text(), SEED_TEMPLATE)
+        self.assertIn("1 seeded", proc.stdout)
+        self.assertIn("ACTION: {} {}".format(SEED_TARGET, SEED_ACTION), proc.stdout)
+        msg = last_commit_msg(self.target)
+        self.assertIn("seeded: " + SEED_TARGET, msg)
+        self.assertNotIn("installed: " + SEED_TARGET, msg)
+        committed = run_git(self.target, "show", "--name-only", "--format=",
+                            "HEAD").split()
+        self.assertIn(SEED_TARGET, committed)
+
+    def test_seeded_target_is_not_double_counted_as_installed(self):
+        proc = refresh(self.toolkit, self.target)
+        # Four shipped artifacts install; the seeded file is reported on its
+        # own so the two counts never describe the same path twice.
+        self.assertIn("4 installed, 1 seeded", proc.stdout)
+
+    def test_present_target_is_never_touched(self):
+        owner = "<!-- policy-marker: 5 -->\nowner rewrote this entirely.\n"
+        (self.target / ".agents").mkdir(parents=True)
+        (self.target / SEED_TARGET).write_text(owner, newline="\n")
+        commit_all(self.target, "owner sets the policy")
+        proc = refresh(self.toolkit, self.target)
+        self.assertEqual(proc.returncode, 0, proc.stderr)
+        self.assertEqual((self.target / SEED_TARGET).read_text(), owner)
+        self.assertNotIn("seeded", proc.stdout)
+        self.assertNotIn("ACTION", proc.stdout)
+        committed = run_git(self.target, "show", "--name-only", "--format=",
+                            "HEAD").split()
+        self.assertNotIn(SEED_TARGET, committed)
+
+    def test_second_refresh_is_a_no_op(self):
+        refresh(self.toolkit, self.target)
+        proc = refresh(self.toolkit, self.target)
+        self.assertEqual(proc.returncode, 0, proc.stderr)
+        self.assertIn("already current", proc.stdout)
+        self.assertEqual((self.target / SEED_TARGET).read_text(), SEED_TEMPLATE)
+        self.assertEqual(run_git(self.target, "status", "--porcelain"), "")
+
+    def test_plan_json_carries_the_seed_and_apply_reproduces_it(self):
+        out = self.root / "plan.json"
+        proc = refresh(self.toolkit, self.target, "--plan-json", str(out))
+        self.assertEqual(proc.returncode, 0, proc.stderr)
+        self.assertIn("seeded: " + SEED_TARGET, proc.stdout)
+        rec = json.loads(out.read_text())
+        self.assertTrue(any(e["target"] == SEED_TARGET for e in rec["installs"]))
+        self.assertIn(SEED_TARGET, rec["staged_paths"])
+        applied = refresh(self.toolkit, self.target, "--apply", str(out))
+        self.assertEqual(applied.returncode, 0, applied.stderr)
+        self.assertEqual((self.target / SEED_TARGET).read_text(), SEED_TEMPLATE)
+
+    def test_missing_seeded_source_refused_before_any_write(self):
+        mutate_manifest(self.toolkit,
+                        lambda d: d["seeded"][0].update(source="templates/gone.md"))
+        proc = refresh(self.toolkit, self.target)
+        self.assertEqual(proc.returncode, 4, proc.stderr)
+        self.assertIn("missing seeded source file", proc.stderr)
+        self.assertFalse((self.target / "AGENTS.md").exists())
+
+    def test_seeded_target_also_shipped_refused(self):
+        mutate_manifest(self.toolkit,
+                        lambda d: d["seeded"][0].update(target="AGENTS.md"))
+        proc = refresh(self.toolkit, self.target)
+        self.assertEqual(proc.returncode, 4, proc.stderr)
+        self.assertIn("both seeded and artifacts/retired", proc.stderr)
+        self.assertFalse((self.target / "AGENTS.md").exists())
+
+    def test_seeded_traversal_target_refused(self):
+        mutate_manifest(self.toolkit,
+                        lambda d: d["seeded"][0].update(target="../escape.md"))
+        proc = refresh(self.toolkit, self.target)
+        self.assertEqual(proc.returncode, 4, proc.stderr)
+        self.assertIn("traverses", proc.stderr)
+        self.assertFalse((self.root / "escape.md").exists())
 
 
 if __name__ == "__main__":
