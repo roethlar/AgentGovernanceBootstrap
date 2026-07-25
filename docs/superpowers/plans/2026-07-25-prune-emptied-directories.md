@@ -1,7 +1,33 @@
 # Plan: refresh prunes directories it leaves empty
 
-Status: Approved (owner go 2026-07-25) — "if folder empty remove it in final
-cleanup step with Y/n prompt". No open decision blocks the work below.
+Status: CLOSED 2026-07-25 — implemented as specified, all three steps.
+
+Commit map:
+
+- `b673da6` — Step 1, `tools/refresh.py`: `governance_roots`,
+  `emptied_dirs`, `confirm_prune`, `prune_dirs`, and the `main()` call site.
+- `17479c4` — Step 2, `PruneEmptyDirTests` with a five-mutation guard proof.
+- `9887a4b` — Step 3, `docs/design.md` and `docs/usage.md`.
+
+Two deviations from the design above, both corrected during
+implementation and reflected in the shipped code:
+
+- `governance_roots()` originally took the first segment of every target,
+  which made a top-level file target (`AGENTS.md`) look like a tree. It now
+  counts only targets that live in a directory. Caught by its own test.
+- The bottom-up walk as first written did not collapse a chain: `os.walk`
+  visits a child before its parent, but the parent still contains that child
+  at walk time, so a two-link chain took two runs. A directory now counts as
+  empty when every entry it holds is itself already marked removable.
+  Caught by a live run, then locked by
+  `test_empty_chain_collapses_in_one_pass_roots_excluded`.
+
+Verification at close: suite 184 green; `refresh --lint-only` clean;
+`git diff --check` clean; guard proof on throwaway copies (call site
+removed, roots regression, chain-collapse degraded, consent ignored, prompt
+default flipped — each failing exactly the test that guards it); and a live
+run under a real pty confirming both consent paths — `n` leaves the
+directories in place, bare Enter takes the `[Y/n]` default and prunes them.
 
 ## Problem
 
