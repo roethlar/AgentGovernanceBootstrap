@@ -85,8 +85,10 @@ exists — however you have edited it — refresh ignores it for good.
 
 When retiring a file empties its directory, the run lists the empty
 directories and asks once — `[Y/n]`, Enter accepts — before removing them.
-Answer no and they stay. Runs that aren't interactive (loops, CI) list them
-and remove nothing.
+Answer no and they stay. Runs that aren't interactive (loops, CI, or any
+shell that isn't a real terminal) can't show that prompt, so they list the
+directories and remove nothing; add `--prune` to give the same consent on the
+command line.
 
 A repo you don't touch stays stale, and that's fine — it catches up the next
 time you work there.

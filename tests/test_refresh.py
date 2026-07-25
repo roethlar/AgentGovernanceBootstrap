@@ -1686,6 +1686,19 @@ class PruneEmptyDirTests(unittest.TestCase):
         self.assertNotIn("pruned:", proc.stdout)
         self.assertTrue(ghost.is_dir())
 
+    def test_prune_flag_is_consent_without_a_tty(self):
+        # An owner driving refresh from a non-TTY shell can never reach the
+        # prompt; --prune is that consent on the command line.
+        ghost = self.target / ".agents" / "skills" / "ghost"
+        ghost.mkdir(parents=True)
+        (ghost / "SKILL.md").write_text(OLD_SKILL, newline="\n")
+        commit_all(self.target, "a skill that is about to be retired")
+        proc = refresh(self.toolkit, self.target, "--prune")
+        self.assertEqual(proc.returncode, 0, proc.stderr)
+        self.assertIn("pruned: .agents/skills/ghost", proc.stdout)
+        self.assertNotIn("left in place", proc.stdout)
+        self.assertFalse(ghost.exists())
+
     def test_nothing_printed_when_no_directory_is_empty(self):
         proc = refresh(self.toolkit, self.target)
         self.assertNotIn("empty:", proc.stdout)
