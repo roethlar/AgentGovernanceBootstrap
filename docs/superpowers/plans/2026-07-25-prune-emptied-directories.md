@@ -11,8 +11,8 @@ behind. Git cannot see the result — it does not track empty directories — so
 nothing reports it and it survives every later run.
 
 Observed in this repo after the 2026-07-24 refresh (`064c27e`) retired the
-`drift` and `harness-update` skills: `.agents/skills/drift/` and
-`.agents/skills/harness-update/` remained as empty directories, and an agent
+`drift` and `harness-update` skills: `.agents/skills/drift/` <!-- plan-lint: allow (the removed directory this plan exists to prevent; named as evidence) --> and
+`.agents/skills/harness-update/` <!-- plan-lint: allow (the removed directory this plan exists to prevent; named as evidence) --> remained as empty directories, and an agent
 listing `.agents/skills/` saw two skills that did not exist. Every governed
 repo that carried either skill has the same litter.
 
