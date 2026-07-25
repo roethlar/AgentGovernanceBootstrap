@@ -8,6 +8,15 @@ machine-local facts are labeled or omitted.
 
 ## Now
 
+- Landed 2026-07-25: governance refresh backfills absent repo-owned policy
+  files. `tools/shipped-set.json` grew a `seeded` section
+  (`.agents/comms-policy.md`, `.agents/push-policy.md`); `tools/refresh.py`
+  installs a seeded target only when it is missing, reports it with an
+  ACTION line, and ignores it forever once it exists. Closes the dangling
+  references installed artifacts carried in repos governed before those
+  files existed. Ruling and rationale in `.agents/decisions.md`
+  (2026-07-25); plan
+  `docs/superpowers/plans/2026-07-25-seed-missing-policy-files.md`.
 - Steady state as of this commit (2026-07-23): the decisions-as-claims
   audit is CLOSED — 41 rulings audited (16 HOLDS, 20 HOLDS-UNENFORCED,
   2 HOLDS-UNSHIPPED, 2 STALE, 1 CONTRADICTED; verdict: incremental

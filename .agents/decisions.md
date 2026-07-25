@@ -34,6 +34,37 @@ live rule now owned elsewhere - archive it per the rule above: move it verbatim 
 
 ## Decisions
 
+### 2026-07-25 — Refresh backfills absent repo-owned policy files
+
+Status: Active
+
+Decision: when an artifact the toolkit installs references a repo-owned
+policy file unconditionally, governance refresh creates that file from its
+template when it is absent, at the documented default, and reports the
+creation with an owner-facing ACTION line naming the follow-up. A file that
+already exists is ignored entirely — never hashed, updated, restored, or
+removed — so owner edits stay owner-owned. Bootstrap remains the only
+surface that asks the owner for the value; seeding never pre-fills an
+answer, because it fires only where bootstrap already did not run.
+
+Evidence: `.agents/comms-policy.md` and `.agents/push-policy.md` were
+created only by `procedures/bootstrap.md` Step 4, while
+`templates/AGENTS.template.md` (push policy, communication level) and the
+plan and handoff playbooks reference them in every installed copy. Any repo
+governed before those files existed (push-policy 2026-06-27, comms-policy
+2026-07-22) that has only been refreshed since carried pointers to nothing,
+and the hygiene lint could not see it: `lint_governance()` excludes
+`AGENTS.md` by design and globs only top-level `.agents/*.md`.
+
+Landed: the `seeded` section of `tools/shipped-set.json` plus its handling
+in `tools/refresh.py` (`classify`, `validate_manifest`, `summarize`,
+`terse_line`, the ACTION lines), covered by `SeedTests` in
+`tests/test_refresh.py`. Plan:
+`docs/superpowers/plans/2026-07-25-seed-missing-policy-files.md`. The
+ACTION lines are a deliberate bounded exception to the one-line result rule
+of the 2026-07-23 owner-surface decision, which governs per-item detail
+rather than follow-up actions the owner must take.
+
 ### 2026-07-23 — The product is named Bixi
 
 Status: Active

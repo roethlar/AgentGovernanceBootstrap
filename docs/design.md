@@ -74,7 +74,15 @@ Two flows:
   refresh — when it never was), `replace` (matches a formerly-shipped hash
   ⇒ update; anything else ⇒ drift, reported with its introducing commits
   and restored), `retired` (removed; drifted content is removed with a
-  DRIFT report). Uncommitted changes on touched paths trigger the
+  DRIFT report). A separate `seeded` section covers the repo-owned policy
+  files that installed artifacts reference unconditionally
+  (`.agents/comms-policy.md`, `.agents/push-policy.md`): absent ⇒ installed
+  from its template at the documented default and reported with an ACTION
+  line naming the owner's follow-up; present ⇒ ignored entirely, never
+  hashed, updated, or removed. It exists because only bootstrap creates
+  those files, so a repo governed before they existed would otherwise carry
+  installed governance pointing at nothing (owner ruling 2026-07-25).
+  Uncommitted changes on touched paths trigger the
   dirty-tree refusal, so nothing uncommitted is ever machine-destroyed;
   committed drift stays recoverable from git history. All matching is
   newline-equivalent (CRLF → LF, at most one trailing final newline — issue
@@ -82,7 +90,9 @@ Two flows:
   Committability follows
   the custody rules (per-path `check-ignore`, the blanket adapter-dir
   repair, never `add -f`). The division of labor is strict: refresh installs
-  shipped artifacts and never touches repo-owned files; the bootstrap
+  shipped artifacts and never touches repo-owned files — the `seeded`
+  backfill above is the one exception, and it only ever creates a file that
+  is absent; the bootstrap
   procedure copies approved drafts and never hand-copies shipped artifacts.
 
 Why a script owns refresh: synchronize-to-an-exact-set is the documented
