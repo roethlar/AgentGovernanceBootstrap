@@ -10,6 +10,21 @@ machine-local facts are labeled or omitted.
 
 ## Now
 
+- Steady state as of `795452b` (2026-07-25), released as Bixi `c285f99`:
+  a day of owner-driven friction removal, each item recorded in
+  `.agents/decisions.md` under its 2026-07-25 entry. The recurring finding,
+  worth carrying forward: **a mechanism nobody reads, or that asks a
+  question whose answer changes nothing, is deleted rather than repaired.**
+  Retired the owner-communication level outright (it never governed a
+  response — `AGENTS.md` pointed at a file nothing loads); stopped review
+  dispatch interrogating the owner before every review; made an owner-typed
+  push command its own authorization; made lint notes print only beside a
+  warn; fixed the lint predicate that read git refs, CIDRs and tap names as
+  repo paths (issue #10, closed). Refresh also gained the empty-directory
+  prune (`--prune` for non-TTY shells). The product repo now has its own
+  front page and `.gitignore` at `product/`, published under their own
+  names, with brand assets in `assets/` and
+  `tools/build-brand-assets.sh` to regenerate them.
 - Landed 2026-07-25: governance refresh backfills absent repo-owned policy
   files. `tools/shipped-set.json` grew a `seeded` section
   (`.agents/push-policy.md`); `tools/refresh.py`
