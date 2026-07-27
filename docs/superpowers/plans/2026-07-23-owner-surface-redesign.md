@@ -1,11 +1,12 @@
 # Owner-facing surface redesign — install, update, vocabulary, guidance
 
-Status: STAGE 3 BUILT 2026-07-23 — presented for owner commit approval.
+Status: CLOSED 2026-07-24 — all three stages and packaging landed.
 Stage 1 built (8fd0676, b3791f8); Stage 2 landed in six commits plus the
 owner-driven remediation model (9ad88a5…7cfa130); Stage 3: owner verb set
 shipped (`toolkit` guidance command), `drift` retired as an owner word
 (hygiene rides `catchup`), operator section re-cut (template 1,977 →
-1,783 words). Suite: 152 green.
+1,783 words). Packaging landed in 272c0a1, the product naming record in
+1c36ebb, and the first public publish record in 3b2fb81.
 
 ## Why this plan exists (owner direction, 2026-07-23)
 
