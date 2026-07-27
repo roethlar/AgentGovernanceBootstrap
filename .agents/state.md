@@ -10,19 +10,18 @@ machine-local facts are labeled or omitted.
 
 ## Now
 
-- Reported 2026-07-27; diagnosis pending: on Windows, Claude Code's
-  `PreToolUse:Write` and `PreToolUse:Edit` governance hooks fail because
-  their command invokes bare `python` and reaches the Microsoft Store
-  not-found stub. The owner requested a fix after this catchup.
+- Diagnosed 2026-07-27: the Claude Code `PreToolUse` hook presence-checks
+  `python3` before `py -3`; Windows' Microsoft Store alias passes that check,
+  fails when invoked, and prevents the working launcher fallback. Plan:
+  `docs/superpowers/plans/2026-07-27-windows-hook-interpreter.md`.
 
 ## Next
 
-- Diagnose the Windows hook interpreter resolution, draft a narrow code-change
-  plan for owner approval, then implement and verify the approved fix.
+- On owner approval, implement and verify the Windows hook interpreter plan.
 
 ## Blockers
 
-- No technical blocker recorded; implementation requires an approved plan.
+- Implementation awaits owner approval of the recorded plan.
 
 ## Verification
 
