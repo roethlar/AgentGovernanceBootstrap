@@ -1,7 +1,8 @@
 # Plan: make the Claude governance hook select a working Python on Windows
 
-Status: DRAFT 2026-07-27 — diagnosed and awaiting owner approval; no shipped
-behavior has changed.
+Status: APPROVED 2026-07-27 — the owner answered `y` to the gate approving
+the viability-probed `py -3` → `python3` → `python` chain, preserved blocking
+exit 2, and regression coverage. Implementation is in progress.
 
 ## Problem
 

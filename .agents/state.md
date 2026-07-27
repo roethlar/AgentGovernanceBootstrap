@@ -13,15 +13,16 @@ machine-local facts are labeled or omitted.
 - Diagnosed 2026-07-27: the Claude Code `PreToolUse` hook presence-checks
   `python3` before `py -3`; Windows' Microsoft Store alias passes that check,
   fails when invoked, and prevents the working launcher fallback. Plan:
-  `docs/superpowers/plans/2026-07-27-windows-hook-interpreter.md`.
+  `docs/superpowers/plans/2026-07-27-windows-hook-interpreter.md`, approved
+  2026-07-27; implementation is in progress.
 
 ## Next
 
-- On owner approval, implement and verify the Windows hook interpreter plan.
+- Implement and verify the approved Windows hook interpreter plan.
 
 ## Blockers
 
-- Implementation awaits owner approval of the recorded plan.
+- None recorded.
 
 ## Verification
 
