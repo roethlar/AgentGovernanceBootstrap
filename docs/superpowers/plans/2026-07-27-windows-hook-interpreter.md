@@ -1,8 +1,26 @@
 # Plan: make the Claude governance hook select a working Python on Windows
 
-Status: APPROVED 2026-07-27 — the owner answered `y` to the gate approving
-the viability-probed `py -3` → `python3` → `python` chain, preserved blocking
-exit 2, and regression coverage. Implementation is in progress.
+Status: CLOSED 2026-07-27 — the owner-approved source fix landed in
+`4bc53c9`.
+
+Verification at close:
+
+- `tests.test_templates` and `FormerlyListMaintenance` passed; the new
+  canonical-command guard turned red when only the old template command was
+  restored, then returned green with the fix restored.
+- Windows Git Bash live smoke against the edited JSON returned 0 with no
+  output for an unprotected path, exit 2 plus the governance block message
+  for `AGENTS.md`, and 0 with no output when only the Store aliases were
+  visible.
+- The canonical discovery suite was attempted but is not green on this
+  Windows baseline. A clean temporary worktree at pre-fix `5e32b8e`
+  reproduced all three non-green cases: two POSIX-launcher tests hand MSYS
+  paths/PATH entries to Windows `CreateProcess`, and
+  `GuidanceLintBaselineTests` finds the absent ignored machine-local
+  `.claude/settings.local.json`. Every other case was rerun in bounded
+  batches with the required Windows child-output encoding: 187 cases
+  exercised, 185 passed and two Windows symlink cases skipped.
+- `git diff --check` passed.
 
 ## Problem
 

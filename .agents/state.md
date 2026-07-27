@@ -10,19 +10,21 @@ machine-local facts are labeled or omitted.
 
 ## Now
 
-- Diagnosed 2026-07-27: the Claude Code `PreToolUse` hook presence-checks
-  `python3` before `py -3`; Windows' Microsoft Store alias passes that check,
-  fails when invoked, and prevents the working launcher fallback. Plan:
-  `docs/superpowers/plans/2026-07-27-windows-hook-interpreter.md`, approved
-  2026-07-27; implementation is in progress.
+- Landed in `4bc53c9` (2026-07-27): the Claude Code `PreToolUse` hook now
+  viability-probes `py -3`, `python3`, then `python`, so Windows Store aliases
+  cannot mask a working launcher; blocking exit 2 is preserved. Plan CLOSED:
+  `docs/superpowers/plans/2026-07-27-windows-hook-interpreter.md`. Bixi and
+  this repo's installed `.claude/settings.json` still await owner rollout.
 
 ## Next
 
-- Implement and verify the approved Windows hook interpreter plan.
+- On the owner's `publish` word, publish Bixi; the owner then runs this repo's
+  sanctioned self-refresh from the product clone.
 
 ## Blockers
 
-- None recorded.
+- Product publication requires the owner word `publish`; this repo's
+  self-refresh is owner-only.
 
 ## Verification
 

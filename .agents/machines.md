@@ -25,3 +25,10 @@ never treat them as repo-portable.
   as prompts); `~/.codex/sessions/**/rollout-*.jsonl` carries
   `token_count` events. Codex credits exhausted 2026-07-17 ~21:30.
 - product-repo: /Users/michael/Dev/Bixi (recorded 2026-07-24, first publish)
+
+## ASHBIAMWEB1 (Windows)
+
+- 2026-07-27: `py -3` resolves to
+  `C:\Program Files\Python314\python.exe` (Python 3.14.6). Set
+  `PYTHONIOENCODING=utf-8` when running the suite so child Python output
+  matches the tests' explicit UTF-8 subprocess decoding.
