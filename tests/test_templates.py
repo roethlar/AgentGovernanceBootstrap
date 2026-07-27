@@ -24,6 +24,19 @@ CANONICAL_REGROUND_COMMAND = (
     "Invariants block. Treat AGENTS.md, not this message, as authoritative.'"
 )
 
+CANONICAL_PROTECT_COMMAND = (
+    'if py -3 -c "import sys; raise SystemExit(0 if sys.version_info >= '
+    '(3, 10) else 1)" >/dev/null 2>&1; then py -3 '
+    '"${CLAUDE_PROJECT_DIR}/.claude/hooks/protect-governance.py"; elif '
+    'python3 -c "import sys; raise SystemExit(0 if sys.version_info >= '
+    '(3, 10) else 1)" >/dev/null 2>&1; then python3 '
+    '"${CLAUDE_PROJECT_DIR}/.claude/hooks/protect-governance.py"; elif '
+    'python -c "import sys; raise SystemExit(0 if sys.version_info >= '
+    '(3, 10) else 1)" >/dev/null 2>&1; then python '
+    '"${CLAUDE_PROJECT_DIR}/.claude/hooks/protect-governance.py"; else '
+    'exit 0; fi'
+)
+
 # The compact provenance marker, carried as bare core text so the same
 # substring holds in both wrappers/skills (a YAML frontmatter comment,
 # `# <marker>`, stripped with the frontmatter at load so it costs zero
@@ -186,6 +199,7 @@ class ShippedHooks(unittest.TestCase):
         pre = cfg["hooks"]["PreToolUse"][0]
         self.assertEqual(pre.get("matcher"), "Edit|Write|MultiEdit|NotebookEdit")
         cmd = pre["hooks"][0]["command"]
+        self.assertEqual(cmd, CANONICAL_PROTECT_COMMAND)
         self.assertIn("protect-governance.py", cmd)
         self.assertIn("${CLAUDE_PROJECT_DIR}", cmd)
         # exit-code preservation: a blocking exit 2 must never trigger a
