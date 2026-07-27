@@ -32,3 +32,4 @@ never treat them as repo-portable.
   `C:\Program Files\Python314\python.exe` (Python 3.14.6). Set
   `PYTHONIOENCODING=utf-8` when running the suite so child Python output
   matches the tests' explicit UTF-8 subprocess decoding.
+- product-repo: D:\source\Bixi (recorded 2026-07-27, first publish)
