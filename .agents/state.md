@@ -10,84 +10,19 @@ machine-local facts are labeled or omitted.
 
 ## Now
 
-- Steady state as of `795452b` (2026-07-25), released as Bixi `c285f99`:
-  a day of owner-driven friction removal, each item recorded in
-  `.agents/decisions.md` under its 2026-07-25 entry. The recurring finding,
-  worth carrying forward: **a mechanism nobody reads, or that asks a
-  question whose answer changes nothing, is deleted rather than repaired.**
-  Retired the owner-communication level outright (it never governed a
-  response — `AGENTS.md` pointed at a file nothing loads); stopped review
-  dispatch interrogating the owner before every review; made an owner-typed
-  push command its own authorization; made lint notes print only beside a
-  warn; fixed the lint predicate that read git refs, CIDRs and tap names as
-  repo paths (issue #10, closed). Refresh also gained the empty-directory
-  prune (`--prune` for non-TTY shells). The product repo now has its own
-  front page and `.gitignore` at `product/`, published under their own
-  names, with brand assets in `assets/` and
-  `tools/build-brand-assets.sh` to regenerate them.
-- Landed 2026-07-25: governance refresh backfills absent repo-owned policy
-  files. `tools/shipped-set.json` grew a `seeded` section
-  (`.agents/push-policy.md`); `tools/refresh.py`
-  installs a seeded target only when it is missing, reports it with an
-  ACTION line, and ignores it forever once it exists. Closes the dangling
-  references installed artifacts carried in repos governed before those
-  files existed. Ruling and rationale in `.agents/decisions.md`
-  (2026-07-25); plan
-  `docs/superpowers/plans/2026-07-25-seed-missing-policy-files.md`.
-- Steady state as of this commit (2026-07-23): the decisions-as-claims
-  audit is CLOSED — 41 rulings audited (16 HOLDS, 20 HOLDS-UNENFORCED,
-  2 HOLDS-UNSHIPPED, 2 STALE, 1 CONTRADICTED; verdict: incremental
-  surgery), the full Fix Queue drained (commits per item in
-  `docs/superpowers/plans/2026-07-23-audit-findings.md`). The
-  owner-surface redesign Stages 1–3 landed (new-project installer;
-  update overhaul + owner-driven remediation; vocabulary with `toolkit`
-  verb, `drift` retired), the packaging stage is built (`tools/publish`,
-  manifest completeness guard), and the product is named Bixi. The public
-  Bixi repo and its first publish landed 2026-07-24 (product-repo path
-  recorded in `.agents/machines.md`). Remaining external step: the owner's
-  self-refresh of this repo's installed copies.
-- Steady state as of this commit (2026-07-23): the model-map apparatus is
-  deleted under the owner ruling "the owner's dispatch word is final; no
-  committed model lists" — `.agents/model-map.json`, <!-- lint: allow (deleted in this change; named as the record of the deletion) --> its lint, the
-  model-denylist lint, and the `harness-update` operator are gone (the
-  operator's targets sit on the retired list, so deployed copies are
-  removed on next refresh). Dispatch grammar is literal-or-ask in
-  `templates/playbooks/codereview.md`; tier pairs are owner-named,
-  recorded in the machine-local cache, no confirmation ritual. The
-  2026-07-19 and 2026-07-09 (Codex eval) entries are archived.
-- Steady state as of `b7448e2` (2026-07-22): the holistic toolkit
-  improvement plan and the model-map reviewer dispatch plan are both
-  CLOSED, each with its per-finding commit map in its plan doc under
-  `docs/superpowers/plans/` (rotation details in
-  `docs/history/state-archive.md`). GitHub issues #5–#8 are closed with
-  commit receipts, each fix verified at HEAD first. Newest Active
-  rulings in `.agents/decisions.md`: paperwork follows technical work
-  (verified-fixed bookkeeping proceeds without an owner ask). The
-  owner-communication tunable recorded here was retired 2026-07-25.
-- Steady state as of `0d05c97` (2026-07-12): the 2026-07-08 zero-based
-  consolidation is landed; the product shape is owned by
-  `.agents/repo-guidance.md` (Mission Detail). Every 2026-07-10 plan is
-  CLOSED with a commit map under `docs/superpowers/plans/` (full
-  enumeration in the 2026-07-12 rotation in
-  `docs/history/state-archive.md`); the 2026-07-09 external holistic
-  review is fully triaged, with release engineering deferred by the
-  release-posture decision. New Active decision 2026-07-11 (`0d05c97`):
-  reviewloop-branches Open item was closed as adopted and archived
-  2026-07-12 (`76c1e5f`). Rollout DONE for vela, Blit_v2, ai-rpg-engine,
-  Powershell-Token-Killer, and ExchangeAdminWeb (details in
-  `docs/history/state-archive.md`). Per-harness capability record:
-  `docs/harness-capabilities.md`.
+- Reported 2026-07-27; diagnosis pending: on Windows, Claude Code's
+  `PreToolUse:Write` and `PreToolUse:Edit` governance hooks fail because
+  their command invokes bare `python` and reaches the Microsoft Store
+  not-found stub. The owner requested a fix after this catchup.
 
 ## Next
 
-- None recorded. Released `e29bcac` and self-refreshed `8383229`
-  (2026-07-25), so installed copies match the templates and carry no comms
-  reference. The self-refresh route is in `.agents/repo-guidance.md`,
-  Earned Practices.
+- Diagnose the Windows hook interpreter resolution, draft a narrow code-change
+  plan for owner approval, then implement and verify the approved fix.
 
 ## Blockers
 
-- None recorded.
+- No technical blocker recorded; implementation requires an approved plan.
 
 ## Verification
 
