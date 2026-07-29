@@ -391,6 +391,18 @@ class PlaybookReviewMechanics(unittest.TestCase):
         self.assertIn("Reviewer tiers and routing", body)
         self.assertIn("owner-named", body)
 
+    def test_openreview_carries_approach_contract(self):
+        # Reallocation 2026-07-29 (issue #11): openreview owns the
+        # approach-soundness contract; the defect-audit contract lives in
+        # codereview only. Marker assertions — the wording stays free, the
+        # load-bearing fragments must exist.
+        body = (TEMPLATES / "playbooks" / "openreview.md").read_text(encoding="utf-8")
+        self.assertIn("best_approach|acceptable_with_changes|replace", body)
+        self.assertIn("recommended_approach", body)
+        self.assertIn("material_changes", body)
+        self.assertIn("`material_changes` must be empty", body)
+        self.assertNotIn("clean|findings", body)
+
     def test_codereview_carries_self_permissioning_launch(self):
         # 2026-07-18 ruling; audit F9: the launch-scoped grant must not rot
         # out of the shipped playbook (it has a falsified-assumption history).

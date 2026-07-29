@@ -189,7 +189,8 @@
     "8fe95e3cf95da9399fe7ef99d386315913657bbc05d0796f065e7f2b3328e166",
     "aedfcc750e54780715080cc4b9d42fb990a150ec5363eebdce494f0bc5b0eb07",
     "53c1ba9345398884708672ab5df351d4eed18a1617558d3ae76453b6f803669f",
-    "aa2ec0aab2a4f265424614c13318e4d03ffedde873c48b24f23818603c4ae324"
+    "aa2ec0aab2a4f265424614c13318e4d03ffedde873c48b24f23818603c4ae324",
+    "2796ac3a1b5c63c01b81ff5e8479149a20e37b3d923f798259ca33ecdb4f7ba2"
    ]
   },
   {
@@ -287,7 +288,8 @@
    "target": ".agents/skills/openreview/SKILL.md",
    "class": "replace",
    "formerly": [
-    "9c4fd4e4bea8413475cb7ee8c8019b8a74be3914621feb8bc4acc5c5da360b56"
+    "9c4fd4e4bea8413475cb7ee8c8019b8a74be3914621feb8bc4acc5c5da360b56",
+    "8296e97b95ee4759035b53e4a6497117ff1240b5a6ea9a6c048dda8689f1b01f"
    ]
   },
   {
@@ -323,7 +325,8 @@
    "target": ".claude/commands/openreview.md",
    "class": "replace",
    "formerly": [
-    "e20579956c5aebf0744a21f15d0db93738ae770c843a40e31f892d4d85ff7f80"
+    "e20579956c5aebf0744a21f15d0db93738ae770c843a40e31f892d4d85ff7f80",
+    "6e1ccefe83ce68f803224120e1839cfb404918eb29bb6f30c6920ae59488e00e"
    ]
   },
   {
