@@ -1,7 +1,11 @@
 # Plan: publish mirrors the issue templates into Bixi
 
-Status: DRAFT 2026-07-29 — owner authorized drafting 2026-07-29;
-implementation awaits the owner's go.
+Status: CLOSED 2026-07-29 — implemented in `722c9ae` on the owner's
+2026-07-29 go. Verification: full suite green (195 tests,
+`python3.14 -m unittest discover -s tests`); mirror-test guard proven
+(publish set without the new pair → test fails, restored → green);
+`git diff --check` clean; plan lint green. Takes effect on the next
+`publish`.
 
 ## Problem
 
