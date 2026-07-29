@@ -16,12 +16,17 @@ machine-local facts are labeled or omitted.
   order, default clone path `~/dev/Bixi`) and the `update-governance`
   wrapper + skill clone Bixi; pins guard-proven, suite green (195).
   Plan CLOSED: `docs/superpowers/plans/2026-07-29-bixi-facing-references.md`.
-  Bixi issue #1 stays open until the owner's next `publish` carries the
-  fix. The feedback-target ruling landed the same day (2026-07-29
-  decision in `.agents/decisions.md`): the public inbox is Bixi's
-  issues — consumed and fixed here, shipped back via `tools/publish`,
-  with this repo planned to go private; `procedures/bootstrap.md` Step
-  8 and `product/README.md` now point at Bixi.
+  The feedback-target ruling landed the same day (2026-07-29 decision
+  in `.agents/decisions.md`): the public inbox is Bixi's issues —
+  consumed and fixed here, shipped back via `tools/publish`, with this
+  repo planned to go private; `procedures/bootstrap.md` Step 8 and
+  `product/README.md` now point at Bixi. Released to Bixi as `f55170a`
+  (2026-07-29 publish, 62 files — carries the review-playbooks
+  reallocation, the Bixi-first references, and the feedback pointers;
+  release contents spot-verified in the product clone) and Bixi issue
+  #1 closed against it. This repo's installed copies lag the templates
+  until the owner's self-refresh from the product clone — expected;
+  leave the lag alone.
 - Landed 2026-07-29 (`87d3825` Slice 1, `36e025f` Slice 2): the review
   playbooks are reallocated per
   `docs/superpowers/plans/2026-07-29-review-playbooks-redesign.md`
