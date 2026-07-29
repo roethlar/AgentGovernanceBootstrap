@@ -10,6 +10,17 @@ machine-local facts are labeled or omitted.
 
 ## Now
 
+- Landed 2026-07-29 (`6a2466a`): product-facing surfaces now name Bixi —
+  `procedures/bootstrap.md` Step 0 leads with the Bixi URL
+  (origin-first sync, fallbacks in `tools/refresh.py`'s canonical
+  order, default clone path `~/dev/Bixi`) and the `update-governance`
+  wrapper + skill clone Bixi; pins guard-proven, suite green (195).
+  Plan CLOSED: `docs/superpowers/plans/2026-07-29-bixi-facing-references.md`.
+  Bixi issue #1 stays open until the owner's next `publish` carries the
+  fix. Still awaiting an owner ruling: where product users should file
+  feedback (`procedures/bootstrap.md` Step 8 and
+  `product/README.md:99-102` currently point at the development repo's
+  issues, per the recorded feedback policy).
 - Landed 2026-07-29 (`87d3825` Slice 1, `36e025f` Slice 2): the review
   playbooks are reallocated per
   `docs/superpowers/plans/2026-07-29-review-playbooks-redesign.md`

@@ -1,12 +1,17 @@
 # Plan: product-facing surfaces name Bixi, not the development repo
 
-Status: APPROVED 2026-07-29 — owner approved fixing the two real
-reference groups from Bixi issue #1 (bootstrap Step 0 wording and the
-update-governance wrappers). The feedback-target references
-(`procedures/bootstrap.md` Step 8 `gh issue create` and
-`product/README.md` lines 99–102) are excluded pending a separate owner
-ruling; `tools/refresh.py`'s fallback list and the development
-`README.md` are correct as designed and untouched.
+Status: CLOSED 2026-07-29 — implemented in `6a2466a` on the owner's
+2026-07-29 approval. Verification: full suite green (195 tests,
+`python3.14 -m unittest discover -s tests`); wrapper pin guard-proven
+(old wrapper restored → pin fails, new restored → green); reference
+sweep over `templates/` and `procedures/` shows only the sanctioned
+Step 0 development-clone mentions and the untouched Step 8 line;
+`git diff --check` clean; plan lint green. The feedback-target
+references (`procedures/bootstrap.md` Step 8 `gh issue create` and
+`product/README.md` lines 99–102) remain excluded pending a separate
+owner ruling; `tools/refresh.py`'s fallback list and the development
+`README.md` are correct as designed and untouched. Bixi issue #1 stays
+open until a publish carries the fix.
 
 ## Problem
 
