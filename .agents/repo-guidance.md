@@ -89,6 +89,9 @@ For documentation-only changes, run `git diff --check`. Changes touching
 - `templates/AGENTS.template.md` body stays one line per paragraph/bullet —
   no hard line-wraps; re-wrapping is a regression (2026-07-02 decision,
   archived: wrapping's only remaining effect was a per-session token tax).
+  Additions to the template body are token-neutral: new guidance displaces
+  existing wording worth less, so the file's token cost never grows
+  (2026-07-28 decision).
 
 - Token efficiency with a discretionary filter proxy (2026-06-22 decision in
   `docs/history/decisions-archive.md`): work compact-but-equivalent —

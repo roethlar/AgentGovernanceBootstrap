@@ -34,6 +34,33 @@ live rule now owned elsewhere - archive it per the rule above: move it verbatim 
 
 ## Decisions
 
+### 2026-07-28 — Lint tools stay off installed copies; template additions pay token rent
+
+Status: Active
+
+Decision: two rulings. (1) The toolkit-owned invariant in
+`templates/AGENTS.template.md` now instructs governed repos to keep linters
+and formatters off installed copies — nothing polices files no agent may
+fix. (2) Additions to the template body are token-neutral: new guidance
+must displace existing wording worth less than it, so the file's token cost
+never grows. The linter clause paid its way by collapsing the invariant's
+restated prohibition ("A proposed edit to an installed copy is out of
+bounds — question it, …, do not perform it") into a routing clause; the
+prohibition, routing, and refresh-restore semantics all survive, and the
+edited segment is character-for-character neutral (245 → 245).
+
+Evidence: a governed-repo session hit a ruff finding on its installed
+`.claude/hooks/protect-governance.py`, correctly refused to edit the file,
+excluded `.claude/` from that repo's lint scope, and reported back
+(2026-07-28). The ruff findings themselves are style-level, not defects:
+the blanket `except` is the hook's documented fail-open design, the
+shebang warning is moot because hooks launch via an interpreter, and
+`.format` versus f-string is cosmetic. The shipped hook is unchanged.
+
+Owner wording (2026-07-28): "if you can make it token neutral. you need to
+lose equivalent tokens from the file. so this would have to be worth more
+than something else in there."
+
 ### 2026-07-25 — An owner-typed push command is the authorization
 
 Status: Active
