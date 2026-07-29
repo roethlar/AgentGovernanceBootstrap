@@ -33,9 +33,11 @@ machine-local facts are labeled or omitted.
   (2026-07-29 publish, 62 files — carries the review-playbooks
   reallocation, the Bixi-first references, and the feedback pointers;
   release contents spot-verified in the product clone) and Bixi issue
-  #1 closed against it. This repo's installed copies lag the templates
-  until the owner's self-refresh from the product clone — expected;
-  leave the lag alone.
+  #1 closed against it. The owner's self-refresh from the product
+  clone landed as `cc671b2` (2026-07-29, 12 artifacts, toolkit
+  `d5874dd`): installed copies match the templates — the reallocated
+  review playbooks, range-grammar wrappers, toolkit menu, and
+  Bixi-pointing update-governance are live here.
 - Landed 2026-07-29 (`87d3825` Slice 1, `36e025f` Slice 2): the review
   playbooks are reallocated per
   `docs/superpowers/plans/2026-07-29-review-playbooks-redesign.md`
