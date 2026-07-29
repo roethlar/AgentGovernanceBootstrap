@@ -15,9 +15,10 @@ machine-local facts are labeled or omitted.
   and workflows can never auto-ship); mirror test guard-proven, suite
   green (195). Plan CLOSED:
   `docs/superpowers/plans/2026-07-29-publish-issue-templates.md`.
-  Takes effect on the owner's next `publish` — Bixi's "New issue" form
-  then offers the defect and harvest-rule templates, and product
-  clones carry them for bootstrap Step 8 drafting.
+  Released to Bixi as `d5874dd` (2026-07-29 publish, 64 files; both
+  templates verified in the product clone) — Bixi's "New issue" form
+  now offers the defect and harvest-rule templates, and product clones
+  carry them for bootstrap Step 8 drafting.
 - Landed 2026-07-29 (`6a2466a`): product-facing surfaces now name Bixi —
   `procedures/bootstrap.md` Step 0 leads with the Bixi URL
   (origin-first sync, fallbacks in `tools/refresh.py`'s canonical
