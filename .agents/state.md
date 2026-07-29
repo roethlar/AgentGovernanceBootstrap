@@ -10,6 +10,15 @@ machine-local facts are labeled or omitted.
 
 ## Now
 
+- Active: review-playbooks reallocation plan landed as `d641bf8`
+  (2026-07-29, `docs/superpowers/plans/2026-07-29-review-playbooks-redesign.md`):
+  codereview gains a landed-change defect-generation half; openreview
+  gets an approach-soundness contract (GitHub issue #11). The
+  new-shape openreview smoke dispatch of the plan itself (codex /
+  gpt-5.6-sol / xhigh, MCP) returned `acceptable_with_changes` —
+  transport and contract clean; details in the plan's Smoke result.
+  Awaiting owner rulings on the two returned material changes and the
+  implementation go; no template edit before that go.
 - Landed 2026-07-28 (`c171dd0`, `e18cda7`): the toolkit-owned invariant in
   `templates/AGENTS.template.md` now tells governed repos to keep linters
   and formatters off installed copies — nothing polices files no agent may

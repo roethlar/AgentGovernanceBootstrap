@@ -190,7 +190,33 @@ template edit.
 
 ### Smoke result
 
-Pending dispatch.
+Dispatched and returned 2026-07-29.
+
+- Reviewer: codex / gpt-5.6-sol / xhigh / frontier (grade
+  `competitive`), transport `mcp`, over
+  `1577754c1901ce055cbcf08b5e76a047dc5f9ff4..d641bf8a975fccd3614a4569d050f4c1b96e012d`.
+- Transport: JSON envelope valid; payload schema-valid on first parse
+  under the Design contract; `capability_ok` true; both SHAs matched
+  the dispatched pins; repository working tree untouched afterward.
+  Environment note (not an invalidation): the orchestrating harness's
+  token-compressed notification view garbled the payload; the raw
+  envelope was retrieved and validated directly.
+- Verdict: `acceptable_with_changes`. The reviewer's discovered goal
+  matched the plan's, and its response led with its own approach — the
+  behavior issue #11 found missing under the old contract.
+- Two material changes returned, each backed by a MEDIUM finding,
+  awaiting owner rulings:
+  1. Slice 2 omits the owner-facing toolkit menu:
+     `templates/commands/claude/toolkit.md` and
+     `templates/skills/shared/toolkit/SKILL.md` still describe
+     codereview as fix verification only; add both to Slice 2 with
+     `formerly[]` appends and a paired-description pin. Evidence
+     verified.
+  2. The planned structural pins do not guard the
+     verdict/`material_changes` consistency rule or the
+     one-finding/one-commit default-branch lifecycle; extend the pins.
+     Adopt tempered to marker assertions, not prose pins, per
+     `PlaybookReviewMechanics`'s stated philosophy.
 
 ## Implementation
 
