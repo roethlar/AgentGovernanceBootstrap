@@ -273,11 +273,12 @@ Both routes, then:
 1. If this run confirmed a defect in this toolkit (its code or procedures),
    or surfaced a governance rule earned from a real citable incident that
    other repos would benefit from: draft a GitHub issue body from the
-   matching template under the toolkit's `.github/ISSUE_TEMPLATE/`, present
+   matching template under the toolkit's `.github/ISSUE_TEMPLATE/` (where
+   present; else a plain body), present
    it to the owner — **including a redaction check: no secrets, tokens,
    credentials, private hostnames/IPs, or personal data; cite evidence by
    repo-relative path and commit hash** — and file it with
-   `gh issue create -R roethlar/AgentGovernanceBootstrap` only on an
+   `gh issue create -R roethlar/Bixi` only on an
    explicit owner go. Offline or no go: leave the drafted body as a note in
    this repo's `.agents/` and say so.
 2. Do not raise deleting `.bootstrap-tmp/` until approved files are copied

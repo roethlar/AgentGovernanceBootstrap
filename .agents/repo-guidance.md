@@ -20,9 +20,12 @@ Sync below). The product:
   `AGENTS.template.md` this repo's own `AGENTS.md` is a verbatim copy of.
 - `tools/refresh.py` + `tools/shipped-set.json` — the deterministic
   per-repo governance refresh. Feedback arrives as GitHub
-issues on this repo (`.github/ISSUE_TEMPLATE/`); each issue is put to the
-owner one at a time as an Owner Gates ask and acted on only on an explicit
-per-item go — a general "fix them" is not standing batch authority. The
+issues on the Bixi product repo — the public inbox (2026-07-29 decision;
+this repo is planned to go private, and its `.github/ISSUE_TEMPLATE/`
+files remain the drafting templates). Each issue is consumed here: put to
+the owner one at a time as an Owner Gates ask and acted on only on an
+explicit per-item go — a general "fix them" is not standing batch
+authority — with fixes reaching Bixi via `tools/publish`. The
 intended outcome is
 repo-specific agent guidance that helps fresh agents turn plain-English
 tasks into working, validated code with minimal drift.

@@ -34,6 +34,31 @@ live rule now owned elsewhere - archive it per the rule above: move it verbatim 
 
 ## Decisions
 
+### 2026-07-29 — Product feedback arrives on Bixi, is fixed here, and ships back via publish
+
+Status: Active
+
+Decision: The public feedback inbox is the Bixi product repo's GitHub
+issues (`roethlar/Bixi`); published surfaces direct users there, never at
+this development repo, which is planned to go private. Issues are consumed
+in this repo — assessed and put to the owner one at a time as Owner Gates
+asks, acted on only on an explicit per-item go — and fixes reach the
+product through `tools/publish`. This repo's `.github/ISSUE_TEMPLATE/`
+files remain the drafting templates, and the owner's own filings may land
+on either repo.
+
+Reason: Owner ruling 2026-07-29, adjudicating the feedback-target question
+raised by Bixi issue #1. Approved direction: "issues should go bixi, get
+consumed & fixed here, and fixes published in bixi", with this repo
+planned to become private. The prior dev-repo pointer failed its first
+live test: the Bixi issue #1 reporter filed on Bixi despite it.
+
+Supersedes: The feedback sentence in `.agents/repo-guidance.md` (Mission
+Detail) that routed feedback to this repo's issues, `procedures/bootstrap.md`
+Step 8's `gh issue create` target, and `product/README.md`'s
+file-issues pointer — all repointed to Bixi in the same commit as this
+entry.
+
 ### 2026-07-28 — Lint tools stay off installed copies; template additions pay token rent
 
 Status: Active
