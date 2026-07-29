@@ -47,6 +47,12 @@ def build_dev_repo(base):
     (dev / "assets").mkdir()
     (dev / "assets" / "logo.png").write_bytes(b"\x89PNG\r\n\x1a\n")
     (dev / "tools" / "keep.py").write_text("x = 1\n")
+    # Issue templates publish (2026-07-29 decision: Bixi is the feedback
+    # inbox); the rest of .github/ is dev-only and must never cross.
+    (dev / ".github" / "ISSUE_TEMPLATE").mkdir(parents=True)
+    (dev / ".github" / "ISSUE_TEMPLATE" / "defect.md").write_text("d\n")
+    (dev / ".github" / "workflows").mkdir()
+    (dev / ".github" / "workflows" / "ci.yml").write_text("ci\n")
     # dev-only content that must never publish
     (dev / "docs").mkdir()
     (dev / "docs" / "dev-notes.md").write_text("secret dev stuff\n")
@@ -88,6 +94,10 @@ class PublishTests(unittest.TestCase):
         self.assertTrue((self.product / "assets" / "logo.png").exists())
         self.assertTrue((self.product / "tools" / "keep.py").exists())
         self.assertTrue((self.product / "tools" / "publish.py").exists())
+        # issue templates ship; the rest of .github/ never crosses
+        self.assertTrue((self.product / ".github" / "ISSUE_TEMPLATE"
+                         / "defect.md").exists())
+        self.assertFalse((self.product / ".github" / "workflows").exists())
         # dev-only content never crosses
         self.assertFalse((self.product / "docs").exists())
         self.assertFalse((self.product / ".agents").exists())
