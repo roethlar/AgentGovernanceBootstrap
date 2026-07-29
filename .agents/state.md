@@ -19,25 +19,27 @@ machine-local facts are labeled or omitted.
   template bullet in `.agents/repo-guidance.md` (Earned Practices). An
   owner-directed full compression pass followed: 1772 → 1656 words
   (−6.6%), all rules and earned examples preserved, suite green. Published
-  to Bixi as `a9b3fcc` (2026-07-28); installed copies await owner
-  self-refresh. Publish note: the product checkout does not fetch before
-  mirroring, so a release from a stale checkout diverges and the push
-  fails with a fix-by-hand message the owner cannot act on — candidate
-  toolkit improvement, not yet ruled on.
+  to Bixi as `a9b3fcc` and installed here by the owner's self-refresh
+  `2beef1f` (both 2026-07-28); installed copies match the templates.
+  Publish note: the product checkout does not fetch before mirroring, so a
+  release from a stale checkout diverges and the push fails with a
+  fix-by-hand message the owner cannot act on — candidate toolkit
+  improvement, not yet ruled on.
 - Landed in `4bc53c9` (2026-07-27): the Claude Code `PreToolUse` hook now
   viability-probes `py -3`, `python3`, then `python`, so Windows Store aliases
   cannot mask a working launcher; blocking exit 2 is preserved. Plan CLOSED:
   `docs/superpowers/plans/2026-07-27-windows-hook-interpreter.md`. Published
-  to Bixi as `0dc9176` (2026-07-27); this repo's installed
-  `.claude/settings.json` still awaits owner self-refresh.
+  to Bixi as `0dc9176` (2026-07-27); installed here by the owner's
+  self-refresh `2beef1f` (2026-07-28).
 
 ## Next
 
-- The owner runs this repo's sanctioned self-refresh from the product clone.
+- Owner ruling pending: should `tools/publish` fetch and fast-forward the
+  product checkout before mirroring (the stale-checkout gap noted above)?
 
 ## Blockers
 
-- This repo's self-refresh is owner-only.
+- None recorded.
 
 ## Verification
 
