@@ -322,7 +322,13 @@ class ShippedShimsAndWrappers(unittest.TestCase):
 
     def test_update_governance_wrapper_invokes_refresh_script(self):
         text = (TEMPLATES / "commands" / "claude" / "update-governance.md").read_text(encoding="utf-8")
-        self.assertIn("https://github.com/roethlar/AgentGovernanceBootstrap.git", text)
+        # Bixi issue #1 (2026-07-29): governed repos are directed at the
+        # public product home, never the development repo.
+        skill = (TEMPLATES / "skills" / "shared" / "update-governance"
+                 / "SKILL.md").read_text(encoding="utf-8")
+        for body in (text, skill):
+            self.assertIn("https://github.com/roethlar/Bixi.git", body)
+            self.assertNotIn("AgentGovernanceBootstrap", body)
         self.assertIn("tools/refresh.py", text)
         self.assertIn("FLAG", text)
         self.assertIn("procedures/bootstrap.md", text)
