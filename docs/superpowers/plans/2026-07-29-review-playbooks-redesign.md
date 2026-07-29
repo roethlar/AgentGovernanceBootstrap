@@ -1,9 +1,10 @@
 # Plan: reallocate the review playbooks — codereview reviews landed changes, openreview judges approach soundness
 
-Status: DRAFT 2026-07-29 — owner ruling authorized drafting this plan and
-one openreview smoke dispatch of the plan's own commit (codex,
-gpt-5.6-sol) using the Design below; template implementation awaits a
-separate owner go after the smoke review's outcome is reported.
+Status: DRAFT 2026-07-29 — owner rulings: drafting and one openreview
+smoke dispatch of the plan's own commit (codex, gpt-5.6-sol) were
+authorized 2026-07-29; the smoke verdict's two material changes were
+adopted 2026-07-29 and are folded into the Design and Slices below.
+Template implementation awaits a separate owner go.
 
 ## Problem
 
@@ -161,6 +162,13 @@ One-line semantics updates, no structural change:
   `templates/skills/shared/openreview/SKILL.md` — "unprimed
   approach-soundness review of a whole change — implementation or
   plan".
+- `templates/commands/claude/toolkit.md`,
+  `templates/skills/shared/toolkit/SKILL.md` — the owner-facing menu
+  lines for both verbs: codereview gains the landed-range defect-review
+  role (`<base>..<head>` grammar), openreview becomes the
+  approach-soundness judgment of a change, code or plan. (Adopted from
+  the smoke review's first material change; both lines update together
+  in Slice 2.)
 - `.agents/repo-guidance.md` (Earned Practices, repo-owned): update the
   bullet describing the two playbooks' split.
 
@@ -204,8 +212,9 @@ Dispatched and returned 2026-07-29.
 - Verdict: `acceptable_with_changes`. The reviewer's discovered goal
   matched the plan's, and its response led with its own approach — the
   behavior issue #11 found missing under the old contract.
-- Two material changes returned, each backed by a MEDIUM finding,
-  awaiting owner rulings:
+- Two material changes returned, each backed by a MEDIUM finding; both
+  adopted by owner ruling 2026-07-29 and folded into the Design and
+  Slices:
   1. Slice 2 omits the owner-facing toolkit menu:
      `templates/commands/claude/toolkit.md` and
      `templates/skills/shared/toolkit/SKILL.md` still describe
@@ -237,8 +246,13 @@ One commit:
    structural pin: openreview body contains
    `best_approach|acceptable_with_changes|replace`,
    `recommended_approach`, and `material_changes`, and does not contain
-   `clean|findings`. Existing openreview pins (frontier, "Reviewer
-   tiers and routing", "owner-named") stay green.
+   `clean|findings`. Adopted from the smoke review's second material
+   change, tempered to marker assertions: also pin the
+   verdict-consistency rule's load-bearing fragment — the body contains
+   the literal "`material_changes` must be empty" (the playbook text
+   carries that exact fragment in its `best_approach` semantics;
+   surrounding wording stays free). Existing openreview pins (frontier,
+   "Reviewer tiers and routing", "owner-named") stay green.
 
 ### Slice 2 — codereview generation half and landed-fix mechanics
 
@@ -248,12 +262,21 @@ One commit:
 2. `templates/commands/claude/codereview.md`,
    `templates/commands/claude/review.md`,
    `templates/skills/shared/codereview/SKILL.md`,
-   `templates/skills/shared/review/SKILL.md` — description updates.
+   `templates/skills/shared/review/SKILL.md`,
+   `templates/commands/claude/toolkit.md`,
+   `templates/skills/shared/toolkit/SKILL.md` — description and menu
+   updates per the Design's wrappers section.
 3. `tools/shipped-set.json` — `formerly[]` appends as in Slice 1.
 4. `tests/test_templates.py` — add a structural pin: codereview body
    contains "## Change review (defect generation)",
-   `<base>..<head>`, and `clean|findings`. Existing codereview pins
-   (tiers, T1–T5, dispatch grammar, self-permissioning) stay green.
+   `<base>..<head>`, and `clean|findings`. Adopted from the smoke
+   review's second material change, tempered to marker assertions: also
+   pin the default-branch lifecycle's load-bearing fragments — the body
+   contains the literals "one finding ↔ one commit ↔ one verdict" and
+   "never an amend" (the playbook text carries both exact fragments;
+   surrounding wording stays free) — and the toolkit menu's codereview
+   line carries `<base>..<head>`. Existing codereview pins (tiers,
+   T1–T5, dispatch grammar, self-permissioning) stay green.
 
 ### Slice 3 — record close
 
