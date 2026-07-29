@@ -173,7 +173,8 @@
     "925268ef9e7ea2d962dc7edfd5180daa01675b323a2fb205801d9cc0cbc5ca36",
     "16cf92985caea5c2b82a05a970eaf53788494bdcb624587ac236c8e545331b2c",
     "22f4dae92296eaaeaf8ee4a8ef4b66f37f524184343f30434026821388427ef4",
-    "3f4b8c4c81106f96925b99f4a6e10ee2ffbd226db48567d23f8df611caacedcd"
+    "3f4b8c4c81106f96925b99f4a6e10ee2ffbd226db48567d23f8df611caacedcd",
+    "c9be8b4d9650f301126e8af325aa2b5d602cde4255ef766a30221a81f687aba6"
    ]
   },
   {
@@ -270,7 +271,8 @@
    "formerly": [
     "5860b4d492b78b18827f366e48bd96573c5935b655ddf94eb32129181088a8eb",
     "a65c5c4c90c40064709d96bd043ec96068e39b1f2befd008da95941c0d2d6c12",
-    "7813b8e2ae1b03e09302ba2baa59815dc1478cf88757100d52b5c0bbde3bef9c"
+    "7813b8e2ae1b03e09302ba2baa59815dc1478cf88757100d52b5c0bbde3bef9c",
+    "05a164927b963e18babfa8a157e2530612f0fafb210dc232158534184685893f"
    ]
   },
   {
@@ -280,7 +282,8 @@
    "formerly": [
     "4ef18624df352399b9181ebabeef70f1142e2aef08f158cf0ae2f50f845ffbba",
     "c3df5511c662823509d42a8511eb9e78d24c98bdab9fffcf1a12b6080f3213f5",
-    "b90f7ff2fd8ae29b81877cb6630af37f54b2c1f5a867a54a0d59ba61b62def91"
+    "b90f7ff2fd8ae29b81877cb6630af37f54b2c1f5a867a54a0d59ba61b62def91",
+    "9e7ea59783b90a98f0f5bccc2add8921639a3fba57ed1a07b54262cc4f698b46"
    ]
   },
   {
@@ -307,7 +310,8 @@
    "formerly": [
     "d31de12ab2d7eb5ddbbf34725f705523d0ef982d39be46d8adb0d0f2bfe1d16e",
     "bd1c9795cc33ea6b7b4a7127192a85dcccbadd2629214b0031ca0f39aea5bcff",
-    "513013ae687a4b4a6bc51533621ca946fb9ca2e22f407b67e2da80f85b3efa1d"
+    "513013ae687a4b4a6bc51533621ca946fb9ca2e22f407b67e2da80f85b3efa1d",
+    "8fdd5c4748e29b58e6587639eedc8d368eca972a0235e5460e1fb62825e106e4"
    ]
   },
   {
@@ -317,7 +321,8 @@
    "formerly": [
     "631b2752e84f36caf2687f18078a563a81a4de99b5be62c39442ef97dc147f0e",
     "6b34abb8a8b4c413f15e0bbf913edaad32d91c019ee8d593416df82ce946d59a",
-    "c3d99233a41ba35776ec0fdb89ed8eb3b02082a471a1de5dddb05ddd1e347911"
+    "c3d99233a41ba35776ec0fdb89ed8eb3b02082a471a1de5dddb05ddd1e347911",
+    "8fa703ac3e42fa13cd9a22c3eae50eadf0087f157e6f73d66c057919ca9955ae"
    ]
   },
   {
@@ -388,13 +393,17 @@
    "source": "templates/commands/claude/toolkit.md",
    "target": ".claude/commands/toolkit.md",
    "class": "replace",
-   "formerly": []
+   "formerly": [
+    "ba1bd341b5cce37deea67abb90e0b9142371fc03f96a8455fc89cf78d2b754b1"
+   ]
   },
   {
    "source": "templates/skills/shared/toolkit/SKILL.md",
    "target": ".agents/skills/toolkit/SKILL.md",
    "class": "replace",
-   "formerly": []
+   "formerly": [
+    "ce026f9cc71ab0208afbec1b414b184c5836fc43b2cfcf0363633e49682b4789"
+   ]
   }
  ],
  "retired": [

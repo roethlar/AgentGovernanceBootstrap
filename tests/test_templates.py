@@ -403,6 +403,22 @@ class PlaybookReviewMechanics(unittest.TestCase):
         self.assertIn("`material_changes` must be empty", body)
         self.assertNotIn("clean|findings", body)
 
+    def test_codereview_carries_generation_and_lifecycle(self):
+        # Reallocation 2026-07-29 (issue #11): codereview owns landed-change
+        # defect generation (pinned-range dispatch, clean|findings contract)
+        # and the policy-relative fix lifecycle. Marker assertions — the
+        # wording stays free, the load-bearing fragments must exist.
+        body = (TEMPLATES / "playbooks" / "codereview.md").read_text(encoding="utf-8")
+        self.assertIn("## Change review (defect generation)", body)
+        self.assertIn("<base>..<head>", body)
+        self.assertIn("clean|findings", body)
+        self.assertIn("one finding ↔ one commit ↔ one verdict", body)
+        self.assertIn("never an amend", body)
+        for rel in (("commands", "claude", "toolkit.md"),
+                    ("skills", "shared", "toolkit", "SKILL.md")):
+            menu = TEMPLATES.joinpath(*rel).read_text(encoding="utf-8")
+            self.assertIn("<base>..<head>", menu, rel)
+
     def test_codereview_carries_self_permissioning_launch(self):
         # 2026-07-18 ruling; audit F9: the launch-scoped grant must not rot
         # out of the shipped playbook (it has a falsified-assumption history).
