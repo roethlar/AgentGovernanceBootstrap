@@ -21,10 +21,11 @@ machine-local facts are labeled or omitted.
   (−6.6%), all rules and earned examples preserved, suite green. Published
   to Bixi as `a9b3fcc` and installed here by the owner's self-refresh
   `2beef1f` (both 2026-07-28); installed copies match the templates.
-  Publish note: the product checkout does not fetch before mirroring, so a
-  release from a stale checkout diverges and the push fails with a
-  fix-by-hand message the owner cannot act on — candidate toolkit
-  improvement, not yet ruled on.
+  The stale-checkout publish gap this exposed (no fetch before mirroring;
+  hit live during the release) is fixed in `39a3e44`: behind
+  fast-forwards, split histories refuse in plain words, unreachable
+  remotes warn and proceed; three guard-proven tests. The fixed
+  `tools/publish.py` reaches Bixi with the next publish.
 - Landed in `4bc53c9` (2026-07-27): the Claude Code `PreToolUse` hook now
   viability-probes `py -3`, `python3`, then `python`, so Windows Store aliases
   cannot mask a working launcher; blocking exit 2 is preserved. Plan CLOSED:
@@ -34,8 +35,7 @@ machine-local facts are labeled or omitted.
 
 ## Next
 
-- Owner ruling pending: should `tools/publish` fetch and fast-forward the
-  product checkout before mirroring (the stale-checkout gap noted above)?
+- None recorded.
 
 ## Blockers
 
