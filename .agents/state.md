@@ -25,7 +25,7 @@ machine-local facts are labeled or omitted.
   hit live during the release) is fixed in `39a3e44`: behind
   fast-forwards, split histories refuse in plain words, unreachable
   remotes warn and proceed; three guard-proven tests. The fixed
-  `tools/publish.py` reaches Bixi with the next publish.
+  `tools/publish.py` reached Bixi in release `b68906d` (2026-07-29).
 - Landed in `4bc53c9` (2026-07-27): the Claude Code `PreToolUse` hook now
   viability-probes `py -3`, `python3`, then `python`, so Windows Store aliases
   cannot mask a working launcher; blocking exit 2 is preserved. Plan CLOSED:
