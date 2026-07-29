@@ -1,10 +1,15 @@
 # Plan: reallocate the review playbooks — codereview reviews landed changes, openreview judges approach soundness
 
-Status: DRAFT 2026-07-29 — owner rulings: drafting and one openreview
-smoke dispatch of the plan's own commit (codex, gpt-5.6-sol) were
-authorized 2026-07-29; the smoke verdict's two material changes were
-adopted 2026-07-29 and are folded into the Design and Slices below.
-Template implementation awaits a separate owner go.
+Status: CLOSED 2026-07-29 — implemented in `87d3825` (Slice 1,
+openreview) and `36e025f` (Slice 2, codereview) on the owner's
+2026-07-29 go. Verification: full suite green after each slice and at
+close (195 tests, `python3.14 -m unittest discover -s tests`); every
+new structural pin guard-proven (paired playbook edit reverted → pin
+fails, restored → green); `git diff --check` clean; plan lint green.
+Prior rulings: drafting and one openreview smoke dispatch of the plan's
+own commit (codex, gpt-5.6-sol) were authorized 2026-07-29; the smoke
+verdict's two material changes were adopted 2026-07-29 and are folded
+into the Design and Slices below.
 
 ## Problem
 

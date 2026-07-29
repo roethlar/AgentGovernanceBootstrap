@@ -116,11 +116,16 @@ For documentation-only changes, run `git diff --check`. Changes touching
   `tools/refresh.py` against itself is refused unconditionally with no
   override flag — a deliberate enforcement guard (2026-07-23 audit F6,
   `9ad88a5`, regression-tested), not a defect to work around.
-- Review playbooks ship at `templates/playbooks/codereview.md` (per-finding
-  conformance loop) and `templates/playbooks/openreview.md` (unprimed
-  goal-first whole-change review); both install into `.agents/playbooks/`
-  via refresh, each with a Claude Code wrapper and shared skill, and the
-  owner invokes them by name (2026-07-16 decision). This repo's installed
-  copies lag until the owner's next self-refresh. Dispatching `codex` as a
-  reviewer: pipe the prompt via **stdin** (`codex exec ... < prompt`); the
-  argv form has hung.
+- Review playbooks ship at `templates/playbooks/codereview.md`
+  (landed-change defect review: generate findings over a pinned
+  `<base>..<head>` range, then run the per-finding conformance loop —
+  one finding ↔ one commit ↔ one verdict) and
+  `templates/playbooks/openreview.md` (approach-soundness judgment of a
+  whole change, code or plan — verdict
+  `best_approach`/`acceptable_with_changes`/`replace`); both install
+  into `.agents/playbooks/` via refresh, each with a Claude Code wrapper
+  and shared skill, and the owner invokes them by name (2026-07-16
+  decision; roles reallocated 2026-07-29, issue #11). This repo's
+  installed copies lag until the owner's next self-refresh. Dispatching
+  `codex` as a reviewer: pipe the prompt via **stdin**
+  (`codex exec ... < prompt`); the argv form has hung.
