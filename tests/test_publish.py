@@ -26,37 +26,43 @@ def git(repo, *args, check=True):
                           capture_output=True, text=True, check=check)
 
 
+def build_dev_repo(base):
+    """The throwaway development repo the script publishes from."""
+    dev = base / "dev"
+    dev_tools = dev / "tools"
+    dev_tools.mkdir(parents=True)
+    # the script resolves the dev repo from its own location
+    shutil.copy2(SCRIPT, dev_tools / "publish.py")
+    for d in ("templates/x", "procedures"):
+        (dev / d).mkdir(parents=True)
+    (dev / "templates" / "x" / "a.md").write_text("a\n")
+    (dev / "procedures" / "p.md").write_text("p\n")
+    # The product front page is a product-only file that publishes to
+    # README.md; the dev repo's own README.md never crosses.
+    (dev / "product").mkdir()
+    (dev / "product" / "README.md").write_text("product front page\n")
+    (dev / "product" / ".gitignore").write_text(".DS_Store\n")
+    (dev / "README.md").write_text("dev-facing readme\n")
+    # The front page references assets by relative path.
+    (dev / "assets").mkdir()
+    (dev / "assets" / "logo.png").write_bytes(b"\x89PNG\r\n\x1a\n")
+    (dev / "tools" / "keep.py").write_text("x = 1\n")
+    # dev-only content that must never publish
+    (dev / "docs").mkdir()
+    (dev / "docs" / "dev-notes.md").write_text("secret dev stuff\n")
+    (dev / ".agents").mkdir()
+    (dev / ".agents" / "decisions.md").write_text("internal\n")
+    (dev / "tools" / "__pycache__").mkdir()
+    (dev / "tools" / "__pycache__" / "junk.pyc").write_text("j\n")
+    return dev, dev_tools
+
+
 class PublishTests(unittest.TestCase):
     def setUp(self):
         self.tmp = tempfile.TemporaryDirectory()
         self.addCleanup(self.tmp.cleanup)
         base = Path(self.tmp.name)
-        self.dev = base / "dev"
-        self.dev_tools = self.dev / "tools"
-        self.dev_tools.mkdir(parents=True)
-        # the script resolves the dev repo from its own location
-        shutil.copy2(SCRIPT, self.dev_tools / "publish.py")
-        for d in ("templates/x", "procedures"):
-            (self.dev / d).mkdir(parents=True)
-        (self.dev / "templates" / "x" / "a.md").write_text("a\n")
-        (self.dev / "procedures" / "p.md").write_text("p\n")
-        # The product front page is a product-only file that publishes to
-        # README.md; the dev repo's own README.md never crosses.
-        (self.dev / "product").mkdir()
-        (self.dev / "product" / "README.md").write_text("product front page\n")
-        (self.dev / "product" / ".gitignore").write_text(".DS_Store\n")
-        (self.dev / "README.md").write_text("dev-facing readme\n")
-        # The front page references assets by relative path.
-        (self.dev / "assets").mkdir()
-        (self.dev / "assets" / "logo.png").write_bytes(b"\x89PNG\r\n\x1a\n")
-        (self.dev / "tools" / "keep.py").write_text("x = 1\n")
-        # dev-only content that must never publish
-        (self.dev / "docs").mkdir()
-        (self.dev / "docs" / "dev-notes.md").write_text("secret dev stuff\n")
-        (self.dev / ".agents").mkdir()
-        (self.dev / ".agents" / "decisions.md").write_text("internal\n")
-        (self.dev / "tools" / "__pycache__").mkdir()
-        (self.dev / "tools" / "__pycache__" / "junk.pyc").write_text("j\n")
+        self.dev, self.dev_tools = build_dev_repo(base)
         self.product = base / "product"
         self.product.mkdir()
         git(self.product, "init", "-q")
@@ -173,6 +179,78 @@ class PublishTests(unittest.TestCase):
         proc = self.run_publish(self.product, "--no-push")
         self.assertEqual(0, proc.returncode, proc.stderr)
         self.assertIn("nothing to release", proc.stdout)
+
+
+class ProductRemoteFreshnessTests(unittest.TestCase):
+    """Releases land on the product remote from other machines too. A stale
+    checkout fast-forwards before mirroring, truly split histories refuse
+    before anything is touched, and an unreachable remote is a caveat,
+    never a block."""
+
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(self.tmp.cleanup)
+        base = Path(self.tmp.name)
+        self.dev, self.dev_tools = build_dev_repo(base)
+        self.origin = base / "origin.git"
+        subprocess.run(["git", "init", "-q", "--bare", str(self.origin)],
+                       check=True, capture_output=True)
+        self.seed = self.clone(base / "seed")
+        (self.seed / "r1.txt").write_text("one\n")
+        git(self.seed, "add", "-A")
+        git(self.seed, "commit", "-q", "-m", "release one")
+        git(self.seed, "push", "-q", "-u", "origin", "HEAD")
+        self.product = self.clone(base / "product")
+
+    def clone(self, dest):
+        subprocess.run(["git", "clone", "-q", str(self.origin), str(dest)],
+                       check=True, capture_output=True)
+        git(dest, "config", "user.email", "t@example.invalid")
+        git(dest, "config", "user.name", "T")
+        return dest
+
+    def advance_remote(self):
+        (self.seed / "r2.txt").write_text("two\n")
+        git(self.seed, "add", "-A")
+        git(self.seed, "commit", "-q", "-m", "release two")
+        git(self.seed, "push", "-q")
+
+    def run_publish(self, *args):
+        return subprocess.run(
+            [sys.executable, str(self.dev_tools / "publish.py"),
+             *(str(a) for a in args)],
+            capture_output=True, text=True)
+
+    def test_stale_checkout_fast_forwards_before_the_release(self):
+        self.advance_remote()
+        proc = self.run_publish(self.product, "--no-push")
+        self.assertEqual(0, proc.returncode, proc.stdout + proc.stderr)
+        subjects = git(self.product, "log", "--format=%s").stdout.splitlines()
+        self.assertIn("release two", subjects)
+        self.assertTrue(subjects[0].startswith("release "), subjects[0])
+        # brought up to date, not merged: release history stays linear
+        self.assertEqual("", git(self.product, "rev-list", "--merges",
+                                 "HEAD").stdout.strip())
+
+    def test_split_histories_refuse_before_touching_anything(self):
+        (self.product / "local.txt").write_text("local\n")
+        git(self.product, "add", "-A")
+        git(self.product, "commit", "-q", "-m", "local only")
+        self.advance_remote()
+        proc = self.run_publish(self.product, "--no-push")
+        self.assertEqual(2, proc.returncode, proc.stdout + proc.stderr)
+        self.assertIn("reconcile", proc.stderr)
+        self.assertTrue((self.product / "local.txt").exists())
+        self.assertFalse((self.product / "templates").exists())
+
+    def test_unreachable_remote_is_a_caveat_never_a_block(self):
+        git(self.product, "remote", "set-url", "origin",
+            str(Path(self.tmp.name) / "gone.git"))
+        proc = self.run_publish(self.product, "--no-push")
+        self.assertEqual(0, proc.returncode, proc.stdout + proc.stderr)
+        self.assertIn("could not reach", proc.stderr)
+        self.assertIn("release ", git(self.product, "log", "--format=%s",
+                                      "-1").stdout)
 
 
 if __name__ == "__main__":
