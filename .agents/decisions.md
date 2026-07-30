@@ -720,6 +720,13 @@ This refines the personal-toolkit framing behind the 2026-07-10
 mirror-trust ruling (recorded in
 `docs/superpowers/plans/2026-07-10-refresh-trust-boundary-hardening.md`).
 
+> Amended 2026-07-30: the license item is lifted out of the deferred set —
+> Bixi has been public since the 2026-07-24 first publish and is the
+> public feedback inbox, so it can no longer wait for the wide-release
+> decision. MIT license, ruled 2026-07-30 (entry below). The rest of the
+> deferred set (versioned releases, changelogs, CI matrices, signed tags)
+> stays deferred.
+
 ### 2026-07-10 — Agents never update this repo's own governance while working on the toolkit
 
 Status: Active
@@ -1506,6 +1513,30 @@ Supersedes:
 Nothing; generalizes the `plan` operator's existing chat-ask rule (roughly
 25-50 plain-English words, one decision at a time) to all owner gates, and
 tightens `## Final Response` from "explain" to summary-first ordering.
+### 2026-07-30 - MIT license for both repos, one canonical copy published to Bixi
+
+Status: Active
+
+Decision:
+The toolkit is MIT-licensed. The copyright line is "Copyright (c) 2026
+Michael Coelho". One canonical `LICENSE` file lives at this development
+repo's root; `tools/publish.py`'s `PUBLISH_PATHS` carries it as
+`("LICENSE", "LICENSE")` so mirroring installs the identical file in
+Bixi. No second copy under `product/` — the one-canonical-location
+invariant. Governed repos do not inherit the toolkit's license
+(`tools/shipped-set.json` is untouched); repos created or governed by
+the toolkit remain their owners' own licensing decisions.
+
+Reason:
+Owner ruling 2026-07-30. Bixi has been a public product repo since the
+2026-07-24 first publish and is the public feedback inbox (2026-07-29
+decision); a public repo without a license grants no rights. This lifts
+the license item out of the deferred release-engineering set in the
+2026-07-10 release-posture decision; the rest of that set stays
+deferred. Plan: `docs/superpowers/plans/2026-07-30-mit-license.md`.
+
+Supersedes:
+Narrows the 2026-07-10 release-posture decision (license item only).
 
 
 ## Open Decisions (deferred - not yet adopted)

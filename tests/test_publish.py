@@ -43,6 +43,9 @@ def build_dev_repo(base):
     (dev / "product" / "README.md").write_text("product front page\n")
     (dev / "product" / ".gitignore").write_text(".DS_Store\n")
     (dev / "README.md").write_text("dev-facing readme\n")
+    # One canonical license at the dev repo's root ships to the product
+    # repo — mirroring clears everything the publish set does not carry.
+    (dev / "LICENSE").write_text("MIT\n")
     # The front page references assets by relative path.
     (dev / "assets").mkdir()
     (dev / "assets" / "logo.png").write_bytes(b"\x89PNG\r\n\x1a\n")
@@ -90,6 +93,8 @@ class PublishTests(unittest.TestCase):
         self.assertEqual("product front page\n",
                          (self.product / "README.md").read_text())
         self.assertFalse((self.product / "product").exists())
+        # the root LICENSE ships — the product repo is public
+        self.assertTrue((self.product / "LICENSE").exists())
         # assets ship, or every image on the front page is a broken link
         self.assertTrue((self.product / "assets" / "logo.png").exists())
         self.assertTrue((self.product / "tools" / "keep.py").exists())
