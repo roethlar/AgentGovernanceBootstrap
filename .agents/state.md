@@ -10,6 +10,19 @@ machine-local facts are labeled or omitted.
 
 ## Now
 
+- Landed 2026-07-30 (`2bd0974`): the toolkit is MIT-licensed —
+  `LICENSE` at the root ("Copyright (c) 2026 Michael Coelho"),
+  `tools/publish.py`'s `PUBLISH_PATHS` carries it as
+  `("LICENSE", "LICENSE")` so mirroring installs it in Bixi; one
+  canonical copy, governed repos unaffected. Decision recorded
+  (`.agents/decisions.md`, 2026-07-30): the license item is lifted out
+  of the 2026-07-10 deferred release-engineering set, the rest stays
+  deferred. Mirror-test guard-proven; suite green except two
+  pre-existing Windows `new-project` failures (clean-HEAD worktree
+  fails identically — PATH/git.exe resolution, machine-local, noted in
+  `.agents/machines.md`). Plan CLOSED:
+  `docs/superpowers/plans/2026-07-30-mit-license.md`. Reaches Bixi on
+  the next `publish`.
 - Landed 2026-07-29 (`722c9ae`): `tools/publish.py` now ships
   `.github/ISSUE_TEMPLATE/` into Bixi (the subdirectory only — dev CI
   and workflows can never auto-ship); mirror test guard-proven, suite

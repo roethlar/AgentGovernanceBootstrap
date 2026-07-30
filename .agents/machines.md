@@ -28,6 +28,11 @@ never treat them as repo-portable.
 
 ## ASHBIAMWEB1 (Windows)
 
+- 2026-07-30: two `tests/test_new_project.py` cases fail on this machine
+  on a clean HEAD (`test_no_harness_prints_procedure_path` — the test's
+  hard-coded `/usr/bin:/bin` PATH hides git.exe from the Windows
+  subprocess; `test_print_python_finds_a_310_or_better`). Pre-existing,
+  unrelated to any current work; the rest of the 195-test suite is green.
 - 2026-07-27: `py -3` resolves to
   `C:\Program Files\Python314\python.exe` (Python 3.14.6). Set
   `PYTHONIOENCODING=utf-8` when running the suite so child Python output

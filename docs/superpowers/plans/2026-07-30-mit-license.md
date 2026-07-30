@@ -1,11 +1,19 @@
 # Plan: MIT license for the development repo, published to Bixi
 
-Status: DRAFT 2026-07-30 — awaits the owner's go to implement. Rulings in
-hand (owner, 2026-07-30): the license is MIT; the copyright line is
-"Copyright (c) 2026 Michael Coelho". These rulings lift the license item
-out of the deferred release-engineering set in the 2026-07-10
-release-posture decision (`.agents/decisions.md`); the rest of that set
-(versioned releases, changelogs, CI matrices, signed tags) stays deferred.
+Status: CLOSED 2026-07-30 — implemented in `2bd0974` on the owner's
+2026-07-30 go. Verification: guard proof (publish set without the new
+pair → mirror test fails; restored → green); full suite green except two
+pre-existing Windows `new-project` failures that fail identically on a
+clean-HEAD worktree (PATH/git.exe resolution, unrelated);
+`git diff --check` clean; plan lint green. Takes effect on the next
+`publish`.
+
+Rulings behind it (owner, 2026-07-30): the license is MIT; the copyright
+line is "Copyright (c) 2026 Michael Coelho". These rulings lift the
+license item out of the deferred release-engineering set in the
+2026-07-10 release-posture decision (`.agents/decisions.md`); the rest
+of that set (versioned releases, changelogs, CI matrices, signed tags)
+stays deferred.
 
 ## Problem
 
