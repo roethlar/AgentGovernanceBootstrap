@@ -38,3 +38,10 @@ never treat them as repo-portable.
   `PYTHONIOENCODING=utf-8` when running the suite so child Python output
   matches the tests' explicit UTF-8 subprocess decoding.
 - product-repo: D:\source\Bixi (recorded 2026-07-27, first publish)
+
+## netwatch-01 (Windows)
+
+- product-repo: F:\dev\Bixi (recorded 2026-07-30, first publish from
+  this machine; publish.py's recorded-path lookup reads the first
+  `product-repo:` line in this file, so on this machine the path must be
+  passed explicitly: `py -3 tools/publish.py F:\dev\Bixi`)

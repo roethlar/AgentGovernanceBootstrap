@@ -21,8 +21,9 @@ machine-local facts are labeled or omitted.
   pre-existing Windows `new-project` failures (clean-HEAD worktree
   fails identically — PATH/git.exe resolution, machine-local, noted in
   `.agents/machines.md`). Plan CLOSED:
-  `docs/superpowers/plans/2026-07-30-mit-license.md`. Reaches Bixi on
-  the next `publish`.
+  `docs/superpowers/plans/2026-07-30-mit-license.md`. Released to Bixi
+  as `4b01c27` (2026-07-30 publish, 65 files — LICENSE verified in the
+  product clone and at GitHub HEAD).
 - Landed 2026-07-29 (`722c9ae`): `tools/publish.py` now ships
   `.github/ISSUE_TEMPLATE/` into Bixi (the subdirectory only — dev CI
   and workflows can never auto-ship); mirror test guard-proven, suite
