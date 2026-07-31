@@ -1,6 +1,23 @@
 # Plan: the plan record accounts for an already-staged shipped set
 
-Status: DRAFT 2026-07-31 — awaiting owner approval. No open decisions.
+Status: CLOSED 2026-07-31 — implemented as specified, all five steps, one
+deviation: `summarize()` takes a `show_staged` flag so the already-staged
+lines reach the read-only plan run and stay out of the refresh commit
+message, whose commit is pathspec-scoped and does not contain those paths.
+
+Commit map:
+
+- `88e6d6f` — Step 1, `Plan.already_staged`, `staged_shipped_paths()`, the
+  `main()` call site after every plan mutation.
+- `b75e4e2` — Step 2, `build_record` field, schema 2, `verify_record`,
+  `summarize(show_staged=...)`, module docstring.
+- `22dd532` — Step 3, `procedures/bootstrap.md` Steps 6 and 7,
+  `templates/approval-summary.template.md`.
+- `69b7233` — Step 4, `AlreadyStagedTests`, guard-proven (neutralizing the
+  helper call fails four of the seven cases).
+
+Verification at close: suite 204, green except the two known Windows
+`test_new_project` failures recorded in `.agents/machines.md`.
 
 Addresses Bixi issue #2 (`refresh plan omits canonical files already staged
 before the first commit`).

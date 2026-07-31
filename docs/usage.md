@@ -53,7 +53,10 @@ drafts the repo-specific `.agents/` files, and presents
 starts with `Approve`, `Approve after edits`, or `Do not approve yet`, and
 is written so you never need to read code, diffs, or JSON to decide. On your
 approval: drafts are copied, `tools/refresh.py --stage-only` installs the
-shipped set, and everything lands as ONE scoped commit. Pushing follows the
+shipped set, and everything lands as ONE scoped commit. A repo whose shipped
+set is already staged and uncommitted — what `tools/new-project` hands over —
+still gets the whole list in that summary; those files are named in the plan
+record too. Pushing follows the
 push policy you choose at approval time.
 
 ## Keeping a repo current

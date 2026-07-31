@@ -88,7 +88,12 @@ Two flows:
   manifest's own roots, bottom-up, empty-only, never a root itself; one
   `[Y/n]` prompt at a real TTY, and automated runs report without removing.
   Nothing is staged or committed, so a pruned directory can never
-  invalidate an approved plan record.
+  invalidate an approved plan record. That record (schema 2) also names
+  `already_staged`: shipped files an earlier `--stage-only` run left in the
+  index, which refresh will not write but the approved commit contains, so
+  the bootstrap summary can describe its whole scope. Paths only — the
+  bootstrap procedure legitimately restages its own drafted policy files
+  between plan and apply, and a content hash there would read as drift.
   Uncommitted changes on touched paths trigger the
   dirty-tree refusal, so nothing uncommitted is ever machine-destroyed;
   committed drift stays recoverable from git history. All matching is

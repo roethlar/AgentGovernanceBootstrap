@@ -10,6 +10,18 @@ machine-local facts are labeled or omitted.
 
 ## Now
 
+- Landed 2026-07-31 (`88e6d6f`, `b75e4e2`, `22dd532`, `69b7233`): the
+  `--plan-json` record carries `already_staged`, the shipped paths sitting
+  in the index that the run will not write, so a bootstrap approval summary
+  describes the whole first commit instead of reporting "nothing to do"
+  over a fully staged set (Bixi issue #2). Record schema is now 2. Paths
+  only, no content pin, and no new refusal: `new-project` stages the seeded
+  push policy and `procedures/setup.md` Step 3 edits that staged file before
+  the first commit, so staged-then-modified is the normal greenfield shape,
+  and bootstrap restages its own drafted policy between plan and apply.
+  Plan closed with its commit map at
+  `docs/superpowers/plans/2026-07-31-already-staged-shipped-set.md`. Suite
+  204, green except the two known Windows `new-project` failures.
 - Landed 2026-07-31 (`a971ba2`): the ownership invariant in
   `templates/AGENTS.template.md` no longer claims everything refresh
   installs is toolkit-owned — it scopes toolkit ownership to
@@ -103,15 +115,6 @@ machine-local facts are labeled or omitted.
 
 ## Next
 
-- Bixi #2 has a drafted plan awaiting approval,
-  `docs/superpowers/plans/2026-07-31-already-staged-shipped-set.md`
-  (`8a4a7e8`, revised `da434bd`): `refresh.py --plan-json` reports
-  "nothing to do" on a repo whose shipped set is staged but uncommitted, so
-  the bootstrap approval summary cannot enumerate the first commit's scope.
-  Five steps, no open decisions — a staged-then-modified shipped path is
-  recorded, never refused, because `new-project` plus `procedures/setup.md`
-  Step 3 produce exactly that state for `.agents/push-policy.md` in the
-  normal greenfield flow. No implementation until the plan is approved.
 - Bixi #4 remains open and unactioned, awaiting its own per-item owner go
   (2026-07-31 triage): the recorded frontier tier is neither durable nor
   independent of the coder's own model — part design ruling, not just a
