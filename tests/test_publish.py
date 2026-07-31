@@ -196,6 +196,49 @@ class PublishTests(unittest.TestCase):
         self.assertIn("nothing to release", proc.stdout)
 
 
+class RecordProductRepoTests(unittest.TestCase):
+    """The path is recorded once per machine, not once per release. The
+    lookup reads the FIRST product-repo line in machines.md, so on a machine
+    whose entry is not that first one the owner passes the path on every run
+    - and an unconditional append grew the file by a line per release."""
+
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(self.tmp.cleanup)
+        self.dev = Path(self.tmp.name) / "dev"
+        (self.dev / ".agents").mkdir(parents=True)
+        self.machines = self.dev / ".agents" / "machines.md"
+
+    def lines(self):
+        return re.findall(r"product-repo:\s*(\S+)",
+                          self.machines.read_text(encoding="utf-8"))
+
+    def test_repeat_publish_records_the_same_path_once(self):
+        product = Path(self.tmp.name) / "product"
+        for _ in range(3):
+            publish_mod.record_product_repo(self.dev, product)
+        self.assertEqual([str(product)], self.lines())
+
+    def test_a_second_path_is_still_recorded(self):
+        first = Path(self.tmp.name) / "product-a"
+        second = Path(self.tmp.name) / "product-b"
+        publish_mod.record_product_repo(self.dev, first)
+        publish_mod.record_product_repo(self.dev, second)
+        self.assertEqual([str(first), str(second)], self.lines())
+
+    def test_an_entry_this_machine_does_not_own_is_left_alone(self):
+        # The real file carries one entry per machine; recording must append
+        # to it, never rewrite or reorder what another machine recorded.
+        self.machines.write_text(
+            "# Machine Facts\n\n## other (macOS)\n\n"
+            "- product-repo: /Users/x/Dev/Bixi (recorded 2026-07-24)\n",
+            encoding="utf-8")
+        mine = Path(self.tmp.name) / "product"
+        publish_mod.record_product_repo(self.dev, mine)
+        publish_mod.record_product_repo(self.dev, mine)
+        self.assertEqual(["/Users/x/Dev/Bixi", str(mine)], self.lines())
+
+
 class ProductRemoteFreshnessTests(unittest.TestCase):
     """Releases land on the product remote from other machines too. A stale
     checkout fast-forwards before mirroring, truly split histories refuse

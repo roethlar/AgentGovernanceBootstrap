@@ -66,10 +66,22 @@ def recorded_product_repo(dev_repo: Path) -> "Path | None":
 
 def record_product_repo(dev_repo: Path, product: Path) -> None:
     import datetime
+    import os
+    import re
     machines = dev_repo / ".agents" / "machines.md"
     machines.parent.mkdir(parents=True, exist_ok=True)
     text = (machines.read_text(encoding="utf-8")
             if machines.exists() else "# Machines\n")
+    # Recording is idempotent: a path this file already names stays recorded
+    # once. The lookup above reads the first product-repo line in the file, so
+    # on any machine whose entry is not that first one the path is passed on
+    # every run - and appending each time grows the file by a line per release.
+    def key(p):
+        return os.path.normcase(str(Path(p).expanduser()))
+
+    if key(product) in {key(p) for p in
+                        re.findall(r"product-repo:\s*(\S+)", text)}:
+        return
     line = "- product-repo: {} (recorded {}, first publish)\n".format(
         product, datetime.date.today().isoformat())
     if not text.endswith("\n"):

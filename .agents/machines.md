@@ -55,4 +55,3 @@ never treat them as repo-portable.
   this machine; publish.py's recorded-path lookup reads the first
   `product-repo:` line in this file, so on this machine the path must be
   passed explicitly: `py -3 tools/publish.py F:\dev\Bixi`)
-- product-repo: F:\dev\Bixi (recorded 2026-07-31, first publish)
