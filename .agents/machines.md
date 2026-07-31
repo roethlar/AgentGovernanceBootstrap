@@ -41,6 +41,16 @@ never treat them as repo-portable.
 
 ## netwatch-01 (Windows)
 
+- 2026-07-31: `py -3` is 3.14.6
+  (`C:\Users\michael\AppData\Local\Programs\Python\Launcher\py.exe`). Run
+  the suite with `PYTHONUTF8=1` (same fact as ASHBIAMWEB1's 2026-07-27
+  `PYTHONIOENCODING=utf-8` entry). Without it, `refresh.py`'s em dashes
+  reach the tests' pipe as cp1252, the UTF-8 reader thread dies, and
+  ~40 `test_refresh` cases error on `proc.stdout is None` instead of
+  reporting anything — the suite is blinded, not red for cause.
+- 2026-07-31: the two `test_new_project.py` failures recorded under
+  ASHBIAMWEB1 reproduce here on a clean HEAD worktree; with UTF-8 mode
+  on, they are the only failures.
 - product-repo: F:\dev\Bixi (recorded 2026-07-30, first publish from
   this machine; publish.py's recorded-path lookup reads the first
   `product-repo:` line in this file, so on this machine the path must be

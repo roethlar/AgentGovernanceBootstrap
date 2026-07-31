@@ -10,6 +10,21 @@ machine-local facts are labeled or omitted.
 
 ## Now
 
+- Landed 2026-07-31 (`a971ba2`): the ownership invariant in
+  `templates/AGENTS.template.md` no longer claims everything refresh
+  installs is toolkit-owned — it scopes toolkit ownership to
+  refresh-governed artifacts and names the seeded files
+  (`.agents/push-policy.md`) repo-owned and editable, so an
+  owner-authorized push-policy edit no longer reads as prohibited drift
+  (Bixi issue #3). Token-neutral at 1656 words (2026-07-28 rule). New
+  guard `tests/test_templates.SeededFilesStayRepoOwned` ties the prose to
+  the manifest's `seeded[]` category — guard-proven, both cases fail on
+  the old wording; refresh's half of the contract was already covered by
+  `SeedTests.test_present_target_is_never_touched`. Outgoing template
+  hash appended to `formerly[]`. Suite 197 tests, green except the two
+  known Windows `new-project` failures. Bixi #3 stays open until the fix
+  ships: it reaches the product repo on the owner's next `publish`, and
+  this repo's installed `AGENTS.md` lags until the next self-refresh.
 - Landed 2026-07-30 (`2bd0974`): the toolkit is MIT-licensed —
   `LICENSE` at the root ("Copyright (c) 2026 Michael Coelho"),
   `tools/publish.py`'s `PUBLISH_PATHS` carries it as
@@ -88,7 +103,14 @@ machine-local facts are labeled or omitted.
 
 ## Next
 
-- None recorded.
+- Two Bixi issues remain open and unactioned, each awaiting its own
+  per-item owner go (2026-07-31 triage): #4 (the recorded frontier tier
+  is neither durable nor independent of the coder's own model — part
+  design ruling, not just a fix) and #2 (`refresh.py --plan-json` reports
+  "nothing to do" on an unborn repo whose shipped set is already staged,
+  so the bootstrap approval summary cannot enumerate the first commit's
+  scope).
+- Unshipped: `a971ba2` reaches Bixi only on the owner's next `publish`.
 
 ## Blockers
 
