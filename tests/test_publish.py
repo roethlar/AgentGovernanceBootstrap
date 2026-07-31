@@ -210,8 +210,12 @@ class RecordProductRepoTests(unittest.TestCase):
         self.machines = self.dev / ".agents" / "machines.md"
 
     def lines(self):
-        return re.findall(r"product-repo:\s*(\S+)",
-                          self.machines.read_text(encoding="utf-8"))
+        # The tool's own pattern, not a second tokenizer that can disagree
+        # with it - that disagreement was the defect. Raw recorded text, so a
+        # POSIX fixture is not silently normalized to this platform.
+        return [quoted or bare for quoted, bare in
+                re.findall(publish_mod._RECORDED,
+                           self.machines.read_text(encoding="utf-8"))]
 
     def test_repeat_publish_records_the_same_path_once(self):
         product = Path(self.tmp.name) / "product"
@@ -225,6 +229,27 @@ class RecordProductRepoTests(unittest.TestCase):
         publish_mod.record_product_repo(self.dev, first)
         publish_mod.record_product_repo(self.dev, second)
         self.assertEqual([str(first), str(second)], self.lines())
+
+    def test_a_path_with_spaces_round_trips(self):
+        # codereview CR1: the reader stopped at the first space, so such a
+        # path never matched itself (a line per release) and resolved to its
+        # own truncated prefix - a different checkout, or none.
+        product = Path(self.tmp.name) / "My Product Repo"
+        for _ in range(2):
+            publish_mod.record_product_repo(self.dev, product)
+        self.assertEqual([str(product)], self.lines())
+        self.assertEqual(product,
+                         publish_mod.recorded_product_repo(self.dev))
+
+    def test_a_bare_hand_written_entry_still_parses(self):
+        # Every entry recorded before quoting existed is unquoted.
+        self.machines.write_text(
+            "- product-repo: /srv/Bixi (recorded 2026-07-24, first publish)\n",
+            encoding="utf-8")
+        self.assertEqual(Path("/srv/Bixi"),
+                         publish_mod.recorded_product_repo(self.dev))
+        publish_mod.record_product_repo(self.dev, Path("/srv/Bixi"))
+        self.assertEqual(["/srv/Bixi"], self.lines())
 
     def test_an_entry_this_machine_does_not_own_is_left_alone(self):
         # The real file carries one entry per machine; recording must append
