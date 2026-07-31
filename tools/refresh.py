@@ -46,6 +46,11 @@ established narrow repair with the .gitignore edit included in the same
 commit; a path ignored by an unrecognized rule is flagged and skipped;
 git add -f is never used.
 
+The --plan-json record also lists already_staged: shipped-set paths already
+in the index that this run will not write. They are not the run's work, but
+they are in the commit the approval summary describes, so the record has to
+name them.
+
 Default mode stages the reconciled paths and makes one scoped commit whose
 message records the toolkit commit it synced to. --stage-only stages and
 stops (the bootstrap procedure then stages the approved judgment drafts and
@@ -708,7 +713,7 @@ def build_record(toolkit: Path, target: Path, plan: Plan) -> dict:
                 "sha256": hashlib.sha256(Path(s).read_bytes()).hexdigest()}
     head = git(target, "rev-parse", "HEAD", check=False)
     rec = {
-        "schema": 1,
+        "schema": 2,
         "toolkit_sha": git(toolkit, "rev-parse", "HEAD").stdout.strip(),
         "toolkit_dirty": bool(
             git(toolkit, "status", "--porcelain", check=False).stdout.strip()),
@@ -723,6 +728,11 @@ def build_record(toolkit: Path, target: Path, plan: Plan) -> dict:
                               for ln, old, repl in plan.gitignore_repairs],
         "flags": [[t, r] for t, r in plan.flags],
         "staged_paths": touched_paths(plan),
+        # Paths only: what is already in the index and will therefore be in
+        # the approved commit. No content pin - the bootstrap procedure
+        # legitimately restages its own drafted push policy between plan and
+        # apply, and a hash here would read that as drift.
+        "already_staged": list(plan.already_staged),
     }
     canonical = json.dumps(rec, sort_keys=True, separators=(",", ":"))
     rec["digest"] = hashlib.sha256(canonical.encode("utf-8")).hexdigest()
@@ -732,7 +742,7 @@ def build_record(toolkit: Path, target: Path, plan: Plan) -> dict:
 def verify_record(record: dict, toolkit: Path, target: Path, plan: Plan) -> "list[str]":
     """Reasons an approved plan record no longer matches reality. Any
     non-empty result refuses the apply before the first write."""
-    if record.get("schema") != 1:
+    if record.get("schema") != 2:
         return ["unsupported plan schema: {!r}".format(record.get("schema"))]
     current = build_record(toolkit, target, plan)
     problems = []
@@ -740,7 +750,8 @@ def verify_record(record: dict, toolkit: Path, target: Path, plan: Plan) -> "lis
         problems.append("toolkit worktree is dirty (apply requires a clean tree)")
     for field in ("toolkit_sha", "manifest_digest", "target_head", "installs",
                   "updates", "restores", "drift", "removes",
-                  "gitignore_repairs", "flags", "staged_paths"):
+                  "gitignore_repairs", "flags", "staged_paths",
+                  "already_staged"):
         if current[field] != record.get(field):
             problems.append("drift in {}: the current state no longer matches the approved plan".format(field))
     if not problems and current["digest"] != record.get("digest"):
@@ -1098,7 +1109,10 @@ def terse_line(target: Path, plan: Plan, sync_note: str, changed: bool,
     return out
 
 
-def summarize(plan: Plan, sync_note: str) -> str:
+def summarize(plan: Plan, sync_note: str, show_staged: bool = False) -> str:
+    """show_staged belongs to the read-only plan run, whose job is the whole
+    scope of the coming commit. The commit message leaves it off: the refresh
+    commit is pathspec-scoped, so paths staged before the run are not in it."""
     lines = []
     seeded = set(plan.seeded)
     for label, items in (
@@ -1123,6 +1137,9 @@ def summarize(plan: Plan, sync_note: str) -> str:
         lines.append("  repaired: {} ({})".format(t, note))
     for t, reason in plan.flags:
         lines.append("  FLAG {}: {}".format(t, reason))
+    if show_staged:
+        for t in plan.already_staged:
+            lines.append("  already staged: {}".format(t))
     if not lines:
         lines.append("  nothing to do - repo is current")
     if sync_note:
@@ -1263,7 +1280,7 @@ def main(argv=None) -> int:
         else:
             Path(args.plan_json).write_text(payload, encoding="utf-8")
         print("governance refresh plan against toolkit {} (read-only - nothing changed)".format(toolkit_sha))
-        print(summarize(plan, sync_note))
+        print(summarize(plan, sync_note, show_staged=True))
         found = lint_governance(target)
         has_warn = any(kind != "note" for _rel, _msg, kind in found)
         for rel, note_msg, kind in found:
