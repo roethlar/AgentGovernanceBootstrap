@@ -16,8 +16,9 @@ machine-local facts are labeled or omitted.
   share one shape; bare entries still parse). The second half is CR1, found
   by `codereview codex` over `7fcce43..6c20d03` — the truncating read
   predates the first fix (`272c0a1`) and the first fix had spread it to a
-  second call site. Record: `.agents/review/findings/CR1.md`. Both unshipped;
-  they reach Bixi on the next `publish`.
+  second call site. Record: `.agents/review/findings/CR1.md`. Released in
+  `55e9819` — that run is itself the live proof of the first fix: it recorded
+  no new `product-repo:` line.
 - Released 2026-07-31 (`71a91b6` on Bixi, 65 files): carries all three of
   today's fixes — Bixi #3 (ownership wording), #2 (`already_staged`) and #4
   (bare review verbs). All three issues closed against it. Owner ruling the
@@ -135,9 +136,8 @@ machine-local facts are labeled or omitted.
 
 ## Next
 
-- Unshipped: the two `tools/publish.py` fixes (`6c20d03`, `1c7f971`) landed
-  after release `71a91b6` and reach Bixi on the next `publish`. The Bixi
-  inbox itself is empty: #2, #3 and #4 closed against that release.
+- None recorded. Everything landed is shipped (`55e9819`) and the Bixi inbox
+  is empty: #2, #3 and #4 closed against release `71a91b6`.
 - Unshipped: `a971ba2` reaches Bixi only on the owner's next `publish`.
 
 ## Blockers
