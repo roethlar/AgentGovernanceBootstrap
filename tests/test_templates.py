@@ -367,6 +367,41 @@ class TemplateRuleDedup(unittest.TestCase):
         self.assertEqual([], dupes)
 
 
+class SeededFilesStayRepoOwned(unittest.TestCase):
+    """Bixi issue #3 (2026-07-31): the ownership invariant claimed every
+    artifact refresh installs is toolkit-owned, which swept in the seeded
+    repo-owned policy files — refresh backfills an absent
+    `.agents/push-policy.md`, so an agent in a governed repo challenged an
+    owner-authorized edit to it. The prose and the manifest's `seeded`
+    category stay in lockstep or this goes red. Refresh's half of the
+    contract (an owner-edited seeded file is neither reported nor restored)
+    is proven by test_refresh.SeedTests.test_present_target_is_never_touched.
+    """
+
+    TEMPLATE = TEMPLATES / "AGENTS.template.md"
+
+    def sentences(self):
+        body = self.TEMPLATE.read_text(encoding="utf-8")
+        return re.split(r"(?<=[.;])\s+", body)
+
+    def test_every_seeded_target_is_named_repo_owned(self):
+        seeded = [s["target"] for s in shipped_set()["seeded"]]
+        self.assertTrue(seeded)  # the real category, not an empty list
+        for target in seeded:
+            mentions = [s for s in self.sentences() if target in s]
+            self.assertTrue(mentions, target)
+            self.assertTrue(any("repo-owned" in s for s in mentions), target)
+            self.assertFalse(any("toolkit-owned" in s for s in mentions), target)
+
+    def test_toolkit_ownership_is_not_scoped_by_installation(self):
+        # The defect's exact shape: scoping ownership by what refresh
+        # installs includes the seeded backfill. Scope it by what refresh
+        # keeps reconciled instead.
+        for s in self.sentences():
+            if "toolkit-owned" in s:
+                self.assertNotIn("install", s.lower(), s)
+
+
 class PlaybookReviewMechanics(unittest.TestCase):
     """Structural pins for the reviewer-dispatch mechanics in the shipped
     playbooks (review-economy decision 2026-07-17, as amended 2026-07-23):
