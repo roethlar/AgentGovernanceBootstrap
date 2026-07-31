@@ -105,12 +105,13 @@ machine-local facts are labeled or omitted.
 
 - Bixi #2 has a drafted plan awaiting approval,
   `docs/superpowers/plans/2026-07-31-already-staged-shipped-set.md`
-  (`8a4a7e8`): `refresh.py --plan-json` reports "nothing to do" on a repo
-  whose shipped set is staged but uncommitted, so the bootstrap approval
-  summary cannot enumerate the first commit's scope. Five steps, one open
-  decision D1 (whether refresh refuses when a shipped path is staged and
-  then modified in the worktree). No implementation until the plan is
-  approved.
+  (`8a4a7e8`, revised `da434bd`): `refresh.py --plan-json` reports
+  "nothing to do" on a repo whose shipped set is staged but uncommitted, so
+  the bootstrap approval summary cannot enumerate the first commit's scope.
+  Five steps, no open decisions — a staged-then-modified shipped path is
+  recorded, never refused, because `new-project` plus `procedures/setup.md`
+  Step 3 produce exactly that state for `.agents/push-policy.md` in the
+  normal greenfield flow. No implementation until the plan is approved.
 - Bixi #4 remains open and unactioned, awaiting its own per-item owner go
   (2026-07-31 triage): the recorded frontier tier is neither durable nor
   independent of the coder's own model — part design ruling, not just a
