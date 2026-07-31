@@ -34,6 +34,40 @@ live rule now owned elsewhere - archive it per the rule above: move it verbatim 
 
 ## Decisions
 
+### 2026-07-31 — A bare review verb asks; it never resolves a reviewer on its own
+
+Status: Active
+
+Decision: `codereview`, `review` and `openreview` invoked with no arguments
+ask the owner which reviewer to run, in one line, with the machine-local
+cache's prior dispatches attached as recall. The list is a reminder, never a
+menu: an unlisted word is used verbatim, and an empty cache asks with no
+list. Nothing is probed, scanned, enumerated or looked up to build it —
+reading the cache is the whole operation. The answer is not written back as a
+bare-invocation default, so nothing accumulates that can go stale. Dispatches
+that name a harness or model are untouched and remain final (2026-07-23
+decision), including one that names the coder's own model.
+
+Rationale: the verbs defined only their fully-specified form, so the bare
+word was undefined and the obvious improvisation — dispatch in the harness
+already running — is a review by the model that wrote the change, reported as
+an independent one. Three richer answers were considered and rejected, each
+for a reason that outlives this entry: **remember the answer** recreates the
+stale stored judgment this fixes; **prefer a different harness** cannot be
+evaluated, because "harness" has no boundary a machine can test, a second
+harness may serve worse models than the one running, and a local model behind
+the *same* harness is a genuinely independent reviewer; **probe the machine
+for what is available** turns one word into an open-ended discovery run
+across a user's system. This toolkit keeps no list of models and judges none
+(2026-07-23 decision), so it cannot rank reviewers — independence and quality
+come from the owner's word at dispatch, and the dispatch record names what
+actually ran, making a self-review visible rather than prevented by a guess.
+
+Landed: `65f53b0`, in `templates/playbooks/codereview.md` ("Dispatch
+grammar", canonical), `templates/playbooks/openreview.md`, the three operator
+wrappers and their three skills, guarded by `BareReviewInvocation` in
+`tests/test_templates.py`. Closes Bixi issue #4.
+
 ### 2026-07-29 — Product feedback arrives on Bixi, is fixed here, and ships back via publish
 
 Status: Active

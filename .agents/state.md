@@ -10,6 +10,13 @@ machine-local facts are labeled or omitted.
 
 ## Now
 
+- Landed 2026-07-31 (`65f53b0`): the review verbs define their bare form —
+  a bare `codereview`/`review`/`openreview` asks which reviewer to run, with
+  the machine-local cache's prior dispatches as recall, storing nothing back
+  and probing nothing (Bixi issue #4). Explicit dispatches unchanged. The
+  ruling and the three rejected alternatives are recorded in
+  `.agents/decisions.md` (2026-07-31); guard is `BareReviewInvocation` in
+  `tests/test_templates.py`. Suite 206.
 - Landed 2026-07-31 (`88e6d6f`, `b75e4e2`, `22dd532`, `69b7233`): the
   `--plan-json` record carries `already_staged`, the shipped paths sitting
   in the index that the run will not write, so a bootstrap approval summary
@@ -115,10 +122,11 @@ machine-local facts are labeled or omitted.
 
 ## Next
 
-- Bixi #4 remains open and unactioned, awaiting its own per-item owner go
-  (2026-07-31 triage): the recorded frontier tier is neither durable nor
-  independent of the coder's own model — part design ruling, not just a
-  fix.
+- Publish: `a971ba2` (Bixi #3), the `already_staged` set (Bixi #2) and
+  `65f53b0` (Bixi #4) are all landed here and unshipped. The owner batches
+  releases, so one `tools/publish` run carries all three and closes the
+  three Bixi issues against it (2026-07-31 owner ruling: no publish per
+  fix).
 - Unshipped: `a971ba2` reaches Bixi only on the owner's next `publish`.
 
 ## Blockers
