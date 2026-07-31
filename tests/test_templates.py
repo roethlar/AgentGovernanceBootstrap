@@ -402,6 +402,42 @@ class SeededFilesStayRepoOwned(unittest.TestCase):
                 self.assertNotIn("install", s.lower(), s)
 
 
+class BareReviewInvocation(unittest.TestCase):
+    """Bixi issue #4 (2026-07-31): the review verbs only ever defined their
+    fully-specified form, so a bare `codereview` was undefined and the obvious
+    improvisation - dispatching in the harness already running - is a review
+    by the model that wrote the code. The bare word must reach the playbook
+    and the playbook must define it: ask, with the machine-local cache as
+    recall, resolving no reviewer on its own."""
+
+    VERBS = {
+        "codereview": ("commands/claude/codereview.md",
+                       "skills/shared/codereview/SKILL.md"),
+        "review": ("commands/claude/review.md",
+                   "skills/shared/review/SKILL.md"),
+        "openreview": ("commands/claude/openreview.md",
+                       "skills/shared/openreview/SKILL.md"),
+    }
+
+    def test_operator_triggers_accept_the_bare_word(self):
+        # A trigger written only as `codereview <harness> <model> <effort>`
+        # reads as "arguments required" to the harness matching on it.
+        for verb, rels in self.VERBS.items():
+            for rel in rels:
+                body = (TEMPLATES / rel).read_text(encoding="utf-8")
+                trigger = [ln for ln in body.splitlines()
+                           if "the owner says " + verb in ln]
+                self.assertEqual(1, len(trigger), rel)
+                after = trigger[0].split("the owner says " + verb, 1)[1]
+                self.assertTrue(after.lstrip().startswith("["), rel)
+
+    def test_both_playbooks_define_the_bare_case(self):
+        for verb in ("codereview", "openreview"):
+            body = (TEMPLATES / "playbooks" / (verb + ".md")).read_text(
+                encoding="utf-8")
+            self.assertIn("bare `{}`".format(verb), body, verb)
+
+
 class PlaybookReviewMechanics(unittest.TestCase):
     """Structural pins for the reviewer-dispatch mechanics in the shipped
     playbooks (review-economy decision 2026-07-17, as amended 2026-07-23):
