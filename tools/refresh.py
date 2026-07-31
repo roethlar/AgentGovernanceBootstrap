@@ -309,6 +309,7 @@ class Plan:
         self.gitignore_repairs = []  # (line_no, old_line, new_lines)
         self.repairs = []   # (target, note) - mechanical fixes outside the shipped set
         self.seeded = []    # target - installed because it was absent (seeded[])
+        self.already_staged = []  # target - staged before this run, not ours to write
 
 
 # Push-status lines are never recorded in state files (2026-07-11 ruling):
@@ -779,6 +780,32 @@ def dirty_conflicts(target_repo: Path, plan: Plan) -> list:
     return conflicts
 
 
+def staged_shipped_paths(target_repo: Path, shipped: dict, plan: Plan) -> list:
+    """Manifest-known targets already staged against HEAD that this run will
+    not write. An unborn repo has no HEAD, so its whole index qualifies -
+    which is the bootstrap case this exists for: `tools/new-project.py`
+    stages the shipped set and hands the repo over before the first commit,
+    and the approval summary's scope is rendered from the plan record.
+
+    Scope only, never content: the worktree column is deliberately ignored,
+    so a staged file edited afterwards is still listed. That state is the
+    normal greenfield flow - the seeded push policy is staged at its default
+    and `procedures/setup.md` Step 3 then sets its marker - and which bytes
+    land is settled by the git add the procedure already makes."""
+    candidates = [a["target"] for a in shipped["artifacts"]]
+    candidates += [s["target"] for s in shipped.get("seeded", [])]
+    candidates = sorted(set(candidates) - set(touched_paths(plan)))
+    if not candidates:
+        return []
+    out = git(target_repo, "status", "--porcelain", "--no-renames", "-z",
+              "--", *candidates).stdout
+    staged = []
+    for entry in out.split("\0"):
+        if len(entry) > 3 and entry[0] in "AMDRC":
+            staged.append(entry[3:])
+    return sorted(staged)
+
+
 def apply_plan(target_repo: Path, plan: Plan) -> None:
     # Validate every destination before the first write: a refusal must
     # leave the tree untouched, never partially mutated.
@@ -1222,6 +1249,11 @@ def main(argv=None) -> int:
         for line in conflicts:
             print("  " + line, file=sys.stderr)
         return 3
+
+    # After every plan mutation above (--force restores included) and after
+    # the dirty refusal, so the record and a later --apply compute it the
+    # same way: what is in the index that this run will not write.
+    plan.already_staged = staged_shipped_paths(target, shipped, plan)
 
     if args.plan_json:
         record = build_record(toolkit, target, plan)
