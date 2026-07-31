@@ -17,7 +17,7 @@ machine-local facts are labeled or omitted.
   (`.agents/push-policy.md`) repo-owned and editable, so an
   owner-authorized push-policy edit no longer reads as prohibited drift
   (Bixi issue #3). Token-neutral at 1656 words (2026-07-28 rule). New
-  guard `tests/test_templates.SeededFilesStayRepoOwned` ties the prose to
+  guard `SeededFilesStayRepoOwned` in `tests/test_templates.py` ties it to
   the manifest's `seeded[]` category — guard-proven, both cases fail on
   the old wording; refresh's half of the contract was already covered by
   `SeedTests.test_present_target_is_never_touched`. Outgoing template
