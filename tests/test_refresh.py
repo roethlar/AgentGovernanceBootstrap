@@ -1585,6 +1585,103 @@ class SeedTests(unittest.TestCase):
         self.assertFalse((self.root / "escape.md").exists())
 
 
+class AlreadyStagedTests(unittest.TestCase):
+    """already_staged[]: shipped paths sitting in the index that this run will
+    not write. `tools/new-project.py` stages the whole set and hands the repo
+    over before the first commit, so without this the bootstrap approval
+    summary - rendered FROM the plan record - describes an empty commit while
+    the root commit carries the entire shipped set (Bixi issue #2)."""
+
+    def setUp(self):
+        self._tmp = tempfile.TemporaryDirectory()
+        self.root = Path(self._tmp.name)
+        self.toolkit = make_toolkit(self.root)
+        (self.toolkit / "templates" / "policy.template.md").write_text(
+            SEED_TEMPLATE, newline="\n")
+        mutate_manifest(self.toolkit, lambda d: d.setdefault("seeded", []).append(
+            {"source": "templates/policy.template.md", "target": SEED_TARGET,
+             "action": SEED_ACTION}))
+        commit_all(self.toolkit, "seeded section")
+        # Unborn: git init, no commit - the state new-project hands over.
+        self.target = self.root / "target"
+        init_repo(self.target)
+        staged = refresh(self.toolkit, self.target, "--stage-only")
+        self.assertEqual(staged.returncode, 0, staged.stderr)
+
+    def tearDown(self):
+        self._tmp.cleanup()
+
+    def plan(self, name="plan.json"):
+        out = self.root / name
+        proc = refresh(self.toolkit, self.target, "--plan-json", str(out))
+        self.assertEqual(proc.returncode, 0, proc.stderr)
+        return proc, json.loads(out.read_text()), out
+
+    def test_unborn_staged_set_is_recorded_not_silent(self):
+        proc, rec, _ = self.plan()
+        for empty in ("installs", "updates", "restores", "removes",
+                      "staged_paths"):
+            self.assertEqual([], rec[empty], empty)
+        self.assertEqual(
+            sorted(run_git(self.target, "diff", "--cached", "--name-only").split()),
+            rec["already_staged"])
+        self.assertIn("AGENTS.md", rec["already_staged"])
+        self.assertNotIn("nothing to do - repo is current", proc.stdout)
+        self.assertIn("already staged: AGENTS.md", proc.stdout)
+        self.assertEqual("", rec["target_head"])  # unborn: no HEAD to pin
+
+    def test_seeded_target_is_counted_once_it_exists(self):
+        # Invisible to classify()'s seeded loop from here on, so it can only
+        # reach the commit scope through already_staged.
+        _proc, rec, _ = self.plan()
+        self.assertIn(SEED_TARGET, rec["already_staged"])
+
+    def test_committed_set_is_silent_again(self):
+        commit_all(self.target, "root commit")
+        proc, rec, _ = self.plan()
+        self.assertEqual([], rec["already_staged"])
+        self.assertIn("nothing to do - repo is current", proc.stdout)
+
+    def test_staged_then_edited_seeded_file_is_still_listed(self):
+        # The greenfield flow: the seeded policy is staged at its default and
+        # the setup procedure then sets its marker before the first commit.
+        (self.target / SEED_TARGET).write_text(
+            "<!-- policy-marker: 1 -->\nowner's answer\n", newline="\n")
+        proc, rec, _ = self.plan()
+        self.assertIn(SEED_TARGET, rec["already_staged"])
+        self.assertIn("already staged: " + SEED_TARGET, proc.stdout)
+
+    def test_staged_then_edited_artifact_still_refused_as_drift(self):
+        # Unchanged boundary: an artifact whose worktree copy is no longer
+        # canonical is drift on a path refresh would write, so it never
+        # reaches this field - the existing dirty guard refuses first.
+        (self.target / ".claude" / "commands" / "tool.md").write_text(
+            "hand-edited\n", newline="\n")
+        proc = refresh(self.toolkit, self.target, "--plan-json",
+                       str(self.root / "p.json"))
+        self.assertEqual(proc.returncode, 3, proc.stderr)
+        self.assertIn("uncommitted changes", proc.stderr)
+
+    def test_apply_round_trip_then_refuses_after_unstaging(self):
+        _proc, _rec, out = self.plan()
+        applied = refresh(self.toolkit, self.target, "--apply", str(out),
+                          "--stage-only")
+        self.assertEqual(applied.returncode, 0, applied.stderr)
+        run_git(self.target, "rm", "--cached", "-q", "--", "AGENTS.md")
+        stale = refresh(self.toolkit, self.target, "--apply", str(out),
+                        "--stage-only")
+        self.assertEqual(stale.returncode, 4, stale.stderr)
+        self.assertIn("drift in already_staged", stale.stderr)
+
+    def test_previous_schema_record_is_refused(self):
+        _proc, rec, out = self.plan()
+        rec["schema"] = 1
+        out.write_text(json.dumps(rec), newline="\n")
+        proc = refresh(self.toolkit, self.target, "--apply", str(out))
+        self.assertEqual(proc.returncode, 4, proc.stderr)
+        self.assertIn("unsupported plan schema", proc.stderr)
+
+
 class PruneEmptyDirTests(unittest.TestCase):
     """Retiring the last file in a directory leaves the directory behind and
     git cannot report it. Refresh offers to prune, never removes unasked
