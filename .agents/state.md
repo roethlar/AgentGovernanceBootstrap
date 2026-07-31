@@ -10,6 +10,11 @@ machine-local facts are labeled or omitted.
 
 ## Now
 
+- Released 2026-07-31 (`71a91b6` on Bixi, 65 files): carries all three of
+  today's fixes — Bixi #3 (ownership wording), #2 (`already_staged`) and #4
+  (bare review verbs). All three issues closed against it. Owner ruling the
+  same day: releases batch, never one publish per fix. Installed copies in
+  this repo still lag until the owner's next self-refresh, as always.
 - Landed 2026-07-31 (`65f53b0`): the review verbs define their bare form —
   a bare `codereview`/`review`/`openreview` asks which reviewer to run, with
   the machine-local cache's prior dispatches as recall, storing nothing back
@@ -122,11 +127,8 @@ machine-local facts are labeled or omitted.
 
 ## Next
 
-- Publish: `a971ba2` (Bixi #3), the `already_staged` set (Bixi #2) and
-  `65f53b0` (Bixi #4) are all landed here and unshipped. The owner batches
-  releases, so one `tools/publish` run carries all three and closes the
-  three Bixi issues against it (2026-07-31 owner ruling: no publish per
-  fix).
+- None recorded. The Bixi inbox is empty: #2, #3 and #4 closed against
+  release `71a91b6`.
 - Unshipped: `a971ba2` reaches Bixi only on the owner's next `publish`.
 
 ## Blockers
