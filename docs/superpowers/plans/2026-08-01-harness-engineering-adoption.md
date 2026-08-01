@@ -15,10 +15,9 @@ before implementation; (4) parse codex `apply_patch` targets from
 `tool_input` in `protect-governance.py` (it reads only
 `file_path`/`notebook_path` today — fails open on codex);
 (5) trust ACTION fires on install and update, naming project trust,
-`features.hooks`, and per-handler re-trust. MC6 (Verification section
-named another machine's interpreter) adopted by owner ruling
-2026-08-01 and applied — the section now carries the portable
-`<probed-python>` probe order.
+`features.hooks`, and per-handler re-trust; (6) the plan's
+Verification section names another machine's interpreter — use the
+recorded probe order (`PYTHONUTF8=1 py -3` on netwatch-01).
 Transport note: `capability_ok` false — the reviewer attempted the
 allowlisted plan-lint command and reported the proof unmet, while
 repo-read capability is evidenced by its line-precise citations;
@@ -340,20 +339,16 @@ landings as they happen.
 
 ## Verification
 
-Interpreter: resolve `<probed-python>` by the probe order in
-`procedures/bootstrap.md` Step 1 (floor 3.10); the executing machine's
-resolved command and required environment are recorded in
-`.agents/machines.md` — read that file, do not assume another
-machine's entry (MC6, adopted by owner ruling 2026-08-01).
+Interpreter per `.agents/repo-guidance.md` (Verification); on this
+machine `python3.14` per `.agents/machines.md`.
 
-1. `<probed-python> -m unittest discover -s tests -v` after each
-   slice.
+1. `python3.14 -m unittest discover -s tests -v` after each slice.
 2. Guard proof for every new structural pin: revert the paired edit,
    pin fails, restore, green.
 3. Live probes for phase 5 per the verify-once gate, outcomes into
    `docs/harness-capabilities.md`.
 4. `git diff --check`; this file:
-   `<probed-python> -m unittest tests.test_plan_lint -v`.
+   `python3.14 -m unittest tests.test_plan_lint -v`.
 
 ## Rollout boundary
 
