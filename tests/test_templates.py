@@ -133,11 +133,20 @@ class ShippedSetIntegrity(unittest.TestCase):
     def test_retired_hook_class_and_json_layer_present(self):
         retired = {r["target"]: r for r in shipped_set()["retired"]}
         # Hooks (2026-07-08): removable when byte-matching a shipped version.
-        for path in (".claude/agents-md-tripwire.py", ".codex/hooks.json",
+        for path in (".claude/agents-md-tripwire.py",
                      ".codex/agents-md-tripwire.py", ".grok/hooks/reground.json",
                      ".agents/hooks.json"):
             self.assertIn(path, retired)
             self.assertTrue(retired[path]["formerly"], path)
+        # .codex/hooks.json left the retired list 2026-08-01 (guard-port
+        # plan): revived as a shipped artifact carrying its full retired-era
+        # formerly[] so old deployed copies update instead of reporting
+        # drift - and a target may never sit in both lists.
+        self.assertNotIn(".codex/hooks.json", retired)
+        revived = next(a for a in shipped_set()["artifacts"]
+                       if a["target"] == ".codex/hooks.json")
+        self.assertEqual(revived["source"], "templates/hooks/codex/hooks.json")
+        self.assertGreaterEqual(len(revived["formerly"]), 4)
         # JSON layer (2026-07-08): generated per-repo, so empty formerly =
         # removal is always reported as drift (strict converge, 2026-07-16) —
         # the file is removed with a report, git history preserving it.
@@ -182,13 +191,31 @@ class ShippedHooks(unittest.TestCase):
         # SessionStart/compact re-ground (sole survivor of the 2026-07-08
         # narrowing: codex and agy pin guidance across compaction natively)
         # plus the protect-governance PreToolUse deny (strict converge,
-        # 2026-07-16) - blocking PreToolUse is verified on Claude Code only.
+        # 2026-07-16). codex 0.146.0 runs the same guard from
+        # .codex/hooks.json via the JSON deny (verified 2026-08-01;
+        # 2026-08-01 plan) - one canonical script, two harness configs.
         base = TEMPLATES / "hooks"
         shipped = sorted(p.relative_to(base).as_posix()
                          for p in base.rglob("*")
                          if p.is_file() and "__pycache__" not in p.parts)
         self.assertEqual(shipped, ["claude/protect-governance.py",
-                                   "claude/settings.json"])
+                                   "claude/settings.json",
+                                   "codex/hooks.json"])
+
+        codex = json.loads((base / "codex" / "hooks.json").read_text(encoding="utf-8"))
+        self.assertEqual(list(codex["hooks"].keys()), ["PreToolUse"])
+        centry = codex["hooks"]["PreToolUse"][0]
+        # apply_patch is codex's edit tool; Edit|Write are its documented
+        # matcher aliases - and the hook must reference the one canonical
+        # script that Claude Code installs.
+        self.assertEqual(centry.get("matcher"), "apply_patch|Edit|Write")
+        chook = centry["hooks"][0]
+        self.assertIn(".claude/hooks/protect-governance.py", chook["command"])
+        # Windows codex spawns hook commands without a POSIX shell (probe
+        # 2026-08-01): commandWindows carries the plain py -3 form.
+        self.assertIn(".claude/hooks/protect-governance.py",
+                      chook["commandWindows"])
+        self.assertTrue(chook["commandWindows"].startswith("py -3"))
 
         cfg = json.loads((base / "claude" / "settings.json").read_text(encoding="utf-8"))
         self.assertEqual(sorted(cfg["hooks"].keys()),
@@ -214,12 +241,15 @@ class ShippedHooks(unittest.TestCase):
 class ProtectGovernanceHookTests(unittest.TestCase):
     SCRIPT = TEMPLATES / "hooks" / "claude" / "protect-governance.py"
 
-    def run_hook(self, payload, project_dir):
-        env = dict(os.environ, CLAUDE_PROJECT_DIR=str(project_dir))
+    def run_hook(self, payload, project_dir, env_root=True, cwd=None):
+        env = dict(os.environ)
+        env.pop("CLAUDE_PROJECT_DIR", None)
+        if env_root:
+            env["CLAUDE_PROJECT_DIR"] = str(project_dir)
         text = payload if isinstance(payload, str) else json.dumps(payload)
         return subprocess.run([sys.executable, str(self.SCRIPT)],
                               input=text, capture_output=True, text=True,
-                              env=env, cwd=str(project_dir))
+                              env=env, cwd=str(cwd or project_dir))
 
     def assert_denied(self, proc, msg=None):
         # The JSON permissionDecision deny is the one blocking shape both
@@ -339,6 +369,23 @@ class ProtectGovernanceHookTests(unittest.TestCase):
                 self.apply_patch_payload("*** Update File: notes.txt\n"
                                          "*** Move to: CLAUDE.md\n+x\n"),
                 tmp)
+            self.assert_denied(proc)
+
+    def test_codex_payload_cwd_is_the_root(self):
+        # codex sets no CLAUDE_PROJECT_DIR and need not run the hook from
+        # the repo root: targets must resolve against the payload's cwd,
+        # never the process cwd. The discriminating case is an absolute
+        # patch target with the hook process parked elsewhere - resolved
+        # against the process cwd it relpaths to ../..-noise and slips.
+        with tempfile.TemporaryDirectory() as repo, \
+                tempfile.TemporaryDirectory() as elsewhere:
+            target = str(Path(repo) / "AGENTS.md")
+            Path(target).write_text("x\n", encoding="utf-8")
+            payload = self.apply_patch_payload(
+                "*** Update File: " + target + "\n+x\n")
+            payload["cwd"] = repo
+            proc = self.run_hook(payload, repo, env_root=False,
+                                 cwd=elsewhere)
             self.assert_denied(proc)
 
     def test_non_patch_command_tool_passes(self):

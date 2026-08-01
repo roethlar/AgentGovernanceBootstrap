@@ -37,6 +37,7 @@ PROTECTED = frozenset({
     ".claude/commands/update-governance.md",
     ".claude/settings.json",
     ".claude/hooks/protect-governance.py",
+    ".codex/hooks.json",
     ".agents/playbooks/catchup.md",
     ".agents/playbooks/codereview.md",
     ".agents/playbooks/handoff.md",
@@ -88,13 +89,19 @@ def main() -> int:
             candidates = patch_targets(tool_input.get("command") or "")
         if not candidates:
             return 0
-        root = os.environ.get("CLAUDE_PROJECT_DIR") or os.getcwd()
+        # Root precedence: Claude Code exports CLAUDE_PROJECT_DIR; codex
+        # does not, but its payload carries the session cwd - and the hook
+        # process itself does NOT run from the repo root on codex (verified
+        # 2026-08-01), so relative patch paths must resolve against the
+        # payload root, never the process cwd.
+        root = (os.environ.get("CLAUDE_PROJECT_DIR")
+                or payload.get("cwd") or os.getcwd())
         hit, rel = False, ""
         for cand_raw in candidates:
             # realpath both sides: symlinked tmp roots (macOS /var ->
             # /private/var) and symlinks pointed AT protected files must
-            # compare equal
-            real = os.path.realpath(cand_raw)
+            # compare equal (join is a no-op for absolute candidates)
+            real = os.path.realpath(os.path.join(root, cand_raw))
             rel = os.path.relpath(real, os.path.realpath(root))
             rel = rel.replace(os.sep, "/")
             hit = rel in PROTECTED
