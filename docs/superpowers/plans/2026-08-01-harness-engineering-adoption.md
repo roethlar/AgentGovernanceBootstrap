@@ -11,9 +11,8 @@ awaiting per-item owner rulings: (1) define which gates a standing
 grant may waive and which are non-waivable; (2) capture rescues
 durably at occurrence, catchup classifies rather than reconstructs;
 (3) lightweight-plan slice lists are copied into `.agents/state.md`
-before implementation; (4) parse codex `apply_patch` targets from
-`tool_input` in `protect-governance.py` (it reads only
-`file_path`/`notebook_path` today — fails open on codex);
+before implementation; (4) codex `apply_patch` target parsing —
+adopted by owner ruling 2026-08-01 and folded into phase 5a;
 (5) trust ACTION fires on install and update, naming project trust,
 `features.hooks`, and per-handler re-trust. MC6 (Verification section
 named another machine's interpreter) adopted by owner ruling
@@ -245,6 +244,21 @@ Two candidate designs, chosen by probe at implementation:
    otherwise. No re-probe of the Claude path needed.
 
 Prefer 1 if the probe passes (one code path); fall back to 2.
+
+Independent of that choice, target extraction must cover codex
+(MC4, adopted by owner ruling 2026-08-01): the script today reads
+only `tool_input.file_path` / `tool_input.notebook_path`, which
+codex's `apply_patch` payload does not carry — its target paths
+arrive inside the patch text in `tool_input`
+(`docs/superpowers/specs/2026-06-25-agents-portability-boundary-design.md`
+records the shape). Phase 5a therefore adds: parse `apply_patch`
+target paths from the codex payload (all paths in a multi-file
+patch; a patch touching any protected path denies whole); unit
+tests for protected, unprotected, and mixed multi-file patches on
+both payload shapes; the existing Claude-shape behavior unchanged
+and still covered. The live blocking probe in 5b's done condition
+remains the final proof — a codex `apply_patch` against `AGENTS.md`
+must be denied by the installed hook, not by a test double.
 
 ### 5b — codex adapter artifacts
 
