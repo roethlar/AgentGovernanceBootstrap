@@ -19,7 +19,10 @@ machine-local facts are labeled or omitted.
   revived `.codex/hooks.json` artifact, and refresh offers a one-time
   owner-confirmed trust pin driven through codex's own app-server —
   proven live end-to-end without the bypass flag. All probe outcomes:
-  `docs/harness-capabilities.md` 2026-08-01 ledger. The plan began as
+  `docs/harness-capabilities.md` 2026-08-01 ledger. Released to Bixi
+  as `d4bf2be` (2026-08-01 publish, 66 files — codex hook config,
+  updated guard script, and refresh trust-pin all spot-verified in
+  the product clone). The plan began as
   a six-phase harness-engineering adoption draft the owner collapsed;
   the draft, its openreview verdict, and per-item rulings are in the
   plan file's git history. Owner harness priority (`8bb748a`): Claude
