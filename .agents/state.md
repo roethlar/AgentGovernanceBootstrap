@@ -10,27 +10,28 @@ machine-local facts are labeled or omitted.
 
 ## Now
 
-- 2026-08-01: the harness-engineering evaluation ended with the owner
-  collapsing the six-phase draft plan to one item — **port the
-  governance guard to codex** —
+- Landed 2026-08-01 (`1512b16`, `dfb12f0`, `d5a86f6`, `a906b0a`): the
+  governance guard now works on codex — plan CLOSED at
   `docs/superpowers/plans/2026-08-01-harness-engineering-adoption.md`
-  (APPROVED; implementation awaits the owner's start word). The full
-  draft, its openreview verdict (codex gpt-5.6-sol @ xhigh:
-  acceptable_with_changes), and all per-item rulings are in that
-  file's git history; the rulings that bind future work are kept in
-  the plan's History section. Enabling probes are in
-  `docs/harness-capabilities.md` (`bcd9e34`): codex 0.146.0
-  repo-local hooks fire in exec mode, JSON deny blocks, exit-2 does
-  not. Owner harness priority (`8bb748a`): Claude Code + codex are
-  the enforcement targets; kimi > grok > agy, none vital, kimi
-  unprobed. Owner working preferences, applied and recorded here
-  until a `decision` lands: no ceremonial asks — objective defect
-  fixes inside approved scope are made and committed without asking;
-  asks only for genuine choices, with concrete plain-language
-  context; fewer, better rules — mechanism over prose; no recurring
-  token costs (a per-turn injection hook was proposed and rejected);
-  agents never ask about plan weight — plan documents only when the
-  owner says `plan`.
+  (commit map and verification in its Status line). The hook blocks
+  via the JSON deny on both harnesses, parses `apply_patch` patch
+  envelopes (any protected path denies the whole patch), ships as a
+  revived `.codex/hooks.json` artifact, and refresh offers a one-time
+  owner-confirmed trust pin driven through codex's own app-server —
+  proven live end-to-end without the bypass flag. All probe outcomes:
+  `docs/harness-capabilities.md` 2026-08-01 ledger. The plan began as
+  a six-phase harness-engineering adoption draft the owner collapsed;
+  the draft, its openreview verdict, and per-item rulings are in the
+  plan file's git history. Owner harness priority (`8bb748a`): Claude
+  Code + codex are the enforcement targets; kimi > grok > agy, none
+  vital, kimi unprobed. Owner working preferences, applied and
+  recorded here until a `decision` lands: no ceremonial asks —
+  objective defect fixes inside approved scope are made and committed
+  without asking; asks only for genuine choices, with concrete
+  plain-language context; fewer, better rules — mechanism over prose;
+  no recurring token costs (a per-turn injection hook was proposed
+  and rejected); agents never ask about plan weight — plan documents
+  only when the owner says `plan`.
 - Self-refresh 2026-07-31 (`7073255`, owner-run from the Bixi clone against
   toolkit `f2b2b36`): 9 installed copies updated — `AGENTS.md` and the two
   review playbooks with their three skills and three wrappers. Installed
@@ -162,8 +163,9 @@ machine-local facts are labeled or omitted.
 
 ## Next
 
-- The codex governance-guard port (2026-08-01 plan, APPROVED) awaits
-  the owner's start word; slice 1 is the deny-shape probe.
+- None queued. Unshipped work reaches Bixi on the owner's next
+  `publish`; installed copies here (including the updated hook) lag
+  until the owner's next self-refresh from the product clone.
 - Unshipped: `a971ba2` reaches Bixi only on the owner's next `publish`.
 
 ## Blockers

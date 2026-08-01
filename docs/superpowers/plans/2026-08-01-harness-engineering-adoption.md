@@ -1,10 +1,18 @@
 # Plan: port the governance guard to codex
 
-Status: APPROVED 2026-08-01 — owner collapsed the original six-phase
-draft to this single item; all other phases are withdrawn (the full
-draft, its openreview verdict, and the owner's per-item rulings are
-in this file's git history). Implementation starts on the owner's
-word.
+Status: CLOSED 2026-08-01 — implemented on the owner's start word in
+five slices, one commit each: `1512b16` (JSON deny as the single
+blocking shape, both harnesses), `dfb12f0` (`apply_patch` target
+parsing), `d5a86f6` (`.codex/hooks.json` shipped; root resolution via
+payload cwd), `a906b0a` (trust pin via codex's own app-server; live
+proof: post-pin `codex exec` without the bypass flag blocked an
+`apply_patch` against `AGENTS.md`). Verification: suite green after
+each slice (222 tests; only the two known machine-local
+`test_new_project` failures, `.agents/machines.md`), every new test
+guard-proven by revert/restore, probe outcomes in
+`docs/harness-capabilities.md` (2026-08-01 ledger). The original
+six-phase draft, its openreview verdict, and the owner's per-item
+rulings are in this file's git history.
 
 ## History
 
