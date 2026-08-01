@@ -6,25 +6,30 @@ implementation is authorized yet. Each phase starts on its own owner
 go, and each phase's open rulings are listed inside it; work proceeds
 only behind the rulings it has.
 Reviewed: openreview codex (gpt-5.6-sol @ xhigh, competitive) over
-`8bb748a..1dd3788`: **acceptable_with_changes**. Material changes
-awaiting per-item owner rulings: (1) define which gates a standing
-grant may waive and which are non-waivable; (2) capture rescues
-durably at occurrence, catchup classifies rather than reconstructs;
-(3) lightweight-plan slice lists are copied into `.agents/state.md`
-before implementation; (4) codex `apply_patch` target parsing —
-adopted by owner ruling 2026-08-01 and folded into phase 5a;
-(5) trust ACTION fires on install and update, naming project trust,
-`features.hooks`, and per-handler re-trust. MC6 (Verification section
-named another machine's interpreter) adopted by owner ruling
-2026-08-01 and applied — the section now carries the portable
-`<probed-python>` probe order.
+`8bb748a..1dd3788`: **acceptable_with_changes**. All six material
+changes ruled by the owner 2026-08-01. Adopted: (4) codex
+`apply_patch` target parsing, folded into phase 5a; (6) portable
+`<probed-python>` verification — both applied. Declined: (1)
+enumerating non-waivable gates — redundant with the narrow-reading
+rule (work a grant does not plainly name keeps every default gate);
+whether a grant may ever name destructive work stays a phase 1 open
+ruling. (2) rescue capture — most inline corrections are not
+durable; the owner flags the ones that are; **phase 2 removed
+entirely** ("more intelligence and less administrivia — fewer,
+better rules"). Reshaped rather than adopted: (3) → agents never ask
+about plan weight; plan documents are owner-initiated only (phase
+3); (5) → no printed instructions — validated at-time codex trust
+write instead (phase 5b), and 5c is cut. Same-day owner rulings now
+in Constraints: hooks enforce only what agents may never do alone; a
+single-repo request never widens to the shipped set; installed
+`AGENTS.md` ownership reaffirmed toolkit-owned.
 Transport note: `capability_ok` false — the reviewer attempted the
 allowlisted plan-lint command and reported the proof unmet, while
 repo-read capability is evidenced by its line-precise citations;
 outcome accepted salvage-first per owner ruling 2026-08-01
-(formatting/compliance deviations are notes, never discards). Two
-HIGH findings ride material changes 1 and 4; findings enter the
-codereview intake gate only on per-item owner go.
+(formatting/compliance deviations are notes, never discards). The
+finding behind (1) is declined with it; the finding behind (4) is
+folded into phase 5a.
 
 ## Provenance and problem
 
@@ -93,6 +98,16 @@ this repo, the genuine gaps are:
 - **Owner harness priority** (capability record header, 2026-08-01):
   Claude Code and codex are the enforcement targets; kimi > grok > agy
   follow, none vital.
+- **Owner rulings 2026-08-01** (binding on every phase): a hook may
+  only enforce what is already absolutely forbidden to an agent
+  acting alone — never anything an owner might legitimately order in
+  the moment, so there is nothing tactical to fight. A request scoped
+  to one repo never widens into a shipped-set or template change
+  without the owner's explicit word. Installed `AGENTS.md` stays
+  toolkit-owned (reaffirming the 2026-07-16 decision after the owner
+  weighed softening it against two alternatives): an owner order to
+  edit it is carried out in `.agents/repo-guidance.md` — the
+  repo-local file that sticks — and deny messages name that route.
 
 ## Phase 1 — standing authority (autonomy ladder)
 
@@ -137,47 +152,28 @@ refresh on a repo with an edited copy never touches it (both
 test-proven); suite green; template word count not above its
 pre-phase count.
 
-## Phase 2 — rescue capture in `catchup`
+## Phase 2 — removed (owner ruling 2026-08-01)
 
-The failure-to-capability ratchet, riding the existing hygiene sweep.
+Rescue capture is not shipped. The owner's ruling: most inline
+corrections are not durable, and the owner flags the ones that are —
+the toolkit needs fewer, better rules, not another recording duty.
+The ordering below runs phase 1 directly into phase 3.
 
-Design — `templates/playbooks/catchup.md`:
-
-- Add one bullet to "## Hygiene sweep": since the last catchup, scan
-  `.agents/state.md` and the git log for work that needed a human
-  rescue — an owner correction, a manual fix of agent output, a
-  stalled loop a human unblocked. For each, name the missing
-  capability, rule, or guard that would have prevented it, and carry
-  it into the report as a proposed decision or earned-practice
-  candidate. Record nothing without the owner's go.
-- Extend "## Report": the report names rescue findings (or "no
-  rescues") alongside the existing tidy line.
-
-Playbooks load at invoke time; the token-neutral rule binds only the
-template body, so this is additive. Wrapper/skill descriptions
-(`templates/commands/claude/catchup.md`,
-`templates/skills/shared/catchup/SKILL.md`) are unchanged — the verb's
-meaning is the same. `formerly[]` append for the playbook.
-
-Open rulings: none beyond the phase go.
-
-Done condition: playbook carries the bullet and report line; a
-structural pin in `tests/test_templates.py` holds a load-bearing
-fragment (e.g. the literal "rescue"); suite green.
-
-## Phase 3 — plan playbook: weight tiers and done conditions
+## Phase 3 — plan playbook: owner-initiated documents and done conditions
 
 Ship what this repo already practices.
 
 Design — `templates/playbooks/plan.md` additions (playbook, so
 additive; keep the existing four paragraphs):
 
-- **Two plan weights.** Lightweight: small bounded changes — the plan
-  can be a short section in `.agents/state.md` or the chat-approved
-  slice list, no document required. Execution plan: broad or
-  multi-slice work — a durable dated document in the repo's plan
-  location, with the properties below. The agent proposes the weight;
-  the owner's go on the plan fixes it.
+- **Plan documents are owner-initiated only** (owner ruling
+  2026-08-01). Agents never ask about plan weight and never offer a
+  plan document as an option. The default for all work is the light
+  path: propose the approach and step list in conversation; the
+  owner's go is the approval, and work starts. A plan document
+  exists only when the owner says `plan` unprompted. An owner who
+  judges the work deserved a document interrupts — which costs no
+  more than the ask would have.
 - **Done conditions.** Every slice of an execution plan names its
   verifiable done condition — a test moving red to green, a command's
   output, a probe outcome — checkable by a cold agent without the
@@ -198,9 +194,10 @@ this repo's lint.
 
 Open rulings: none beyond the phase go.
 
-Done condition: playbook carries both tiers, the done-condition rule,
-and the log/closure sections; structural pin on load-bearing fragments
-("done condition", "execution plan"); suite green.
+Done condition: playbook carries the owner-initiated rule, the
+done-condition rule, and the log/closure sections; structural pin on
+load-bearing fragments ("done condition", "owner-initiated"); suite
+green.
 
 ## Phase 4 — guard-promotion wording
 
@@ -277,34 +274,41 @@ must be denied by the installed hook, not by a test double.
   `templates/hooks/claude/settings.json`; probe how codex executes
   hook `command` strings on Windows (`commandWindows` exists in the
   schema) before fixing the final command shape.
-- Trust UX: refresh cannot and must not edit user-level config. The
-  refresh report gains an ACTION line for the codex hook install:
-  one-time interactive `/hooks` trust in that repo, plus the
-  user-level `[features] hooks = true` requirement. Wording lives
-  with the artifact entry; `procedures/bootstrap.md` notes it where
-  hooks are described. The `AGENTS.md` session-startup provision
-  (trust step only on explicit go) already covers agent behavior.
+- Trust: **no printed instructions** (owner ruling 2026-08-01 —
+  interactive codex already surfaces folder trust and unreviewed
+  hooks at launch; MC5's ACTION line is dead). Instead, at-time
+  approved and validated trust write, agent judgment never touching
+  the TOML. Probe order: (a) a codex-native non-interactive trust
+  surface (whatever the TUI `/hooks` writes through) — if one
+  exists, codex validates and writes its own config, and that is the
+  whole design; (b) failing that, a deterministic script: parse
+  `~/.codex/config.toml` → backup → targeted append of the one
+  `[hooks.state]` pin (hash recipe to be established from codex-rs
+  source and probe-verified) → re-parse → abort-and-restore on any
+  mismatch. Either path runs only after asking the owner once, at
+  install/update time, before writing anything. Probe outcomes into
+  `docs/harness-capabilities.md`.
 - SessionStart re-ground is **not** shipped for codex — the harness
   re-reads `AGENTS.md` natively (capability record, 2026-07-08).
 
-### 5c — Claude Code Stop-hook nudge (candidate)
+### 5c — cut (owner ruling 2026-08-01)
 
-A Stop hook that checks `git status --porcelain` for tracked
-modifications at session stop and, when dirty, blocks once with a
-reason instructing commit-or-report (respecting `stop_hook_active` to
-prevent loops). Enforces the commit-each-slice invariant as defense
-in depth. Requires a live Stop-hook probe (never probed here) and an
-owner ruling on shipping at all — a forced continuation is the most
-intrusive hook class.
+The Stop-hook commit nudge is not built: a forced continuation is
+exactly the hook class the Constraints bullet forbids — it would
+police behavior an owner might legitimately override in the moment,
+not an absolute prohibition. Deny messages across phase 5 follow the
+same ruling's route rule: they name where the blocked change goes
+instead (`.agents/repo-guidance.md` for governance edits).
 
 Open rulings: (a) 5a design choice ratification after probes;
-(b) 5c ship/no-ship; (c) the ACTION-line wording.
+(b) which trust-write path 5b's probe selects.
 
 Done condition: codex probe in a fixture repo shows the installed
 hook blocking an `AGENTS.md` edit via `apply_patch` with the JSON
-deny (and Claude Code still blocking via its shipped path); refresh
-installs `.codex/hooks.json` on a fixture and reports the ACTION
-line (test-proven); ledger entries recorded; suite green.
+deny (and Claude Code still blocking via its shipped path); the
+selected trust-write path proven against a scratch `CODEX_HOME`
+(config parses identically afterward, pin present, hook fires
+without the bypass flag); ledger entries recorded; suite green.
 
 ## Phase 6 — map-shaped template trim (conservative, last)
 
@@ -346,7 +350,7 @@ four questions above.
 
 ## Ordering and commit shape
 
-Phases run 1 → 2 → 3 → 4 → 5 → 6; phase 7 floats. One phase at a
+Phases run 1 → 3 → 4 → 5 → 6 (phase 2 removed); phase 7 floats. One phase at a
 time, each on its own owner go; within a phase, one slice per commit,
 suite green per slice, `formerly[]` appends ride the commit that
 changes the shipped file. This plan's Status line accrues rulings and

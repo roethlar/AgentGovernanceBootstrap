@@ -23,10 +23,18 @@ machine-local facts are labeled or omitted.
   exit-2 does not; owner harness priority recorded (`8bb748a`):
   Claude Code + codex are the enforcement targets, kimi > grok > agy,
   none vital, kimi unprobed. Openreview verdict on the plan
-  (2026-08-01, recorded in its Status line): acceptable_with_changes,
-  six material changes awaiting per-item owner rulings — two HIGH
-  (grant/gate boundary; codex `apply_patch` target parsing in the
-  shared hook).
+  (2026-08-01): acceptable_with_changes; all six material changes
+  ruled same day — see the plan's Status line. Net reshaping: phase 2
+  removed, 5c cut, plan documents owner-initiated only, codex trust
+  becomes an at-time validated write, and three cross-phase owner
+  rulings landed in the plan's Constraints (hooks enforce only
+  absolute prohibitions; single-repo requests never widen to the
+  shipped set; installed `AGENTS.md` stays toolkit-owned,
+  reaffirmed). Owner working preference, applied and recorded here
+  until a `decision` lands: no ceremonial asks — objective defect
+  fixes inside approved scope are made and committed without asking;
+  asks reach the owner only for genuine choices, with concrete
+  context.
 - Self-refresh 2026-07-31 (`7073255`, owner-run from the Bixi clone against
   toolkit `f2b2b36`): 9 installed copies updated — `AGENTS.md` and the two
   review playbooks with their three skills and three wrappers. Installed
