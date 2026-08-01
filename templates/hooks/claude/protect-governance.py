@@ -1,14 +1,18 @@
 #!/usr/bin/env python3
-"""Claude Code PreToolUse hook: deny file-edit tools access to governance
-artifacts installed by the toolkit's refresh.
+"""PreToolUse hook: deny file-edit tools access to governance artifacts
+installed by the toolkit's refresh. One script, two harnesses.
 
 Installed governance is toolkit-owned (owner ruling 2026-07-16): no in-repo
 edit to an installed copy is legitimate; changes route through the toolkit
-and propagate by refresh. This hook is defense in depth for the one harness
-with verified blocking hooks - the primary layers are the AGENTS.md
-invariant and refresh's converge-to-shipped restore. Exit 2 blocks the tool
-call and surfaces the message to the model; every failure mode inside the
-hook exits 0 (fail-open) so a broken hook can never break editing.
+and propagate by refresh. This hook is defense in depth for the harnesses
+with verified blocking hooks - Claude Code and codex - while the primary
+layers stay the AGENTS.md invariant and refresh's converge-to-shipped
+restore. Blocking uses the JSON permissionDecision deny on stdout with
+exit 0: the one shape both harnesses honor (codex logs an exit-2 hook as
+failed and lets the tool proceed; Claude Code accepts either - both
+probe-verified, see docs/harness-capabilities.md 2026-08-01). Every
+failure mode inside the hook exits 0 with no output (fail-open) so a
+broken hook can never break editing.
 
 The PROTECTED set is the shipped target list from tools/shipped-set.json,
 kept in lockstep by a toolkit test - edit it only via the toolkit.
@@ -78,13 +82,20 @@ def main() -> int:
                     rel = p
                     break
         if hit:
-            sys.stderr.write(
+            reason = (
                 "BLOCKED: {} was installed by governance refresh and is "
                 "toolkit-owned. Editing installed copies is out of bounds; "
                 "any local change is drift and is restored on the next "
-                "refresh. Route the change to the owner for the toolkit "
-                "instead.\n".format(rel))
-            return 2
+                "refresh. Put repo-local rules in .agents/repo-guidance.md "
+                "- the file that sticks; changes to installed artifacts "
+                "route to the owner for the toolkit.".format(rel))
+            sys.stdout.write(json.dumps({
+                "hookSpecificOutput": {
+                    "hookEventName": "PreToolUse",
+                    "permissionDecision": "deny",
+                    "permissionDecisionReason": reason,
+                }}) + "\n")
+            return 0
     except Exception:
         return 0
     return 0

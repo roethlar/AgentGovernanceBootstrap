@@ -202,8 +202,9 @@ class ShippedHooks(unittest.TestCase):
         self.assertEqual(cmd, CANONICAL_PROTECT_COMMAND)
         self.assertIn("protect-governance.py", cmd)
         self.assertIn("${CLAUDE_PROJECT_DIR}", cmd)
-        # exit-code preservation: a blocking exit 2 must never trigger a
-        # fallback interpreter via `a || b` chaining
+        # single-run preservation: the deny JSON on stdout must reach the
+        # harness once - no `a || b` chaining that could rerun the script
+        # or a fallback interpreter on a nonzero exit
         self.assertNotIn("||", cmd)
         body = (base / "claude" / "settings.json").read_text(encoding="utf-8")
         self.assertNotIn("/Users/", body)
@@ -219,6 +220,18 @@ class ProtectGovernanceHookTests(unittest.TestCase):
         return subprocess.run([sys.executable, str(self.SCRIPT)],
                               input=text, capture_output=True, text=True,
                               env=env, cwd=str(project_dir))
+
+    def assert_denied(self, proc, msg=None):
+        # The JSON permissionDecision deny is the one blocking shape both
+        # verified harnesses honor (codex treats exit 2 as a failed hook
+        # and proceeds - capability ledger 2026-08-01). Exit stays 0.
+        self.assertEqual(proc.returncode, 0, msg)
+        out = json.loads(proc.stdout)["hookSpecificOutput"]
+        self.assertEqual(out["hookEventName"], "PreToolUse", msg)
+        self.assertEqual(out["permissionDecision"], "deny", msg)
+        self.assertIn("toolkit-owned", out["permissionDecisionReason"], msg)
+        self.assertIn(".agents/repo-guidance.md",
+                      out["permissionDecisionReason"], msg)
 
     def test_protected_set_matches_the_shipped_targets(self):
         # The script's literal list and the manifest stay in lockstep or
@@ -243,15 +256,14 @@ class ProtectGovernanceHookTests(unittest.TestCase):
                     {"tool_name": "Edit",
                      "tool_input": {tool_key: str(Path(tmp) / "AGENTS.md")}},
                     tmp)
-                self.assertEqual(proc.returncode, 2, tool_key)
-                self.assertIn("toolkit-owned", proc.stderr)
+                self.assert_denied(proc, tool_key)
 
     def test_relative_protected_path_is_blocked(self):
         with tempfile.TemporaryDirectory() as tmp:
             proc = self.run_hook(
                 {"tool_input": {"file_path": ".agents/playbooks/codereview.md"}},
                 tmp)
-            self.assertEqual(proc.returncode, 2)
+            self.assert_denied(proc)
 
     def test_unprotected_path_passes(self):
         with tempfile.TemporaryDirectory() as tmp:
@@ -259,6 +271,7 @@ class ProtectGovernanceHookTests(unittest.TestCase):
                 {"tool_input": {"file_path": str(Path(tmp) / "src" / "main.py")}},
                 tmp)
             self.assertEqual(proc.returncode, 0)
+            self.assertEqual(proc.stdout, "")
             self.assertEqual(proc.stderr, "")
 
     def test_case_alias_of_existing_protected_file_is_blocked(self):
@@ -272,8 +285,7 @@ class ProtectGovernanceHookTests(unittest.TestCase):
             proc = self.run_hook(
                 {"tool_input": {"file_path": str(Path(tmp) / "agents.MD")}},
                 tmp)
-            self.assertEqual(proc.returncode, 2)
-            self.assertIn("toolkit-owned", proc.stderr)
+            self.assert_denied(proc)
 
     def test_same_basename_outside_the_protected_path_passes(self):
         with tempfile.TemporaryDirectory() as tmp:
