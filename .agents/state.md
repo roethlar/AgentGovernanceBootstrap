@@ -10,6 +10,11 @@ machine-local facts are labeled or omitted.
 
 ## Now
 
+- Self-refresh 2026-07-31 (`7073255`, owner-run from the Bixi clone against
+  toolkit `f2b2b36`): 9 installed copies updated — `AGENTS.md` and the two
+  review playbooks with their three skills and three wrappers. Installed
+  governance here is no longer lagging; `AGENTS.md` line 32 now carries the
+  seeded-files ownership wording and the plain lint sentence.
 - Landed 2026-07-31 (`6c20d03`, `1c7f971`): `tools/publish.py` records the
   product-repo path once per machine instead of once per release, and a
   recorded path containing whitespace now round-trips (reader and writer
