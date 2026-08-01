@@ -10,6 +10,19 @@ machine-local facts are labeled or omitted.
 
 ## Now
 
+- Drafted 2026-08-01: plan
+  `docs/superpowers/plans/2026-08-01-harness-engineering-adoption.md`
+  (DRAFT) — six phases from the harness-engineering evaluation
+  (standing-authority seeded file, rescue capture in catchup, plan
+  playbook tiers, guard-promotion wording, Claude+codex hook
+  hardening, conservative template trim) plus an optional kimi probe.
+  Scope fixed by owner ruling 2026-08-01; no phase has an
+  implementation go yet — each starts on its own. Enabling probes
+  landed the same day in `docs/harness-capabilities.md` (`bcd9e34`):
+  codex 0.146.0 repo-local hooks fire in exec mode, JSON deny blocks,
+  exit-2 does not; owner harness priority recorded (`8bb748a`):
+  Claude Code + codex are the enforcement targets, kimi > grok > agy,
+  none vital, kimi unprobed.
 - Self-refresh 2026-07-31 (`7073255`, owner-run from the Bixi clone against
   toolkit `f2b2b36`): 9 installed copies updated — `AGENTS.md` and the two
   review playbooks with their three skills and three wrappers. Installed
@@ -141,8 +154,9 @@ machine-local facts are labeled or omitted.
 
 ## Next
 
-- None recorded. Everything landed is shipped (`55e9819`) and the Bixi inbox
-  is empty: #2, #3 and #4 closed against release `71a91b6`.
+- Phase 1 of the 2026-08-01 harness-engineering-adoption plan
+  (standing authority) awaits its owner go; the phase's two wording
+  rulings come one at a time when it starts.
 - Unshipped: `a971ba2` reaches Bixi only on the owner's next `publish`.
 
 ## Blockers
