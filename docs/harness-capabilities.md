@@ -23,6 +23,13 @@ headless mode, JSON support) is implied.
 `evals/harness-capabilities.md`; original validated 2026-06-29, eval-lane
 apparatus dropped. Full original in git history.)
 
+Owner harness priority (stated 2026-08-01): Claude Code and codex are the
+harnesses that matter; the others the owner uses are, in order, kimi, grok,
+agy — none vital to support. Enforcement investment (hooks, adapters)
+targets Claude Code + codex; kimi is the top secondary and is **unprobed**
+(no entries below — governance load vector, hooks, and skills all
+unverified); grok/agy stay at their current verified level.
+
 ## Governance loading (verified 2026-06-29)
 
 | harness | governance load vector |
