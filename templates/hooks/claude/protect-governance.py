@@ -57,30 +57,59 @@ PROTECTED = frozenset({
 })
 
 
+# codex apply_patch carries its targets inside the patch envelope in
+# tool_input.command (verified on 0.146.0, payload capture 2026-08-01;
+# docs/superpowers/specs/2026-06-25-agents-portability-boundary-design.md
+# records the same shape). These are the four header forms that name a path.
+PATCH_HEADERS = ("*** Add File: ", "*** Update File: ",
+                 "*** Delete File: ", "*** Move to: ")
+
+
+def patch_targets(command):
+    """All paths named by an apply_patch envelope, or [] if not one."""
+    if "*** Begin Patch" not in command:
+        return []
+    targets = []
+    for line in command.splitlines():
+        for header in PATCH_HEADERS:
+            if line.startswith(header):
+                targets.append(line[len(header):].strip())
+    return targets
+
+
 def main() -> int:
     try:
         payload = json.load(sys.stdin)
         tool_input = payload.get("tool_input") or {}
         raw = tool_input.get("file_path") or tool_input.get("notebook_path")
-        if not raw:
+        if raw:
+            candidates = [raw]
+        else:
+            candidates = patch_targets(tool_input.get("command") or "")
+        if not candidates:
             return 0
         root = os.environ.get("CLAUDE_PROJECT_DIR") or os.getcwd()
-        # realpath both sides: symlinked tmp roots (macOS /var -> /private/var)
-        # and symlinks pointed AT protected files must compare equal
-        real = os.path.realpath(raw)
-        rel = os.path.relpath(real, os.path.realpath(root))
-        rel = rel.replace(os.sep, "/")
-        hit = rel in PROTECTED
-        if not hit and os.path.exists(real):
-            # Case-insensitive filesystems (macOS, Windows): "agents.md"
-            # names the existing AGENTS.md but misses the string lookup -
-            # compare identity against each protected file that exists.
-            for p in PROTECTED:
-                cand = os.path.join(root, p)
-                if os.path.exists(cand) and os.path.samefile(real, cand):
-                    hit = True
-                    rel = p
-                    break
+        hit, rel = False, ""
+        for cand_raw in candidates:
+            # realpath both sides: symlinked tmp roots (macOS /var ->
+            # /private/var) and symlinks pointed AT protected files must
+            # compare equal
+            real = os.path.realpath(cand_raw)
+            rel = os.path.relpath(real, os.path.realpath(root))
+            rel = rel.replace(os.sep, "/")
+            hit = rel in PROTECTED
+            if not hit and os.path.exists(real):
+                # Case-insensitive filesystems (macOS, Windows): "agents.md"
+                # names the existing AGENTS.md but misses the string lookup -
+                # compare identity against each protected file that exists.
+                for p in PROTECTED:
+                    cand = os.path.join(root, p)
+                    if os.path.exists(cand) and os.path.samefile(real, cand):
+                        hit = True
+                        rel = p
+                        break
+            if hit:
+                break  # any protected path denies the whole call
         if hit:
             reason = (
                 "BLOCKED: {} was installed by governance refresh and is "

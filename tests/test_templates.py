@@ -299,6 +299,58 @@ class ProtectGovernanceHookTests(unittest.TestCase):
             proc = self.run_hook("this is not json {", tmp)
             self.assertEqual(proc.returncode, 0)
 
+    # codex payload shape: apply_patch targets ride tool_input.command as a
+    # patch envelope (verified on 0.146.0, capability ledger 2026-08-01).
+
+    def apply_patch_payload(self, body):
+        return {"tool_name": "apply_patch",
+                "tool_input": {"command": "*** Begin Patch\n" + body +
+                                          "*** End Patch"}}
+
+    def test_apply_patch_on_protected_target_is_blocked(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            proc = self.run_hook(
+                self.apply_patch_payload("*** Update File: AGENTS.md\n+x\n"),
+                tmp)
+            self.assert_denied(proc)
+
+    def test_apply_patch_on_unprotected_targets_passes(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            proc = self.run_hook(
+                self.apply_patch_payload("*** Add File: src/x.py\n+x\n"
+                                         "*** Update File: docs/a.md\n+y\n"),
+                tmp)
+            self.assertEqual(proc.returncode, 0)
+            self.assertEqual(proc.stdout, "")
+
+    def test_apply_patch_mixed_patch_is_denied_whole(self):
+        # One protected path anywhere in a multi-file patch denies the call.
+        with tempfile.TemporaryDirectory() as tmp:
+            proc = self.run_hook(
+                self.apply_patch_payload(
+                    "*** Add File: notes.txt\n+x\n"
+                    "*** Update File: .agents/playbooks/git.md\n+y\n"),
+                tmp)
+            self.assert_denied(proc)
+
+    def test_apply_patch_move_onto_protected_target_is_blocked(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            proc = self.run_hook(
+                self.apply_patch_payload("*** Update File: notes.txt\n"
+                                         "*** Move to: CLAUDE.md\n+x\n"),
+                tmp)
+            self.assert_denied(proc)
+
+    def test_non_patch_command_tool_passes(self):
+        # Ordinary shell commands also arrive as tool_input.command (Bash on
+        # both harnesses); only a real patch envelope is parsed for targets.
+        with tempfile.TemporaryDirectory() as tmp:
+            proc = self.run_hook(
+                {"tool_name": "Bash",
+                 "tool_input": {"command": "cat AGENTS.md"}}, tmp)
+            self.assertEqual(proc.returncode, 0)
+            self.assertEqual(proc.stdout, "")
+
 
 class ShippedShimsAndWrappers(unittest.TestCase):
     def test_shims_are_single_pointer_lines(self):
