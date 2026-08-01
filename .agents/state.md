@@ -22,7 +22,11 @@ machine-local facts are labeled or omitted.
   codex 0.146.0 repo-local hooks fire in exec mode, JSON deny blocks,
   exit-2 does not; owner harness priority recorded (`8bb748a`):
   Claude Code + codex are the enforcement targets, kimi > grok > agy,
-  none vital, kimi unprobed.
+  none vital, kimi unprobed. Openreview verdict on the plan
+  (2026-08-01, recorded in its Status line): acceptable_with_changes,
+  six material changes awaiting per-item owner rulings — two HIGH
+  (grant/gate boundary; codex `apply_patch` target parsing in the
+  shared hook).
 - Self-refresh 2026-07-31 (`7073255`, owner-run from the Bixi clone against
   toolkit `f2b2b36`): 9 installed copies updated — `AGENTS.md` and the two
   review playbooks with their three skills and three wrappers. Installed

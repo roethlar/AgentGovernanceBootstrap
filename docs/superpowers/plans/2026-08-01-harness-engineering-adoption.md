@@ -5,6 +5,26 @@ phases plus an optional kimi probe, carried as one plan. No
 implementation is authorized yet. Each phase starts on its own owner
 go, and each phase's open rulings are listed inside it; work proceeds
 only behind the rulings it has.
+Reviewed: openreview codex (gpt-5.6-sol @ xhigh, competitive) over
+`8bb748a..1dd3788`: **acceptable_with_changes**. Material changes
+awaiting per-item owner rulings: (1) define which gates a standing
+grant may waive and which are non-waivable; (2) capture rescues
+durably at occurrence, catchup classifies rather than reconstructs;
+(3) lightweight-plan slice lists are copied into `.agents/state.md`
+before implementation; (4) parse codex `apply_patch` targets from
+`tool_input` in `protect-governance.py` (it reads only
+`file_path`/`notebook_path` today — fails open on codex);
+(5) trust ACTION fires on install and update, naming project trust,
+`features.hooks`, and per-handler re-trust; (6) the plan's
+Verification section names another machine's interpreter — use the
+recorded probe order (`PYTHONUTF8=1 py -3` on netwatch-01).
+Transport note: `capability_ok` false — the reviewer attempted the
+allowlisted plan-lint command and reported the proof unmet, while
+repo-read capability is evidenced by its line-precise citations;
+outcome accepted salvage-first per owner ruling 2026-08-01
+(formatting/compliance deviations are notes, never discards). Two
+HIGH findings ride material changes 1 and 4; findings enter the
+codereview intake gate only on per-item owner go.
 
 ## Provenance and problem
 
