@@ -1457,7 +1457,7 @@ On every route (greenfield, migration, update), the process audits the operator
 vocabulary (`catchup`, `handoff`, `drift`, `decision`, `plan`, `playbook`) and, on a harness
 that supports command files, drafts any missing slash-command wrappers and the
 `.gitignore` edit that makes them committable - removing a blanket `.claude/`
-ignore rule and adding a narrower `.claude/settings.local.json` rule so
+ignore rule and adding a narrower `.claude/settings.local.json` <!-- lint: allow (machine-local, intentionally untracked; named as the gitignore rule target) --> rule so
 machine-local settings stay out of git. The expected steady state is "already
 present, nothing to do"; existing committed wrappers are never overwritten. The
 canonical recipe lives in one place - `procedures/bootstrap.md` "Operator command
