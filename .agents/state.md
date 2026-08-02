@@ -16,7 +16,8 @@ machine-local facts are labeled or omitted.
   (commit map and verification in its Status line). The hook blocks
   via the JSON deny on both harnesses, parses `apply_patch` patch
   envelopes (any protected path denies the whole patch), ships as a
-  revived `.codex/hooks.json` artifact, and refresh offers a one-time
+  revived codex hook-config artifact (installed here only after the
+  owner's next self-refresh), and refresh offers a one-time
   owner-confirmed trust pin driven through codex's own app-server —
   proven live end-to-end without the bypass flag. All probe outcomes:
   `docs/harness-capabilities.md` 2026-08-01 ledger. Released to Bixi

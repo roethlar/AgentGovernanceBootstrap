@@ -34,6 +34,34 @@ live rule now owned elsewhere - archive it per the rule above: move it verbatim 
 
 ## Decisions
 
+### 2026-08-02 — The hygiene sweep runs in a throwaway agent under catchup, with an owner opt-out
+
+**Status**: Active — canonical home `templates/playbooks/catchup.md`.
+
+The state-hygiene sweep (the retired `drift` operator's checklist) stays
+under `catchup` — the one word the owner actually says — but no longer
+runs in the invoking session's window: an in-window sweep was costing
+2–5 minutes and up to half the context of a new session, defeating the
+re-ground. Owner-specified design: catchup first asks "Spawn a cleanup
+agent first? [Y/n]" (default yes; "n" is the tactical opt-out), then
+spawns a throwaway isolated agent that executes
+`.agents/playbooks/drift.md` — revived as a playbook only, never an
+owner verb — which carries the checklist and the agent contract (work
+alone, spawn nothing, one tidy commit, contested items become flags,
+exactly one summary line). The separate file is deliberate: a cleanup
+agent handed catchup itself could recurse into the spawn step. The main
+agent waits for the summary line and re-grounds afterward. On harnesses
+without subagents the fallback is flags-only, never an in-window sweep;
+`playbook drift` runs the sweep standalone on the owner's plain words.
+Alternatives considered and rejected the same day:
+reviving a standalone verb (a word the owner never says is a no-op),
+a modelless GitHub-Actions sweep (the checklist is judgment-heavy; a
+bot does the trivial fraction and files issues about the rest), a
+state.md size-cap deny hook (blunt instrument), and per-edit context
+injection (moves the token load to a worse place). The 2026-07-23
+owner-surface D4 allocation (sweep rides catchup) stands; only the
+execution venue changed.
+
 ### 2026-07-31 — A bare review verb asks; it never resolves a reviewer on its own
 
 Status: Active

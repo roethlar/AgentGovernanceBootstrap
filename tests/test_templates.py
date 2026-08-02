@@ -399,6 +399,29 @@ class ProtectGovernanceHookTests(unittest.TestCase):
             self.assertEqual(proc.stdout, "")
 
 
+class CatchupSweepDelegation(unittest.TestCase):
+    # The hygiene sweep runs in a throwaway agent with an owner opt-out
+    # (owner design 2026-08-02): the main window pays one summary line,
+    # "n" skips the sweep tactically, and the cleanup agent executes the
+    # separate drift playbook so it can never recurse into catchup's own
+    # spawn step. Load-bearing fragments; surrounding wording stays free.
+    def test_catchup_delegates_and_never_hands_over_itself(self):
+        body = (TEMPLATES / "playbooks" / "catchup.md").read_text(encoding="utf-8")
+        self.assertIn("Spawn a cleanup agent first? [Y/n]", body)
+        self.assertIn(".agents/playbooks/drift.md", body)
+        self.assertIn("cleanup agent this playbook", body)  # "Never hand the …"
+        self.assertIn("after the tidy, never in parallel", body)
+        self.assertIn("flags only", body)  # no-subagent fallback fixes nothing
+        self.assertNotIn("## Hygiene sweep", body)  # one canonical location
+
+    def test_drift_playbook_carries_the_contract(self):
+        body = (TEMPLATES / "playbooks" / "drift.md").read_text(encoding="utf-8")
+        self.assertIn("Spawn nothing", body)
+        self.assertIn("one tidy commit", body)
+        self.assertIn("one summary line", body)
+        self.assertIn("deleted on sight", body)  # the checklist lives here now
+
+
 class ShippedShimsAndWrappers(unittest.TestCase):
     def test_shims_are_single_pointer_lines(self):
         for shim in ("CLAUDE.template.md", "GEMINI.template.md"):
