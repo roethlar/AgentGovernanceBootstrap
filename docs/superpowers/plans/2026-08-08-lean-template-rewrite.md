@@ -1,10 +1,17 @@
 # Plan: zero-based lean rewrite of the governance template
 
-Status: OPEN 2026-08-08 — drafted on the owner's `plan` word. Pending
-rulings: R1 (target size), R2 (which hard gates survive and in what
-form), R3 (whether this repo's `.agents/repo-guidance.md` gets the same
-pass). No implementation until the rulings land; each is recorded in
-`.agents/decisions.md` when ruled.
+Status: OPEN 2026-08-08 — drafted on the owner's `plan` word. R1
+(target size) struck by owner correction 2026-08-08: size is an output
+of the admission test, measured after drafting, never a target. R2
+ruled 2026-08-08: both hard gates stay — words-first and
+no-code-without-approved-plan — redrafted more concise and more
+forceful; rationale: agents still misread an owner remark as a blanket
+go and answer with code changes, so the gate is a live failure mode,
+not legacy scaffolding. The 2026-08-01 owner working preferences stay
+repo-local and do not become the shipped default. Pending ruling: R3
+(whether this repo's `.agents/repo-guidance.md` gets the same pass).
+Implementation proceeds only behind the rulings it has; the rulings are
+restated in the `.agents/decisions.md` entry at Slice 1 step 4.
 
 ## Problem
 
@@ -41,9 +48,10 @@ editing-in-place cannot produce a large cut; a zero-based redraft can.
 
 ## Design
 
-Zero-based redraft of `templates/AGENTS.template.md` to the ruled
-target size (R1). Method: start from an empty page and admit rules one
-at a time, each justified by one of:
+Zero-based redraft of `templates/AGENTS.template.md`; final size is
+whatever the admitted rules add up to and is recorded, not targeted.
+Method: start from an empty page and admit rules one at a time, each
+justified by one of:
 
 1. It is a hard authority/process constraint the model would not infer
    (ownership and refresh semantics, operator verbs, owner gates,
@@ -68,19 +76,19 @@ Structural constraints preserved:
 - Operator verb names unchanged — playbooks, wrappers, and skills
   dispatch on them.
 
-Owner rulings shaping the draft:
+Owner rulings shaping the draft (status line carries dispositions):
 
-- R1: target size ceiling for the template body (recommendation:
-  ~800 words).
-- R2: disposition of the two most restrictive gates — words-first
-  (act only on explicit go) and no-code-without-approved-plan —
-  including whether the 2026-08-01 owner working preferences
-  (no ceremonial asks; objective defect fixes inside approved scope
-  proceed without asking) are folded into the template as the shipped
-  default.
-- R3: whether `.agents/repo-guidance.md` in this repo gets the same
-  zero-based pass in the same effort (repo-owned file, no publish
-  coupling).
+- R2 (ruled): the words-first and no-code-without-approved-plan gates
+  survive, redrafted shorter and more forceful. The redraft must make
+  the go-signal explicit and narrow: an owner remark, report, or
+  musing is never a go; only an explicit instruction authorizes
+  action, and a go covers exactly what it names. This wording earns
+  its place under admission test 2 — misreading a remark as a blanket
+  go is a failure mode current models still exhibit (owner-observed,
+  2026-08-08).
+- R3 (pending): whether `.agents/repo-guidance.md` in this repo gets
+  the same zero-based pass in the same effort (repo-owned file, no
+  publish coupling).
 
 ## Implementation
 
