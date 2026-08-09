@@ -25,11 +25,18 @@ never treat them as repo-portable.
   as prompts); `~/.codex/sessions/**/rollout-*.jsonl` carries
   `token_count` events. Codex credits exhausted 2026-07-17 ~21:30.
 - 2026-08-08: the three `tests/test_publish.py ProductRemoteFreshnessTests`
-  cases fail on this machine on a clean HEAD worktree (each hits the
-  "product repo has uncommitted changes" preflight refusal inside the
-  test fixture instead of the behavior under test). Pre-existing and
-  machine-local — first observed during the lean-template-rewrite run;
-  unrelated to that change; not yet diagnosed.
+  cases fail on this machine — diagnosed. Since 2026-08-03 a global
+  `core.hooksPath=/Users/michael/.config/git/hooks` chains every git
+  hook to `~/.local/bin/tokensave`; `post-checkout` runs
+  `tokensave auto-init`, which writes a `.tokensave/` index into every
+  repo a `git clone` (or worktree checkout) creates — including these
+  tests' cloned product fixtures, whose dirty tree then trips
+  `publish.py`'s uncommitted-changes refusal before the behavior under
+  test. Clone-based fixtures only: `git init` fires no post-checkout,
+  so the init-based `PublishTests` stay green (and a bare init probe
+  stays clean). Not a toolkit defect; the durable repo-side fix —
+  isolating fixture git subprocesses from user-global config
+  (`GIT_CONFIG_GLOBAL`/`core.hooksPath`) — awaits an owner go.
 - product-repo: /Users/michael/Dev/Bixi (recorded 2026-07-24, first publish)
 
 ## ASHBIAMWEB1 (Windows)
