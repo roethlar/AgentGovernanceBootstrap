@@ -25,8 +25,10 @@ machine-local facts are labeled or omitted.
   `ProductRemoteFreshnessTests` failures on nagatha (fail identically on
   clean HEAD — recorded in `.agents/machines.md`, undiagnosed). Plan
   CLOSED: `docs/superpowers/plans/2026-08-08-lean-template-rewrite.md`.
-  Reaches Bixi on the owner's next `publish`; this repo's installed
-  `AGENTS.md` lags until the owner's next self-refresh.
+  Released to Bixi as `30ba4a0` (2026-08-08 publish, 67 files — the
+  630-word template spot-verified in the product clone and at the
+  remote). This repo's installed `AGENTS.md` lags until the owner's
+  next self-refresh from the product clone.
 - Landed 2026-08-01 (`1512b16`, `dfb12f0`, `d5a86f6`, `a906b0a`): the
   governance guard now works on codex — plan CLOSED at
   `docs/superpowers/plans/2026-08-01-harness-engineering-adoption.md`
@@ -184,9 +186,9 @@ machine-local facts are labeled or omitted.
 
 ## Next
 
-- None queued. Unshipped: the 2026-08-08 template rewrite (`4dde8d4`)
-  reaches Bixi on the owner's next `publish`; installed copies here lag
-  until the owner's next self-refresh from the product clone.
+- None queued; nothing unshipped (release `30ba4a0`, 2026-08-08).
+  Installed copies here lag until the owner's next self-refresh from
+  the product clone.
 - Resolved 2026-08-08: the three `ProductRemoteFreshnessTests`
   failures on nagatha were a machine-local tokensave git hook
   contaminating cloned test fixtures; the owner removed the hook and
