@@ -24,19 +24,18 @@ never treat them as repo-portable.
   lines (tool results arrive as `type:user` lines — do not count them
   as prompts); `~/.codex/sessions/**/rollout-*.jsonl` carries
   `token_count` events. Codex credits exhausted 2026-07-17 ~21:30.
-- 2026-08-08: the three `tests/test_publish.py ProductRemoteFreshnessTests`
-  cases fail on this machine — diagnosed. Since 2026-08-03 a global
-  `core.hooksPath=/Users/michael/.config/git/hooks` chains every git
-  hook to `~/.local/bin/tokensave`; `post-checkout` runs
-  `tokensave auto-init`, which writes a `.tokensave/` index into every
-  repo a `git clone` (or worktree checkout) creates — including these
-  tests' cloned product fixtures, whose dirty tree then trips
-  `publish.py`'s uncommitted-changes refusal before the behavior under
-  test. Clone-based fixtures only: `git init` fires no post-checkout,
-  so the init-based `PublishTests` stay green (and a bare init probe
-  stays clean). Not a toolkit defect; the durable repo-side fix —
-  isolating fixture git subprocesses from user-global config
-  (`GIT_CONFIG_GLOBAL`/`core.hooksPath`) — awaits an owner go.
+- 2026-08-08, resolved same day: the three
+  `tests/test_publish.py ProductRemoteFreshnessTests` cases failed here
+  from 2026-08-03 because a global `core.hooksPath` chained
+  `post-checkout` to `tokensave auto-init`, which wrote a `.tokensave/`
+  index into every cloned repo — including the tests' cloned product
+  fixtures, whose dirty tree tripped `publish.py`'s
+  uncommitted-changes refusal (clone-based fixtures only; `git init`
+  fires no post-checkout, so `PublishTests` stayed green). The owner
+  removed the hookPath and hooks; `tests.test_publish` verified green
+  (17/17). Residual lesson, repo-portable and unfixed: fixture git
+  subprocesses inherit user-global git config, so any machine's hooks
+  or templates can contaminate clone-based fixtures.
 - product-repo: /Users/michael/Dev/Bixi (recorded 2026-07-24, first publish)
 
 ## ASHBIAMWEB1 (Windows)

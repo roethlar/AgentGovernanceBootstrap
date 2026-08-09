@@ -187,12 +187,13 @@ machine-local facts are labeled or omitted.
 - None queued. Unshipped: the 2026-08-08 template rewrite (`4dde8d4`)
   reaches Bixi on the owner's next `publish`; installed copies here lag
   until the owner's next self-refresh from the product clone.
-- Diagnosed 2026-08-08, fix pending an owner go: the three
-  `ProductRemoteFreshnessTests` failures on nagatha are a machine-local
-  tokensave git-hook contaminating cloned test fixtures
-  (`.agents/machines.md`, 2026-08-08). Proposed fix: make the test
-  fixtures hermetic against user-global git config; suite-wide, all
-  machines benefit.
+- Resolved 2026-08-08: the three `ProductRemoteFreshnessTests`
+  failures on nagatha were a machine-local tokensave git hook
+  contaminating cloned test fixtures; the owner removed the hook and
+  the suite verified green (`.agents/machines.md`, 2026-08-08). Open
+  offer, unowned: make fixture git subprocesses hermetic against
+  user-global git config (`GIT_CONFIG_GLOBAL`) so no machine's hooks
+  can recreate this class.
 
 ## Blockers
 
