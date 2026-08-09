@@ -19,3 +19,4 @@ evals/results/transcripts/
 # flags, transport) discovered by probing. Untracked machine state — see the
 # codereview playbook's "Session cache" section.
 .agents/review/*.local.json
+.tokensave/
