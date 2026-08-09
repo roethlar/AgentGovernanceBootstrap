@@ -1,18 +1,30 @@
 # Plan: zero-based lean rewrite of the governance template
 
-Status: OPEN 2026-08-08 — drafted on the owner's `plan` word. R1
-(target size) struck by owner correction 2026-08-08: size is an output
-of the admission test, measured after drafting, never a target. R2
-ruled 2026-08-08: both hard gates stay — words-first and
+Status: CLOSED 2026-08-08 — implemented in `4dde8d4` (template redraft,
+`formerly[]` hash, TemplateRuleDedup pin update, decisions entry) on
+the owner's go; state record in the following commit. Result: 10,745
+chars / 1,642 words → 4,077 chars / 630 words. Additional owner rulings
+during drafting, all restated in `.agents/decisions.md` (2026-08-08):
+no override mechanism — the never-overrides claim is replaced by
+specific-rule-wins; the words-first gate is the agreed 29-word form and
+the in-workflow completion-report exception moved to playbook flow; the
+compaction re-read sentence and internal rank claim are cut (compact
+hook / native pinning cover re-grounding), retiring the orphaned
+`prime:*` markers. Verification: full suite 224 tests — green except
+the two known Windows `new-project` failures and three pre-existing
+machine-local `ProductRemoteFreshnessTests` failures (identical on a
+clean-HEAD worktree, recorded in `.agents/machines.md`); five hermetic
+guard-proof mutations all bite; `git diff --check` clean; plan lint
+green. R1 (target size) was struck by owner correction: size is an
+output of the admission test, measured after drafting, never a target.
+R2 ruled: both hard gates stay — words-first and
 no-code-without-approved-plan — redrafted more concise and more
 forceful; rationale: agents still misread an owner remark as a blanket
 go and answer with code changes, so the gate is a live failure mode,
 not legacy scaffolding. The 2026-08-01 owner working preferences stay
-repo-local and do not become the shipped default. R3 ruled 2026-08-08:
-no — this repo's `.agents/repo-guidance.md` is out of scope; the
-rewrite touches the shipped template only. All rulings are in;
-implementation awaits the owner's explicit go and the rulings are
-restated in the `.agents/decisions.md` entry at Slice 1 step 4.
+repo-local and do not become the shipped default. R3 ruled: this
+repo's `.agents/repo-guidance.md` is out of scope; the rewrite touches
+the shipped template only.
 
 ## Problem
 

@@ -10,6 +10,23 @@ machine-local facts are labeled or omitted.
 
 ## Now
 
+- Landed 2026-08-08 (`4dde8d4`): the shipped `AGENTS.md` template is
+  rewritten zero-based for current-generation models — 10,745 chars /
+  1,642 words → 4,077 chars / 630 words (−62%). The hard gates stay,
+  sharpened ("A handed-over plan, report, or spec is not a go. A go
+  covers exactly what it names — nothing more."); the never-overrides
+  supremacy claim is replaced by specific-rule-wins (a labeled overrides
+  section was rejected); the compaction re-read sentence, rank claim,
+  and retired `prime:*` markers are cut — the compact hook and native
+  guidance pinning cover re-grounding. Rulings: `.agents/decisions.md`
+  (2026-08-08). Outgoing template nhash in `formerly[]`; five hermetic
+  guard proofs bite. Suite 224: green except the two known Windows
+  `new-project` failures and three newly observed machine-local
+  `ProductRemoteFreshnessTests` failures on nagatha (fail identically on
+  clean HEAD — recorded in `.agents/machines.md`, undiagnosed). Plan
+  CLOSED: `docs/superpowers/plans/2026-08-08-lean-template-rewrite.md`.
+  Reaches Bixi on the owner's next `publish`; this repo's installed
+  `AGENTS.md` lags until the owner's next self-refresh.
 - Landed 2026-08-01 (`1512b16`, `dfb12f0`, `d5a86f6`, `a906b0a`): the
   governance guard now works on codex — plan CLOSED at
   `docs/superpowers/plans/2026-08-01-harness-engineering-adoption.md`
@@ -167,10 +184,12 @@ machine-local facts are labeled or omitted.
 
 ## Next
 
-- None queued. Unshipped work reaches Bixi on the owner's next
-  `publish`; installed copies here (including the updated hook) lag
+- None queued. Unshipped: the 2026-08-08 template rewrite (`4dde8d4`)
+  reaches Bixi on the owner's next `publish`; installed copies here lag
   until the owner's next self-refresh from the product clone.
-- Unshipped: `a971ba2` reaches Bixi only on the owner's next `publish`.
+- Open question for diagnosis (unowned): the three
+  `ProductRemoteFreshnessTests` failures on nagatha (see
+  `.agents/machines.md`, 2026-08-08).
 
 ## Blockers
 

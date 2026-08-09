@@ -24,6 +24,12 @@ never treat them as repo-portable.
   lines (tool results arrive as `type:user` lines — do not count them
   as prompts); `~/.codex/sessions/**/rollout-*.jsonl` carries
   `token_count` events. Codex credits exhausted 2026-07-17 ~21:30.
+- 2026-08-08: the three `tests/test_publish.py ProductRemoteFreshnessTests`
+  cases fail on this machine on a clean HEAD worktree (each hits the
+  "product repo has uncommitted changes" preflight refusal inside the
+  test fixture instead of the behavior under test). Pre-existing and
+  machine-local — first observed during the lean-template-rewrite run;
+  unrelated to that change; not yet diagnosed.
 - product-repo: /Users/michael/Dev/Bixi (recorded 2026-07-24, first publish)
 
 ## ASHBIAMWEB1 (Windows)
