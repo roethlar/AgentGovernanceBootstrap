@@ -485,8 +485,8 @@ class TemplateRuleDedup(unittest.TestCase):
     def test_known_duplicate_pairs_keep_one_full_statement(self):
         body = self.body()
         for phrase in (
-            "flag the conflict instead of silently choosing",
-            "code verification is not required unless the docs affect",
+            "Flag a contradiction you cannot reconcile",
+            "docs-only changes need `git diff --check`",
             "kept current by the working agent as work lands",
         ):
             self.assertEqual(1, body.count(phrase), phrase)

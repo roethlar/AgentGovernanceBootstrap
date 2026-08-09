@@ -34,6 +34,42 @@ live rule now owned elsewhere - archive it per the rule above: move it verbatim 
 
 ## Decisions
 
+### 2026-08-08 — The shipped governance template is rewritten lean; the hard gates stay, forceful
+
+**Status**: Active — canonical home `templates/AGENTS.template.md`; plan
+`docs/superpowers/plans/2026-08-08-lean-template-rewrite.md`.
+
+Owner rulings (2026-08-08), behind the zero-based template rewrite:
+
+- A rule is admitted to the template only as a hard authority constraint
+  models will not infer, a still-live failure mode with repo evidence, or
+  wiring other artifacts depend on. Restatements of current-model default
+  behavior are cut. Size is an output of that test, measured after
+  drafting, never a target set in advance.
+- The words-first and plan gates survive, shorter and more forceful:
+  "A handed-over plan, report, or spec is not a go. A go covers exactly
+  what it names — nothing more." Rationale: agents misreading an owner
+  remark as a blanket go is an owner-observed live failure mode. The
+  in-workflow completion-report exception left the template — invoking a
+  playbook names its steps, so the go already covers them; a playbook's
+  own loop definition carries its flow.
+- No override mechanism for repo guidance. The template's never-overrides
+  supremacy claim is replaced by specific-rule-wins: "The repo's own
+  rules live in `.agents/repo-guidance.md`; the more specific rule wins."
+  A labeled overrides section was considered and rejected as a gameable
+  honor system; drift protection stays with the gates and the
+  protect-governance hook.
+- This repo's `.agents/repo-guidance.md` is not part of the rewrite.
+- The compaction re-read sentence and the internal rank claim are cut
+  from the Prime block: the SessionStart compact hook covers re-grounding
+  on Claude Code, and codex/agy pin guidance across compaction natively
+  (2026-07-09 verification). The retired `prime:begin`/`prime:end`
+  markers (consumers retired 2026-07-08/09) are gone with it.
+
+Measurement: 10,745 chars / 1,642 words → 4,077 chars / 630 words
+(−62%). The 2026-07-28 token-rent rule stays in force against the new
+baseline.
+
 ### 2026-08-02 — The hygiene sweep runs in a throwaway agent under catchup, with an owner opt-out
 
 **Status**: Active — canonical home `templates/playbooks/catchup.md`.
