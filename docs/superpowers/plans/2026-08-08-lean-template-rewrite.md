@@ -8,9 +8,10 @@ no-code-without-approved-plan — redrafted more concise and more
 forceful; rationale: agents still misread an owner remark as a blanket
 go and answer with code changes, so the gate is a live failure mode,
 not legacy scaffolding. The 2026-08-01 owner working preferences stay
-repo-local and do not become the shipped default. Pending ruling: R3
-(whether this repo's `.agents/repo-guidance.md` gets the same pass).
-Implementation proceeds only behind the rulings it has; the rulings are
+repo-local and do not become the shipped default. R3 ruled 2026-08-08:
+no — this repo's `.agents/repo-guidance.md` is out of scope; the
+rewrite touches the shipped template only. All rulings are in;
+implementation awaits the owner's explicit go and the rulings are
 restated in the `.agents/decisions.md` entry at Slice 1 step 4.
 
 ## Problem
@@ -86,9 +87,8 @@ Owner rulings shaping the draft (status line carries dispositions):
   its place under admission test 2 — misreading a remark as a blanket
   go is a failure mode current models still exhibit (owner-observed,
   2026-08-08).
-- R3 (pending): whether `.agents/repo-guidance.md` in this repo gets
-  the same zero-based pass in the same effort (repo-owned file, no
-  publish coupling).
+- R3 (ruled): no — `.agents/repo-guidance.md` is untouched; this plan
+  changes the shipped template only.
 
 ## Implementation
 
@@ -107,14 +107,7 @@ Slice 1 — template redraft:
    the new baseline word count; supersede the 2026-07-28 compression
    entry's baseline figure where it states one.
 
-Slice 2 (only if R3 rules yes) — repo-guidance rewrite:
-
-1. Zero-based pass on `.agents/repo-guidance.md` with the same
-   admission test; Mission Detail, Reading Order, Verification,
-   Remotes & Sync survive as the canonical homes they are, compressed.
-2. No test pins reference this file; verification is the docs gate.
-
-Slice 3 — record:
+Slice 2 — record:
 
 1. `.agents/state.md` `## Now` entry once landed.
 
