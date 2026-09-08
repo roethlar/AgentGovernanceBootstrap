@@ -19,9 +19,7 @@ ROOT = Path(__file__).resolve().parent.parent
 TEMPLATES = ROOT / "templates"
 
 CANONICAL_REGROUND_COMMAND = (
-    "echo 'Context was compacted or the session restarted. Before "
-    "continuing, re-read AGENTS.md from disk, especially the Prime "
-    "Invariants block. Treat AGENTS.md, not this message, as authoritative.'"
+    "echo 'Restore AGENTS.md if missing or stale in context before continuing.'"
 )
 
 CANONICAL_PROTECT_COMMAND = (
@@ -397,29 +395,6 @@ class ProtectGovernanceHookTests(unittest.TestCase):
                  "tool_input": {"command": "cat AGENTS.md"}}, tmp)
             self.assertEqual(proc.returncode, 0)
             self.assertEqual(proc.stdout, "")
-
-
-class CatchupSweepDelegation(unittest.TestCase):
-    # The hygiene sweep runs in a throwaway agent with an owner opt-out
-    # (owner design 2026-08-02): the main window pays one summary line,
-    # "n" skips the sweep tactically, and the cleanup agent executes the
-    # separate drift playbook so it can never recurse into catchup's own
-    # spawn step. Load-bearing fragments; surrounding wording stays free.
-    def test_catchup_delegates_and_never_hands_over_itself(self):
-        body = (TEMPLATES / "playbooks" / "catchup.md").read_text(encoding="utf-8")
-        self.assertIn("Spawn a cleanup agent first? [Y/n]", body)
-        self.assertIn(".agents/playbooks/drift.md", body)
-        self.assertIn("cleanup agent this playbook", body)  # "Never hand the …"
-        self.assertIn("after the tidy, never in parallel", body)
-        self.assertIn("flags only", body)  # no-subagent fallback fixes nothing
-        self.assertNotIn("## Hygiene sweep", body)  # one canonical location
-
-    def test_drift_playbook_carries_the_contract(self):
-        body = (TEMPLATES / "playbooks" / "drift.md").read_text(encoding="utf-8")
-        self.assertIn("Spawn nothing", body)
-        self.assertIn("one tidy commit", body)
-        self.assertIn("one summary line", body)
-        self.assertIn("deleted on sight", body)  # the checklist lives here now
 
 
 class ShippedShimsAndWrappers(unittest.TestCase):

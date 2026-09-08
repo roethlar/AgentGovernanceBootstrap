@@ -22,6 +22,14 @@ Review slice: 222 tests passed; removed four tests pinning superseded
 review schemas/routing prose. Implementation continues in .agents/state.md;
 publication follows the remaining changes and checks.
 
+Governance slice removes automatic catchup agents, mandatory fresh-agent
+rehearsals, repeated answers/approvals, empty forms and duplicate inventories.
+Legacy replacement uses the existing force plan/apply path in one commit.
+These source procedures supersede their former rituals; installed copies
+remain owner-managed. AGENTS: 770→711 o200k / 768→710 cl100k tokens.
+Template checks: 37 passed; two tests enforcing automatic cleanup delegation
+were removed. Other changes remain in progress.
+
 ### 2026-09-08 — Correct unauthorized workflow expansion
 
 Status: Active

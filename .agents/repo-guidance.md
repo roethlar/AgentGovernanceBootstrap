@@ -30,15 +30,17 @@ machine paths live in `.agents/machines.md`. On Windows prefer `py -3`;
 reject Store stubs and below-floor interpreters. Test subprocesses inherit
 the invoking interpreter.
 
-For tools, tests, templates or procedures:
+Run affected tests after code or behavioral guidance changes; run the full
+suite before publication or when changes cross test boundaries:
 
 ```bash
-<probed-python> -m unittest discover -s tests -v
+<probed-python> -m unittest discover -s tests
 ```
 
-Documentation-only changes require `git diff --check`. Changes under
-`docs/superpowers/plans/` also run
-`<probed-python> -m unittest tests.test_plan_lint -v`.
+Documentation-only changes require `git diff --check`. Plan edits also run
+`<probed-python> -m unittest discover -s tests -p test_plan_lint.py`.
+Reuse passing checks on unchanged code. Capture routine output; report
+failures or the concise result.
 
 ## Remotes & Sync
 

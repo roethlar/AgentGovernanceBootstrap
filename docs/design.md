@@ -13,8 +13,8 @@ adapt discovery and invocation only. Keep each rule in one home; other
 surfaces point to it.
 
 **No shipped rule without provenance.** Add or change a rule only with a
-decision entry citing its earning incident or owner ruling. Once the rule
-has an operative home, archive its rationale verbatim. The template's
+source citation or decision entry for its earning incident or owner ruling.
+Record provenance once; archive rationale when it obscures active guidance. The template's
 token ceiling lives in `.agents/repo-guidance.md`.
 
 ## Bootstrap and refresh
@@ -22,8 +22,8 @@ token ceiling lives in `.agents/repo-guidance.md`.
 `procedures/setup.md` creates initial project guidance.
 `procedures/bootstrap.md` discovers an existing repo, reconciles its
 governance, drafts repo-owned files and presents one approval summary.
-The legacy carve-out requires two announced commits; the standard route
-uses one. `procedures/verification.md` checks discoverability and
+An approved legacy replacement uses refresh's force option so judgment
+files and installation can share one scoped commit. `procedures/verification.md` checks discoverability and
 consistency; external claims need separate evidence.
 
 `tools/refresh.py` owns deterministic installation.
