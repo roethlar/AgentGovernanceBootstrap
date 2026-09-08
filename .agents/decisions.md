@@ -55,6 +55,16 @@ Playbooks fall 15,230 → 7,134; command/skill adapters 4,093 → 1,735.
 All 52 original decisions remain verbatim in the live file or archive;
 47 were rotated. Installed governance targets were not modified.
 
+Closeout (2026-09-08): the owner subsequently approved merge, push and
+local/remote branch deletion, then requested publication to Bixi.
+`d9f60fe` (the tested commit) was fast-forwarded into `master` and
+pushed; the whole-tree diff was empty before deleting
+`work/governance-completion`. Its absence was verified locally and on
+origin. `tools/publish` released 69 files to Bixi `main` as `d160d6a`;
+the remote tip, exact published inventory and file bytes were verified.
+The pre-existing untracked refresh-check draft remains untouched.
+The task is complete; owner-only self-refresh remains separate.
+
 ### 2026-07-25 — A configurable setting nothing reads is retired, not repaired
 
 Status: Active
