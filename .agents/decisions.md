@@ -7,6 +7,21 @@ verified product behavior. Historical provenance:
 
 ## Decisions
 
+### 2026-09-08 — Remove token-waste mechanisms
+
+The owner authorized fixing the repo-wide waste audit while preserving
+working behavior, forbidding unsolicited additions and self-reviews, and
+retaining the AGENTS token ceiling. This supersedes prior mandatory review
+schemas, format retries, automatic effort/escalation, duplicate proof runs
+and paperwork. Canonical behavior: templates/playbooks/codereview.md and
+openreview.md. Use every readable valid response; further model calls must
+resolve material uncertainty. Preserve named reviewers, permissions, pins,
+substantive evidence, synchronous finding flow and repo branch policy.
+
+Review slice: 222 tests passed; removed four tests pinning superseded
+review schemas/routing prose. Implementation continues in .agents/state.md;
+publication follows the remaining changes and checks.
+
 ### 2026-09-08 — Correct unauthorized workflow expansion
 
 Status: Active

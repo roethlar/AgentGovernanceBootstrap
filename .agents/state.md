@@ -2,14 +2,12 @@
 
 ## Now
 
-- Complete: unauthorized governance expansion corrected in `004cf11`,
-  merged into `master` and pushed; `fix/governance-scope` is deleted
-  locally and on origin. Published to Bixi `main` as `f54a0c8`.
-  Scope, verification and closeout: `.agents/decisions.md`
-  (2026-09-08 correction).
-- Installed governance here remains owner-managed. Source edits do not
-  self-refresh the running repo; install a published release from the Bixi
-  clone only through the owner's self-refresh action.
+- In progress: owner-authorized repo-wide token-waste fixes on master,
+  starting at f1497c4. Scope: review response handling/call economy,
+  governance ceremony, refresh/setup/publish redundancies and relevant
+  tests/docs. Preserve working behavior, self-review prohibition and
+  AGENTS token ceiling; publish to Bixi after verification.
+- Installed governance remains owner-managed; change toolkit sources only.
 
 ## Next
 

@@ -48,7 +48,9 @@ constitution or refresh reconciliation.
 
 Wrappers and skills point to canonical procedures. Review transport,
 permissions, pins and provenance live in the codereview playbook;
-openreview changes the question and verdict schema.
+openreview changes the question. Both consume readable evidence without
+format gates or formatting retries; additional calls resolve material
+uncertainty only.
 
 ## Feedback and freshness
 

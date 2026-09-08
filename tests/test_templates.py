@@ -583,64 +583,7 @@ class BareReviewInvocation(unittest.TestCase):
 
 
 class PlaybookReviewMechanics(unittest.TestCase):
-    """Structural pins for the reviewer-dispatch mechanics in the shipped
-    playbooks (review-economy decision 2026-07-17, as amended 2026-07-23):
-    tier semantics, escalation triggers, dispatch grammar. The 2026-07-23
-    owner ruling deleted the model map, the denylist lint, and the
-    nickname machinery: dispatch is literal-or-ask and no committed list
-    of models may exist. These are structural assertions, not prose-pin
-    tests: the wording stays free, the load-bearing markers must exist."""
-
-    def test_codereview_carries_tier_semantics(self):
-        body = (TEMPLATES / "playbooks" / "codereview.md").read_text(encoding="utf-8")
-        self.assertIn("## Reviewer tiers and routing", body)
-        self.assertIn("harnesses.local.json", body)
-        self.assertIn("Reviewer: <harness> / <resolved model id> / <effort> / <tier>", body)
-        for trigger in ("T1", "T2", "T3", "T4", "T5"):
-            self.assertIn(trigger, body)
-        # Dispatch grammar (2026-07-23 ruling: the owner's literal word is
-        # used verbatim; no map, no denylist, no nickname resolution).
-        self.assertIn("## Dispatch grammar", body)
-        self.assertIn("/codereview <harness> <model> <effort>", body)
-        self.assertIn("session-only", body)
-        self.assertNotIn(".agents/model-map.json", body)
-        self.assertNotIn("nickname", body)
-
-    def test_openreview_routes_frontier_via_codereview_tiers(self):
-        body = (TEMPLATES / "playbooks" / "openreview.md").read_text(encoding="utf-8")
-        self.assertIn("frontier", body)
-        self.assertIn("Reviewer tiers and routing", body)
-        self.assertIn("owner-named", body)
-
-    def test_openreview_carries_approach_contract(self):
-        # Reallocation 2026-07-29 (issue #11): openreview owns the
-        # approach-soundness contract; the defect-audit contract lives in
-        # codereview only. Marker assertions — the wording stays free, the
-        # load-bearing fragments must exist.
-        body = (TEMPLATES / "playbooks" / "openreview.md").read_text(encoding="utf-8")
-        self.assertIn("best_approach|acceptable_with_changes|replace", body)
-        self.assertIn("recommended_approach", body)
-        self.assertIn("material_changes", body)
-        self.assertIn("`material_changes` must be empty", body)
-        self.assertNotIn("clean|findings", body)
-
-    def test_codereview_carries_generation_and_lifecycle(self):
-        # Reallocation 2026-07-29 (issue #11): codereview owns landed-change
-        # defect generation (pinned-range dispatch, clean|findings contract)
-        # and the policy-relative fix lifecycle. Marker assertions — the
-        # wording stays free, the load-bearing fragments must exist.
-        body = (TEMPLATES / "playbooks" / "codereview.md").read_text(encoding="utf-8")
-        self.assertIn("## Change review (defect generation)", body)
-        self.assertIn("<base>..<head>", body)
-        self.assertIn("clean|findings", body)
-        self.assertIn("one finding ↔ one commit ↔ one verdict", body)
-        self.assertIn("never an amend", body)
-        menu_target = ".agents/playbooks/toolkit.md"
-        for rel in ("commands/claude/toolkit.md",
-                    "skills/shared/toolkit/SKILL.md"):
-            self.assertIn(menu_target, (TEMPLATES / rel).read_text())
-        self.assertIn("<base>..<head>",
-                      (TEMPLATES / "playbooks/toolkit.md").read_text())
+    """Guard reviewer permissions and branch completion boundaries."""
 
     def test_codereview_carries_self_permissioning_launch(self):
         # 2026-07-18 ruling; audit F9: the launch-scoped grant must not rot
