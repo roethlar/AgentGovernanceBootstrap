@@ -2,20 +2,21 @@
 
 ## Now
 
-- Repo-wide token-waste fixes verified on master, starting at f1497c4.
-  Review changes: ed35ff6; governance simplification: 9aad4ae.
-  Remaining runner/test/doc changes: 223 tests passed; publication pending.
-  Scope and evidence: .agents/decisions.md.
-- Headroom startup/resume hook removed from machine-local
-  .claude/settings.local.json.
-- Installed governance remains owner-managed and still needs refresh from
-  the published Bixi clone. Agents must not self-refresh under existing rules.
+- Repo-wide waste fixes are committed on master and published to Bixi main
+  as c2cfb7e (source ccd8d5d; preceding slices ed35ff6 and 9aad4ae).
+  Verification: 223 tests passed; all 70 published files match source.
+  Scope, token measurements and evidence: .agents/decisions.md.
+- Local installation remains pending: .agents/repo-guidance.md reserves
+  self-refresh to the owner. Read-only Bixi plan: 2 installs, 32 updates,
+  no restores, removals or flags. Installed copies retain older guidance.
+- Headroom startup/resume hook removed from .claude/settings.local.json.
 
 ## Next
 
-- Publish verified source to Bixi, then obtain the owner's refresh action.
+- Owner refresh action (or explicit override authorizing the agent):
+  python3.14 /Users/michael/Dev/Bixi/tools/refresh.py /Users/michael/Dev/AgentGovernanceBootstrap
 - Deferred draft: docs/superpowers/plans/2026-08-30-refresh-check-mode.md.
-  No new check-mode implementation; read-only inspection uses --plan-json -.
+  Read-only inspection uses --plan-json -; no new check mode was added.
 
 ## Verification
 

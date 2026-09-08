@@ -38,3 +38,7 @@ Regression tests demonstrated the prior unnecessary plan refusal, failed
 publish retry and mixed JSON output, then passed with their fixes.
 Shipped Markdown: 18,641→8,911 o200k tokens. All adapter/seed/retirement
 targets are preserved. Earlier evidence is archived verbatim.
+Publication: source ccd8d5d released to Bixi main as c2cfb7e; all 70 files
+match source bytes and the remote tip was verified. No work branch was
+created. Local installation remains pending the owner-only refresh rule;
+read-only plan found 2 installs, 32 updates, no drift/restores or flags.
