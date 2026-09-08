@@ -35,8 +35,8 @@ migration route. Plan/apply checks guard the approved snapshot.
 Bootstrap drafts judgment files, never hand-copies shipped artifacts.
 
 Refresh commits installation; it does not certify task completion.
-Agent implementation follows the git playbook's branch setup and closeout.
-Verification, integration and branch deletion stay pending until satisfied.
+Agent implementation follows repo branch policy and the git playbook's
+closeout. Work branches require verification, integration and deletion.
 
 ## Harness adapters
 

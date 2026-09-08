@@ -7,6 +7,35 @@ verified product behavior. Historical provenance:
 
 ## Decisions
 
+### 2026-09-08 — Correct unauthorized workflow expansion
+
+Status: Active
+
+The owner rejected mandatory per-finding branches and caller-prepared
+review worktrees, and ruled: no self-review unless explicitly requested.
+The owner's “FIX IT” approved restoring repo-controlled branch policy,
+reviewer-owned guard-proof worktrees, and synchronous finding reviews,
+while retaining the requested completion rule and wording cuts.
+
+The prior rewrite's approval record overstated its scope. Follow-up repair
+commits and isolated guard proofs were pre-existing requirements, not newly
+approved policy. Shorter documents do not prove lower execution costs.
+
+Canonical homes: AGENTS.template.md for the self-review prohibition;
+codereview for sequential dispatch and reviewer-owned proof isolation; git
+for repo-controlled branching and required cleanup of work branches.
+Dependent bootstrap, setup, openreview and documentation follow those rules.
+There is no standing self-review permission or automatic fallback.
+
+Verification: Python 3.14, `-m unittest discover -s tests -v`: 226 tests
+passed. The first run caught missing outgoing-version manifest hashes;
+all five were registered and the full suite passed on rerun.
+AGENTS stays at 770 o200k_base / 768 cl100k_base tokens, measured before
+and after with the same encodings. Template/procedure Markdown falls
+18,715 → 18,641 o200k_base tokens. This measures instruction size,
+not runtime cost. Installed governance was not edited.
+Delivery: awaiting merge, branch deletion and corrected Bixi publication.
+
 ### 2026-09-08 — Completion includes integration and cleanup; governance is consolidated
 
 Status: Active

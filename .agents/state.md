@@ -2,10 +2,10 @@
 
 ## Now
 
-- Complete: governance rewrite `d9f60fe` is merged into `master` and
-  pushed; `work/governance-completion` is deleted locally and on origin.
-  Published to Bixi `main` as `d160d6a` (2026-09-08).
-  Scope, verification and closeout: `.agents/decisions.md` (2026-09-08).
+- In progress: correct unauthorized workflow expansion from `d9f60fe`
+  (Bixi `d160d6a`) on `fix/governance-scope`, based on `9f1fb38`.
+  Scope: `.agents/decisions.md` (2026-09-08 correction).
+  Verified; pending merge, branch deletion and corrected Bixi release.
 - Installed governance here remains owner-managed. Source edits do not
   self-refresh the running repo; install a published release from the Bixi
   clone only through the owner's self-refresh action.

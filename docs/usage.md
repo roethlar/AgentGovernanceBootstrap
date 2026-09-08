@@ -58,8 +58,8 @@ set is already staged and uncommitted â€” what `tools/new-project` hands over â€
 still gets the whole list in that summary; those files are named in the plan
 record too. Pushing follows the
 existing owner-approved push policy, or the choice you make when no policy
-exists. The git playbook carries installation work through verification,
-merge and local/remote work-branch deletion; a commit alone is not completion.
+exists. Installation follows repo branch policy. The git playbook carries
+work branches through verification, merge and local/remote deletion.
 
 ## Keeping a repo current
 
