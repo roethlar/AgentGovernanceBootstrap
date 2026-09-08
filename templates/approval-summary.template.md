@@ -13,7 +13,8 @@ custody conflict. Never hide destructive scope in a grouped total.>
 <Preserve the established push policy. Ask for a choice only if absent or
 the owner requested a change; options live in push-policy.template.md.>
 
-<An installation go covers the presented writes and scoped commit.
+<An installation go covers the presented writes, scoped commit and cleanup
+of task-created disposable scratch.
 Follow repo branch policy and existing merge/deletion authority. Exact
 commit wording is not another approval gate. Include only material
 verification results and unresolved assumptions.>

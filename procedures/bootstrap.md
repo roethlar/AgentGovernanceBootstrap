@@ -62,6 +62,9 @@ A new hash or unrelated commit is not itself grounds for reapproval.
 
 ## Install within authority
 
+The installation go covers the presented writes, scoped commit and removal
+of this task’s disposable bootstrap scratch.
+
 Copy approved judgment drafts and supersession pointers, then run:
 `<python> <toolkit>/tools/refresh.py --apply .bootstrap-tmp/refresh-plan.json --stage-only <target>`,
 with `--force` for the approved legacy replacement.

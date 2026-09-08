@@ -37,29 +37,25 @@ is verified to work (see the harness-capability record linked below).
 verified on macOS/Linux; the Windows launcher follows the repo's documented
 Windows probe contract and is unverified live until its first Windows run.)
 
-Creates `<project-dir>` if needed, runs `git init`, installs the governance
-set, and offers to launch a detected agent harness in it — the agent asks
-two short questions (what are we building, and the push policy) and
-finishes setup with a first commit. The optional hint primes the
-agent ("a markdown todo CLI") so setup opens with a confirmation. The
-launcher finds a working Python itself; no interpreter knowledge needed.
+Creates the directory, initializes Git and stages governance. Continue in
+the current agent; an interactive shell can offer a harness launch. Setup
+uses your hint and established push policy, asks only for missing answers,
+and finishes with a scoped first commit. The launcher resolves Python.
 
 ## The two flows
 
-**Bootstrap (judgment — an agent session).** Open a fresh agent session in
-the target repo and paste:
+**Bootstrap (judgment — an agent session).** Use the current agent in
+the target repo and request:
 
 ```text
 Read <path-to-this-repo>/procedures/bootstrap.md and follow it.
 ```
 
-The agent syncs this toolkit, discovers the repo live, inventories any
-existing governance (migrate / supersede / leave), drafts the repo-specific
-files under a self-ignored scratch dir, and presents one plain-English
-approval summary. On approval it installs everything — drafts plus the
-shipped set — as one scoped commit (two for the documented legacy
-carve-out). The summary names the work branch; integration and branch cleanup follow the
-git playbook. Tracked installation changes wait for approval.
+The agent syncs once, discovers relevant governance, drafts repo-specific
+files and presents changes needing a decision. It reuses existing authority.
+Approved drafts and installation share one scoped commit, including legacy
+replacement through refresh's force option. Follow repo branch policy;
+work branches require merge and deletion before completion.
 
 **Refresh (mechanical — one command).** From any governed repo:
 

@@ -2,34 +2,21 @@
 
 ## Now
 
-- In progress: owner-authorized repo-wide token-waste fixes on master,
-  starting at f1497c4. Scope: review response handling/call economy,
-  governance ceremony, refresh/setup/publish redundancies and relevant
-  tests/docs. Preserve working behavior, self-review prohibition and
-  AGENTS token ceiling; publish to Bixi after verification.
-- Installed governance remains owner-managed; change toolkit sources only.
+- Repo-wide token-waste fixes verified on master, starting at f1497c4.
+  Review changes: ed35ff6; governance simplification: 9aad4ae.
+  Remaining runner/test/doc changes: 223 tests passed; publication pending.
+  Scope and evidence: .agents/decisions.md.
+- Headroom startup/resume hook removed from machine-local
+  .claude/settings.local.json.
+- Installed governance remains owner-managed and still needs refresh from
+  the published Bixi clone. Agents must not self-refresh under existing rules.
 
 ## Next
 
-- Deferred: `docs/superpowers/plans/2026-08-30-refresh-check-mode.md`
-  remains a draft; implementation is not approved.
-- Unowned offer: make test fixture Git operations hermetic against global
-  configuration; background in `.agents/machines.md`.
-
-## Blockers
-
-- None recorded.
+- Publish verified source to Bixi, then obtain the owner's refresh action.
+- Deferred draft: docs/superpowers/plans/2026-08-30-refresh-check-mode.md.
+  No new check-mode implementation; read-only inspection uses --plan-json -.
 
 ## Verification
 
-- Canonical entry point: `.agents/repo-guidance.md`.
-
-## Active Sources
-
-- `AGENTS.md`
-- `.agents/repo-guidance.md`
-- `.agents/decisions.md`
-
-## Unrecorded Repo Memory
-
-- None recorded.
+- Entry point: .agents/repo-guidance.md.

@@ -73,3 +73,10 @@ failures or the concise result.
   documents only when the owner invokes `plan`.
 - Reviewer dispatch follows the shipped review playbooks. For codex,
   pipe prompts through stdin; the argv prompt form has hung.
+
+- Before committing template changes, run `<probed-python> tools/record-history.py`
+  once to register outgoing versions in the manifest.
+- Ship every supported harness adapter. Minimal means less instruction cost,
+  not dropping support files. Retire unused settings instead of adding loaders.
+- Versioned releases, changelogs, CI matrices and signed tags remain deferred
+  until the owner requests wider release engineering.
