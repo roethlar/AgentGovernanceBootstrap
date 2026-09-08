@@ -34,7 +34,12 @@ AGENTS stays at 770 o200k_base / 768 cl100k_base tokens, measured before
 and after with the same encodings. Template/procedure Markdown falls
 18,715 → 18,641 o200k_base tokens. This measures instruction size,
 not runtime cost. Installed governance was not edited.
-Delivery: awaiting merge, branch deletion and corrected Bixi publication.
+Delivery: correction `004cf11` is merged into `master` and pushed.
+The whole-tree diff was empty before deleting `fix/governance-scope`;
+local and remote absence were verified. Published through `tools/publish`
+to Bixi `main` as `f54a0c8`; its remote tip and all 69 published files
+were verified against source. The pre-existing untracked draft is unchanged.
+Correction complete; self-refresh remains owner-only.
 
 ### 2026-09-08 — Completion includes integration and cleanup; governance is consolidated
 

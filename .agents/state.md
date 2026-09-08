@@ -2,10 +2,11 @@
 
 ## Now
 
-- In progress: correct unauthorized workflow expansion from `d9f60fe`
-  (Bixi `d160d6a`) on `fix/governance-scope`, based on `9f1fb38`.
-  Scope: `.agents/decisions.md` (2026-09-08 correction).
-  Verified; pending merge, branch deletion and corrected Bixi release.
+- Complete: unauthorized governance expansion corrected in `004cf11`,
+  merged into `master` and pushed; `fix/governance-scope` is deleted
+  locally and on origin. Published to Bixi `main` as `f54a0c8`.
+  Scope, verification and closeout: `.agents/decisions.md`
+  (2026-09-08 correction).
 - Installed governance here remains owner-managed. Source edits do not
   self-refresh the running repo; install a published release from the Bixi
   clone only through the owner's self-refresh action.
