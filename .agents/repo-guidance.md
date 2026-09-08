@@ -1,134 +1,73 @@
 # Repo-Specific Guidance
-<!-- Extends AGENTS.md; never overrides it. Rules and pointers only — state
-     lives in .agents/state.md. -->
 
 ## Mission Detail
 
-This repo is AgentGovernanceBootstrap, the source of the portable governance
-process it ships; its public release is the Bixi product repo (Remotes &
-Sync below). The product:
+AgentGovernanceBootstrap is the development source for Bixi, the public
+governance toolkit. Entry points: `tools/new-project`, `tools/refresh.py`,
+and `tools/publish`. Product guidance ships from `procedures/` and
+`templates/`; `tools/shipped-set.json` owns the installed set.
 
-- Entry points — `tools/new-project` (greenfield: create the repo, install
-  the set staged, hand off to an agent) and `tools/publish` (release to the
-  product repo).
-- Procedures — `procedures/setup.md` (the greenfield agent phase that
-  `new-project` launches), `procedures/bootstrap.md` (an existing repo,
-  including migrating governance it already has),
-  `procedures/remediate-governance.md`, and `procedures/verification.md`
-  (fresh-eyes).
-- `templates/` — the drafting templates, including the
-  `AGENTS.template.md` this repo's own `AGENTS.md` is a verbatim copy of.
-- `tools/refresh.py` + `tools/shipped-set.json` — the deterministic
-  per-repo governance refresh. Feedback arrives as GitHub
-issues on the Bixi product repo — the public inbox (2026-07-29 decision;
-this repo is planned to go private, and its `.github/ISSUE_TEMPLATE/`
-files remain the drafting templates). Each issue is consumed here: put to
-the owner one at a time as an Owner Gates ask and acted on only on an
-explicit per-item go — a general "fix them" is not standing batch
-authority — with fixes reaching Bixi via `tools/publish`. The
-intended outcome is
-repo-specific agent guidance that helps fresh agents turn plain-English
-tasks into working, validated code with minimal drift.
+The owner plans to make this development repo private.
+Feedback arrives on Bixi's public issues. Assess each issue here and obtain
+its own implementation go; a general “fix them” is not batch authority.
+Fixes reach Bixi through publish. Guidance must help fresh sessions produce
+validated work without conversation history.
 
 ## Reading Order
 
-Use these as the active baseline, in order:
+Start with AGENTS.md and state.md. Then read task-relevant sources:
+`README.md`, `docs/usage.md`, `docs/design.md`, and the affected
+procedures, templates, tools and tests. Read
+`docs/harness-capabilities.md` for adapter or reviewer transport work.
 
-1. `README.md`
-2. `docs/usage.md`
-3. `docs/design.md`
-4. `docs/harness-capabilities.md` (the per-harness verify-once record)
-5. `tools/refresh.py` + `tools/shipped-set.json`
-6. `procedures/*.md`
-7. `templates/*`
-
-`docs/history/` and `docs/superpowers/` are archival/provenance records
-unless the human explicitly asks to review history; do not treat old plans,
-specs, or the decisions archive as current design. The 2026-07-08
-consolidation plan (`docs/superpowers/plans/2026-07-08-zero-based-consolidation.md`)
-is the provenance for the current shape.
+`docs/history/` and `docs/superpowers/` are provenance unless state.md
+identifies an active plan or the owner requests historical review.
 
 ## Verification
 
-Pick the interpreter with `procedures/bootstrap.md` Step 1's probe order —
-the floor is Python 3.10, so a bare `python3` fails where it resolves below
-that (a stock macOS `python3` is 3.9; on Windows use `py -3` from Git Bash,
-never the Microsoft Store stub). This machine's resolved interpreter path is
-in `.agents/machines.md`. The suite runs its subprocesses via the invoking
-interpreter, so run it with that same one.
+Use the Python 3.10+ interpreter resolved by bootstrap Step 1's probe order;
+machine paths live in `.agents/machines.md`. On Windows prefer `py -3`;
+reject Store stubs and below-floor interpreters. Test subprocesses inherit
+the invoking interpreter.
 
-For changes to `tools/`, `tests/`, or `templates/`/`procedures/` content:
+For tools, tests, templates or procedures:
 
 ```bash
 <probed-python> -m unittest discover -s tests -v
 ```
 
-For documentation-only changes, run `git diff --check`. Changes touching
-`docs/superpowers/plans/` additionally run the plan lint
+Documentation-only changes require `git diff --check`. Changes under
+`docs/superpowers/plans/` also run
 `<probed-python> -m unittest tests.test_plan_lint -v`.
 
 ## Remotes & Sync
 
-- Canonical remote: GitHub, `https://github.com/roethlar/AgentGovernanceBootstrap.git`.
-  This toolkit's canon propagates only when pushed there.
-- LAN gitea mirror: `http://q:3000/michael/AgentGovernanceBootstrap.git` —
-  the owner-controlled LAN mirror of GitHub, a trusted fetch source whose
-  purpose is covering GitHub being unreachable. It may lag GitHub; lag is
-  expected, never a conflict (2026-06-10 decision; owner ruling
-  2026-07-10). Canon propagates only via pushes to GitHub.
-- Product repo: Bixi, `https://github.com/roethlar/Bixi.git` — the clean
-  public release of this toolkit, first published 2026-07-24. This repo is
-  the development source; releases go out with `tools/publish`, which
-  mirrors the shipped set into a clean product-repo checkout. The local
-  checkout path is machine-specific and lives in `.agents/machines.md`,
-  written and re-read by `tools/publish.py` itself. The same URL leads
-  `tools/refresh.py`'s canonical fallback list — a clone's own origin is
-  tried ahead of that list — so a product clone refreshes from its own
-  public home rather than from here.
-- Push policy lives in `.agents/push-policy.md`.
+- Canonical: `https://github.com/roethlar/AgentGovernanceBootstrap.git`.
+  Canon propagates through GitHub pushes.
+- Trusted LAN fetch fallback: `http://q:3000/michael/AgentGovernanceBootstrap.git`.
+  Expected mirror lag is not a conflict; the mirror is not authoritative.
+- Public product: `https://github.com/roethlar/Bixi.git`. Release with
+  `tools/publish`; batch releases rather than publishing each fix.
+  That tool records its checkout path in `.agents/machines.md`.
+- Push policy: `.agents/push-policy.md`.
 
 ## Earned Practices
 
-- `templates/AGENTS.template.md` body stays one line per paragraph/bullet —
-  no hard line-wraps; re-wrapping is a regression (2026-07-02 decision,
-  archived: wrapping's only remaining effect was a per-session token tax).
-  Additions to the template body are token-neutral: new guidance displaces
-  existing wording worth less, so the file's token cost never grows
-  (2026-07-28 decision).
-
-- Token efficiency with a discretionary filter proxy (2026-06-22 decision in
-  `docs/history/decisions-archive.md`): work compact-but-equivalent —
-  targeted reads over whole-file dumps, scoped searches, no re-reading
-  unchanged files. When a token-filtering command proxy is available, invoke
-  it per-command at your discretion for routine, high-volume, low-stakes
-  output; never wire it as an auto-rewrite hook — it is lossy by design.
-- This repo governs itself with its own product: `AGENTS.md` is the template
-  verbatim, installed by `tools/refresh.py`. **Agents never update this
-  repo's installed governance** — not by hand-editing `AGENTS.md`, shims,
-  wrappers, skills, hooks, or playbooks, and not by running any toolkit tool
-  (including `tools/refresh.py` and the `update-governance` operator)
-  against this repo; self-refresh is an owner-only action (owner rule,
-  2026-07-10, recorded in `.agents/decisions.md`). Installed copies lagging
-  the templates is the expected steady state between owner-run refreshes —
-  leave the lag alone; at most note it.
-  The owner performs a self-refresh **from the product clone**, whose
-  `refresh.py` sees this repo as an ordinary governed target:
-  `python3.14 <product-clone>/tools/refresh.py <this-repo>` (the clone path
-  is in `.agents/machines.md`; publish first if the release is behind, or
-  the run installs release-time templates). Running this repo's own
-  `tools/refresh.py` against itself is refused unconditionally with no
-  override flag — a deliberate enforcement guard (2026-07-23 audit F6,
-  `9ad88a5`, regression-tested), not a defect to work around.
-- Review playbooks ship at `templates/playbooks/codereview.md`
-  (landed-change defect review: generate findings over a pinned
-  `<base>..<head>` range, then run the per-finding conformance loop —
-  one finding ↔ one commit ↔ one verdict) and
-  `templates/playbooks/openreview.md` (approach-soundness judgment of a
-  whole change, code or plan — verdict
-  `best_approach`/`acceptable_with_changes`/`replace`); both install
-  into `.agents/playbooks/` via refresh, each with a Claude Code wrapper
-  and shared skill, and the owner invokes them by name (2026-07-16
-  decision; roles reallocated 2026-07-29, issue #11). This repo's
-  installed copies lag until the owner's next self-refresh. Dispatching
-  `codex` as a reviewer: pipe the prompt via **stdin**
-  (`codex exec ... < prompt`); the argv form has hung.
+- The AGENTS template stays one line per paragraph/bullet. Its token count
+  must not grow: additions displace less valuable wording. Measure with
+  the same tokenizer before and after; preserve rule-change provenance.
+- Work compact-but-equivalent: targeted reads, scoped searches, no rereading
+  unchanged files. A discretionary output filter is lossy; never install
+  one as an automatic command-rewrite hook.
+- Agents change toolkit sources, never this repo's installed governance,
+  by hand or through any toolkit tool. Self-refresh is owner-only.
+  Installed copies may lag; do not repair that lag.
+  The owner runs `<probed-python> <product-clone>/tools/refresh.py <this-repo>`
+  from the Bixi clone, after publishing if necessary. This repo's refresh
+  script refuses self-targeting without an override; that guard stays.
+- Do not add per-turn instruction injections.
+- Finish objective fixes and bookkeeping within approved scope without
+  ceremonial re-approval. Ask for unresolved choices only. Write plan
+  documents only when the owner invokes `plan`.
+- Reviewer dispatch follows the shipped review playbooks. For codex,
+  pipe prompts through stdin; the argv prompt form has hung.

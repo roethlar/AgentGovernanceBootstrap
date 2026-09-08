@@ -57,7 +57,9 @@ The agent syncs this toolkit, discovers the repo live, inventories any
 existing governance (migrate / supersede / leave), drafts the repo-specific
 files under a self-ignored scratch dir, and presents one plain-English
 approval summary. On approval it installs everything — drafts plus the
-shipped set — as ONE scoped commit. Nothing changes before you approve.
+shipped set — as one scoped commit (two for the documented legacy
+carve-out). The summary names the work branch; integration and branch cleanup follow the
+git playbook. Tracked installation changes wait for approval.
 
 **Refresh (mechanical — one command).** From any governed repo:
 
@@ -81,8 +83,7 @@ centrally.
 ## Feedback
 
 Toolkit defects and field-earned governance rules are filed as GitHub issues
-on the [development
-repo](https://github.com/roethlar/AgentGovernanceBootstrap/issues) (agents
+on [Bixi](https://github.com/roethlar/Bixi/issues) (agents
 file only on an explicit owner go; no secrets or PII — issues are public).
 Open issues are the triage queue; closed issues are the outcome ledger.
 

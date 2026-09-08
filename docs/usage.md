@@ -57,7 +57,9 @@ shipped set, and everything lands as ONE scoped commit. A repo whose shipped
 set is already staged and uncommitted — what `tools/new-project` hands over —
 still gets the whole list in that summary; those files are named in the plan
 record too. Pushing follows the
-push policy you choose at approval time.
+existing owner-approved push policy, or the choice you make when no policy
+exists. The git playbook carries installation work through verification,
+merge and local/remote work-branch deletion; a commit alone is not completion.
 
 ## Keeping a repo current
 

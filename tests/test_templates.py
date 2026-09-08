@@ -454,22 +454,32 @@ class ShippedShimsAndWrappers(unittest.TestCase):
             self.assertTrue(body.startswith("---\n"), p)
             self.assertIn("name: " + p.parent.name, body)
 
-    def test_update_governance_wrapper_invokes_refresh_script(self):
-        text = (TEMPLATES / "commands" / "claude" / "update-governance.md").read_text(encoding="utf-8")
-        # Bixi issue #1 (2026-07-29): governed repos are directed at the
-        # public product home, never the development repo.
-        skill = (TEMPLATES / "skills" / "shared" / "update-governance"
-                 / "SKILL.md").read_text(encoding="utf-8")
-        for body in (text, skill):
-            self.assertIn("https://github.com/roethlar/Bixi.git", body)
-            self.assertNotIn("AgentGovernanceBootstrap", body)
-        self.assertIn("tools/refresh.py", text)
-        self.assertIn("FLAG", text)
-        self.assertIn("procedures/bootstrap.md", text)
-        self.assertNotIn("/Users/", text)
-        self.assertNotIn("/home/", text)
-        self.assertIn("no write authority", text)
-        self.assertLess(len(text), 2000)
+    def test_update_governance_adapters_share_the_shipped_procedure(self):
+        target = ".agents/playbooks/update-governance.md"
+        artifact = next(a for a in shipped_set()["artifacts"]
+                        if a["target"] == target)
+        procedure = (ROOT / artifact["source"]).read_text(encoding="utf-8")
+        for rel in ("commands/claude/update-governance.md",
+                    "skills/shared/update-governance/SKILL.md"):
+            adapter = (TEMPLATES / rel).read_text(encoding="utf-8")
+            self.assertIn(target, adapter, rel)
+            self.assertNotIn("tools/refresh.py", adapter, rel)
+        self.assertIn("https://github.com/roethlar/Bixi.git", procedure)
+        self.assertNotIn("AgentGovernanceBootstrap", procedure)
+        for required in ("tools/refresh.py", "FLAG", "procedures/bootstrap.md",
+                         "no write authority"):
+            self.assertIn(required, procedure)
+        self.assertNotIn("/Users/", procedure)
+        self.assertNotIn("/home/", procedure)
+
+    def test_literal_adapter_playbook_targets_are_shipped(self):
+        targets = {a["target"] for a in shipped_set()["artifacts"]}
+        adapters = list((TEMPLATES / "commands" / "claude").glob("*.md"))
+        adapters += list((TEMPLATES / "skills" / "shared").glob("*/SKILL.md"))
+        for path in adapters:
+            for target in re.findall(r"\.agents/playbooks/[a-z-]+\.md",
+                                     path.read_text(encoding="utf-8")):
+                self.assertIn(target, targets, path)
 
 
 class TemplateRuleDedup(unittest.TestCase):
@@ -625,17 +635,35 @@ class PlaybookReviewMechanics(unittest.TestCase):
         self.assertIn("clean|findings", body)
         self.assertIn("one finding ↔ one commit ↔ one verdict", body)
         self.assertIn("never an amend", body)
-        for rel in (("commands", "claude", "toolkit.md"),
-                    ("skills", "shared", "toolkit", "SKILL.md")):
-            menu = TEMPLATES.joinpath(*rel).read_text(encoding="utf-8")
-            self.assertIn("<base>..<head>", menu, rel)
+        menu_target = ".agents/playbooks/toolkit.md"
+        for rel in ("commands/claude/toolkit.md",
+                    "skills/shared/toolkit/SKILL.md"):
+            self.assertIn(menu_target, (TEMPLATES / rel).read_text())
+        self.assertIn("<base>..<head>",
+                      (TEMPLATES / "playbooks/toolkit.md").read_text())
 
     def test_codereview_carries_self_permissioning_launch(self):
         # 2026-07-18 ruling; audit F9: the launch-scoped grant must not rot
         # out of the shipped playbook (it has a falsified-assumption history).
         body = (TEMPLATES / "playbooks" / "codereview.md").read_text(encoding="utf-8")
         self.assertIn("Self-permissioning launch", body)
-        self.assertIn('--allowedTools Read Grep Glob "Bash(git:*)" "Bash(<verify-cmd>)"', body)
+        grant = body.split("### Self-permissioning launch", 1)[1].split(
+            "### Dispatch provenance", 1)[0]
+        self.assertNotIn("Bash(git:*)", grant)
+        self.assertIn("pinned head", grant)
+        self.assertIn("no commit, push, ref-changing", grant)
+
+    def test_completion_index_keeps_merge_and_deletion_pending(self):
+        body = (TEMPLATES / "playbooks/codereview.md").read_text()
+        index = body.split("## Status index:", 1)[1].split("## Optional modes", 1)[0]
+        rows = dict(re.findall(r"^- \x60(\[[^]]+\])\x60 (.+)$", index, re.M))
+        self.assertTrue({"[v]", "[d]", "[x]"}.issubset(rows), rows)
+        self.assertIn("awaiting merge", rows["[v]"])
+        self.assertIn("awaiting deletion", rows["[d]"])
+        self.assertIn("Complete:", rows["[x]"])
+        self.assertNotIn("awaiting", rows["[x]"])
+        self.assertIn("locally and remotely", rows["[x]"])
+
 
 
 if __name__ == "__main__":
