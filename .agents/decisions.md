@@ -28,6 +28,13 @@ Verification: Python 3.14 full suite, 226 tests passed; `git diff --check`
 passed. Baseline comparison confirms byte-identical catchup/drift, skills,
 wrappers, hooks, runtime tools and procedures. No original test was removed.
 
+Delivery: source 6f90a8f; Bixi 53f5d77 (69 files verified against source
+and canonical main); installed rollback aafab41 (all artifacts verified
+under refresh's original newline-equivalence rule). The owner's "revert
+EVERYTHING" was applied to the installed copies too; the standing owner-only
+refresh rule was not changed. No work branch was created. The pre-existing
+owner draft remains untouched.
+
 
 ### 2026-09-08 — Correct unauthorized workflow expansion
 

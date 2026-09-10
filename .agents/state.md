@@ -2,17 +2,18 @@
 
 ## Now
 
-- Restoring the disputed waste pass to f1497c4 functionality, retaining
-  the owner's readable-response rule and Headroom removal. Scope and
-  token measurements: .agents/decisions.md (2026-09-10).
-- Catchup/drift, skill triggers, executable tools and hook behavior match
-  baseline. All 226 original test cases are restored and pass; `git diff --check` passes.
+- Disputed waste-pass functionality restored from f1497c4 in source
+  6f90a8f, retaining the owner's readable-response rule and Headroom removal.
+  Published as Bixi 53f5d77; installed here by rollback aafab41.
+- All 226 original tests pass. Installed artifacts match source under
+  refresh's newline-equivalence rule; catchup, drift, skill triggers,
+  tools, hooks and procedures match the baseline byte-for-byte.
+  Scope and token measurements: .agents/decisions.md (2026-09-10).
 
 ## Next
 
-- Publish the verified restoration to Bixi; installed
-  governance still contains c2cfb7e until the restoration is applied.
 - Deferred owner draft: docs/superpowers/plans/2026-08-30-refresh-check-mode.md.
+  Implementation remains unapproved.
 
 ## Verification
 
