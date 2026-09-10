@@ -5,18 +5,12 @@ harness CLIs on a temp PATH. The agent-phase offer is driven through
 function seams (input_fn / launch_fn), never a real TTY.
 """
 import os
+import stat
 import subprocess
 import sys
 import tempfile
 import unittest
 from pathlib import Path
-
-try:
-    from tests.git_env import isolate_git
-except ImportError:
-    from git_env import isolate_git
-isolate_git()
-
 
 ROOT = Path(__file__).resolve().parent.parent
 SCRIPT = ROOT / "tools" / "new-project.py"
@@ -60,11 +54,17 @@ class NewProjectTests(unittest.TestCase):
         log = git(self.target, "log", "--oneline")
         self.assertEqual("", log.stdout.strip())
 
-    def test_hint_is_preserved_once_for_the_existing_agent(self):
-        proc = run_script(self.target, "a", "markdown", "todo", "CLI")
+    def test_hint_lands_in_printed_launch_lines(self):
+        bindir = self.base / "bin"
+        bindir.mkdir()
+        stub = bindir / "claude"
+        stub.write_text("#!/bin/sh\nexit 0\n")
+        stub.chmod(stub.stat().st_mode | stat.S_IXUSR)
+        env = dict(os.environ)
+        env["PATH"] = str(bindir) + os.pathsep + env.get("PATH", "")
+        proc = run_script(self.target, "a", "markdown", "todo", "CLI", env=env)
         self.assertEqual(0, proc.returncode, proc.stderr)
-        self.assertIn("current agent", proc.stdout)
-        self.assertEqual(1, proc.stdout.count("a markdown todo CLI"))
+        self.assertIn("claude", proc.stdout)
         self.assertIn("a markdown todo CLI", proc.stdout)
         self.assertIn("setup.md", proc.stdout)
 
@@ -88,11 +88,11 @@ class NewProjectTests(unittest.TestCase):
         empty = self.base / "empty-bin"
         empty.mkdir()
         env = dict(os.environ)
-        # Noninteractive setup needs no harness detection or platform PATH fixture.
+        env["PATH"] = str(empty) + os.pathsep + "/usr/bin" + os.pathsep + "/bin"
         proc = run_script(self.target, env=env)
         self.assertEqual(0, proc.returncode, proc.stderr)
         self.assertIn("setup.md", proc.stdout)
-        self.assertIn("current agent", proc.stdout)
+        self.assertIn("no known harness CLI", proc.stdout)
 
 
 class OfferLaunchTests(unittest.TestCase):

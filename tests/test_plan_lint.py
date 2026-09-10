@@ -1,5 +1,5 @@
 """Lint still-open plan documents for chat leakage, stale path references,
-without imposing filenames, status formatting, length or corpus-size gates.
+and bloat, per docs/superpowers/plans/2026-07-10-plan-lint-suite.md.
 
 Scans docs/superpowers/plans/*.md. Plans dated before 2026-07-10 are exempt
 history; closed plans are exempt from content checks. Part of the normal
@@ -32,17 +32,18 @@ LEAKAGE_PHRASES = (
 )
 
 CUTOFF = datetime.date(2026, 7, 10)
+MAX_LINES = 600
 ALLOW_MARKER = "plan-lint: allow"
 PLANS_DIR = "docs/superpowers/plans"
 
 _FENCE_OPEN = re.compile(r"^ {0,3}(`{3,}|~{3,})")
 _INLINE_CODE = re.compile(r"(?<!`)(`+)([^`\n]+?)\1(?!`)")
 _STATUS = re.compile(
-    r"(?i)^[ \t]*(?:[-*]\s+|#{1,6}\s+)?\**status\**(?:[ \t]*:+|[ \t]+)(.*)$")
+    r"^ {0,3}(?:Status:|\*\*Status:\*\*|\*\*Status\*\*:)(?!:)[ \t]*(.*)$")
 _CLOSED = re.compile(
-    r"(?i)^\**(CLOSED|DONE|SUPERSEDED|IMPLEMENTED|WITHDRAWN|REJECTED|"
-    r"COMPLETE|COMPLETED|RESOLVED|CANCELLED|CANCELED)\b")
-_PENDING = re.compile(r"(?i)\b(for|except|but|pending|awaiting|partial|partially|remains|until)\b")
+    r"(?i)^[ \t]*\**[ \t]*"
+    r"(CLOSED|DONE|SUPERSEDED|IMPLEMENTED|WITHDRAWN|REJECTED)"
+    r"\**[ \t]*($|[ \t](\d{4}-\d{2}-\d{2})\b.*)")
 _DATE_NAME = re.compile(r"^(\d{4}-\d{2}-\d{2})-")
 
 
@@ -70,21 +71,26 @@ def mask_code(text):
 
 
 def plan_status(masked):
-    """Read common status forms; unfamiliar formatting is not a lint failure."""
-    lines = masked.splitlines()
-    for i, line in enumerate(lines):
+    """First canonical Status line of the masked text, or None."""
+    for line in masked.splitlines():
         m = _STATUS.match(line)
         if m:
-            return m.group(1).strip(" *:\t")
-        if line.strip(" #*:\t").lower() == "status":
-            return next((item.strip(" *:\t") for item in lines[i + 1:]
-                         if item.strip()), None)
+            return m.group(1)
     return None
 
 
 def is_closed(status):
-    """Recognize clear closure while keeping partial/pending work live."""
-    return bool(_CLOSED.match(status.strip()) and not _PENDING.search(status))
+    """Bare closure marker, or marker + valid ISO date + detail. Anything
+    else - qualified closures, invalid dates, open/unknown wording - is open."""
+    m = _CLOSED.match(status)
+    if not m:
+        return False
+    if m.group(3):
+        try:
+            datetime.date.fromisoformat(m.group(3))
+        except ValueError:
+            return False
+    return True
 
 
 def plan_date(name):
@@ -96,6 +102,15 @@ def plan_date(name):
         return datetime.date.fromisoformat(m.group(1))
     except ValueError:
         return None
+
+
+def _missing_date(rel):
+    return [Finding(rel, 0, "missing-date",
+                    "filename lacks a valid YYYY-MM-DD- prefix")]
+
+
+def _missing_status(rel):
+    return [Finding(rel, 0, "missing-status", "no canonical Status: line")]
 
 
 def _stale_paths(repo_root, rel, orig_lines, allow, cache):
@@ -130,10 +145,14 @@ def scan_plan(repo_root, rel_path, cache=None, history=True):
     if date is not None and date < CUTOFF:
         return []  # grandfathered history; status not consulted
     findings = []
+    if date is None:
+        findings += _missing_date(rel)
 
     masked = mask_code(text)
     status = plan_status(masked)
-    if status is not None and is_closed(status):
+    if status is None:
+        return findings + _missing_status(rel)
+    if is_closed(status):
         return findings
 
     orig_lines = text.splitlines()
@@ -149,12 +168,17 @@ def scan_plan(repo_root, rel_path, cache=None, history=True):
                 findings.append(Finding(rel, i + 1, "leakage", phrase))
     if history:
         findings += _stale_paths(repo_root, rel, orig_lines, allow, cache)
+    if len(orig_lines) > MAX_LINES:
+        findings.append(Finding(
+            rel, 0, "too-long",
+            "{} physical lines > {}".format(len(orig_lines), MAX_LINES)))
     return findings
 
 
 def scan_corpus(repo_root, history=True):
     repo_root = Path(repo_root)
     files = sorted((repo_root / PLANS_DIR).glob("*.md"))
+    assert files, "plan corpus glob is empty: {}/{}".format(repo_root, PLANS_DIR)
     cache = {}
     findings = []
     for f in files:
@@ -264,12 +288,16 @@ class StatusTests(ScanFixture):
         for header in ("Status: DRAFT", "**Status:** DRAFT", "**Status**: DRAFT"):
             self.assertIsNotNone(plan_status(header), header)
 
-    def test_readable_status_forms_need_no_format_repair(self):
-        for header in ("status: Complete", "Status CLOSED", "Status:: Resolved",
+    def test_noncanonical_forms_are_missing_status(self):
+        for header in ("status: CLOSED", "Status CLOSED", "Status:: CLOSED",
                        "\tStatus: CLOSED", "    Status: CLOSED",
-                       "* Status: CLOSED", "## Status\nComplete",
-                       "Status\n: CLOSED"):
-            self.assertEqual([], self.scan(OPEN_NAME, header + "\n" + PHRASE), header)
+                       "* Status: CLOSED", "Status", ": CLOSED"):
+            found = self.scan(OPEN_NAME, header + "\n\n" + PHRASE + "\n")
+            self.assertIn("missing-status", self.kinds(found), header)
+
+    def test_split_line_status_is_missing(self):
+        found = self.scan(OPEN_NAME, "Status\n: CLOSED\n" + PHRASE + "\n")
+        self.assertIn("missing-status", self.kinds(found))
 
     def test_first_status_wins(self):
         body = "Status: APPROVED 2026-07-10\n\nStatus: CLOSED\n" + PHRASE + "\n"
@@ -277,20 +305,19 @@ class StatusTests(ScanFixture):
 
     def test_fenced_fake_status_is_missing(self):
         body = "```\nStatus: CLOSED\n```\n" + PHRASE + "\n"
-        self.assertEqual(["leakage"], self.kinds(self.scan(OPEN_NAME, body)))
+        self.assertIn("missing-status", self.kinds(self.scan(OPEN_NAME, body)))
 
 
 class ClosureTests(ScanFixture):
     def test_is_closed_table(self):
         closed = [m for m in FIXTURE_MARKERS]
         closed += [m + " 2026-07-12 — detail" for m in FIXTURE_MARKERS]
-        closed += ["**CLOSED**", "closed 2026-07-12 x", "Complete", "Resolved",
-                   "CLOSED 2026-99-99 x"]
+        closed += ["**CLOSED**", "closed 2026-07-12 x"]
         for status in closed:
             self.assertTrue(is_closed(status), status)
         open_forms = ["CLOSED for Artifact 1", "CLOSED — part 2 remains",
                       "DONE except X", "CLOSED2026-07-12",
-                      "DRAFT", "APPROVED 2026-07-10",
+                      "CLOSED 2026-99-99 x", "DRAFT", "APPROVED 2026-07-10",
                       "Open", "gibberish", ""]
         for status in open_forms:
             self.assertFalse(is_closed(status), status)
@@ -301,7 +328,8 @@ class ClosureTests(ScanFixture):
             self.assertEqual([], self.scan(OPEN_NAME, body), status)
 
     def test_open_scanner_docs_report_planted_phrase(self):
-        for status in ("CLOSED for Artifact 1", "CLOSED2026-07-12", "DRAFT"):
+        for status in ("CLOSED for Artifact 1", "CLOSED 2026-99-99 x",
+                       "CLOSED2026-07-12", "DRAFT"):
             body = "Status: " + status + "\n\n" + PHRASE + "\n"
             self.assertEqual(["leakage"], self.kinds(self.scan(OPEN_NAME, body)),
                              status)
@@ -314,12 +342,32 @@ class DateTests(ScanFixture):
 
     def test_post_cutoff_without_status(self):
         found = self.scan(OPEN_NAME, "no status here\n")
-        self.assertEqual([], self.kinds(found))
+        self.assertEqual(["missing-status"], self.kinds(found))
 
     def test_undatable_names_get_missing_date_and_content_checks(self):
         for name in ("notes.md", "2026-07-09notes.md", "0000-00-00-x.md"):
             found = self.scan(name, open_doc([PHRASE]))
-            self.assertEqual(["leakage"], self.kinds(found), name)
+            self.assertEqual(["leakage", "missing-date"], self.kinds(found), name)
+
+
+class LengthTests(ScanFixture):
+    def doc_of_lines(self, n_physical):
+        head = ["Status: APPROVED 2026-07-10 — fixture", ""]
+        return "\n".join(head + ["x"] * (n_physical - len(head))) + "\n"
+
+    def test_boundary(self):
+        body = self.doc_of_lines(600)
+        self.assertEqual(600, len(body.splitlines()))
+        self.assertEqual([], self.scan(OPEN_NAME, body))
+        self.assertEqual(["too-long"],
+                         self.kinds(self.scan(OPEN_NAME, self.doc_of_lines(601))))
+
+    def test_blank_heavy_counts_physical_lines(self):
+        head = ["Status: APPROVED 2026-07-10 — fixture", ""]
+        lines = head + ["x", "", ""] * 233  # 2 + 699 = 701 physical, ~235 non-blank
+        body = "\n".join(lines) + "\n"
+        self.assertGreater(len(body.splitlines()), 600)
+        self.assertEqual(["too-long"], self.kinds(self.scan(OPEN_NAME, body)))
 
 
 def repo_with_deleted(tmp, token="docs/gone.md"):
@@ -440,20 +488,26 @@ class AggregatorTests(unittest.TestCase):
             expected = {
                 ("2026-07-10-leak.md", "leakage"),
                 ("2026-07-10-stale.md", "stale-path"),
+                ("2026-07-10-long.md", "too-long"),
+                ("notes.md", "missing-date"),
+                ("2026-07-10-nostatus.md", "missing-status"),
             }
             got = {(Path(f.path).name, f.kind) for f in found}
             self.assertEqual(expected, got)
 
-    def test_empty_corpus_needs_no_placeholder_files(self):
+    def test_empty_corpus_is_an_error(self):
         with tempfile.TemporaryDirectory() as tmp:
             (Path(tmp) / PLANS_DIR).mkdir(parents=True)
-            self.assertEqual([], scan_corpus(tmp, history=False))
+            with self.assertRaises(AssertionError):
+                scan_corpus(tmp, history=False)
 
 
 class CorpusGateTests(unittest.TestCase):
     repo_root = Path(refresh.__file__).resolve().parent.parent
 
     def test_corpus_clean(self):
+        files = sorted((self.repo_root / PLANS_DIR).glob("*.md"))
+        self.assertGreaterEqual(len(files), 25)
         self.assertEqual([], scan_corpus(self.repo_root, history=False))
 
     def test_corpus_stale_paths(self):

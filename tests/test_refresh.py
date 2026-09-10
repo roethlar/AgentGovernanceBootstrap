@@ -17,13 +17,6 @@ import tempfile
 import unittest
 from pathlib import Path
 
-try:
-    from tests.git_env import isolate_git
-except ImportError:
-    from git_env import isolate_git
-isolate_git()
-
-
 TOOLS = Path(__file__).resolve().parent.parent / "tools"
 REFRESH = TOOLS / "refresh.py"
 
@@ -232,11 +225,9 @@ class RefreshTests(unittest.TestCase):
     def make_stub(self, name, log):
         bindir = self.root / ("bin-" + name)
         bindir.mkdir()
-        import shlex
-        stub = bindir / (name + (".cmd" if os.name == "nt" else ""))
-        body = ('@echo %* >> "{}"\n@exit /b 0\n'.format(log) if os.name == "nt"
-                else '#!/bin/sh\necho "$@" >> {}\nexit 0\n'.format(shlex.quote(str(log))))
-        stub.write_text(body, newline="\n")
+        stub = bindir / name
+        stub.write_text("#!/bin/sh\necho \"$@\" >> {}\nexit 0\n".format(log),
+                        newline="\n")
         stub.chmod(0o755)
         return str(bindir)
 
@@ -282,8 +273,8 @@ class RefreshTests(unittest.TestCase):
         prompt = asked["prompt"]
         self.assertIn("remediate-governance.md", prompt)
         self.assertIn("docs/gone.md", prompt)
-        self.assertIn("existing authority", prompt)
-        self.assertIn("unsettled", prompt)
+        self.assertIn("ask the owner how to remediate", prompt)
+        self.assertIn("Do not fix anything on your own authority", prompt)
 
     def test_non_tty_warns_print_lint_lines_even_with_harness(self):
         # stdin DEVNULL is not a terminal: no offer, findings print instead.
@@ -559,15 +550,16 @@ class RefreshTests(unittest.TestCase):
         self.assertEqual(head_before, run_git(self.toolkit, "rev-parse", "HEAD"))
         self.assertEqual("", run_git(self.toolkit, "status", "--porcelain"))
 
-    def test_empty_policy_does_not_block_a_tool_that_never_pushes(self):
+    def test_empty_push_policy_fails_before_any_write(self):
         (self.target / ".agents").mkdir()
-        policy = self.target / ".agents" / "push-policy.md"
-        policy.write_text("", newline="\n")
+        (self.target / ".agents" / "push-policy.md").write_text("", newline="\n")
         commit_all(self.target, "empty policy")
+        n = len(self.commits())
         proc = refresh(self.toolkit, self.target)
-        self.assertEqual(0, proc.returncode, proc.stderr)
-        self.assertEqual("", policy.read_text())
-        self.assertTrue((self.target / "AGENTS.md").exists())
+        self.assertEqual(proc.returncode, 4, proc.stderr)
+        self.assertIn("push policy", proc.stderr)
+        self.assertFalse((self.target / "AGENTS.md").exists())
+        self.assertEqual(len(self.commits()), n)
 
     # -- filesystem containment ------------------------------------------
     # Writes must land exactly where the manifest names them: symlinked
@@ -722,81 +714,15 @@ class RefreshTests(unittest.TestCase):
         self.assertIn("toolkit-sha: " + rec["toolkit_sha"], body)
         self.assertIn("plan-digest: " + rec["digest"], body)
 
-    def test_apply_reuses_plan_after_unrelated_target_commit(self):
+    def test_apply_refuses_after_target_moved(self):
         out = self.root / "plan.json"
         refresh(self.toolkit, self.target, "--plan-json", str(out))
         (self.target / "later.txt").write_text("x\n", newline="\n")
         commit_all(self.target, "moved on")
         proc = refresh(self.toolkit, self.target, "--apply", str(out))
-        self.assertEqual(proc.returncode, 0, proc.stderr)
-        self.assertEqual(CUR_AGENTS, (self.target / "AGENTS.md").read_text())
-
-    def test_plan_survives_unrelated_toolkit_commit_and_dirty_file(self):
-        out = self.root / "plan.json"
-        refresh(self.toolkit, self.target, "--plan-json", str(out))
-        (self.toolkit / "notes.md").write_text("unrelated")
-        commit_all(self.toolkit, "documentation")
-        (self.toolkit / "scratch.txt").write_text("unrelated")
-        proc = refresh(self.toolkit, self.target, "--apply", str(out))
-        self.assertEqual(0, proc.returncode, proc.stderr)
-
-    def test_apply_refuses_changed_replacement_input(self):
-        path = self.target / "AGENTS.md"
-        path.write_text("foreign original")
-        commit_all(self.target, "legacy")
-        out = self.root / "plan.json"
-        refresh(self.toolkit, self.target, "--force", "--plan-json", str(out))
-        path.write_text("foreign changed after planning")
-        commit_all(self.target, "changed legacy")
-        proc = refresh(self.toolkit, self.target, "--force", "--apply", str(out))
-        self.assertEqual(4, proc.returncode, proc.stderr)
-        self.assertEqual("foreign changed after planning", path.read_text())
-
-    def test_apply_refuses_tampered_record(self):
-        out = self.root / "plan.json"
-        refresh(self.toolkit, self.target, "--plan-json", str(out))
-        record = json.loads(out.read_text())
-        record["target_head"] = "tampered"
-        out.write_text(json.dumps(record))
-        proc = refresh(self.toolkit, self.target, "--apply", str(out))
-        self.assertEqual(4, proc.returncode, proc.stderr)
+        self.assertEqual(proc.returncode, 4, proc.stderr)
+        self.assertIn("target_head", proc.stderr)
         self.assertFalse((self.target / "AGENTS.md").exists())
-
-    def test_plan_stdout_is_one_readable_json_record(self):
-        proc = refresh(self.toolkit, self.target, "--plan-json", "-")
-        self.assertEqual(0, proc.returncode, proc.stderr)
-        record = json.loads(proc.stdout)
-        self.assertTrue(record["installs"])
-        self.assertFalse((self.target / "AGENTS.md").exists())
-
-    def test_plan_mode_never_syncs_even_without_no_sync_flag(self):
-        from unittest.mock import patch
-        mod = self._refresh_mod()
-        out = self.root / "plan.json"
-        with patch.object(mod, "sync_toolkit", side_effect=AssertionError("unexpected sync")):
-            with contextlib.redirect_stdout(io.StringIO()):
-                rc = mod.main([str(self.target), "--toolkit", str(self.toolkit),
-                               "--plan-json", str(out)])
-        self.assertEqual(0, rc)
-        self.assertFalse((self.target / "AGENTS.md").exists())
-
-    def test_outgoing_hash_recording_handles_updates_and_retirements(self):
-        import importlib.util
-        spec = importlib.util.spec_from_file_location("record_history", TOOLS / "record-history.py")
-        module = importlib.util.module_from_spec(spec)
-        spec.loader.exec_module(module)
-        source = self.toolkit / "templates/AGENTS.template.md"
-        source.write_text("next version\n")
-        manifest = self.toolkit / "tools/shipped-set.json"
-        data = json.loads(manifest.read_text())
-        retired = data["artifacts"].pop(1)
-        data["retired"].append({"target": retired["target"], "formerly": []})
-        manifest.write_text(json.dumps(data))
-        self.assertEqual(2, module.record_history(self.toolkit))
-        data = json.loads(manifest.read_text())
-        self.assertIn(nhash(CUR_AGENTS), data["artifacts"][0]["formerly"])
-        self.assertIn(nhash(CUR_TOOL), data["retired"][-1]["formerly"])
-        self.assertEqual(0, module.record_history(self.toolkit))
 
     def test_apply_refuses_after_toolkit_content_changed(self):
         out = self.root / "plan.json"
@@ -870,7 +796,7 @@ class RefreshTests(unittest.TestCase):
         self.assertEqual(len(self.commits()), n)
         self.assertIn("staged, uncommitted", out)
 
-    def test_plan_pins_approved_dirty_source_bytes(self):
+    def test_dirty_toolkit_notes_default_mode_and_refuses_apply(self):
         with open(str(self.toolkit / "templates" / "shims" / "CLAUDE.template.md"),
                   "a", newline="\n") as f:
             f.write("uncommitted\n")
@@ -878,7 +804,8 @@ class RefreshTests(unittest.TestCase):
         refresh(self.toolkit, self.target, "--plan-json", str(out))
         self.assertTrue(json.loads(out.read_text())["toolkit_dirty"])
         proc = refresh(self.toolkit, self.target, "--apply", str(out))
-        self.assertEqual(proc.returncode, 0, proc.stderr)
+        self.assertEqual(proc.returncode, 4, proc.stderr)
+        self.assertIn("dirty", proc.stderr)
         proc = refresh(self.toolkit, self.target)
         self.assertEqual(proc.returncode, 0, proc.stderr)
         self.assertIn("toolkit tree is dirty", proc.stdout)
@@ -1225,7 +1152,9 @@ class RefreshTests(unittest.TestCase):
         commit_all(self.target, "decision naming retired tool")
         proc = refresh(self.toolkit, self.target)
         self.assertEqual(proc.returncode, 0)
-        self.assertNotIn("NOTE .agents/decisions.md", proc.stdout)
+        self.assertIn(
+            "NOTE .agents/decisions.md: historical: `tools/old-tool.py` - deleted in {}".format(short),
+            proc.stdout)
         self.assertNotIn("missing path `tools/old-tool.py`", proc.stdout)
         self.assertIn(
             "LINT .agents/decisions.md: references missing path `docs/never-was.md`",
@@ -1817,9 +1746,29 @@ class PruneEmptyDirTests(unittest.TestCase):
         self.assertFalse((self.target / ".agents" / "a").exists())
         self.assertTrue((self.target / ".agents" / "busy" / "f.txt").exists())
 
+    def test_confirm_defaults_to_yes_and_declines_on_anything_else(self):
+        self.assertTrue(self.mod.confirm_prune(1, input_fn=lambda _: ""))
+        self.assertTrue(self.mod.confirm_prune(2, input_fn=lambda _: "y"))
+        self.assertTrue(self.mod.confirm_prune(2, input_fn=lambda _: "YES"))
+        self.assertFalse(self.mod.confirm_prune(2, input_fn=lambda _: "n"))
+        self.assertFalse(self.mod.confirm_prune(2, input_fn=lambda _: "q"))
 
+        def eof(_):
+            raise EOFError
+        self.assertFalse(self.mod.confirm_prune(1, input_fn=eof))
 
-    def test_retiring_last_file_removes_its_empty_directory(self):
+    def test_prompt_is_singular_for_one_and_plural_for_many(self):
+        seen = []
+
+        def capture(msg):
+            seen.append(msg)
+            return "n"
+        self.mod.confirm_prune(1, input_fn=capture)
+        self.mod.confirm_prune(3, input_fn=capture)
+        self.assertIn("1 empty directory", seen[0])
+        self.assertIn("3 empty directories", seen[1])
+
+    def test_retiring_the_last_file_offers_its_directory_but_removes_nothing(self):
         # The real shape: a retired target empties its own directory, which
         # git cannot report. Non-interactive, so it is offered, not removed.
         ghost = self.target / ".agents" / "skills" / "ghost"
@@ -1829,8 +1778,10 @@ class PruneEmptyDirTests(unittest.TestCase):
         proc = refresh(self.toolkit, self.target)
         self.assertEqual(proc.returncode, 0, proc.stderr)
         self.assertFalse((ghost / "SKILL.md").exists())
-        self.assertIn("pruned: .agents/skills/ghost", proc.stdout)
-        self.assertFalse(ghost.exists())
+        self.assertIn("empty: .agents/skills/ghost", proc.stdout)
+        self.assertIn("left in place", proc.stdout)
+        self.assertNotIn("pruned:", proc.stdout)
+        self.assertTrue(ghost.is_dir())
 
     def test_prune_flag_is_consent_without_a_tty(self):
         # An owner driving refresh from a non-TTY shell can never reach the

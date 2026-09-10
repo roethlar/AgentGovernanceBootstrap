@@ -30,17 +30,15 @@ machine paths live in `.agents/machines.md`. On Windows prefer `py -3`;
 reject Store stubs and below-floor interpreters. Test subprocesses inherit
 the invoking interpreter.
 
-Run affected tests after code or behavioral guidance changes; run the full
-suite before publication or when changes cross test boundaries:
+For tools, tests, templates or procedures:
 
 ```bash
-<probed-python> -m unittest discover -s tests
+<probed-python> -m unittest discover -s tests -v
 ```
 
-Documentation-only changes require `git diff --check`. Plan edits also run
-`<probed-python> -m unittest discover -s tests -p test_plan_lint.py`.
-Reuse passing checks on unchanged code. Capture routine output; report
-failures or the concise result.
+Documentation-only changes require `git diff --check`. Changes under
+`docs/superpowers/plans/` also run
+`<probed-python> -m unittest tests.test_plan_lint -v`.
 
 ## Remotes & Sync
 
@@ -73,10 +71,3 @@ failures or the concise result.
   documents only when the owner invokes `plan`.
 - Reviewer dispatch follows the shipped review playbooks. For codex,
   pipe prompts through stdin; the argv prompt form has hung.
-
-- Before committing template changes, run `<probed-python> tools/record-history.py`
-  once to register outgoing versions in the manifest.
-- Ship every supported harness adapter. Minimal means less instruction cost,
-  not dropping support files. Retire unused settings instead of adding loaders.
-- Versioned releases, changelogs, CI matrices and signed tags remain deferred
-  until the owner requests wider release engineering.

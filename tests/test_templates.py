@@ -19,7 +19,9 @@ ROOT = Path(__file__).resolve().parent.parent
 TEMPLATES = ROOT / "templates"
 
 CANONICAL_REGROUND_COMMAND = (
-    "echo 'Restore AGENTS.md if missing or stale in context before continuing.'"
+    "echo 'Context was compacted or the session restarted. Before "
+    "continuing, re-read AGENTS.md from disk, especially the Prime "
+    "Invariants block. Treat AGENTS.md, not this message, as authoritative.'"
 )
 
 CANONICAL_PROTECT_COMMAND = (
@@ -397,6 +399,29 @@ class ProtectGovernanceHookTests(unittest.TestCase):
             self.assertEqual(proc.stdout, "")
 
 
+class CatchupSweepDelegation(unittest.TestCase):
+    # The hygiene sweep runs in a throwaway agent with an owner opt-out
+    # (owner design 2026-08-02): the main window pays one summary line,
+    # "n" skips the sweep tactically, and the cleanup agent executes the
+    # separate drift playbook so it can never recurse into catchup's own
+    # spawn step. Load-bearing fragments; surrounding wording stays free.
+    def test_catchup_delegates_and_never_hands_over_itself(self):
+        body = (TEMPLATES / "playbooks" / "catchup.md").read_text(encoding="utf-8")
+        self.assertIn("Spawn a cleanup agent first? [Y/n]", body)
+        self.assertIn(".agents/playbooks/drift.md", body)
+        self.assertIn("cleanup agent this playbook", body)  # "Never hand the …"
+        self.assertIn("after the tidy, never in parallel", body)
+        self.assertIn("flags only", body)  # no-subagent fallback fixes nothing
+        self.assertNotIn("## Hygiene sweep", body)  # one canonical location
+
+    def test_drift_playbook_carries_the_contract(self):
+        body = (TEMPLATES / "playbooks" / "drift.md").read_text(encoding="utf-8")
+        self.assertIn("Spawn nothing", body)
+        self.assertIn("one tidy commit", body)
+        self.assertIn("one summary line", body)
+        self.assertIn("deleted on sight", body)  # the checklist lives here now
+
+
 class ShippedShimsAndWrappers(unittest.TestCase):
     def test_shims_are_single_pointer_lines(self):
         for shim in ("CLAUDE.template.md", "GEMINI.template.md"):
@@ -558,7 +583,65 @@ class BareReviewInvocation(unittest.TestCase):
 
 
 class PlaybookReviewMechanics(unittest.TestCase):
-    """Guard reviewer permissions and branch completion boundaries."""
+    """Structural pins for the reviewer-dispatch mechanics in the shipped
+    playbooks (review-economy decision 2026-07-17, as amended 2026-07-23):
+    tier semantics, escalation triggers, dispatch grammar. The 2026-07-23
+    owner ruling deleted the model map, the denylist lint, and the
+    nickname machinery: dispatch is literal-or-ask and no committed list
+    of models may exist. These are structural assertions, not prose-pin
+    tests: the wording stays free, the load-bearing markers must exist."""
+
+    def test_codereview_carries_tier_semantics(self):
+        body = (TEMPLATES / "playbooks" / "codereview.md").read_text(encoding="utf-8")
+        self.assertIn("## Reviewer tiers and routing", body)
+        self.assertIn("harnesses.local.json", body)
+        self.assertIn("Reviewer: <harness> / <resolved model id> / <effort> / <tier>", body)
+        for trigger in ("T1", "T2", "T3", "T4", "T5"):
+            self.assertIn(trigger, body)
+        # Dispatch grammar (2026-07-23 ruling: the owner's literal word is
+        # used verbatim; no map, no denylist, no nickname resolution).
+        self.assertIn("## Dispatch grammar", body)
+        self.assertIn("/codereview <harness> <model> <effort>", body)
+        self.assertIn("session-only", body)
+        self.assertNotIn(".agents/model-map.json", body)
+        self.assertNotIn("nickname", body)
+
+    def test_openreview_routes_frontier_via_codereview_tiers(self):
+        body = (TEMPLATES / "playbooks" / "openreview.md").read_text(encoding="utf-8")
+        self.assertIn("frontier", body)
+        self.assertIn("Reviewer tiers and routing", body)
+        self.assertIn("owner-named", body)
+
+    def test_openreview_carries_approach_contract(self):
+        # Reallocation 2026-07-29 (issue #11): openreview owns the
+        # approach-soundness contract; the defect-audit contract lives in
+        # codereview only. Marker assertions — the wording stays free, the
+        # load-bearing fragments must exist.
+        body = (TEMPLATES / "playbooks" / "openreview.md").read_text(encoding="utf-8")
+        for outcome in ("Best approach", "Acceptable with changes", "To be replaced"):
+            self.assertIn(outcome, body)
+        self.assertIn("recommended approach", body)
+        self.assertIn("material changes", body)
+        self.assertIn("no material changes are needed", body)
+        self.assertNotIn("clean|findings", body)
+
+    def test_codereview_carries_generation_and_lifecycle(self):
+        # Reallocation 2026-07-29 (issue #11): codereview owns landed-change
+        # defect generation (pinned-range dispatch, clean|findings contract)
+        # and the policy-relative fix lifecycle. Marker assertions — the
+        # wording stays free, the load-bearing fragments must exist.
+        body = (TEMPLATES / "playbooks" / "codereview.md").read_text(encoding="utf-8")
+        self.assertIn("## Change review (defect generation)", body)
+        self.assertIn("<base>..<head>", body)
+        self.assertIn("clean change or candidate findings", body)
+        self.assertIn("one finding ↔ one commit ↔ one verdict", body)
+        self.assertIn("never an amend", body)
+        menu_target = ".agents/playbooks/toolkit.md"
+        for rel in ("commands/claude/toolkit.md",
+                    "skills/shared/toolkit/SKILL.md"):
+            self.assertIn(menu_target, (TEMPLATES / rel).read_text())
+        self.assertIn("<base>..<head>",
+                      (TEMPLATES / "playbooks/toolkit.md").read_text())
 
     def test_codereview_carries_self_permissioning_launch(self):
         # 2026-07-18 ruling; audit F9: the launch-scoped grant must not rot

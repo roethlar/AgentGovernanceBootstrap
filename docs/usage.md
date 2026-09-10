@@ -1,61 +1,119 @@
 # Usage
 
-Install Git and Python 3.10+, then clone
-`https://github.com/roethlar/Bixi.git`. Use that checkout's tools for
-governed repositories; this repository develops the toolkit.
+## One-time setup, per machine
 
-## New project
+1. Install Git and Python 3.10+. Windows:
+   `winget install Git.Git Python.Python.3.12`.
+2. Clone this toolkit — `git clone
+   https://github.com/roethlar/AgentGovernanceBootstrap.git
+   ~/dev/AgentGovernanceBootstrap` (the LAN gitea mirror
+   `http://q:3000/michael/AgentGovernanceBootstrap.git` also works as a
+   faster source; GitHub is canonical). Even this is optional: both flows
+   self-provision by cloning when no local copy exists.
 
-Run `<bixi>/tools/new-project <project-dir> [hint]`
-(`tools\new-project.cmd` on Windows).
-It initializes Git and stages governance. Continue setup in the current
-agent; an interactive shell can offer a harness launch. The agent uses the
-project hint and established push policy, asks only for missing information,
-and makes the first scoped commit.
+Your half of the freshness bargain: push this repo to GitHub when you change
+it — toolkit changes that are not pushed do not propagate to your other
+machines. (Push the gitea mirror too when convenient; it is never
+authoritative.)
 
-## Existing repository
+## Starting a brand-new project (one command)
 
-In the target's current agent, request:
-
-```text
-Read <bixi>/procedures/bootstrap.md and follow it.
+```bash
+~/dev/AgentGovernanceBootstrap/tools/new-project <project-dir> [hint]
 ```
 
-Bootstrap discovers relevant governance, drafts repo-owned guidance and
-presents the changes requiring a decision. Existing authority stands.
-Refresh installs the shipped set; approved legacy replacement uses
-`--force`. Judgment files and installation share one scoped commit.
-Follow repo branch policy; branch work ends after merge and local/remote
-deletion. Hook trust and publishing follow their existing authority.
+(Windows: `tools\new-project.cmd`.) It creates the directory, runs
+`git init`, installs the governance set staged but uncommitted, then offers
+to launch a detected agent harness there with a kickoff prompt pointing at
+`procedures/setup.md` — the agent asks the setup questions, drafts the
+judgment files, and makes the first commit. The optional hint is a one-line
+description of the project; it primes that conversation so it opens with a
+confirmation instead of an interrogation. If the directory already has
+governance the command refuses and tells you to refresh instead.
 
-## Refresh
+## Bootstrapping a repo (an existing repo, with or without governance to migrate)
 
-From the target root, run `<python> <bixi>/tools/refresh.py`, or invoke
-`update-governance` in the agent. Use Python 3.10+; Windows prefers `py -3`.
+Open a fresh agent session in the target repo and paste:
 
-Refresh syncs the toolkit, reconciles shipped artifacts and commits its
-scoped changes. Known versions update; committed drift is restored with
-provenance. Uncommitted changes on affected paths refuse. A foreign
-AGENTS.md requires migration or explicitly requested replacement.
-Repo-owned seeded policy files are preserved.
+```text
+Read <path-to-AgentGovernanceBootstrap>/procedures/bootstrap.md and follow it.
+```
 
-For read-only inspection, use
-`<python> <bixi>/tools/refresh.py --plan-json -`.
-This neither syncs nor changes either checkout. A saved plan can later be
-applied; affected inputs are checked while unrelated changes are tolerated.
-Use `--lint-only` for governance-reference findings without installation.
+The same line works on any harness. Codex CLI headless example (prompt via
+stdin — the argv form has hung):
 
-Retirement removes directories it just emptied. `--prune` also removes
-empty retired directories left by older runs; nonempty directories stay.
-Noninteractive runs print actionable findings and a procedure pointer;
-an existing agent can resolve them without launching another session.
+```bash
+echo "Read ~/dev/AgentGovernanceBootstrap/procedures/bootstrap.md and follow it." | codex exec
+```
 
-## Feedback and verification
+The agent syncs the toolkit, discovers the repo live, inventories existing
+governance if any (you approve the reconciliation as a plain-English table),
+drafts the repo-specific `.agents/` files, and presents
+`.bootstrap-tmp/drafts/approval-summary.md` — the one file you review. It
+starts with `Approve`, `Approve after edits`, or `Do not approve yet`, and
+is written so you never need to read code, diffs, or JSON to decide. On your
+approval: drafts are copied, `tools/refresh.py --stage-only` installs the
+shipped set, and everything lands as ONE scoped commit. A repo whose shipped
+set is already staged and uncommitted — what `tools/new-project` hands over —
+still gets the whole list in that summary; those files are named in the plan
+record too. Pushing follows the
+existing owner-approved push policy, or the choice you make when no policy
+exists. Installation follows repo branch policy. The git playbook carries
+work branches through verification, merge and local/remote deletion.
 
-File a confirmed toolkit issue only with explicit authority, using
-`gh issue create -R roethlar/Bixi --title "..." --body-file <file>`.
-Use redacted evidence; do not file speculative or empty reports.
+## Keeping a repo current
 
-This repo's verification entry point and interpreter guidance live in
-`.agents/repo-guidance.md`. Before committing template changes, run
-`<python> tools/record-history.py` to register outgoing source hashes.
+From the repo root, any time you're working in it:
+
+```bash
+py -3 ~/dev/AgentGovernanceBootstrap/tools/refresh.py      # Windows
+python3 ~/dev/AgentGovernanceBootstrap/tools/refresh.py    # macOS/Linux
+```
+
+or type `/update-governance` in a Claude Code session (codex/grok/agy: the
+`update-governance` skill, installed under `.agents/skills/`; agy needs the
+workspace trusted first). Seconds, no agent
+judgment involved: the script syncs the toolkit (offline it proceeds on the
+local copy and says so), installs new shipped artifacts, updates stale ones,
+removes retired ones, and commits once with the toolkit version in the
+message. Installed governance is toolkit-owned: a file that matches no
+shipped version is drift — whoever wrote it — and is restored to the shipped
+version, reported as a DRIFT line naming the commits that introduced it
+(uncommitted changes on touched paths make the run refuse instead, so
+nothing uncommitted is ever destroyed). If it flags `AGENTS.md` as a foreign
+governance file, the repo needs the bootstrap flow above, not a refresh.
+
+A repo governed before the per-repo policy file existed gets it backfilled:
+refresh writes `.agents/push-policy.md` (ask before pushing) if it is
+missing, and prints an ACTION line telling you what to set. Once the file
+exists — however you have edited it — refresh ignores it for good.
+
+When retiring a file empties its directory, the run lists the empty
+directories and asks once — `[Y/n]`, Enter accepts — before removing them.
+Answer no and they stay. Runs that aren't interactive (loops, CI, or any
+shell that isn't a real terminal) can't show that prompt, so they list the
+directories and remove nothing; add `--prune` to give the same consent on the
+command line.
+
+A repo you don't touch stays stale, and that's fine — it catches up the next
+time you work there.
+
+## Filing feedback
+
+When a session (here or in a governed repo) confirms a toolkit defect or a
+governance rule worth generalizing, the agent drafts a GitHub issue from the
+templates in `.github/ISSUE_TEMPLATE/` and files it **only on your go**:
+
+```bash
+gh issue create -R roethlar/AgentGovernanceBootstrap --title "..." --body-file ...
+```
+
+Issues are public: no secrets, tokens, private hostnames, or personal data —
+evidence is cited by path and commit hash. Triage by reading open issues and
+closing each with a reason; the closed list is the ledger.
+
+## Verifying this repo
+
+```bash
+py -3 -m unittest discover -s tests -v    # Git Bash on Windows; python3 elsewhere
+```

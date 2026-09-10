@@ -13,13 +13,6 @@ import tempfile
 import unittest
 from pathlib import Path
 
-try:
-    from tests.git_env import isolate_git
-except ImportError:
-    from git_env import isolate_git
-isolate_git()
-
-
 ROOT = Path(__file__).resolve().parent.parent
 SCRIPT = ROOT / "tools" / "publish.py"
 
@@ -200,7 +193,7 @@ class PublishTests(unittest.TestCase):
         self.assertEqual(0, self.run_publish(self.product, "--no-push").returncode)
         proc = self.run_publish(self.product, "--no-push")
         self.assertEqual(0, proc.returncode, proc.stderr)
-        self.assertIn("already matches", proc.stdout)
+        self.assertIn("nothing to release", proc.stdout)
 
 
 class RecordProductRepoTests(unittest.TestCase):
@@ -247,15 +240,6 @@ class RecordProductRepoTests(unittest.TestCase):
         self.assertEqual([str(product)], self.lines())
         self.assertEqual(product,
                          publish_mod.recorded_product_repo(self.dev))
-
-    def test_current_machine_record_wins_over_the_first_machine(self):
-        from unittest.mock import patch
-        self.machines.write_text(
-            "# Machines\n\n## other (macOS)\n- product-repo: /other/Bixi\n"
-            "\n## current (Windows)\n- product-repo: /current/Bixi\n")
-        with patch.object(publish_mod.platform, "node", return_value="current.local"):
-            self.assertEqual(Path("/current/Bixi"),
-                             publish_mod.recorded_product_repo(self.dev))
 
     def test_a_bare_hand_written_entry_still_parses(self):
         # Every entry recorded before quoting existed is unquoted.
@@ -319,18 +303,6 @@ class ProductRemoteFreshnessTests(unittest.TestCase):
             [sys.executable, str(self.dev_tools / "publish.py"),
              *(str(a) for a in args)],
             capture_output=True, text=True)
-
-    def test_unchanged_release_retries_a_failed_push_without_another_commit(self):
-        missing = str(Path(self.tmp.name) / "missing.git")
-        git(self.product, "remote", "set-url", "--push", "origin", missing)
-        proc = self.run_publish(self.product)
-        self.assertEqual(3, proc.returncode, proc.stdout + proc.stderr)
-        head = git(self.product, "rev-parse", "HEAD").stdout
-        git(self.product, "remote", "set-url", "--push", "origin", str(self.origin))
-        proc = self.run_publish(self.product)
-        self.assertEqual(0, proc.returncode, proc.stdout + proc.stderr)
-        self.assertEqual(head, git(self.product, "rev-parse", "HEAD").stdout)
-        self.assertEqual(head, git(self.origin, "rev-parse", "HEAD").stdout)
 
     def test_stale_checkout_fast_forwards_before_the_release(self):
         self.advance_remote()

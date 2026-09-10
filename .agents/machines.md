@@ -33,8 +33,9 @@ never treat them as repo-portable.
   uncommitted-changes refusal (clone-based fixtures only; `git init`
   fires no post-checkout, so `PublishTests` stayed green). The owner
   removed the hookPath and hooks; `tests.test_publish` verified green
-  (17/17). Resolved in tests on 2026-09-08: `tests/git_env.py` isolates
-  fixture Git from user/system configuration, hooks and init templates.
+  (17/17). Residual lesson, repo-portable and unfixed: fixture git
+  subprocesses inherit user-global git config, so any machine's hooks
+  or templates can contaminate clone-based fixtures.
 - product-repo: /Users/michael/Dev/Bixi (recorded 2026-07-24, first publish)
 
 ## ASHBIAMWEB1 (Windows)
