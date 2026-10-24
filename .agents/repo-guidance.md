@@ -44,8 +44,12 @@ Documentation-only changes require `git diff --check`. Changes under
 
 - Canonical: `https://github.com/roethlar/AgentGovernanceBootstrap.git`.
   Canon propagates through GitHub pushes.
-- Trusted LAN fetch fallback: `http://q:3000/michael/AgentGovernanceBootstrap.git`.
-  Expected mirror lag is not a conflict; the mirror is not authoritative.
+- Trusted LAN fetch fallback:
+  `http://magneto:3001/michael/AgentGovernanceBootstrap.git`, a gitea pull
+  mirror of the canonical GitHub repo (never pushed to). Expected mirror
+  lag is not a conflict; the mirror is not authoritative. The former
+  `http://q:3000/...` mirror is retired with host `q` (owner, 2026-10-24:
+  "q is gone, so anything that references it is out of date").
 - Public product: `https://github.com/roethlar/Bixi.git`. Release with
   `tools/publish`; batch releases rather than publishing each fix.
   That tool records its checkout path in `.agents/machines.md`.

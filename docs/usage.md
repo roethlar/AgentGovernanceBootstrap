@@ -6,15 +6,15 @@
    `winget install Git.Git Python.Python.3.12`.
 2. Clone this toolkit — `git clone
    https://github.com/roethlar/AgentGovernanceBootstrap.git
-   ~/dev/AgentGovernanceBootstrap` (the LAN gitea mirror
-   `http://q:3000/michael/AgentGovernanceBootstrap.git` also works as a
+   ~/dev/AgentGovernanceBootstrap` (the LAN gitea pull mirror
+   `http://magneto:3001/michael/AgentGovernanceBootstrap.git` also works as a
    faster source; GitHub is canonical). Even this is optional: both flows
    self-provision by cloning when no local copy exists.
 
 Your half of the freshness bargain: push this repo to GitHub when you change
 it — toolkit changes that are not pushed do not propagate to your other
-machines. (Push the gitea mirror too when convenient; it is never
-authoritative.)
+machines. (The magneto gitea pulls from GitHub on its own; do not push to
+it. It is never authoritative.)
 
 ## Starting a brand-new project (one command)
 
