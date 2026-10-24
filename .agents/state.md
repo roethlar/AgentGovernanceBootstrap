@@ -9,6 +9,9 @@
   refresh's newline-equivalence rule; catchup, drift, skill triggers,
   tools, hooks and procedures match the baseline byte-for-byte.
   Scope and token measurements: .agents/decisions.md (2026-09-10).
+- 2026-10-24: host `q` is retired (owner); the trusted LAN fetch fallback is
+  now the magneto gitea pull mirror (8703c94, 74af9e9), published as Bixi
+  d59c5cd. This repo's installed governance is not refreshed (owner-only).
 
 ## Next
 
