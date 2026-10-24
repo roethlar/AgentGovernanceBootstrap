@@ -15,6 +15,10 @@
 
 ## Next
 
+- Owner review, after the fact: the `tools/refresh.py` change in 74af9e9
+  (q URL replaced by the magneto mirror in CANONICAL_URLS, 5+/4- lines)
+  shipped code without an approved plan, against AGENTS.md. It was done
+  under the 2026-10-24 "q is gone" sweep. Ratify it or ask for a revert.
 - Deferred owner draft: docs/superpowers/plans/2026-08-30-refresh-check-mode.md.
   Implementation remains unapproved.
 
