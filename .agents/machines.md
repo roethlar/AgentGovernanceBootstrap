@@ -67,3 +67,10 @@ never treat them as repo-portable.
   this machine; publish.py's recorded-path lookup reads the first
   `product-repo:` line in this file, so on this machine the path must be
   passed explicitly: `py -3 tools/publish.py F:\dev\Bixi`)
+- product-repo: C:\Users\michael\dev\bixi (recorded 2026-10-24, first publish)
+- 2026-10-24: from Git Bash, `py` is not on PATH; the suite ran with
+  `C:\Users\michael\AppData\Local\Programs\Python\Python314\python.exe`
+  (3.14.7) and `PYTHONUTF8=1`: 226 run, 3 failures, identical on a clean
+  tree — the two `test_new_project.py` cases above plus
+  `test_this_repos_agents_files_have_zero_warn_findings`, which flags this
+  file's mention of the missing `.tokensave/` path.
