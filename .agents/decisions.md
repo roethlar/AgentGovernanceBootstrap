@@ -7,6 +7,25 @@ verified product behavior. Historical provenance:
 
 ## Decisions
 
+### 2026-10-25 — Catchup's sweep question is a hard stop
+
+Status: Active
+
+Owner: agents skipping catchup's Step 0 question is "a consistent problem
+that needs a solution"; it is an agent/harness bug, "not my problem", so
+the fix must cost the owner nothing (argument-based opt-out rejected as
+"more work for me"). Cause: Claude Code's question guidance ("not for
+choices with a conventional default… pick the obvious option… and
+proceed") plus auto mode read the playbook's old "Default yes" as license
+to skip; an agent then assumed the run was "unattended" and spawned the
+sweep unasked.
+
+Step 0 now says: ask as plain text and end the turn; call no tool until
+the owner replies; any reply but "n" means yes; never assume the run is
+unattended or answer for the owner; harness default-taking advice does
+not apply. The `[Y/n]` design of 2026-08-02 is unchanged. Tests pin "then
+end your turn" and "Never assume the run is unattended".
+
 ### 2026-09-10 — Restore behavior; wording-only reductions
 
 Status: Active

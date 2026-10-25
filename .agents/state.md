@@ -12,6 +12,9 @@
 - 2026-10-24: host `q` is retired (owner); the trusted LAN fetch fallback is
   now the magneto gitea pull mirror (8703c94, 74af9e9), published as Bixi
   d59c5cd. This repo's installed governance is not refreshed (owner-only).
+- 2026-10-25: catchup Step 0 hardened in source so harness default-taking
+  can't skip the sweep question (.agents/decisions.md, 2026-10-25).
+  Unpublished; rides the next Bixi batch release.
 
 ## Next
 

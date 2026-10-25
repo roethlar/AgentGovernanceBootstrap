@@ -408,6 +408,9 @@ class CatchupSweepDelegation(unittest.TestCase):
     def test_catchup_delegates_and_never_hands_over_itself(self):
         body = (TEMPLATES / "playbooks" / "catchup.md").read_text(encoding="utf-8")
         self.assertIn("Spawn a cleanup agent first? [Y/n]", body)
+        # Harness "take the default" guidance must not skip the question.
+        self.assertIn("then end your turn", body)
+        self.assertIn("Never assume the run is unattended", body)
         self.assertIn(".agents/playbooks/drift.md", body)
         self.assertIn("cleanup agent this playbook", body)  # "Never hand the …"
         self.assertIn("after the tidy, never in parallel", body)
