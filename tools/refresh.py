@@ -462,12 +462,14 @@ def repair_push_status_lines(target_repo: Path, plan: Plan) -> None:
     if dirty:
         # Never fold the owner's uncommitted edits into a refresh commit.
         return
-    lines = state.read_text(encoding="utf-8").splitlines()
-    kept = [ln for ln in lines if not PUSH_STATUS_RE.search(ln)]
+    lines = state.read_bytes().decode("utf-8").splitlines(keepends=True)
+    body = next((i for i, line in enumerate(lines)
+                 if re.match(r"^##(?:\s|$)", line)), len(lines))
+    kept = lines[:body] + [ln for ln in lines[body:] if not PUSH_STATUS_RE.search(ln)]
     dropped = len(lines) - len(kept)
     if not dropped:
         return
-    write_atomic(state, ("\n".join(kept) + "\n").encode("utf-8"))
+    write_atomic(state, "".join(kept).encode("utf-8"))
     plan.repairs.append((".agents/state.md",
                          "deleted {} recorded push-status line(s) — git owns "
                          "that fact (2026-07-11)".format(dropped)))

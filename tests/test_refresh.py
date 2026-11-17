@@ -210,6 +210,48 @@ class RefreshTests(unittest.TestCase):
         self.assertEqual(proc.returncode, 0, proc.stderr)
         self.assertIn("unpushed", (self.target / ".agents" / "state.md").read_text())
 
+    def test_actual_state_template_header_survives_refresh(self):
+        state = self.target / ".agents/state.md"
+        state.parent.mkdir()
+        original = (TOOLS.parent / "templates/state.template.md").read_bytes()
+        state.write_bytes(original)
+        commit_all(self.target, "state from real template")
+        proc = refresh(self.toolkit, self.target, "--stage-only")
+        self.assertEqual(0, proc.returncode, proc.stderr)
+        self.assertEqual(original, state.read_bytes())
+        self.assertNotIn(".agents/state.md", run_git(
+            self.target, "diff", "--cached", "--name-only").splitlines())
+
+    def test_push_status_repair_preserves_header_bytes_and_other_body_lines(self):
+        state = self.target / ".agents/state.md"
+        state.parent.mkdir()
+        header = b"# Agent State\r\nStamp facts; check push status live.\r\n\r\n"
+        retained = b"## Now\r\n- Push policy is always.\r\n- Real work item."
+        state.write_bytes(header + b"## Now\r\n- Push status: unpushed.\r\n"
+                          + b"- Push policy is always.\r\n- Real work item.")
+        commit_all(self.target, "mixed instruction and status")
+        proc = refresh(self.toolkit, self.target, "--stage-only")
+        self.assertEqual(0, proc.returncode, proc.stderr)
+        self.assertEqual(header + retained, state.read_bytes())
+        commit_all(self.target, "repaired state")
+        second = self._refresh_mod().Plan()
+        self._refresh_mod().repair_push_status_lines(self.target, second)
+        self.assertEqual([], second.repairs)
+
+    def test_push_status_repair_leaves_documents_without_body_heading(self):
+        state = self.target / ".agents/state.md"
+        state.parent.mkdir()
+        mod = self._refresh_mod()
+        for original in (b"# State\nCheck push status live in git.\n",
+                         b"- unpushed work, no sections\n"):
+            with self.subTest(original=original):
+                state.write_bytes(original)
+                commit_all(self.target, "legacy headingless state")
+                plan = mod.Plan()
+                mod.repair_push_status_lines(self.target, plan)
+                self.assertEqual(original, state.read_bytes())
+                self.assertEqual([], plan.repairs)
+
     # -- live remediation (2026-07-23 owner-surface D3) ---------------------
 
     def refresh_env(self, target, *extra, path=None):
