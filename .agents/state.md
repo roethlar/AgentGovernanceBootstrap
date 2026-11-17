@@ -2,13 +2,16 @@
 
 ## Now
 
-- 2026-11-17: drafting and reviewing fixes for Bixi #5–#8 and current-boundary
+- 2026-11-17: plans and requested Claude review completed for Bixi #5–#8 and current-boundary
   discoverability (G1), on `plan/bixi-issues-2026-11-17` from `0574fd1`.
   Active plans: [refresh defects](../docs/superpowers/plans/2026-11-17-refresh-defects.md)
   and [current boundaries](../docs/superpowers/plans/2026-11-17-current-boundaries.md).
   Planning and Claude `claude-fable-5-2` / `xhigh` review are authorized;
-  implementation remains unapproved per item. Claude’s first verdict was
-  Acceptable with changes; revised plans and review follow-through are in progress.
+  implementation remains unapproved per item. Three Claude passes returned
+  Acceptable with changes; the required revisions are incorporated. Last
+  independently reviewed head: `eb147f4`; final prescribed clarifications
+  followed it. [Review record](review/2026-11-17-plan-review.md).
+  The plan branch still awaits merge/deletion authority; no product changes landed.
 - Disputed waste-pass functionality restored from f1497c4 in source
   6f90a8f, retaining the owner's readable-response rule and Headroom removal.
   Published as Bixi 53f5d77; installed here by rollback aafab41.
@@ -26,6 +29,10 @@
 
 ## Next
 
+- Owner implementation go for the chosen scopes F5, F6, F7, F8 and G1.
+  Recommended sequence: the three small refresh corrections, then F8's
+  plan/apply protocol; G1 can proceed independently. Plan-branch integration
+  and deletion also remain unapproved.
 - Owner review, after the fact: the `tools/refresh.py` change in 74af9e9
   (q URL replaced by the magneto mirror in CANONICAL_URLS, 5+/4- lines)
   shipped code without an approved plan, against AGENTS.md. It was done

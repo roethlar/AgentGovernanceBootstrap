@@ -1,6 +1,6 @@
 # Plan: make consequential current boundaries directly discoverable
 
-Status: DRAFT 2026-11-17 — narrowed after Claude's approach review;
+Status: DRAFT 2026-11-17 — reviewed and refined with Claude;
 G1 implementation and receiving-repo migrations remain unapproved.
 
 ## Current contract
@@ -161,7 +161,11 @@ recording source evidence, narrowing the scope, giving exact wording,
 removing the indirect binding-rule option and leaving AGENTS unchanged.
 [Review provenance](../../../.agents/review/2026-11-17-plan-review.md).
 
-Pending: finish review follow-through, then owner implementation go for G1.
+Claude's follow-up judged the narrowed G1 approvable as an approach. Its
+adjacent procedure-wiring/grading corrections were confirmed in the final
+pass. This is a plan verdict, not implementation or owner approval.
+
+Pending: owner implementation go for G1.
 Approve the two explicit changes together or name a narrower scope; no
 source-project product ruling is requested. Later target-repo adoption,
 publication, and plan-branch integration/deletion remain separately scoped.

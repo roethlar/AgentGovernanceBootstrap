@@ -1,6 +1,6 @@
 # Claude review: refresh defects and current boundaries
 
-Status: Two review rounds complete; final scoped verification pending.
+Status: Requested plan review complete; three Claude passes recorded.
 Implementation remains unapproved for F5, F6, F7, F8 and G1.
 
 ## Dispatch and capability
@@ -71,15 +71,14 @@ request. They do not adopt new operative governance or product policy.
 - Kept repair diffs in the machine-plan artifact and short reasons in the
   approval summary, preserving its one-screen recommendation.
 
-## Current proposals and next step
+## Proposals after the first round
 
 - [Refresh defects](../../docs/superpowers/plans/2026-11-17-refresh-defects.md).
 - [Current boundaries](../../docs/superpowers/plans/2026-11-17-current-boundaries.md).
 - [Incident evidence](incidents/2026-11-17-scope-expansion.md).
 
-Next: verify the revised plan snapshot with the same owner-named Claude
-pair, then return the executive summary. Implementation and plan-branch
-merge/deletion remain pending their named authority.
+At that point, the next step was verification of the revised plan snapshot
+with the same owner-named Claude pair. Later rounds are recorded below.
 
 ## Follow-up: `708aef7..0d072de`
 
@@ -119,3 +118,41 @@ The source observations were verified by the planning agent, not by Claude,
 whose repository grant did not include the other checkout. Runtime defects
 identified by Claude remain code-reading observations pending regression
 proof during implementation. These changes still only refine draft scope.
+
+## Final scoped pass: `0d072de..eb147f4`
+
+Same harness/model/effort and restricted grant, fresh process, checking the
+remaining legacy accounting concern and adjacent corrections only. Finished
+2026-11-17 14:07:29 UTC, elapsed 244.5 seconds, exit 0, no permission denials.
+The envelope identifies `claude-fable-5-2`; dispatched effort was `xhigh`.
+README read and HEAD command succeeded. The reviewer confirmed the sole
+parent and clean tree. All 35 plan-lint tests and the pinned-range whitespace
+check passed.
+
+Verdict: **Acceptable with changes**. The legacy second-operation accounting
+was resolved: the rehearsal record names repairs to newly committed drafts,
+and the real operation is bound to the approved parent/tree and operation.
+The reviewer confirmed the adjacent corrections to F8 slices, banner/seed
+handling, and G1 wiring/grading were present.
+
+Its final material recommendation was to settle the push policy and freeze
+commit-1 inputs before rehearsal; an approval requesting changed inputs must
+cause replanning before the real first commit. It also requested preflight
+of target/toolkit/manifest pins before that commit. The non-blocking recopy
+observation was accepted: fresh-eyes inspection must read the resulting
+repaired bytes, not overwrite them with original drafts.
+
+All of those prescribed clarifications are incorporated in the final draft
+with acceptance cases. They were not sent for a fourth pass; the last
+independently reviewed head remains `eb147f4`. No stronger verdict or runtime
+verification is claimed. The final wording leaves an existing settled push
+policy alone rather than adopting the review's overbroad “always asks” claim.
+
+## Completion and pending work
+
+The requested planning and Claude review are complete. The final proposals
+remain unapproved for implementation: F5, F6, F7, F8, and G1 each need their
+own named go. The plan branch is pushed but still needs merge/deletion
+authority. Public release and target-repo migrations are separately scoped.
+Only planning records changed; no product source, tests, procedures,
+templates, installed governance or source-project files were modified.

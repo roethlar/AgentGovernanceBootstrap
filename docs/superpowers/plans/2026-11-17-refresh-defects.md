@@ -1,6 +1,6 @@
 # Plan: four refresh correctness defects
 
-Status: DRAFT 2026-11-17 — revised after Claude’s approach review;
+Status: DRAFT 2026-11-17 — Claude review completed; required revisions incorporated;
 implementation awaits an explicit go for each item below.
 
 ## Current contract
@@ -194,6 +194,13 @@ promise or exempt repairs from it. Ordinary refresh, `--stage-only`, and
 The legacy route still has exactly two commits, but its second operation
 must come from a machine record generated after rehearsing the first.
 
+- Freeze commit 1's inputs before rehearsal. Preserve an already-settled
+  push policy; if its choice is unresolved, settle it before generating the
+  record. The summary must not invite a new policy choice against a frozen
+  tree. If an approval response requests edits to any commit-1 file or
+  changes its scope, regenerate the rehearsal record and summary before
+  making commit 1. The standard route's scope-only draft contract stays as
+  it is; this stricter sequencing applies to the legacy tree-pinned route.
 - In the existing fresh-eyes scratch clone, replay exactly the proposed
   carve-out commit: copy drafts, apply banners, delete the foreign core
   file, and commit. Before installing the shipped set there, generate the
@@ -211,6 +218,12 @@ must come from a machine record generated after rehearsing the first.
   both commit scopes, including the resulting repair paths/reasons/diffs
   from the second record. A repaired draft's final bytes are therefore
   available for approval, including any newly created archive.
+- Before making real commit 1, perform a read-only preflight of the record
+  and the pins that can already be checked: original target HEAD, toolkit
+  SHA/cleanliness, and manifest digest. Confirm the prepared files still
+  match the approved frozen inputs. A known mismatch requires a regenerated
+  record and summary before any real carve-out mutation, not after the
+  legacy core file has been deleted. Keep the post-commit-1 checks too.
 - In the real repo, make the approved first commit, then run `--apply` on
   the approved rehearsal record in committing mode for commit 2. It must
   verify the first commit has exactly the pinned parent and tree, then
@@ -223,6 +236,10 @@ must come from a machine record generated after rehearsing the first.
   the ordinary fresh approval. If a rehearsal cannot be made, this route
   cannot claim a complete approval preview; stop before presenting it as
   ready instead of silently using an unplanned second operation.
+
+The rehearsal's fresh reader must inspect the result of applying the second
+record. Do not re-copy the original drafts over repaired files afterward;
+adjust the existing verification procedure's recopy step for this route.
 
 Acceptance: independently cover all three repair types; an absent and an
 existing archive; overlapping repairs; dirty inputs; unrelated staged work;
@@ -252,6 +269,11 @@ commit-1 files, different toolkit, and different repairs all refuse before
 commit-2 writes. Standard mode still rejects any target-HEAD drift. Rehearse
 both commit messages/scopes and preserve unrelated staged work. No claim
 of whole-filesystem atomicity is added beyond validation before writes.
+Cover a non-default push policy settled before rehearsal, an “approve after
+edits” response that changes a prepared file, and base/toolkit/manifest
+drift before commit 1. The latter cases must trigger replanning before
+real carve-out writes. Check that rehearsal inspection sees the final
+repaired draft bytes, not an overwritten pre-repair copy.
 
 ## Verification and records
 
@@ -284,8 +306,13 @@ concrete draft-collision design and delivery slices. Those draft changes
 are incorporated above. G1 was separated and narrowed. See
 [review provenance and dispositions](../../../.agents/review/2026-11-17-plan-review.md).
 
-Pending: finish review follow-through and return an executive summary;
-obtain implementation go separately for F5, F6, F7 and F8. No product
+Review completed across three Claude passes. The last verdict was
+Acceptable with changes at `eb147f4`; its prescribed input-freeze/preflight
+and rehearsal-readout clarifications are incorporated above. Those final
+clarifications were not sent for another review. Plan-lint and whitespace
+checks are the planning validation; no implemented fix is being certified.
+
+Pending: obtain implementation go separately for F5, F6, F7 and F8. No product
 changes, public issue posting/closure, publish, target-repo migration,
 or owner-only self-refresh is authorized by this planning request.
 Plan-branch merge/deletion authority has not been given.
