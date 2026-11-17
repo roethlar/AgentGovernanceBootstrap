@@ -1,6 +1,6 @@
 # Plan: make consequential current boundaries directly discoverable
 
-Status: VERIFIED 2026-11-17 — G1 implemented and verified; approved integration/deletion pending.
+Status: COMPLETE 2026-11-17 — G1 verified and integrated into master; work branch deleted. Publication and receiving-repo migration remain separate.
 
 ## Current contract
 
@@ -166,5 +166,6 @@ pass. This is a plan verdict, not implementation or owner approval.
 
 G1 implementation and the named plan branch's integration/deletion are
 approved. Verification is in [the G1 finding](../../../.agents/review/findings/G1.md);
-closeout remains pending. No source-project product
+closeout is recorded in [the completion receipt](../../../.agents/review/2026-11-17-completion.md).
+No source-project product
 ruling is adopted; receiving-repo migration and publication remain separate.

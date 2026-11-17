@@ -2,16 +2,16 @@
 
 ## Now
 
-- 2026-11-17: F5, F6, F7, F8 and G1 are implemented and verified on
-  `plan/bixi-issues-2026-11-17`. The owner's approval covers the named
-  plan-branch integration/deletion; publishing and self-refresh remain separate.
-  Active plans: [refresh defects](../docs/superpowers/plans/2026-11-17-refresh-defects.md)
+- 2026-11-17: F5, F6, F7, F8 and G1 are complete in the development source
+  through `aaa1a09`; integration into master and local/remote work-branch
+  deletion are verified in the [completion receipt](review/2026-11-17-completion.md).
+  Publishing, receiving-repo migration and self-refresh remain separate.
+  Completed plans: [refresh defects](../docs/superpowers/plans/2026-11-17-refresh-defects.md)
   and [current boundaries](../docs/superpowers/plans/2026-11-17-current-boundaries.md).
   The baseline suite's historical fixture-path note was clarified in `a199383`.
   [F5](review/findings/F5.md) and [F6](review/findings/F6.md) are verified;
   [F7](review/findings/F7.md), [F8](review/findings/F8.md) and
-  [G1](review/findings/G1.md) are verified too. Integration/deletion remain
-  pending under the existing approval.
+  [G1](review/findings/G1.md) are verified too.
   [Plan review record](review/2026-11-17-plan-review.md).
 - Disputed waste-pass functionality restored from f1497c4 in source
   6f90a8f, retaining the owner's readable-response rule and Headroom removal.
@@ -30,8 +30,8 @@
 
 ## Next
 
-- Complete the approved integration into master and local/remote deletion
-  of `plan/bixi-issues-2026-11-17`; public release remains separately authorized.
+- Proposed next action: batch-publish these fixes to Bixi; release authority
+  is still pending. Existing-repo adoption of Product boundaries is separately scoped.
 - Owner review, after the fact: the `tools/refresh.py` change in 74af9e9
   (q URL replaced by the magneto mirror in CANONICAL_URLS, 5+/4- lines)
   shipped code without an approved plan, against AGENTS.md. It was done

@@ -1,6 +1,6 @@
 # Plan: four refresh correctness defects
 
-Status: VERIFIED 2026-11-17 — F5–F8 implemented and verified; approved integration/deletion pending.
+Status: COMPLETE 2026-11-17 — F5–F8 verified and integrated into master; work branch deleted. Public release pending separate authority.
 
 ## Current contract
 
@@ -313,6 +313,7 @@ checks are the planning validation; no implemented fix is being certified.
 
 The owner subsequently approved F5–F8 and integration/deletion of the named
 plan branch. Implementation verification is recorded under
-`.agents/review/findings/`; integration/deletion remain pending. Public
+`.agents/review/findings/`; integration/deletion are complete, with evidence
+in `.agents/review/2026-11-17-completion.md`. Public
 issue posting/closure, publication, receiving-repo migration and owner-only
 self-refresh remain outside this approval.

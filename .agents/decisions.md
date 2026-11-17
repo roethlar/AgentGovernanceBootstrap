@@ -7,32 +7,6 @@ verified product behavior. Historical provenance:
 
 ## Decisions
 
-### 2026-11-17 — Approve the reviewed refresh and discoverability plans
-
-Status: Active
-
-The owner replied “approved” to the final executive summary naming F5,
-F6, F7, F8 and G1. Each named implementation scope in the two active plans
-is approved, including its verification and records. The same summary
-named the pending integration and deletion of `plan/bixi-issues-2026-11-17`;
-that closeout proceeds under this approval. Pushes follow the existing
-always policy. This is not a general backlog authorization.
-
-Canonical scopes: the refresh-defects and current-boundaries plans dated
-2026-11-17 under `docs/superpowers/plans/`. Their plan-review record is
-`.agents/review/2026-11-17-plan-review.md`. Public Bixi release, migrations
-of receiving repositories, and owner-only self-refresh remain outside
-this implementation approval.
-
-G1's adopted source behavior is defined in the Product boundaries section
-of `templates/repo-guidance.template.md` and the current-contract paragraph
-of `templates/playbooks/plan.md`. The earning evidence is the 2026-11-17
-scope-expansion incident under `.agents/review/incidents/`; record volume
-is a plausible contributing factor, not a proven cause. AGENTS stays
-unchanged. The exact-rule placement and fresh-reader acceptance scope are
-in the approved current-boundaries plan; no receiving-repo policy is adopted
-by these toolkit changes.
-
 ### 2026-10-25 — Catchup's sweep question is a hard stop
 
 Status: Active
