@@ -150,9 +150,10 @@ policy alone rather than adopting the review's overbroad “always asks” claim
 
 ## Completion and pending work
 
-The requested planning and Claude review are complete. The final proposals
-remain unapproved for implementation: F5, F6, F7, F8, and G1 each need their
-own named go. The plan branch is pushed but still needs merge/deletion
-authority. Public release and target-repo migrations are separately scoped.
-Only planning records changed; no product source, tests, procedures,
-templates, installed governance or source-project files were modified.
+The requested planning and Claude review completed before implementation.
+At that handoff only planning records had changed. The owner subsequently
+approved the named F5, F6, F7, F8 and G1 scopes and the plan branch's
+integration/deletion. Implementation evidence is now maintained in
+`.agents/review/findings/`, with current status in `.agents/state.md`.
+This review remains a plan review; its verdict does not certify the later
+implementation. Public release and receiving-repo migrations remain separate.

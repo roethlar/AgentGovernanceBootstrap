@@ -160,7 +160,7 @@ installer (Step 7), which is what keeps its never-overwrite protections
 intact.
 
 1. `.agents/repo-guidance.md` from `templates/repo-guidance.template.md`:
-   mission detail, reading order, the confirmed **verification command**
+   mission detail, Product boundaries, reading order, the confirmed **verification command**
    (this is its canonical home), remotes, and earned practices. On a
    migration this is the carve-out: everything repo-specific the old
    governance carried, in generalized wording. Verify every factual claim
@@ -170,6 +170,10 @@ intact.
    launders stale facts is worse than the old file it replaced. Apply
    `AGENTS.md`'s specific-rule precedence; flag any contradiction that
    cannot be reconciled.
+   Populate Product boundaries from established decisions, preserving their
+   full qualifiers and exceptions; distinguish assumptions/pending choices.
+   If none are established, say so. Follow the template's one-home transfer
+   instructions rather than inventing constraints or adding setup questions.
 2. `.agents/state.md` from its template — current truth only: what is true
    now, active work, blockers, next action. No historical narrative; honor
    the template's write rules (volatile facts stamped `as of <commit>`,

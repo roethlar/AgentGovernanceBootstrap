@@ -12,6 +12,21 @@ records live under `.agents/`; the more specific rule wins. Harness files
 adapt discovery and invocation only. Keep each rule in one home; other
 surfaces point to it.
 
+Consequential adopted product boundaries belong inline in the existing
+startup repo guidance, with their qualifiers and exceptions. Detailed specs
+retain implementation detail; links supply evidence and rationale. An
+active plan puts its current task contract before chronological amendments.
+These locations improve discovery without changing amendment authority.
+
+Existing repositories adopt this layout through a separately scoped
+judgment-file update: inspect relevant current decisions, propose exact
+transfers into Product boundaries, preserve exceptions and provenance,
+and replace former operative copies with pointers. Refresh preserves
+repo-owned guidance; installing a new playbook does not migrate those facts.
+There is no automatic fleet rollout or new per-turn instruction injection.
+Checks that do not read the governing files need their own integration;
+this layout cannot make an external stop-check read them.
+
 **No shipped rule without provenance.** Add or change a rule only with a
 decision entry citing its earning incident or owner ruling. Once the rule
 has an operative home, archive its rationale verbatim. The template's

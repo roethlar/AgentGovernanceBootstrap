@@ -151,7 +151,7 @@ English. For greenfield runs write "Not applicable - no existing governance.">
 <One plain-English sentence reporting the result of the fresh-eyes catchup
 test, stating what it covers - discoverability and internal consistency, not
 external truth. For example: "A fresh agent given only the drafted files
-correctly answered all six questions in the verification procedure; this
+correctly answered the verification questions; this
 checks that the guidance is findable and consistent, not that external
 claims are true." Never present this test as proof that CI or deployment
 claims are correct. If issues were found and fixed, say so. Required for

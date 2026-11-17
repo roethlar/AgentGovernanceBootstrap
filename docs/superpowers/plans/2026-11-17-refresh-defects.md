@@ -1,12 +1,12 @@
 # Plan: four refresh correctness defects
 
-Status: APPROVED 2026-11-17 — owner approved F5, F6, F7 and F8; implementation in progress.
+Status: VERIFIED 2026-11-17 — F5–F8 implemented and verified; approved integration/deletion pending.
 
 ## Current contract
 
 Repair four open Bixi refresh defects. Preserve existing owner decisions,
 ignore rules, uncommitted work, and the distinction between evidence and
-authority. This document proposes changes; it adopts no new product policy.
+authority. The approved fixes adopt no new receiving-repo product policy.
 
 | ID | Independently approvable outcome | Implementation authority |
 |---|---|---|
@@ -311,7 +311,8 @@ and rehearsal-readout clarifications are incorporated above. Those final
 clarifications were not sent for another review. Plan-lint and whitespace
 checks are the planning validation; no implemented fix is being certified.
 
-Implementation approved for F5, F6, F7 and F8; verification and integration are pending. No product
-changes, public issue posting/closure, publish, target-repo migration,
-or owner-only self-refresh is authorized by this planning request.
-Integration and deletion of the named plan branch were approved with the executive summary.
+The owner subsequently approved F5–F8 and integration/deletion of the named
+plan branch. Implementation verification is recorded under
+`.agents/review/findings/`; integration/deletion remain pending. Public
+issue posting/closure, publication, receiving-repo migration and owner-only
+self-refresh remain outside this approval.

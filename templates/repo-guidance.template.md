@@ -5,6 +5,15 @@
 ## Mission Detail
 <!-- What this repo is for, beyond the template's generic mission. -->
 
+## Product boundaries
+<!-- State consequential adopted exclusions and constraints here in full,
+     including their exceptions. Keep the operative wording precise and
+     short; link to evidence and rationale, not to an unread rule.
+     Distinguish settled decisions from assumptions and pending choices.
+     When moving a rule here, replace its former operative copy with a
+     pointer; preserve its provenance. If none are established, say so
+     without inventing constraints or reopening settled choices. -->
+
 ## Reading Order
 <!-- The files an agent should treat as the active baseline, in order. -->
 

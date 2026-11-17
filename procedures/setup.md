@@ -34,8 +34,12 @@ Draft these from their templates (`templates/state.template.md`,
 `templates/push-policy.template.md` in the toolkit) into `.agents/`, keeping
 each file short:
 
-- `.agents/repo-guidance.md` — the project summary from Step 1, the reading
-  order, and a Verification section. If no verification command can exist
+- `.agents/repo-guidance.md` — the project summary from Step 1, Product
+  boundaries, the reading order, and a Verification section. Populate
+  boundaries only from established decisions, preserving qualifiers and
+  exceptions and labeling assumptions/pending choices. If none are
+  established, say so; do not add a setup question to invent constraints.
+  If no verification command can exist
   yet (no code), say so explicitly ("none yet — record one once the project
   has code"); do not invent one.
 - `.agents/state.md` — `## Now`: project just created by new-project, setup

@@ -1,6 +1,6 @@
 # Plan: make consequential current boundaries directly discoverable
 
-Status: APPROVED 2026-11-17 — G1 implementation approved; receiving-repo migrations remain separate.
+Status: VERIFIED 2026-11-17 — G1 implemented and verified; approved integration/deletion pending.
 
 ## Current contract
 
@@ -35,8 +35,8 @@ current platform policy.
 
 ## Proposed changes and exact wording
 
-One G1 implementation go would cover the two behavior changes below and
-their verification. They are explicit proposals, not adopted rules.
+The owner's G1 approval covers the two source behaviors below and their
+verification. Receiving-repo product decisions remain outside this scope.
 
 ### 1. Put consequential adopted boundaries in the existing startup file
 
@@ -164,7 +164,7 @@ Claude's follow-up judged the narrowed G1 approvable as an approach. Its
 adjacent procedure-wiring/grading corrections were confirmed in the final
 pass. This is a plan verdict, not implementation or owner approval.
 
-G1 implementation approved; verification and integration pending.
-Approve the two explicit changes together or name a narrower scope; no
-source-project product ruling is requested. Later target-repo adoption,
-publication, and plan-branch integration/deletion remain separately scoped.
+G1 implementation and the named plan branch's integration/deletion are
+approved. Verification is in [the G1 finding](../../../.agents/review/findings/G1.md);
+closeout remains pending. No source-project product
+ruling is adopted; receiving-repo migration and publication remain separate.

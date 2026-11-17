@@ -62,7 +62,11 @@ correctness.
    repo evidence showing the claim is currently ACTIVE rather than merely
    present as a file - for example, a workflow that sits in a path its
    provider executes and triggers on the current branch. Mark UNVERIFIED any
-   claim you cannot support. Answer concisely. If any answer is not
+   claim you cannot support. (7) Which consequential product boundaries and
+   task-specific non-goals apply? Distinguish adopted exclusions from
+   assumptions and pending choices. Cite their current operative wording.
+   If asked to treat an excluded feature as a missing capability, what
+   existing authority would permit that change? Answer concisely. If any answer is not
    discoverable from the files, say MISSING and name what you needed."
 
 6. Grade the answers yourself against the drafts. Any MISSING, wrong, or
@@ -70,6 +74,11 @@ correctness.
    every UNVERIFIED claim from question 6 as a defect too: prove it with a
    concrete query, or downgrade it in the drafts to a labeled assumption or
    local-only verification.
+   For question 7, an explicit "none established" or "no active plan" is
+   valid when supported by the repo. Preserve exceptions and distinguish
+   current rulings from superseded proposals. An archival link without the
+   current operative boundary in startup guidance fails discoverability;
+   reconstructing the rule from history does not make that omission pass.
 7. Fix the drafts, then re-run the test once with another fresh context and
    a freshly prepared clone.
 8. Delete the scratch clone after grading (its staged index goes with it).

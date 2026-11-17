@@ -24,6 +24,15 @@ Canonical scopes: the refresh-defects and current-boundaries plans dated
 of receiving repositories, and owner-only self-refresh remain outside
 this implementation approval.
 
+G1's adopted source behavior is defined in the Product boundaries section
+of `templates/repo-guidance.template.md` and the current-contract paragraph
+of `templates/playbooks/plan.md`. The earning evidence is the 2026-11-17
+scope-expansion incident under `.agents/review/incidents/`; record volume
+is a plausible contributing factor, not a proven cause. AGENTS stays
+unchanged. The exact-rule placement and fresh-reader acceptance scope are
+in the approved current-boundaries plan; no receiving-repo policy is adopted
+by these toolkit changes.
+
 ### 2026-10-25 — Catchup's sweep question is a hard stop
 
 Status: Active
