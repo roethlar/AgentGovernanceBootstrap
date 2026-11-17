@@ -1,7 +1,6 @@
 # Plan: make consequential current boundaries directly discoverable
 
-Status: DRAFT 2026-11-17 — reviewed and refined with Claude;
-G1 implementation and receiving-repo migrations remain unapproved.
+Status: APPROVED 2026-11-17 — G1 implementation approved; receiving-repo migrations remain separate.
 
 ## Current contract
 
@@ -165,7 +164,7 @@ Claude's follow-up judged the narrowed G1 approvable as an approach. Its
 adjacent procedure-wiring/grading corrections were confirmed in the final
 pass. This is a plan verdict, not implementation or owner approval.
 
-Pending: owner implementation go for G1.
+G1 implementation approved; verification and integration pending.
 Approve the two explicit changes together or name a narrower scope; no
 source-project product ruling is requested. Later target-repo adoption,
 publication, and plan-branch integration/deletion remain separately scoped.

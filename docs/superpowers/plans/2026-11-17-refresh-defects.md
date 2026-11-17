@@ -1,7 +1,6 @@
 # Plan: four refresh correctness defects
 
-Status: DRAFT 2026-11-17 — Claude review completed; required revisions incorporated;
-implementation awaits an explicit go for each item below.
+Status: APPROVED 2026-11-17 — owner approved F5, F6, F7 and F8; implementation in progress.
 
 ## Current contract
 
@@ -11,10 +10,10 @@ authority. This document proposes changes; it adopts no new product policy.
 
 | ID | Independently approvable outcome | Implementation authority |
 |---|---|---|
-| F5 | Correctly install files explicitly re-included by Git ignore rules | Pending |
-| F6 | Distinguish ignore skips from foreign governance and route recovery correctly | Pending |
-| F7 | Preserve the state template's instruction header during repairs | Pending |
-| F8 | Make planned, approved and applied mechanical repairs agree | Pending |
+| F5 | Correctly install files explicitly re-included by Git ignore rules | Approved 2026-11-17 |
+| F6 | Distinguish ignore skips from foreign governance and route recovery correctly | Approved 2026-11-17 |
+| F7 | Preserve the state template's instruction header during repairs | Approved 2026-11-17 |
+| F8 | Make planned, approved and applied mechanical repairs agree | Approved 2026-11-17 |
 
 Suggested order: F5, F6, F7, F8. F5–F7 make small, independently
 verifiable corrections before F8 restructures the shared repair path.
@@ -312,7 +311,7 @@ and rehearsal-readout clarifications are incorporated above. Those final
 clarifications were not sent for another review. Plan-lint and whitespace
 checks are the planning validation; no implemented fix is being certified.
 
-Pending: obtain implementation go separately for F5, F6, F7 and F8. No product
+Implementation approved for F5, F6, F7 and F8; verification and integration are pending. No product
 changes, public issue posting/closure, publish, target-repo migration,
 or owner-only self-refresh is authorized by this planning request.
-Plan-branch merge/deletion authority has not been given.
+Integration and deletion of the named plan branch were approved with the executive summary.

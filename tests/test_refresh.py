@@ -1061,6 +1061,69 @@ class RefreshTests(unittest.TestCase):
 
     # -- committability / .gitignore -------------------------------------
 
+    def test_explicit_reincludes_are_planned_and_installed(self):
+        (self.target / ".gitignore").write_text(
+            "/*\n!/README.md\n!/.gitignore\n!/AGENTS.md\n!/CLAUDE.md\n!/.claude/\n")
+        commit_all(self.target, "whitelist with re-includes")
+        out = self.root / "plan.json"
+        proc = refresh(self.toolkit, self.target, "--plan-json", str(out))
+        self.assertEqual(0, proc.returncode, proc.stderr)
+        rec = json.loads(out.read_text())
+        self.assertEqual([], rec["flags"])
+        self.assertTrue({"AGENTS.md", "CLAUDE.md"}.issubset(rec["staged_paths"]))
+        proc = refresh(self.toolkit, self.target, "--apply", str(out), "--stage-only")
+        self.assertEqual(0, proc.returncode, proc.stderr)
+        self.assertEqual(CUR_AGENTS, (self.target / "AGENTS.md").read_text())
+        self.assertEqual(CUR_SHIM, (self.target / "CLAUDE.md").read_text())
+        self.assertTrue({"AGENTS.md", "CLAUDE.md"}.issubset(
+            run_git(self.target, "diff", "--cached", "--name-only").splitlines()))
+
+    def test_reinclude_below_excluded_parent_still_skips(self):
+        (self.target / ".gitignore").write_text(
+            ".claude/commands/\n!.claude/commands/tool.md\n")
+        commit_all(self.target, "excluded parent")
+        out = self.root / "plan.json"
+        proc = refresh(self.toolkit, self.target, "--plan-json", str(out))
+        self.assertEqual(0, proc.returncode, proc.stderr)
+        self.assertIn("ignored by '.claude/commands/'",
+                      dict(json.loads(out.read_text())["flags"])[".claude/commands/tool.md"])
+        proc = refresh(self.toolkit, self.target, "--stage-only")
+        self.assertEqual(0, proc.returncode, proc.stderr)
+        self.assertFalse((self.target / ".claude/commands/tool.md").exists())
+
+    def test_escaped_exclamation_is_a_literal_ignore(self):
+        mutate_manifest(self.toolkit, lambda ss: ss["artifacts"][-1].update(
+            target="!literal.md"))
+        commit_all(self.toolkit, "literal exclamation target")
+        (self.target / ".gitignore").write_text("\\!literal.md\n")
+        commit_all(self.target, "literal ignore")
+        out = self.root / "plan.json"
+        proc = refresh(self.toolkit, self.target, "--plan-json", str(out))
+        self.assertEqual(0, proc.returncode, proc.stderr)
+        self.assertIn("!literal.md", dict(json.loads(out.read_text())["flags"]))
+        proc = refresh(self.toolkit, self.target, "--stage-only")
+        self.assertEqual(0, proc.returncode, proc.stderr)
+        self.assertFalse((self.target / "!literal.md").exists())
+
+    def test_ignore_probe_error_refuses_before_writes(self):
+        mod = self._refresh_mod()
+        original = mod.git
+
+        def failed_probe(repo, *args, **kwargs):
+            if args[0] == "check-ignore":
+                return subprocess.CompletedProcess(args, 128, "", "fatal: unreadable ignore rules")
+            return original(repo, *args, **kwargs)
+
+        mod.git = failed_probe
+        try:
+            rc, _out, err = self._run_main_inprocess(mod, "--stage-only", "--no-remediate")
+        finally:
+            mod.git = original
+        self.assertEqual(4, rc, err)
+        self.assertIn("check-ignore failed", err)
+        self.assertEqual("", run_git(self.target, "status", "--porcelain"))
+        self.assertFalse((self.target / "AGENTS.md").exists())
+
     def test_blanket_adapter_ignore_is_repaired_and_committed(self):
         (self.target / ".gitignore").write_text(".claude/\n", newline="\n")
         commit_all(self.target, "blanket ignore")

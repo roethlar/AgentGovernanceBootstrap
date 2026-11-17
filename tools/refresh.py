@@ -135,13 +135,15 @@ def nhash(data: bytes) -> str:
     return hashlib.sha256(norm(data)).hexdigest()
 
 
-def git(repo: Path, *args: str, check: bool = True) -> "subprocess.CompletedProcess[str]":
+def git(repo: Path, *args: str, check: bool = True,
+        stdin_text: "str | None" = None) -> "subprocess.CompletedProcess[str]":
     proc = subprocess.run(
         ["git", "-C", str(repo), *args],
         capture_output=True,
         text=True,
         encoding="utf-8",
         errors="replace",
+        input=stdin_text,
     )
     if check and proc.returncode != 0:
         raise RuntimeError(
@@ -555,6 +557,24 @@ def classify(target_repo: Path, toolkit: Path, shipped: dict) -> Plan:
     return plan
 
 
+def ignore_match(target_repo: Path, path: str):
+    """Return provenance only for an effective ignore, never a re-include."""
+    assert_safe_dest(target_repo, path)
+    probe = git(target_repo, "check-ignore", "--quiet", "--", path, check=False)
+    if probe.returncode == 1:
+        return None
+    if probe.returncode != 0:
+        raise RuntimeError("git check-ignore failed for {}: {}".format(
+            path, probe.stderr.strip() or "exit {}".format(probe.returncode)))
+    detail = git(target_repo, "check-ignore", "--verbose", "--stdin", "-z",
+                 check=False, stdin_text=path + "\0")
+    fields = detail.stdout.rstrip("\0").split("\0")
+    if detail.returncode != 0 or len(fields) != 4 or not fields[1].isdigit():
+        raise RuntimeError("git check-ignore returned no usable provenance for {}".format(path))
+    source, lineno, pattern, _path = fields
+    return source, int(lineno), pattern
+
+
 def check_committability(target_repo: Path, plan: Plan, shipped: dict) -> None:
     """check-ignore each path we would add; repair known blanket adapter-dir
     ignores in the repo's root .gitignore; flag-and-skip anything else."""
@@ -562,12 +582,10 @@ def check_committability(target_repo: Path, plan: Plan, shipped: dict) -> None:
     exclusions = shipped.get("machine_local_exclusions", {})
     gitignore = target_repo / ".gitignore"
     for path in list(paths):
-        probe = git(target_repo, "check-ignore", "--verbose", "--", path, check=False)
-        if probe.returncode != 0:
+        match = ignore_match(target_repo, path)
+        if match is None:
             continue  # not ignored
-        # format: <source>:<linenum>:<pattern>\t<path>
-        head = probe.stdout.strip().split("\t")[0]
-        source, lineno, pattern = head.rsplit(":", 2)
+        source, lineno, pattern = match
         pat = pattern.strip().strip("/")
         if source == ".gitignore" and pat in ADAPTER_DIRS:
             repl = exclusions.get(pat, [])
@@ -1383,7 +1401,11 @@ def main(argv=None) -> int:
             print("  " + e, file=sys.stderr)
         return 4
     plan = classify(target, toolkit, shipped)
-    check_committability(target, plan, shipped)
+    try:
+        check_committability(target, plan, shipped)
+    except RuntimeError as exc:
+        print("refresh: refusing - {}".format(exc), file=sys.stderr)
+        return 4
     core = core_flags(plan, shipped)
     if args.force and core:
         # Owner override (2026-07-23, owner-surface D3): --force replaces a
