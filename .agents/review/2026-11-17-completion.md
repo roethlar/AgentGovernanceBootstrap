@@ -1,8 +1,8 @@
 # Completion receipt — F5–F8 and G1
 
-The owner's approved implementation and named branch closeout are complete
-in the development source. Public Bixi release and receiving-repo adoption
-are separate, unapproved follow-up scopes.
+The owner's approved implementation, named branch closeout and subsequent
+public Bixi release are complete. Receiving-repo adoption remains separately
+scoped.
 
 ## Implemented and verified
 
@@ -43,10 +43,24 @@ before deletion. The work branch was deleted remotely and locally, then
 both `git branch --list` and `git ls-remote` verified its absence.
 This receipt is subsequent non-shipped bookkeeping on master.
 
-## Remaining delivery step
+## Publication — 2026-11-17
 
-Proposed next action: batch-publish the approved fixes to Bixi through
-`tools/publish`, after release authority. No public issues were posted or
-closed. No receiving-repo migration, Vela edit, hook-trust change or
-owner-only self-refresh was performed. The toolkit changes improve discovery;
+The owner's subsequent instruction, “publish,” authorized the batch release.
+`tools/publish /home/michael/dev/Bixi` published development source
+`4cceaad52e0b13f6723b322f4f1c19c50602a909` as
+[Bixi 6fd69ee](https://github.com/roethlar/Bixi/commit/6fd69ee44ddf2f41bc91b9208e849d658cbf07cd),
+following public parent `b1c3728ba44f8d22b4ff1ab732b91eec014b7f1a`.
+
+The release changed the eight intended runtime/template/procedure files.
+All 69 committed publish-set files were checked against source by SHA-256,
+with exact tracked-path-set equality. Public `main` matched the full release
+SHA and the product checkout was clean. Publishable source was unchanged
+from the verified implementation; the earlier suite result applies, and no
+redundant full-suite run was made for publication. Bookkeeping checks are
+plan lint and `git diff --check`.
+
+No public issues were posted or closed. No receiving-repo migration, Vela
+edit, hook-trust change or owner-only self-refresh was performed. Existing
+repo-owned facts need a separately scoped transfer into Product boundaries;
+refresh preserves that guidance. The toolkit changes improve discovery;
 they do not guarantee obedience or change an external check's reading set.

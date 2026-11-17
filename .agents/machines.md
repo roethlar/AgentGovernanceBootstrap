@@ -74,3 +74,9 @@ never treat them as repo-portable.
   tree — the two `test_new_project.py` cases above plus
   `test_this_repos_agents_files_have_zero_warn_findings`, which flags this
   file's historical mention of the then-missing .tokensave/ path.
+
+## continuum (Linux)
+
+- product-repo: /home/michael/dev/Bixi (recorded 2026-11-17, first publish)
+- 2026-11-17: `python3` is Python 3.14.10. Pass this machine's product path
+  explicitly to `tools/publish`; recorded-path lookup reads the first entry.

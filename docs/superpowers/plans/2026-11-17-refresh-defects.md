@@ -1,6 +1,6 @@
 # Plan: four refresh correctness defects
 
-Status: COMPLETE 2026-11-17 — F5–F8 verified and integrated into master; work branch deleted. Public release pending separate authority.
+Status: COMPLETE 2026-11-17 — F5–F8 verified and integrated into master; work branch deleted. Published to Bixi; see the completion receipt.
 
 ## Current contract
 
@@ -314,6 +314,6 @@ checks are the planning validation; no implemented fix is being certified.
 The owner subsequently approved F5–F8 and integration/deletion of the named
 plan branch. Implementation verification is recorded under
 `.agents/review/findings/`; integration/deletion are complete, with evidence
-in `.agents/review/2026-11-17-completion.md`. Public
-issue posting/closure, publication, receiving-repo migration and owner-only
-self-refresh remain outside this approval.
+in `.agents/review/2026-11-17-completion.md`. Publication was subsequently authorized and completed, as recorded in
+that receipt. Public issue posting/closure, receiving-repo migration and
+owner-only self-refresh remain outside the completed scope.

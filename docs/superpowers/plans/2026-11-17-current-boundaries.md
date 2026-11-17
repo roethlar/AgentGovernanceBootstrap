@@ -1,6 +1,6 @@
 # Plan: make consequential current boundaries directly discoverable
 
-Status: COMPLETE 2026-11-17 — G1 verified and integrated into master; work branch deleted. Publication and receiving-repo migration remain separate.
+Status: COMPLETE 2026-11-17 — G1 verified and integrated into master; work branch deleted. Published to Bixi; receiving-repo migration remains separate.
 
 ## Current contract
 
@@ -168,4 +168,5 @@ G1 implementation and the named plan branch's integration/deletion are
 approved. Verification is in [the G1 finding](../../../.agents/review/findings/G1.md);
 closeout is recorded in [the completion receipt](../../../.agents/review/2026-11-17-completion.md).
 No source-project product
-ruling is adopted; receiving-repo migration and publication remain separate.
+ruling is adopted; publication was subsequently authorized and completed as recorded in that receipt.
+Receiving-repo migration remains separate.

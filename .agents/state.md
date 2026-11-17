@@ -5,7 +5,8 @@
 - 2026-11-17: F5, F6, F7, F8 and G1 are complete in the development source
   through `aaa1a09`; integration into master and local/remote work-branch
   deletion are verified in the [completion receipt](review/2026-11-17-completion.md).
-  Publishing, receiving-repo migration and self-refresh remain separate.
+  The owner subsequently authorized publication; the verified Bixi release
+  is recorded in that receipt. Receiving-repo migration and self-refresh remain separate.
   Completed plans: [refresh defects](../docs/superpowers/plans/2026-11-17-refresh-defects.md)
   and [current boundaries](../docs/superpowers/plans/2026-11-17-current-boundaries.md).
   The baseline suite's historical fixture-path note was clarified in `a199383`.
@@ -30,8 +31,9 @@
 
 ## Next
 
-- Proposed next action: batch-publish these fixes to Bixi; release authority
-  is still pending. Existing-repo adoption of Product boundaries is separately scoped.
+- Existing-repo adoption of Product boundaries remains separately scoped.
+  Proposed next action: identify a receiving repo and approve the transfer
+  of its current adopted boundaries; refresh preserves repo-owned guidance.
 - Owner review, after the fact: the `tools/refresh.py` change in 74af9e9
   (q URL replaced by the magneto mirror in CANONICAL_URLS, 5+/4- lines)
   shipped code without an approved plan, against AGENTS.md. It was done
