@@ -4,9 +4,11 @@
 
 - 2026-11-17: drafting and reviewing fixes for Bixi #5–#8 and current-boundary
   discoverability (G1), on `plan/bixi-issues-2026-11-17` from `0574fd1`.
-  Active plan: [refresh and current boundaries](../docs/superpowers/plans/2026-11-17-refresh-and-current-boundaries.md).
+  Active plans: [refresh defects](../docs/superpowers/plans/2026-11-17-refresh-defects.md)
+  and [current boundaries](../docs/superpowers/plans/2026-11-17-current-boundaries.md).
   Planning and Claude `claude-fable-5-2` / `xhigh` review are authorized;
-  implementation remains unapproved per item. Plan review is pending.
+  implementation remains unapproved per item. Claude’s first verdict was
+  Acceptable with changes; revised plans and review follow-through are in progress.
 - Disputed waste-pass functionality restored from f1497c4 in source
   6f90a8f, retaining the owner's readable-response rule and Headroom removal.
   Published as Bixi 53f5d77; installed here by rollback aafab41.

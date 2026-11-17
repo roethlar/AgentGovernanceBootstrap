@@ -1,12 +1,11 @@
-# Plan: refresh correctness and discoverable current boundaries
+# Plan: four refresh correctness defects
 
-Status: DRAFT 2026-11-17 — planning and Claude review authorized;
+Status: DRAFT 2026-11-17 — revised after Claude’s approach review;
 implementation awaits an explicit go for each item below.
 
 ## Current contract
 
-Repair four open Bixi refresh defects and improve how agents discover and
-apply consequential project constraints. Preserve existing owner decisions,
+Repair four open Bixi refresh defects. Preserve existing owner decisions,
 ignore rules, uncommitted work, and the distinction between evidence and
 authority. This document proposes changes; it adopts no new product policy.
 
@@ -16,14 +15,17 @@ authority. This document proposes changes; it adopts no new product policy.
 | F6 | Distinguish ignore skips from foreign governance and route recovery correctly | Pending |
 | F7 | Preserve the state template's instruction header during repairs | Pending |
 | F8 | Make planned, approved and applied mechanical repairs agree | Pending |
-| G1 | Keep current product boundaries discoverable and use them when judging gaps | Pending |
 
-Suggested order: F5, F6, F7, F8, G1. F5–F7 make small, independently
+Suggested order: F5, F6, F7, F8. F5–F7 make small, independently
 verifiable corrections before F8 restructures the shared repair path.
-Each item gets its own implementation commit and evidence. Approving one
+Each item gets its own implementation commits and evidence; F8 has the
+two dependent slices below. Approving one
 does not approve the others. Publish the approved fixes together afterward,
 only with release authority. Planning/review completion is distinct from
 implementation, integration, and publication.
+
+The related governance issue has an independent lifecycle in
+[the current-boundaries plan](2026-11-17-current-boundaries.md).
 
 ## Baseline and evidence
 
@@ -45,12 +47,6 @@ implementation, integration, and publication.
 - All four were reproduced in disposable repositories using the fixture
   helpers in `tests/test_refresh.py`, with Python 3.14.10. The development
   worktree was unchanged. These observations do not constitute a suite run.
-- G1 evidence is the owner's supplied incident transcript: a settled
-  exclusion was omitted from a checklist, repeated by a stop-check, and
-  treated as permission to expand an approved plan. Historical volume is
-  a plausible contributor, not an independently proven cause. The source
-  project's complete records and original execution trace were not inspected.
-  Its platform policy must not be inferred or rewritten by this toolkit work.
 
 ## F5 — respect Git's effective ignore result
 
@@ -90,7 +86,9 @@ pass committability checking and cannot make ignored paths writable.
 Acceptance: ignored absent core, genuine foreign core, and a mixed case
 produce the correct independent explanations. Genuine foreign content
 retains its existing recovery route. `--force` cannot convert an ignore
-skip into a foreign replacement. No false legacy prompt appears for the
+skip into a foreign replacement. Include an ignored, present, untracked
+foreign core file under `--force`: its bytes must survive and no false
+claim that Git preserves them may appear. No false legacy prompt appears for the
 ignored-only case. The absent-core case must fail on the old code.
 
 ## F7 — distinguish state instructions from live entries
@@ -110,10 +108,22 @@ removed. Verify header-only/no-heading files, ordinary work items, push
 policy text, dirty state, and a second idempotent run. The real-template
 preservation check must fail without this fix.
 
+Limit: this slice protects the instruction header. The existing body-level
+regex can still mistake a discussion of push status for an actual status
+record. It does not establish a general semantic Markdown repair. Record
+that residual separately rather than silently expanding this issue.
+
 ## F8 — plan repairs before any target write
 
 Files: `tools/refresh.py`, `tests/test_refresh.py`,
 `procedures/bootstrap.md`, `templates/approval-summary.template.md`.
+
+Delivery slices, each with its own checks/record and no intermediate public
+release: F8a extracts deterministic repair computation and composition behind
+the existing application flow, preserving externally visible behavior.
+F8b switches all modes to the complete plan/preflight/apply protocol below,
+including schema, draft exclusions, summary and procedure changes in one
+coherent commit. The issue remains open until F8b and its acceptance pass.
 
 Refactor the three existing repairs into read-only planning followed by
 application of the computed result. Do not weaken the approval summary's
@@ -147,12 +157,27 @@ promise or exempt repairs from it. Ordinary refresh, `--stage-only`, and
    set. Remove the post-verification repair calls. No late repair may add
    a path that the approved record did not contain.
 7. Render the approval summary from the record, naming mechanical repairs
-   as their own group with reasons/diffs. Include installs, updates,
-   restores, removals, ignore-file repairs, and already-staged shipped
-   paths in the complete accounting. Reconcile any repair target that is
-   also a judgment-draft destination; neither overwrite order nor duplicate
-   listing can authorize unreviewed bytes. Step 7 must explain how to
-   regenerate the plan when copying drafts changes planned repair inputs.
+   as their own group with short plain-English reasons. Keep detailed
+   diffs in the machine-plan artifact, linked from the summary; preserve
+   its existing one-screen recommendation, not an inline diff dump.
+   Include installs, updates, restores, removals, ignore-file repairs, and
+   already-staged shipped paths in the complete accounting.
+8. Resolve draft collisions explicitly: bootstrap passes each approved
+   judgment-draft destination using repeatable `--draft-path PATH` options
+   when generating the plan. Normalize/validate repo-relative paths and
+   record a sorted, de-duplicated `draft_paths` list in schema 3 and its
+   digest. Those files are owned by the reviewed drafts for this operation
+   and are excluded from mechanical repair computation. If either side of
+   a paired decision/archive move is reserved, skip that entire move;
+   continue independent repairs to other paths. The summary shows the
+   judgment-draft group and explicitly explains these exclusions.
+9. `--apply` derives the same exclusions only from the approved record;
+   conflicting command-line exclusions refuse. Copying those approved
+   drafts before apply is the expected bootstrap sequence, not drift in
+   repair eligibility. Adding a different destination requires a new plan
+   and approval. Ordinary refresh has no draft exclusions and continues to
+   repair in the run. The existing already-staged scope-only contract is
+   unchanged; this does not add content pinning for judgment drafts.
 
 Acceptance: independently cover all three repair types; an absent and an
 existing archive; overlapping repairs; dirty inputs; unrelated staged work;
@@ -165,78 +190,14 @@ refresh, stage-only, and approved apply. The original omission regression
 must fail against the old code; each new safety guard needs a meaningful
 negative control.
 
-## G1 — surface operative boundaries, keep rationale in history
-
-Sources: `templates/repo-guidance.template.md`,
-`templates/state.template.md`, `templates/decisions.template.md`,
-`templates/AGENTS.template.md`, `templates/playbooks/plan.md`,
-`templates/playbooks/drift.md`, `templates/playbooks/codereview.md`,
-`templates/playbooks/openreview.md`, `procedures/setup.md`,
-`procedures/bootstrap.md`, `procedures/verification.md`, `docs/design.md`.
-Use `tools/shipped-set.json` for affected artifact provenance and
-`tests/test_templates.py` for necessary structural regression coverage.
-
-The operative rule belongs in one home. Prefer an early “Product
-boundaries” section in repo guidance for concise, consequential exclusions
-and settled choices. Where an existing active specification already owns
-the full contract, use a direct section pointer and require that section
-in the task's reading path; do not create a second competing rulebook.
-Keep historical rationale linked and outside routine startup reading.
-
-Proposed lifecycle and behavior:
-
-- Populate the boundary section only from evidenced, adopted decisions.
-  Select constraints whose omission would lead to unwanted work or a
-  wrong completion judgment. Distinguish settled exclusions from untested
-  assumptions and pending choices. Include any scope-limiting exception;
-  shortening a statement must not broaden it.
-- Give each settled ruling an operative home before marking its decision
-  rationale adopted/archivable. Preserve provenance and archive rationale
-  verbatim. The cleanup sweep flags an uncertain or homeless rule; it
-  neither invents a replacement nor reopens settled policy. Existing
-  source records remain authoritative until a precise transfer is adopted.
-- Keep the current approved scope, non-goals, assumptions and pending
-  decisions at the top of each active plan. An amendment updates that
-  current contract only after the applicable owner ruling; older reasoning
-  remains historical. State points to the active plan and next action,
-  rather than copying permanent product policy or growing a second history.
-- Adjust the AGENTS startup/source-of-truth wording so the active approved
-  plan and its relevant boundaries are read before scope or completeness
-  judgments. An agent-written status/checklist cannot supersede owner
-  scope. Use one canonical general rule for finding/completion intake:
-  trace a claimed gap to its requirement and check settled exclusions;
-  repetition by another agent or a stop-check supplies no new authority.
-- Review playbooks direct reviewers to discover current constraints from
-  the pinned repository. Dispatch carries source coordinates, never an
-  author's restatement of policy. Preserve openreview's unprimed question.
-  Apply the same scope check to agent responses to completion/stop-check
-  feedback. Bixi does not own the incident's stop-check implementation;
-  this change must not claim to modify or enforce that external mechanism.
-- Bootstrap/setup seed the new reading structure. Existing governed repos
-  need a scoped judgment-file migration before benefiting fully; refresh
-  must not overwrite their repo-owned guidance. Describe that adoption
-  path, without running a fleet migration or self-refresh here.
-
-Keep AGENTS at or below its current token count using the same tokenizer
-before and after, preserving all load-bearing rules and one-line
-paragraphs/bullets. Record the earning incident and exact rule changes in
-the decisions record. Do not add per-turn injections, a new ledger,
-automated policy inference, a mandatory archive search, or arbitrary
-content quotas that could discard a consequential constraint.
-
-Acceptance: extend the existing fresh-eyes rehearsal with a small fixture
-containing (a) a settled feature exclusion with a narrower supported
-fallback, (b) an unverified assumption, and (c) a superseded historical
-proposal. From normal startup files and their direct current pointers,
-a fresh reviewer must distinguish excluded work from a defect, preserve
-the fallback, leave the assumption unresolved, and apply the current
-ruling. It must not need to search archives. Remove the current boundary
-as a negative control: report missing authority, not an invented policy.
-Check that a newly adopted owner amendment supersedes the old boundary
-without promoting old history. Record observed behavior and limitations;
-this proves discoverability, not guaranteed model obedience. Structural
-tests guard routing/pointers, not exact prose. Update formerly-shipped
-hashes where required; all installed copies remain untouched here.
+Also rehearse the standard bootstrap sequence with a clean state/decision
+file that needs repair and an approved draft replacing it: generate with
+draft destinations, copy drafts, then apply once without a second approval.
+The copied bytes survive, independent repairs still match their record,
+and paired moves cannot archive draft-owned content. Exercise a malformed
+or changed exclusion list. Retain the legacy two-commit carve-out contract;
+its second commit uses ordinary refresh, and its declared file accounting
+must include any repairs still applicable after the first commit.
 
 ## Verification and records
 
@@ -248,8 +209,6 @@ machine `py` is absent and `/usr/bin/python3` is Python 3.14.10.
 - Each approved implementation: `python3 -m unittest discover -s tests -v`,
   plus the item's acceptance cases and fail-without-fix/pass-with-fix proof.
   Broaden/repeat checks only after relevant changes or failures.
-- G1 additionally requires token measurements and the manual fresh-context
-  rehearsal. Automated prose assertions alone cannot establish its result.
 - Record one finding per implementation commit, source-rule provenance in
   `.agents/decisions.md`, and current work through `.agents/state.md`.
   Follow the git playbook through any authorized integration/deletion;
@@ -266,8 +225,13 @@ dispatch identity, capability proof, verdict and material recommendations.
 Objective corrections within this planning request may refine the draft;
 unsettled policy choices remain explicit proposals for the owner.
 
-Pending: finish the requested review and return an executive summary;
-obtain implementation go separately for F5, F6, F7, F8 and G1. No product
+First verdict: Acceptable with changes. F5–F7 supported; F8 needed a
+concrete draft-collision design and delivery slices. Those draft changes
+are incorporated above. G1 was separated and narrowed. See
+[review provenance and dispositions](../../../.agents/review/2026-11-17-plan-review.md).
+
+Pending: finish review follow-through and return an executive summary;
+obtain implementation go separately for F5, F6, F7 and F8. No product
 changes, public issue posting/closure, publish, target-repo migration,
 or owner-only self-refresh is authorized by this planning request.
 Plan-branch merge/deletion authority has not been given.
