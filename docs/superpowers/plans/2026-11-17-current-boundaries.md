@@ -87,14 +87,19 @@ content quota or per-turn instruction injection is introduced.
 ## Adoption and file scope
 
 Source edits: `templates/repo-guidance.template.md`,
-`templates/playbooks/plan.md`, `procedures/verification.md`, and
-`docs/design.md`. `tools/shipped-set.json` records the outgoing plan-playbook
+`templates/playbooks/plan.md`, `procedures/verification.md`,
+`procedures/bootstrap.md`, `procedures/setup.md`,
+`templates/approval-summary.template.md`, and `docs/design.md`.
+The latter procedure/template changes wire the same two proposed behaviors;
+they add no new operator or authority rule.
+`tools/shipped-set.json` records the outgoing plan-playbook
 hash; `tests/test_templates.py` may gain only meaningful structural checks
 needed by the changed route. Record the adopted rule and incident provenance
 in `.agents/decisions.md`; keep current status in `.agents/state.md`.
 
-Bootstrap and new-project already draft repo guidance from its template;
-they will use the new section. Do not add new setup questions when the owner
+Bootstrap and new-project already draft repo guidance from its template.
+Update their explicit section lists to include Product boundaries so both
+routes populate it. Do not add new setup questions when the owner
 has supplied no constraints. Existing repositories need a separately scoped
 judgment-file update: inspect relevant current decisions, propose exact
 transfers, preserve exceptions, and replace former operative copies with
@@ -116,6 +121,11 @@ Extend `procedures/verification.md`'s existing fresh-eyes questions with:
 > Distinguish adopted exclusions from assumptions and pending choices. Cite
 > their current operative wording. If asked to treat an excluded feature as
 > a missing capability, what existing authority would permit that change?
+
+An explicit “none established” or “no active plan” is valid when supported
+by the repo; absence of a not-yet-needed policy is not a missing-guidance
+defect. Update the approval summary's example from “all six questions” to
+“the verification questions” so it does not retain a stale copied count.
 
 Use a small, neutral rehearsal repository with a narrow settled exclusion,
 an explicitly permitted fallback, an unverified hardware assumption, and a

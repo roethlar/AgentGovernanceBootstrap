@@ -1,6 +1,6 @@
 # Claude review: refresh defects and current boundaries
 
-Status: Initial review complete; draft revisions prepared; follow-up pending.
+Status: Two review rounds complete; final scoped verification pending.
 Implementation remains unapproved for F5, F6, F7, F8 and G1.
 
 ## Dispatch and capability
@@ -80,3 +80,42 @@ request. They do not adopt new operative governance or product policy.
 Next: verify the revised plan snapshot with the same owner-named Claude
 pair, then return the executive summary. Implementation and plan-branch
 merge/deletion remain pending their named authority.
+
+## Follow-up: `708aef7..0d072de`
+
+Same harness/model/effort and restricted CLI grant, fresh process, inspecting
+only the original material recommendations and adjacent revision concerns.
+The launch/final envelopes again identify `claude-fable-5-2`; `xhigh` was
+explicitly dispatched. Finished 2026-11-17 13:58:09 UTC, elapsed 339.4 seconds,
+exit 0, no permission denials. README read and HEAD command succeeded;
+35 plan-lint tests and pinned-range whitespace checking passed. Relative
+links resolved and the initial review record was judged accurate.
+
+Verdict: **Acceptable with changes**. Original recommendations addressed
+in substance; F5–F7 and narrowed G1 approvable as approaches. The remaining
+material concern was legacy carve-out accounting: its ordinary second
+refresh could repair just-committed drafts without a corresponding preview.
+
+Draft disposition: use a record captured after rehearsing commit 1, before
+installing the shipped set. Standard records retain exact-HEAD pins;
+carve-out records require the approved original parent and exact rehearsed
+post-commit-1 tree, plus the same operation/input/output pins. Real commit 2
+applies that approved record. No unplanned ordinary-refresh fallback.
+
+Smaller follow-up observations incorporated:
+
+- F8 now has computation, runtime protocol, and procedure/rehearsal slices,
+  with no intermediate public release.
+- Prepared-path handling includes supersession banners and suppresses a
+  repo-owned seed when its reviewed draft supplies that same destination.
+- G1 wires the section lists in setup/bootstrap, removes the copied question
+  count in the summary example, and accepts an evidenced “none established”
+  when appropriate.
+- The disclosure question was checked: the source repository is public and
+  its public main equals the inspected head. The record contains scoped
+  public document observations, not private logs or machine configuration.
+
+The source observations were verified by the planning agent, not by Claude,
+whose repository grant did not include the other checkout. Runtime defects
+identified by Claude remain code-reading observations pending regression
+proof during implementation. These changes still only refine draft scope.

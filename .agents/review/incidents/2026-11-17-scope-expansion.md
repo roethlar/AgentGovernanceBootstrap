@@ -20,6 +20,12 @@ No source-project file was changed. The later inspected head
 `d7b86420c2a516935147680ee124da589fa55a0c` matched its origin main when
 queried on 2026-11-17.
 
+Publication check on the same date: GitHub reports
+[the source repository](https://github.com/roethlar/vela) as PUBLIC, and
+its public main/HEAD is also `d7b8642`. The scoped document observations
+above come from ancestors of that public head. This record does not publish
+the private execution trace; no such trace was inspected.
+
 ## Independently observed facts
 
 | At parent `07fc2ed` | Observation |

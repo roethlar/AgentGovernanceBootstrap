@@ -19,7 +19,7 @@ authority. This document proposes changes; it adopts no new product policy.
 Suggested order: F5, F6, F7, F8. F5–F7 make small, independently
 verifiable corrections before F8 restructures the shared repair path.
 Each item gets its own implementation commits and evidence; F8 has the
-two dependent slices below. Approving one
+three dependent slices below. Approving one
 does not approve the others. Publish the approved fixes together afterward,
 only with release authority. Planning/review completion is distinct from
 implementation, integration, and publication.
@@ -116,14 +116,17 @@ that residual separately rather than silently expanding this issue.
 ## F8 — plan repairs before any target write
 
 Files: `tools/refresh.py`, `tests/test_refresh.py`,
-`procedures/bootstrap.md`, `templates/approval-summary.template.md`.
+`procedures/bootstrap.md`, `procedures/verification.md`,
+`templates/approval-summary.template.md`.
 
 Delivery slices, each with its own checks/record and no intermediate public
 release: F8a extracts deterministic repair computation and composition behind
 the existing application flow, preserving externally visible behavior.
-F8b switches all modes to the complete plan/preflight/apply protocol below,
-including schema, draft exclusions, summary and procedure changes in one
-coherent commit. The issue remains open until F8b and its acceptance pass.
+F8b switches the runtime to the complete plan/preflight/apply protocol below,
+including schema, prepared-path handling and both target-pin modes.
+F8c updates bootstrap, rehearsal and summary instructions together and
+rehearses both routes. These are dependent implementation slices; the issue
+remains open and nothing is published until all three acceptance gates pass.
 
 Refactor the three existing repairs into read-only planning followed by
 application of the computed result. Do not weaken the approval summary's
@@ -178,6 +181,48 @@ promise or exempt repairs from it. Ordinary refresh, `--stage-only`, and
    and approval. Ordinary refresh has no draft exclusions and continues to
    repair in the run. The existing already-staged scope-only contract is
    unchanged; this does not add content pinning for judgment drafts.
+10. Treat approved supersession-banner targets as prepared paths too: pass
+    them through the same recorded `--draft-path` mechanism, since bootstrap
+    changes their bytes before apply. If a listed destination is a repo-owned
+    manifest seed, suppress that seed's install as well: the reviewed draft
+    supplies it. Do not suppress ordinary shipped-artifact installs or
+    bypass foreign-core custody. Without a listed destination, seeding keeps
+    its present behavior. Include these cases in the approval accounting.
+
+### Legacy carve-out: approve the rehearsed second operation
+
+The legacy route still has exactly two commits, but its second operation
+must come from a machine record generated after rehearsing the first.
+
+- In the existing fresh-eyes scratch clone, replay exactly the proposed
+  carve-out commit: copy drafts, apply banners, delete the foreign core
+  file, and commit. Before installing the shipped set there, generate the
+  second operation with `--plan-json` and a new planning-only
+  `--carve-out-base <original-target-head>` option. Save that record outside
+  the scratch clone for the approval summary. Use no draft exclusions: the
+  copied drafts are now committed inputs, so any repair of them is visible.
+- Schema 3 expresses two explicit target-pin modes. Standard records pin
+  the target HEAD exactly as today. A carve-out record pins the original
+  target HEAD as the required single parent of commit 1 and pins the entire
+  post-commit-1 Git tree from the rehearsal. Validate this ancestry when
+  generating the record; do not infer the base from an arbitrary branch.
+  Record the normal toolkit, manifest, repair-date and operation pins too.
+- Rehearsal installs by applying that saved record. The summary presents
+  both commit scopes, including the resulting repair paths/reasons/diffs
+  from the second record. A repaired draft's final bytes are therefore
+  available for approval, including any newly created archive.
+- In the real repo, make the approved first commit, then run `--apply` on
+  the approved rehearsal record in committing mode for commit 2. It must
+  verify the first commit has exactly the pinned parent and tree, then
+  recompute and compare all normal operation/input/output pins before
+  writing. Commit metadata may differ between rehearsal and reality;
+  content, parent, and planned operation may not. There is no generic
+  ignore-HEAD flag, automatic rebinding, or fallback to ordinary refresh.
+- A mismatch refuses before commit 2 writes anything and leaves the
+  already-created commit 1 in place for inspection. Replanning requires
+  the ordinary fresh approval. If a rehearsal cannot be made, this route
+  cannot claim a complete approval preview; stop before presenting it as
+  ready instead of silently using an unplanned second operation.
 
 Acceptance: independently cover all three repair types; an absent and an
 existing archive; overlapping repairs; dirty inputs; unrelated staged work;
@@ -195,9 +240,18 @@ file that needs repair and an approved draft replacing it: generate with
 draft destinations, copy drafts, then apply once without a second approval.
 The copied bytes survive, independent repairs still match their record,
 and paired moves cannot archive draft-owned content. Exercise a malformed
-or changed exclusion list. Retain the legacy two-commit carve-out contract;
-its second commit uses ordinary refresh, and its declared file accounting
-must include any repairs still applicable after the first commit.
+or changed exclusion list, a bannered repair target, and an absent seeded
+push policy supplied by an approved draft. In the last case, the reviewed
+draft is the only proposed write; an unreserved missing policy still seeds.
+
+For the legacy route, include a draft containing an archivable decision so
+commit 2 must add an archive; the approved rehearsal record and actual
+commit must agree on paths and output bytes. Different commit-1 metadata
+with the same parent/tree succeeds. Wrong parent, extra/missing/changed
+commit-1 files, different toolkit, and different repairs all refuse before
+commit-2 writes. Standard mode still rejects any target-HEAD drift. Rehearse
+both commit messages/scopes and preserve unrelated staged work. No claim
+of whole-filesystem atomicity is added beyond validation before writes.
 
 ## Verification and records
 
