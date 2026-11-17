@@ -27,8 +27,8 @@ never treat them as repo-portable.
 - 2026-08-08, resolved same day: the three
   `tests/test_publish.py ProductRemoteFreshnessTests` cases failed here
   from 2026-08-03 because a global `core.hooksPath` chained
-  `post-checkout` to `tokensave auto-init`, which wrote a `.tokensave/`
-  index into every cloned repo — including the tests' cloned product
+  `post-checkout` to `tokensave auto-init`, which wrote an index under
+  .tokensave/ in every cloned repo — including the tests' cloned product
   fixtures, whose dirty tree tripped `publish.py`'s
   uncommitted-changes refusal (clone-based fixtures only; `git init`
   fires no post-checkout, so `PublishTests` stayed green). The owner
@@ -73,4 +73,4 @@ never treat them as repo-portable.
   (3.14.7) and `PYTHONUTF8=1`: 226 run, 3 failures, identical on a clean
   tree — the two `test_new_project.py` cases above plus
   `test_this_repos_agents_files_have_zero_warn_findings`, which flags this
-  file's mention of the missing `.tokensave/` path.
+  file's historical mention of the then-missing .tokensave/ path.
