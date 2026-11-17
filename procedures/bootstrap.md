@@ -195,6 +195,10 @@ intact.
 
 ## Step 6: Approval summary
 
+An ignored core target is a custody question, not a foreign-content refusal.
+Resolve its named ignore rule before approval; neither `--force` nor the
+legacy carve-out bypasses an ignore rule.
+
 First generate the machine plan:
 `<probed-python> <toolkit>/tools/refresh.py --plan-json .bootstrap-tmp/refresh-plan.json <repo>`
 — a read-only run that records exactly what refresh will install, update,

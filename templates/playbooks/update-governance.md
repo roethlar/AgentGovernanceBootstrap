@@ -16,6 +16,8 @@
    A foreign AGENTS.md needs an explicit replacement decision:
    owner-requested replacement uses `--force`; otherwise follow
    `<toolkit>/procedures/bootstrap.md`. Do not resolve flags on inference.
+   An ignore-rule skip instead needs a custody/ignore decision for the named
+   rule; it is not foreign content and `--force` cannot override that rule.
 4. Verify the result. For work branches, follow the git playbook through
    integration and local/remote deletion. Report pending steps honestly.
 

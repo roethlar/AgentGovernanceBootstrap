@@ -485,6 +485,46 @@ class RefreshTests(unittest.TestCase):
         proc = refresh(self.toolkit, self.target)
         self.assertEqual(proc.returncode, 0, proc.stderr)
 
+    def test_ignored_absent_core_has_ignore_recovery_even_with_force(self):
+        (self.target / ".gitignore").write_text("AGENTS.md\n")
+        commit_all(self.target, "ignored core")
+        for extra in ((), ("--force",)):
+            with self.subTest(extra=extra):
+                proc = refresh(self.toolkit, self.target, "--stage-only", *extra)
+                self.assertEqual(5, proc.returncode, proc.stderr)
+                self.assertFalse((self.target / "AGENTS.md").exists())
+                self.assertIn("ignored by 'AGENTS.md' (.gitignore:1)", proc.stdout)
+                self.assertIn("Resolve custody", proc.stdout)
+                self.assertNotIn("matches no known template version", proc.stdout)
+                self.assertNotIn("legacy-governance carve-out", proc.stdout)
+
+    def test_force_does_not_overwrite_ignored_untracked_foreign_core(self):
+        (self.target / ".gitignore").write_text("AGENTS.md\n")
+        commit_all(self.target, "ignored core")
+        original = "# Private untracked rules\nOnly copy.\n"
+        (self.target / "AGENTS.md").write_text(original)
+        proc = refresh(self.toolkit, self.target, "--force", "--stage-only")
+        self.assertEqual(original, (self.target / "AGENTS.md").read_text())
+        self.assertEqual(5, proc.returncode, proc.stderr)
+        self.assertIn("Resolve custody", proc.stdout)
+        self.assertNotIn("git history preserves", proc.stdout.lower())
+        self.assertNotIn("AGENTS.md", run_git(
+            self.target, "diff", "--cached", "--name-only").splitlines())
+
+    def test_foreign_and_ignored_core_have_independent_explanations(self):
+        mutate_manifest(self.toolkit, lambda ss: ss["artifacts"][-1].update(
+            {"class": "replace-whole"}))
+        commit_all(self.toolkit, "second core fixture")
+        (self.target / ".gitignore").write_text("AGENTS.md\n")
+        (self.target / "CLAUDE.md").write_text("foreign rules\n")
+        commit_all(self.target, "foreign and ignored")
+        proc = refresh(self.toolkit, self.target, "--stage-only")
+        self.assertEqual(5, proc.returncode, proc.stderr)
+        self.assertIn("AGENTS.md: ignored by", proc.stdout)
+        self.assertIn("ATTENTION: CLAUDE.md was NOT replaced", proc.stdout)
+        self.assertNotIn("ATTENTION: AGENTS.md was NOT replaced", proc.stdout)
+        self.assertIn("bootstrap procedure", proc.stdout)
+
     def test_force_still_protects_uncommitted_content(self):
         (self.target / "AGENTS.md").write_text("# Mine\nforeign\n", newline="\n")
         commit_all(self.target, "foreign agents")

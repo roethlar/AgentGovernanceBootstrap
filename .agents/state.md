@@ -8,7 +8,8 @@
   Active plans: [refresh defects](../docs/superpowers/plans/2026-11-17-refresh-defects.md)
   and [current boundaries](../docs/superpowers/plans/2026-11-17-current-boundaries.md).
   The baseline suite's historical fixture-path note was clarified in `a199383`.
-  F5 is in progress; subsequent fixes and G1 verification remain pending.
+  [F5](review/findings/F5.md) and [F6](review/findings/F6.md) are verified;
+  F7, F8 and G1 verification remain pending. Integration is still pending.
   [Plan review record](review/2026-11-17-plan-review.md).
 - Disputed waste-pass functionality restored from f1497c4 in source
   6f90a8f, retaining the owner's readable-response rule and Headroom removal.

@@ -62,9 +62,8 @@ Exit codes:
   3  refused: uncommitted changes on a path the run would touch
   4  refused: manifest failed validation, an unsafe destination, an approved
      plan that no longer matches, or an apply that did not land cleanly
-  5  applied, but a core (replace-whole) governance file was flagged foreign
-     and left unreplaced - the repo is not converged; run bootstrap. Distinct
-     from 0 so a script can tell an ungoverned repo from a converged one.
+  5  a core (replace-whole) governance target remains blocked by foreign
+     content or an ignore rule; follow the cause-specific explanation.
 
 Python 3.10+, stdlib only.
 """
@@ -313,6 +312,8 @@ class Plan:
         self.remove = []    # target
         self.current = []   # target
         self.flags = []     # (target, reason)
+        self.foreign_core = []  # targets blocked by foreign content
+        self.ignored = []   # (target, reason) - effective ignore-rule skips
         self.drift = {}     # target -> introducing-commit provenance line
         self.gitignore_repairs = []  # (line_no, old_line, new_lines)
         self.repairs = []   # (target, note) - mechanical fixes outside the shipped set
@@ -525,11 +526,12 @@ def classify(target_repo: Path, toolkit: Path, shipped: dict) -> Plan:
         elif art["class"] == "replace-whole" and not _ever_shipped(
                 target_repo, art["target"],
                 set(art.get("formerly", [])) | candidate_hashes(src_bytes)):
+            plan.foreign_core.append(art["target"])
             plan.flags.append((
                 art["target"],
                 "matches no known template version and no committed version ever "
                 "did - a foreign governance file; refusing to replace (re-run with "
-                "--force to replace anyway - git history preserves the old content - "
+                "--force to replace anyway - git history preserves committed content - "
                 "or run the bootstrap procedure to migrate its content).",
             ))
         else:
@@ -597,7 +599,10 @@ def check_committability(target_repo: Path, plan: Plan, shipped: dict) -> None:
             # line, so a skipped seed left there reports a file that was never
             # written.
             plan.seeded[:] = [t for t in plan.seeded if t != path]
-            plan.flags.append((path, "ignored by '{}' ({}:{}) - unrecognized rule; skipped, never force-added".format(pattern, source, lineno)))
+            plan.drift.pop(path, None)
+            flag = (path, "ignored by '{}' ({}:{}) - unrecognized rule; skipped, never force-added".format(pattern, source, lineno))
+            plan.flags.append(flag)
+            plan.ignored.append(flag)
     # dedupe repairs (several paths may hit the same blanket line)
     plan.gitignore_repairs = sorted(set(
         (ln, old, tuple(new)) for ln, old, new in plan.gitignore_repairs
@@ -1136,11 +1141,24 @@ def offer_codex_hook_trust(target_repo: Path, plan: Plan,
 
 
 def core_flags(plan: Plan, shipped: dict) -> list:
-    """Flag targets in the replace-whole (core file) class - the one flag
-    category that is never a legitimate steady state."""
+    """Foreign-content flags only; ignore skips need different recovery."""
     whole = {a["target"] for a in shipped["artifacts"]
              if a["class"] == "replace-whole"}
-    return [t for t, _ in plan.flags if t in whole]
+    return [t for t in plan.foreign_core if t in whole]
+
+
+def ignored_core_flags(plan: Plan, shipped: dict) -> list:
+    whole = {a["target"] for a in shipped["artifacts"]
+             if a["class"] == "replace-whole"}
+    return [(t, reason) for t, reason in plan.ignored if t in whole]
+
+
+def ignored_core_banner(flags) -> str:
+    lines = ["  Core governance installation was skipped because of ignore rules:"]
+    lines.extend("  {}: {}".format(t, reason) for t, reason in flags)
+    lines.append("  Resolve custody and the named ignore rule with the owner, then rerun.")
+    lines.append("  --force does not override ignore rules; nothing is force-added.")
+    return "\n".join(lines)
 
 
 def banner_block(targets) -> str:
@@ -1150,7 +1168,7 @@ def banner_block(targets) -> str:
         lines.append("  ATTENTION: {} was NOT replaced.".format(t))
     lines.append("  It matches no known template version (hand-edited or foreign), so")
     lines.append("  replacing it could destroy content the toolkit does not own.")
-    lines.append("  To replace it anyway — git history preserves the old content —")
+    lines.append("  Git history preserves committed versions. To replace it anyway,")
     lines.append("  re-run with --force. To migrate its content instead, run the")
     lines.append("  bootstrap procedure.")
     lines.append(bar)
@@ -1401,11 +1419,6 @@ def main(argv=None) -> int:
             print("  " + e, file=sys.stderr)
         return 4
     plan = classify(target, toolkit, shipped)
-    try:
-        check_committability(target, plan, shipped)
-    except RuntimeError as exc:
-        print("refresh: refusing - {}".format(exc), file=sys.stderr)
-        return 4
     core = core_flags(plan, shipped)
     if args.force and core:
         # Owner override (2026-07-23, owner-surface D3): --force replaces a
@@ -1421,6 +1434,15 @@ def main(argv=None) -> int:
             plan.drift[t] = ("FORCED (--force): foreign core file replaced on "
                              "owner demand; prior content preserved in git history")
         core = []
+        plan.foreign_core = []
+
+    # Forced foreign replacements have the same custody checks as installs.
+    try:
+        check_committability(target, plan, shipped)
+    except RuntimeError as exc:
+        print("refresh: refusing - {}".format(exc), file=sys.stderr)
+        return 4
+    ignored_core = ignored_core_flags(plan, shipped)
 
     conflicts = dirty_conflicts(target, plan)
     if conflicts:
@@ -1593,6 +1615,8 @@ def main(argv=None) -> int:
         for rel, msg, _kind in warns:
             print("  LINT {}: {}".format(rel, msg))
 
+    if ignored_core:
+        print(ignored_core_banner(ignored_core))
     if core:
         print(banner_block(core))
         prompt = bootstrap_prompt(toolkit, target)
@@ -1604,8 +1628,7 @@ def main(argv=None) -> int:
         # A flagged core (replace-whole) file means the repo did not converge
         # to the shipped set: distinct exit 5 so a script can tell an
         # ungoverned repo from a clean converged run (exit 0).
-        return 5
-    return 0
+    return 5 if core or ignored_core else 0
 
 
 if __name__ == "__main__":
