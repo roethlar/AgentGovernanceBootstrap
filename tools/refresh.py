@@ -317,6 +317,9 @@ class Plan:
         self.drift = {}     # target -> introducing-commit provenance line
         self.gitignore_repairs = []  # (line_no, old_line, new_lines)
         self.repairs = []   # (target, note) - mechanical fixes outside the shipped set
+        self.repair_inputs = {}  # target -> original bytes, or None for absence
+        self.repair_outputs = {}  # target -> final planned bytes
+        self.repair_date = None
         self.seeded = []    # target - installed because it was absent (seeded[])
         self.already_staged = []  # target - staged before this run, not ours to write
 
@@ -353,126 +356,174 @@ def _moved_target(target_repo, tok, _cache={}):
     return None
 
 
-def repair_moved_references(target_repo: Path, plan: Plan) -> None:
-    """Mechanical lint repair (2026-07-23 owner-surface D3): a backticked
-    reference whose file MOVED — git history proves exactly one rename
-    target — is rewritten in place and joins the refresh commit. Lines
-    carrying a deliberate lint: allow marker are untouched, and dirty files
-    are never folded into a refresh commit."""
-    agents_dir = target_repo / ".agents"
-    if not agents_dir.is_dir():
+class RepairView:
+    """One read-only snapshot and virtual outputs for a repair pipeline."""
+
+    def __init__(self, repo: Path, repair_date=None, excluded=()):
+        import datetime
+        self.repo = repo
+        self.date = repair_date or datetime.date.today().isoformat()
+        if datetime.date.fromisoformat(self.date).isoformat() != self.date:
+            raise ValueError("repair date must be YYYY-MM-DD")
+        self.excluded = set(excluded)
+        self.inputs = {}
+        self.outputs = {}
+        self.dirty = {}
+        self.notes = []
+        self.rename_cache = {}
+
+    def eligible(self, rel):
+        if rel in self.excluded:
+            return False
+        assert_safe_dest(self.repo, rel)
+        if rel not in self.dirty:
+            self.dirty[rel] = bool(git(
+                self.repo, "status", "--porcelain", "--", rel).stdout.strip())
+        return not self.dirty[rel]
+
+    def read(self, rel):
+        if rel in self.outputs:
+            return self.outputs[rel]
+        if rel not in self.inputs:
+            assert_safe_dest(self.repo, rel)
+            path = self.repo / rel
+            self.inputs[rel] = path.read_bytes() if path.exists() else None
+        return self.inputs[rel]
+
+    def write(self, rel, data, note):
+        before = self.read(rel)
+        if data != before:
+            self.outputs[rel] = data
+            self.notes.append((rel, note))
+
+    def include(self, plan):
+        changed = {p: data for p, data in self.outputs.items()
+                   if data != self.inputs[p]}
+        plan.repair_inputs.update({p: self.inputs[p] for p in changed})
+        plan.repair_outputs.update(changed)
+        plan.repairs.extend((p, note) for p, note in self.notes if p in changed)
+        plan.repair_date = self.date
+
+
+def plan_push_status(view: RepairView) -> None:
+    rel = ".agents/state.md"
+    if not view.eligible(rel):
         return
-    for f in sorted(agents_dir.glob("*.md")):
-        rel = f.relative_to(target_repo).as_posix()
-        dirty = git(target_repo, "status", "--porcelain", "--", rel,
-                    check=False).stdout.strip()
-        if dirty:
+    data = view.read(rel)
+    if data is None:
+        return
+    lines = data.decode("utf-8").splitlines(keepends=True)
+    body = next((i for i, line in enumerate(lines)
+                 if re.match(r"^##(?:\s|$)", line)), len(lines))
+    kept = lines[:body] + [ln for ln in lines[body:] if not PUSH_STATUS_RE.search(ln)]
+    dropped = len(lines) - len(kept)
+    if dropped:
+        view.write(rel, "".join(kept).encode("utf-8"),
+                   "deleted {} recorded push-status line(s) — git owns "
+                   "that fact (2026-07-11)".format(dropped))
+
+
+def plan_moved_references(view: RepairView) -> None:
+    for path in sorted((view.repo / ".agents").glob("*.md")):
+        rel = path.relative_to(view.repo).as_posix()
+        if not view.eligible(rel):
             continue
-        changed_lines = 0
-        out_lines = []
-        for line in f.read_text(encoding="utf-8").splitlines():
-            if "lint: allow" in line:
-                out_lines.append(line)
-                continue
-            for m in PATH_TOKEN.finditer(line):
-                tok = m.group(1)
-                if (not _lintable_repo_path(tok)
-                        or tok.rstrip("/") in LINT_EXEMPT_PATHS
-                        or (target_repo / tok.rstrip("/")).exists()):
-                    continue
-                moved = _moved_target(target_repo, tok)
-                if moved:
-                    line = line.replace("`" + tok + "`", "`" + moved + "`")
-                    changed_lines += 1
-            out_lines.append(line)
-        if changed_lines:
-            write_atomic(f, ("\n".join(out_lines) + "\n").encode("utf-8"))
-            plan.repairs.append((rel, "rewrote {} moved reference(s) "
-                                      "(rename proven by git history)".format(changed_lines)))
+        data = view.read(rel)
+        if data is None:
+            continue
+        changed = 0
+        lines = []
+        for line in data.decode("utf-8").splitlines():
+            if "lint: allow" not in line:
+                for match in PATH_TOKEN.finditer(line):
+                    tok = match.group(1)
+                    if (not _lintable_repo_path(tok)
+                            or tok.rstrip("/") in LINT_EXEMPT_PATHS
+                            or (view.repo / tok.rstrip("/")).exists()):
+                        continue
+                    moved = _moved_target(view.repo, tok, view.rename_cache)
+                    if moved:
+                        line = line.replace("`" + tok + "`", "`" + moved + "`")
+                        changed += 1
+            lines.append(line)
+        if changed:
+            view.write(rel, ("\n".join(lines) + "\n").encode("utf-8"),
+                       "rewrote {} moved reference(s) "
+                       "(rename proven by git history)".format(changed))
 
 
-def repair_closed_decisions(target_repo: Path, plan: Plan) -> None:
-    """Mechanical lint repair (2026-07-23 owner-surface D3): decisions.md
-    entries with Status Adopted/Superseded move verbatim to
-    docs/history/decisions-archive.md with a dated pointer — the lifecycle
-    rule is deterministic. Dirty files are never folded in."""
-    import datetime
-    decisions = target_repo / ".agents" / "decisions.md"
-    archive = target_repo / "docs" / "history" / "decisions-archive.md"
-    if not decisions.exists():
+def plan_closed_decisions(view: RepairView) -> None:
+    rel, archive_rel = ".agents/decisions.md", "docs/history/decisions-archive.md"
+    if not view.eligible(rel) or not view.eligible(archive_rel):
         return
-    for f in (decisions, archive):
-        rel = f.relative_to(target_repo).as_posix()
-        dirty = git(target_repo, "status", "--porcelain", "--", rel,
-                    check=False).stdout.strip()
-        if dirty:
-            return
-    text = decisions.read_text(encoding="utf-8")
+    data = view.read(rel)
+    if data is None:
+        return
+    text = data.decode("utf-8").replace("\r\n", "\n").replace("\r", "\n")
     entries = list(re.finditer(r"^### (.+)$", text, re.M))
-    blocks = []  # (start, end) of closed entries, in document order
-    for i, em in enumerate(entries):
+    blocks = []
+    for i, entry in enumerate(entries):
         end = entries[i + 1].start() if i + 1 < len(entries) else len(text)
-        seg_end = end
-        m2 = re.search(r"^## ", text[em.end():end], re.M)
-        if m2:
-            seg_end = em.end() + m2.start()
-        seg = text[em.start():seg_end]
-        sm = re.search(r"^Status:\s*(\w+)", seg, re.M)
-        if sm and sm.group(1) in ("Adopted", "Superseded"):
-            blocks.append((em.start(), seg_end))
+        section = re.search(r"^## ", text[entry.end():end], re.M)
+        if section:
+            end = entry.end() + section.start()
+        status = re.search(r"^Status:\s*(\w+)", text[entry.start():end], re.M)
+        if status and status.group(1) in ("Adopted", "Superseded"):
+            blocks.append((entry.start(), end))
     if not blocks:
         return
-    moved = []
-    for start, end in blocks:
-        moved.append(text[start:end].strip("\n"))
+    moved = [text[start:end].strip("\n") for start, end in blocks]
     kept = text[:blocks[0][0]]
     for i in range(len(blocks) - 1):
         kept += text[blocks[i][1]:blocks[i + 1][0]]
     kept += text[blocks[-1][1]:]
     kept = re.sub(r"\n{3,}", "\n\n", kept)
-    today = datetime.date.today().isoformat()
     addition = "\n\n" + "\n\n".join(
-        m + "\n\n> Archived {} (refresh auto-archive): the entry carried a "
+        block + "\n\n> Archived {} (refresh auto-archive): the entry carried a "
         "closed status; the lifecycle rule moves closed entries here "
-        "verbatim.".format(today) for m in moved) + "\n"
-    archive.parent.mkdir(parents=True, exist_ok=True)
-    prior = (archive.read_text(encoding="utf-8")
-             if archive.exists() else "# Agent Decisions — Archive\n")
+        "verbatim.".format(view.date) for block in moved) + "\n"
+    prior_bytes = view.read(archive_rel)
+    prior = (prior_bytes.decode("utf-8").replace("\r\n", "\n").replace("\r", "\n")
+             if prior_bytes is not None else "# Agent Decisions — Archive\n")
     if not prior.endswith("\n"):
         prior += "\n"
-    write_atomic(archive, (prior + addition).encode("utf-8"))
-    write_atomic(decisions, kept.encode("utf-8"))
-    plan.repairs.append((".agents/decisions.md",
-                         "auto-archived {} closed decision entr{} verbatim".format(
-                             len(moved), "y" if len(moved) == 1 else "ies")))
-    plan.repairs.append(("docs/history/decisions-archive.md",
-                         "received {} archived entr{}".format(
-                             len(moved), "y" if len(moved) == 1 else "ies")))
+    view.write(archive_rel, (prior + addition).encode("utf-8"),
+               "received {} archived entr{}".format(len(moved), "y" if len(moved) == 1 else "ies"))
+    view.write(rel, kept.encode("utf-8"),
+               "auto-archived {} closed decision entr{} verbatim".format(
+                   len(moved), "y" if len(moved) == 1 else "ies"))
+
+
+def plan_mechanical_repairs(target_repo: Path, plan: Plan, repair_date=None,
+                            excluded=()) -> None:
+    view = RepairView(target_repo, repair_date, excluded)
+    plan_push_status(view)
+    plan_moved_references(view)
+    plan_closed_decisions(view)
+    view.include(plan)
+
+
+def _apply_one_repair(target_repo: Path, plan: Plan, compute) -> None:
+    # Compatibility flow until all callers switch to planning before writes.
+    view = RepairView(target_repo)
+    compute(view)
+    view.include(plan)
+    for rel, data in view.outputs.items():
+        path = target_repo / rel
+        path.parent.mkdir(parents=True, exist_ok=True)
+        write_atomic(path, data)
 
 
 def repair_push_status_lines(target_repo: Path, plan: Plan) -> None:
-    """Mechanical repair (2026-07-23 owner-surface D3): delete recorded
-    push-status lines from .agents/state.md in the run, never report them.
-    The repair joins the refresh commit like any planned change."""
-    state = target_repo / ".agents" / "state.md"
-    if not state.exists():
-        return
-    dirty = git(target_repo, "status", "--porcelain", "--", ".agents/state.md",
-                check=False).stdout.strip()
-    if dirty:
-        # Never fold the owner's uncommitted edits into a refresh commit.
-        return
-    lines = state.read_bytes().decode("utf-8").splitlines(keepends=True)
-    body = next((i for i, line in enumerate(lines)
-                 if re.match(r"^##(?:\s|$)", line)), len(lines))
-    kept = lines[:body] + [ln for ln in lines[body:] if not PUSH_STATUS_RE.search(ln)]
-    dropped = len(lines) - len(kept)
-    if not dropped:
-        return
-    write_atomic(state, "".join(kept).encode("utf-8"))
-    plan.repairs.append((".agents/state.md",
-                         "deleted {} recorded push-status line(s) — git owns "
-                         "that fact (2026-07-11)".format(dropped)))
+    _apply_one_repair(target_repo, plan, plan_push_status)
+
+
+def repair_moved_references(target_repo: Path, plan: Plan) -> None:
+    _apply_one_repair(target_repo, plan, plan_moved_references)
+
+
+def repair_closed_decisions(target_repo: Path, plan: Plan) -> None:
+    _apply_one_repair(target_repo, plan, plan_closed_decisions)
 
 
 def _drift_provenance(target_repo: Path, rel: str) -> str:

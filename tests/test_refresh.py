@@ -362,6 +362,55 @@ class RefreshTests(unittest.TestCase):
             self.assertIsNone(code)
             self.assertEqual({}, seen)
 
+    def repair_fixture(self):
+        (self.target / ".agents").mkdir(exist_ok=True)
+        (self.target / "docs").mkdir(exist_ok=True)
+        (self.target / "docs/old.md").write_text("rename evidence\n")
+        (self.target / ".agents/state.md").write_text(
+            "# State\n\n## Now\n- unpushed work\n- see `docs/old.md`\n")
+        (self.target / ".agents/decisions.md").write_text(
+            "# Decisions\n\n## Decisions\n\n### Closed\nStatus: Adopted\n"
+            "See `docs/old.md`.\n\n### Live\nStatus: Active\nKeep me.\n")
+        commit_all(self.target, "repair inputs")
+        run_git(self.target, "mv", "docs/old.md", "docs/new.md")
+        commit_all(self.target, "rename evidence")
+
+    def test_repair_planner_composes_without_writing(self):
+        self.repair_fixture()
+        mod = self._refresh_mod()
+        before = {p: p.read_bytes() for p in self.target.rglob("*")
+                  if p.is_file() and ".git" not in p.parts}
+        head = run_git(self.target, "rev-parse", "HEAD")
+        index = run_git(self.target, "write-tree")
+        plan = mod.Plan()
+        mod.plan_mechanical_repairs(self.target, plan, "2026-01-02")
+        state = plan.repair_outputs[".agents/state.md"]
+        self.assertNotIn(b"unpushed", state)
+        self.assertIn(b"docs/new.md", state)
+        self.assertNotIn(b"Closed", plan.repair_outputs[".agents/decisions.md"])
+        archive = plan.repair_outputs["docs/history/decisions-archive.md"]
+        self.assertIn(b"docs/new.md", archive)
+        self.assertIn(b"Archived 2026-01-02", archive)
+        self.assertIsNone(plan.repair_inputs["docs/history/decisions-archive.md"])
+        self.assertEqual(before, {p: p.read_bytes() for p in self.target.rglob("*")
+                                  if p.is_file() and ".git" not in p.parts})
+        self.assertEqual(head, run_git(self.target, "rev-parse", "HEAD"))
+        self.assertEqual(index, run_git(self.target, "write-tree"))
+
+    def test_repair_planner_skips_dirty_archive_pair(self):
+        self.repair_fixture()
+        archive = self.target / "docs/history/decisions-archive.md"
+        archive.parent.mkdir()
+        archive.write_text("owner draft\n")
+        mod = self._refresh_mod()
+        plan = mod.Plan()
+        mod.plan_mechanical_repairs(self.target, plan, "2026-01-02")
+        self.assertNotIn("docs/history/decisions-archive.md", plan.repair_outputs)
+        # A separate proven rename is still eligible, but no entry is moved.
+        self.assertIn(b"Closed", plan.repair_outputs[".agents/decisions.md"])
+        self.assertNotIn(b"unpushed", plan.repair_outputs[".agents/state.md"])
+        self.assertEqual("owner draft\n", archive.read_text())
+
     def test_moved_reference_is_repaired_in_the_run(self):
         # Mechanical repair (D3): a reference whose file MOVED (git-proven,
         # single target) is rewritten in place and joins the commit.
