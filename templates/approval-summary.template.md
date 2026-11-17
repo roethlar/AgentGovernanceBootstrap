@@ -44,7 +44,7 @@ a human approval question.>
 
 ## Files Proposed For Approval
 
-<Sort every proposed file into the two lists below using `git check-ignore`
+<Group every proposed file below using `git check-ignore`
 on its final path - never by assumption. A path the repo gitignores cannot
 enter the commit and must not be listed as committed.>
 
@@ -56,7 +56,13 @@ enter the commit and must not be listed as committed.>
 - `.agents/push-policy.md`
 - <migration runs: supersession banners on superseded files>
 
-### Committed — shipped set (installed by `tools/refresh.py --stage-only`)
+<Standard route: name the record's `draft_paths`. These reviewed drafts and
+banners supply those files; mechanical repairs skip them, including the
+whole decision/archive move if either side is reserved. A reserved missing
+policy comes from its draft. Legacy route: no exclusions; show any final
+repair of a committed draft in the mechanical-repair group below.>
+
+### Committed — shipped set (installed by `tools/refresh.py --apply`)
 
 <List everything the commit will contain from the shipped set, rendered from
 the `--plan-json` record this run generated (`AGENTS.md`, harness shims,
@@ -66,6 +72,14 @@ That is the record's `installs`, `updates` and `restores`, plus its
 and the script will not rewrite; mark those "already staged". These files are
 never drafted or hand-copied; the script is their single installer, and Step 7
 applies exactly this record.>
+
+### Committed — repairs and removals
+
+<Render `repairs`, `removes`, and `gitignore_repairs` from the record. Name
+each path with a short action/reason; link the machine-plan JSON for repair
+diffs and hashes. Include newly created archives. Write "None" if empty.
+The complete refresh scope is `staged_paths`, plus `already_staged` for the
+bootstrap commit; do not omit a group because it is outside the shipped set.>
 
 ### Local-only (gitignored, copied but never committed)
 
@@ -79,14 +93,17 @@ important, raise the ignore rule as a question instead; never plan a silent
 target. Initial creation establishes main. State the exact commit
 message that will be used. Approving this summary
 authorizes copying the judgment drafts, running the refresh install, and
-making ONE scoped commit covering both groups (exactly the lists above,
+making ONE scoped commit covering all groups (exactly the lists above,
 never `git add -A`, never `git add -f`). Nothing is pushed yet; the push
 policy written by this run governs all subsequent commits.>
 
 <Legacy carve-out runs (a foreign `AGENTS.md` is being superseded): state
 BOTH exact commit messages instead — commit 1, the carve-out (judgment
 drafts + supersession banners + the legacy file's deletion); commit 2, the
-refresh install's own commit. Approving this summary authorizes exactly
+refresh operation's own commit, including repairs to the first commit's
+drafts. Link the rehearsal's schema-3 record and frozen-input receipt; name
+its original base and post-carve-out tree pin. The preview shows the final
+repaired bytes, not a re-copy of the earlier drafts. Approving this summary authorizes exactly
 those two commits, in that order, and nothing else. Git is a hard
 requirement settled at Step 1; a target without git never reaches this
 summary.>
@@ -94,8 +111,11 @@ summary.>
 ## Push Policy
 
 <Name and preserve the existing owner-approved push policy unless a change
-was requested. If none exists, present **4 — ask** as the default and ask
-for the owner's choice.>
+was requested. Standard route: if none exists, present **4 — ask** as the
+default and ask for the owner's choice. Legacy route: the policy was
+settled before rehearsal; report it, omit the choice prompt below, and
+explain that a requested change requires a new rehearsal and summary
+before commit 1. The same applies to edits to any frozen prepared file.>
 
 To change it, reply with a number when you approve:
 

@@ -18,16 +18,24 @@ correctness.
 
 1. Build the rehearsal clone: `git clone <target-repo> <scratch>` - a local
    clone into a throwaway directory, no network. On a legacy carve-out
-   migration (a foreign `AGENTS.md` is being superseded), first rehearse
+   migration (a foreign `AGENTS.md` is being superseded), freeze the inputs
+   and settled policy as bootstrap Step 5 specifies, then rehearse
    carve-out commit 1 in the clone exactly as `procedures/bootstrap.md`
    Step 7 will run it: copy the judgment drafts to their final paths, apply
    the prepared supersession banners, delete the legacy `AGENTS.md`, and
    commit. Refresh refuses to install over a foreign `AGENTS.md`, so doing
    commit 1 first is what keeps the next step's install from raising the
-   expected foreign-core FLAG. On a non-carve-out migration, just apply the
-   prepared supersession banners in the clone.
-2. Install the shipped set in the clone:
-   `<probed-python> <toolkit>/tools/refresh.py --stage-only <scratch>`.
+   expected foreign-core FLAG. On a standard migration, leave drafts and
+   banners unapplied until its plan is generated in step 2.
+2. Generate and apply the operation in the clone:
+   - Legacy: BEFORE installing anything, run
+     `<probed-python> <toolkit>/tools/refresh.py --no-sync --plan-json <outside-scratch>/refresh-plan.json --carve-out-base <original-target-head> <scratch>`.
+     Use no draft exclusions: the just-committed drafts are repair inputs.
+     Save the record outside the clone for the approval summary and real
+     apply. Apply that record in committing mode for the rehearsed commit 2.
+   - Standard: generate a scratch `--plan-json` with every prepared draft
+     and banner destination named by repeatable `--draft-path`. Copy those
+     prepared files, then apply that record with `--stage-only`.
    This rehearses the real install - the actual `AGENTS.md`, shims, skills,
    and wrappers land at their real paths, and refresh's validation and lint
    run. Surface any FLAG line: an unexpected flag in the rehearsal is a
@@ -35,9 +43,10 @@ correctness.
    foreign-core FLAG a carve-out would otherwise raise is pre-resolved by
    commit 1 in step 1). Only the scratch clone changes; the target repo is
    untouched, so nothing changes in the target before approval.
-3. Copy the judgment drafts from `.bootstrap-tmp/drafts/` to their final
-   paths in the clone (on a carve-out they were already placed by commit 1
-   in step 1; re-copying is idempotent).
+3. Inspect the final applied bytes. Do NOT re-copy the original drafts:
+   the legacy second operation can repair them and create an archive.
+   Preserve those final files/diffs outside the scratch clone for approval;
+   the fresh reader must see exactly that repaired result.
 4. Start a fresh agent context with no knowledge of this session (a subagent
    with a clean context, or a new session), working IN the clone. Do not
    summarize the migration for it - that would defeat the test.
@@ -83,3 +92,7 @@ listings HIDE; the agent must enumerate that exact path explicitly (a live
 false-fail on 2026-07-09 graded an entire drafted set MISSING because of
 this). The installed constitution is not inspectable in this form. The
 recorded result must name which form ran.
+
+The fallback cannot produce the tree-pinned legacy operation. A legacy
+carve-out without a successful clone rehearsal is not ready for approval;
+stop before presenting its second commit as fully previewed.
