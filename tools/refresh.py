@@ -69,6 +69,8 @@ Python 3.10+, stdlib only.
 """
 
 import argparse
+import datetime
+import difflib
 import hashlib
 import json
 import os
@@ -320,6 +322,8 @@ class Plan:
         self.repair_inputs = {}  # target -> original bytes, or None for absence
         self.repair_outputs = {}  # target -> final planned bytes
         self.repair_date = None
+        self.draft_paths = []
+        self.carve_out_base = None
         self.seeded = []    # target - installed because it was absent (seeded[])
         self.already_staged = []  # target - staged before this run, not ours to write
 
@@ -360,7 +364,6 @@ class RepairView:
     """One read-only snapshot and virtual outputs for a repair pipeline."""
 
     def __init__(self, repo: Path, repair_date=None, excluded=()):
-        import datetime
         self.repo = repo
         self.date = repair_date or datetime.date.today().isoformat()
         if datetime.date.fromisoformat(self.date).isoformat() != self.date:
@@ -501,29 +504,6 @@ def plan_mechanical_repairs(target_repo: Path, plan: Plan, repair_date=None,
     plan_moved_references(view)
     plan_closed_decisions(view)
     view.include(plan)
-
-
-def _apply_one_repair(target_repo: Path, plan: Plan, compute) -> None:
-    # Compatibility flow until all callers switch to planning before writes.
-    view = RepairView(target_repo)
-    compute(view)
-    view.include(plan)
-    for rel, data in view.outputs.items():
-        path = target_repo / rel
-        path.parent.mkdir(parents=True, exist_ok=True)
-        write_atomic(path, data)
-
-
-def repair_push_status_lines(target_repo: Path, plan: Plan) -> None:
-    _apply_one_repair(target_repo, plan, plan_push_status)
-
-
-def repair_moved_references(target_repo: Path, plan: Plan) -> None:
-    _apply_one_repair(target_repo, plan, plan_moved_references)
-
-
-def repair_closed_decisions(target_repo: Path, plan: Plan) -> None:
-    _apply_one_repair(target_repo, plan, plan_closed_decisions)
 
 
 def _drift_provenance(target_repo: Path, rel: str) -> str:
@@ -789,17 +769,55 @@ def build_record(toolkit: Path, target: Path, plan: Plan) -> dict:
                 "source": Path(s).relative_to(toolkit).as_posix(),
                 "sha256": hashlib.sha256(Path(s).read_bytes()).hexdigest()}
     head = git(target, "rev-parse", "HEAD", check=False)
+    target_head = head.stdout.strip() if head.returncode == 0 else ""
+    target_pin = {"mode": "head"}
+    drift = dict(sorted(plan.drift.items()))
+    if plan.carve_out_base:
+        parents = git(target, "rev-list", "--parents", "-n", "1", "HEAD").stdout.split()
+        if len(parents) != 2 or parents[1] != plan.carve_out_base:
+            raise RuntimeError("carve-out HEAD must have exactly the approved base as its sole parent")
+        target_pin = {"mode": "carve-out", "base": plan.carve_out_base,
+                      "tree": git(target, "rev-parse", "HEAD^{tree}").stdout.strip()}
+        # Provenance is part of the record too. The rehearsed commit's
+        # metadata is intentionally unpinned; identify it by its pinned tree
+        # while retaining exact history below the approved base.
+        for rel, note in drift.items():
+            if note.startswith("FORCED"):
+                continue
+            history = git(target, "log", "-3", "--format=%H %s", "--", rel).stdout.splitlines()
+            drift[rel] = " | ".join(
+                "carve-out tree " + target_pin["tree"] if line.startswith(target_head + " ") else line
+                for line in history) or "no commit history for this path"
+        target_head = ""  # commit metadata may differ; parent and entire tree may not
+    repairs = []
+    for rel, output in sorted(plan.repair_outputs.items()):
+        original = plan.repair_inputs[rel]
+        repairs.append({
+            "target": rel,
+            "actions": [note for p, note in plan.repairs if p == rel],
+            "input_sha256": hashlib.sha256(original).hexdigest() if original is not None else None,
+            "output_sha256": hashlib.sha256(output).hexdigest(),
+            "diff": "\n".join(difflib.unified_diff(
+                (original or b"").decode("utf-8").splitlines(),
+                output.decode("utf-8").splitlines(),
+                fromfile=rel if original is not None else "/dev/null",
+                tofile=rel, lineterm="")),
+        })
     rec = {
-        "schema": 2,
+        "schema": 3,
         "toolkit_sha": git(toolkit, "rev-parse", "HEAD").stdout.strip(),
         "toolkit_dirty": bool(
             git(toolkit, "status", "--porcelain", check=False).stdout.strip()),
         "manifest_digest": manifest_digest(toolkit),
-        "target_head": head.stdout.strip() if head.returncode == 0 else "",
+        "target_head": target_head,
+        "target_pin": target_pin,
+        "draft_paths": list(plan.draft_paths),
+        "repair_date": plan.repair_date,
+        "repairs": repairs,
         "installs": [entry(t, s) for t, s in plan.install],
         "updates": [entry(t, s) for t, s in plan.update],
         "restores": [entry(t, s) for t, s in plan.restore],
-        "drift": dict(sorted(plan.drift.items())),
+        "drift": drift,
         "removes": list(plan.remove),
         "gitignore_repairs": [[ln, old, list(repl)]
                               for ln, old, repl in plan.gitignore_repairs],
@@ -811,21 +829,69 @@ def build_record(toolkit: Path, target: Path, plan: Plan) -> dict:
         # apply, and a hash here would read that as drift.
         "already_staged": list(plan.already_staged),
     }
-    canonical = json.dumps(rec, sort_keys=True, separators=(",", ":"))
-    rec["digest"] = hashlib.sha256(canonical.encode("utf-8")).hexdigest()
+    rec["digest"] = record_digest(rec)
     return rec
+
+
+def record_digest(record: dict) -> str:
+    canonical = json.dumps({k: v for k, v in record.items() if k != "digest"},
+                           sort_keys=True, separators=(",", ":"))
+    return hashlib.sha256(canonical.encode("utf-8")).hexdigest()
+
+
+def normalize_draft_paths(paths) -> list:
+    if not isinstance(paths, list):
+        raise ValueError("draft_paths must be a list of repo-relative paths")
+    normalized = set()
+    for rel in paths:
+        if (not isinstance(rel, str) or not rel or "\\" in rel or ":" in rel
+                or any(ord(c) < 32 for c in rel) or Path(rel).is_absolute()
+                or ".." in Path(rel).parts):
+            raise ValueError("invalid repo-relative draft path: {!r}".format(rel))
+        rel = Path(rel).as_posix()
+        if rel == "." or ".git" in Path(rel).parts:
+            raise ValueError("invalid draft destination: {!r}".format(rel))
+        normalized.add(rel)
+    return sorted(normalized)
+
+
+def validate_record(record: dict) -> None:
+    if not isinstance(record, dict) or record.get("schema") != 3:
+        schema = record.get("schema") if isinstance(record, dict) else None
+        raise ValueError("unsupported plan schema: {!r}; regenerate the plan and obtain fresh approval".format(schema))
+    if normalize_draft_paths(record.get("draft_paths")) != record["draft_paths"]:
+        raise ValueError("draft_paths must be normalized, sorted and unique; regenerate and reapprove")
+    date = record.get("repair_date")
+    if not isinstance(date, str) or datetime.date.fromisoformat(date).isoformat() != date:
+        raise ValueError("repair_date must be YYYY-MM-DD")
+    pin = record.get("target_pin")
+    if pin == {"mode": "head"}:
+        pass
+    elif (isinstance(pin, dict) and set(pin) == {"mode", "base", "tree"}
+          and pin["mode"] == "carve-out"
+          and all(isinstance(pin[k], str) and re.fullmatch(r"[0-9a-f]{40}|[0-9a-f]{64}", pin[k])
+                  for k in ("base", "tree"))):
+        if record["draft_paths"] or record.get("target_head") != "":
+            raise ValueError("carve-out records cannot carry draft exclusions or a target HEAD pin")
+    else:
+        raise ValueError("invalid target_pin")
+    if record_digest(record) != record.get("digest"):
+        raise ValueError("plan digest mismatch; regenerate and reapprove")
 
 
 def verify_record(record: dict, toolkit: Path, target: Path, plan: Plan) -> "list[str]":
     """Reasons an approved plan record no longer matches reality. Any
     non-empty result refuses the apply before the first write."""
-    if record.get("schema") != 2:
-        return ["unsupported plan schema: {!r}".format(record.get("schema"))]
-    current = build_record(toolkit, target, plan)
+    try:
+        validate_record(record)
+        current = build_record(toolkit, target, plan)
+    except (ValueError, RuntimeError) as exc:
+        return [str(exc)]
     problems = []
     if current["toolkit_dirty"] or record.get("toolkit_dirty"):
         problems.append("toolkit worktree is dirty (apply requires a clean tree)")
-    for field in ("toolkit_sha", "manifest_digest", "target_head", "installs",
+    for field in ("toolkit_sha", "manifest_digest", "target_head", "target_pin",
+                  "draft_paths", "repair_date", "repairs", "installs",
                   "updates", "restores", "drift", "removes",
                   "gitignore_repairs", "flags", "staged_paths",
                   "already_staged"):
@@ -841,7 +907,7 @@ def touched_paths(plan: Plan) -> list:
     paths += [t for t, _ in plan.repairs]
     if plan.gitignore_repairs:
         paths.append(".gitignore")
-    return paths
+    return sorted(set(paths))
 
 
 def dirty_conflicts(target_repo: Path, plan: Plan) -> list:
@@ -903,12 +969,17 @@ def apply_plan(target_repo: Path, plan: Plan) -> None:
         assert_safe_dest(target_repo, target)
     if plan.gitignore_repairs:
         assert_safe_dest(target_repo, ".gitignore")
+    preflight_repairs(target_repo, plan)
     for target, src in plan.install + plan.update + plan.restore:
         dest = target_repo / target
         dest.parent.mkdir(parents=True, exist_ok=True)
         write_atomic(dest, src.read_bytes())
     for target in plan.remove:
         (target_repo / target).unlink()
+    for target, data in sorted(plan.repair_outputs.items()):
+        dest = target_repo / target
+        dest.parent.mkdir(parents=True, exist_ok=True)
+        write_atomic(dest, data)
     if plan.gitignore_repairs:
         gitignore = target_repo / ".gitignore"
         lines = gitignore.read_text(encoding="utf-8").splitlines()
@@ -916,6 +987,23 @@ def apply_plan(target_repo: Path, plan: Plan) -> None:
         for lineno, _old, repl in sorted(plan.gitignore_repairs, reverse=True):
             lines[lineno - 1:lineno] = list(repl)
         write_atomic(gitignore, ("\n".join(lines) + "\n").encode("utf-8"))
+
+
+def preflight_repairs(target_repo: Path, plan: Plan) -> None:
+    shipped_writes = {t for t, _ in plan.install + plan.update + plan.restore} | set(plan.remove)
+    for rel in plan.repair_outputs:
+        assert_safe_dest(target_repo, rel)
+        if rel in shipped_writes:
+            raise RuntimeError("{}: mechanical repair overlaps a shipped operation".format(rel))
+        ignored = ignore_match(target_repo, rel)
+        if ignored:
+            source, line, pattern = ignored
+            raise RuntimeError("{}: repair destination ignored by {}:{} ({}); resolve custody before applying".format(
+                rel, source, line, pattern))
+        path = target_repo / rel
+        current = path.read_bytes() if path.exists() else None
+        if current != plan.repair_inputs[rel]:
+            raise RuntimeError("{}: repair input changed before apply".format(rel))
 
 
 def stage(target_repo: Path, plan: Plan) -> None:
@@ -1386,6 +1474,10 @@ def main(argv=None) -> int:
                     help="read-only: write the operation record as JSON (or - for stdout) and change nothing")
     ap.add_argument("--apply", default=None, metavar="PLAN",
                     help="apply a --plan-json record, refusing if anything drifted since it was made")
+    ap.add_argument("--draft-path", action="append", default=None, metavar="PATH",
+                    help="reserve a prepared draft/banner path when planning (repeatable)")
+    ap.add_argument("--carve-out-base", default=None, metavar="COMMIT",
+                    help="planning only: pin the sole parent and tree of a rehearsed legacy carve-out")
     ap.add_argument("--force", action="store_true",
                     help="replace even foreign core governance files (git history preserves "
                          "the old content); uncommitted changes are still protected")
@@ -1404,14 +1496,31 @@ def main(argv=None) -> int:
     if args.plan_json and args.apply:
         print("refresh: --plan-json and --apply are mutually exclusive", file=sys.stderr)
         return 2
+    if args.carve_out_base and (not args.plan_json or args.draft_path):
+        print("refresh: --carve-out-base requires --plan-json and no draft exclusions", file=sys.stderr)
+        return 2
+    if args.draft_path and not (args.plan_json or args.apply):
+        print("refresh: --draft-path requires --plan-json (or a matching approved record)", file=sys.stderr)
+        return 2
     plan_record = None
+    draft_paths = []
     if args.apply:
         try:
             plan_record = json.loads(Path(args.apply).read_text(encoding="utf-8"))
+            validate_record(plan_record)
+            draft_paths = plan_record["draft_paths"]
+            if args.draft_path and normalize_draft_paths(args.draft_path) != draft_paths:
+                raise ValueError("command-line draft exclusions conflict with the approved record")
         except (OSError, ValueError) as exc:
             print("refresh: cannot read plan {}: {}".format(args.apply, exc), file=sys.stderr)
-            return 2
+            return 4
         args.no_sync = True  # apply never resyncs: the record is the operation
+    else:
+        try:
+            draft_paths = normalize_draft_paths(args.draft_path or [])
+        except ValueError as exc:
+            print("refresh: {}".format(exc), file=sys.stderr)
+            return 2
 
     toolkit = Path(args.toolkit).resolve() if args.toolkit else Path(__file__).resolve().parent.parent
     target = Path(args.target).resolve()
@@ -1472,6 +1581,19 @@ def main(argv=None) -> int:
             print("  " + e, file=sys.stderr)
         return 4
     plan = classify(target, toolkit, shipped)
+    plan.draft_paths = draft_paths
+    if args.carve_out_base:
+        if not re.fullmatch(r"[0-9a-f]{40}|[0-9a-f]{64}", args.carve_out_base):
+            print("refresh: --carve-out-base requires the full original commit ID", file=sys.stderr)
+            return 2
+        plan.carve_out_base = args.carve_out_base
+    elif plan_record and plan_record["target_pin"]["mode"] == "carve-out":
+        plan.carve_out_base = plan_record["target_pin"]["base"]
+    # Only repo-owned seeds may be supplied by a reviewed draft. Reserving
+    # a shipped target never suppresses its install or custody checks.
+    reserved_seeds = set(plan.seeded) & set(draft_paths)
+    plan.install = [(t, s) for t, s in plan.install if t not in reserved_seeds]
+    plan.seeded = [t for t in plan.seeded if t not in reserved_seeds]
     core = core_flags(plan, shipped)
     if args.force and core:
         # Owner override (2026-07-23, owner-surface D3): --force replaces a
@@ -1492,7 +1614,13 @@ def main(argv=None) -> int:
     # Forced foreign replacements have the same custody checks as installs.
     try:
         check_committability(target, plan, shipped)
-    except RuntimeError as exc:
+        for rel in draft_paths:
+            assert_safe_dest(target, rel)
+        plan_mechanical_repairs(target, plan,
+                                plan_record["repair_date"] if plan_record else None,
+                                excluded=draft_paths)
+        preflight_repairs(target, plan)
+    except (RuntimeError, ValueError, OSError) as exc:
         print("refresh: refusing - {}".format(exc), file=sys.stderr)
         return 4
     ignored_core = ignored_core_flags(plan, shipped)
@@ -1510,7 +1638,11 @@ def main(argv=None) -> int:
     plan.already_staged = staged_shipped_paths(target, shipped, plan)
 
     if args.plan_json:
-        record = build_record(toolkit, target, plan)
+        try:
+            record = build_record(toolkit, target, plan)
+        except RuntimeError as exc:
+            print("refresh: refusing plan - {}".format(exc), file=sys.stderr)
+            return 4
         payload = json.dumps(record, indent=2, sort_keys=True) + "\n"
         if args.plan_json == "-":
             sys.stdout.write(payload)
@@ -1534,11 +1666,6 @@ def main(argv=None) -> int:
                 print("  " + p, file=sys.stderr)
             return 4
 
-    # Mechanical repairs run in every applying mode (never in read-only
-    # --plan-json, which returns above) and join the refresh commit.
-    repair_push_status_lines(target, plan)
-    repair_moved_references(target, plan)
-    repair_closed_decisions(target, plan)
     changed = bool(plan.install or plan.update or plan.restore or plan.remove
                    or plan.gitignore_repairs or plan.repairs)
     if changed:

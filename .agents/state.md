@@ -10,7 +10,7 @@
   The baseline suite's historical fixture-path note was clarified in `a199383`.
   [F5](review/findings/F5.md) and [F6](review/findings/F6.md) are verified;
   [F7](review/findings/F7.md) is verified too. [F8a](review/findings/F8.md)
-  is verified; F8b/F8c and G1 remain pending;
+  and F8b are verified; F8c and G1 remain pending;
   integration is still pending.
   [Plan review record](review/2026-11-17-plan-review.md).
 - Disputed waste-pass functionality restored from f1497c4 in source

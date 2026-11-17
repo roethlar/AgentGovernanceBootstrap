@@ -235,7 +235,8 @@ class RefreshTests(unittest.TestCase):
         self.assertEqual(header + retained, state.read_bytes())
         commit_all(self.target, "repaired state")
         second = self._refresh_mod().Plan()
-        self._refresh_mod().repair_push_status_lines(self.target, second)
+        self._refresh_mod().plan_mechanical_repairs(self.target, second)
+        self._refresh_mod().apply_plan(self.target, second)
         self.assertEqual([], second.repairs)
 
     def test_push_status_repair_leaves_documents_without_body_heading(self):
@@ -248,7 +249,8 @@ class RefreshTests(unittest.TestCase):
                 state.write_bytes(original)
                 commit_all(self.target, "legacy headingless state")
                 plan = mod.Plan()
-                mod.repair_push_status_lines(self.target, plan)
+                mod.plan_mechanical_repairs(self.target, plan)
+                mod.apply_plan(self.target, plan)
                 self.assertEqual(original, state.read_bytes())
                 self.assertEqual([], plan.repairs)
 
@@ -1564,6 +1566,272 @@ class GuidanceLintBaselineTests(unittest.TestCase):
         warns = [f for f in refresh_mod.lint_governance(TOOLS.parent)
                  if f[2] == "warn"]
         self.assertEqual([], warns)
+
+
+class RepairProtocolTests(unittest.TestCase):
+    setUp = RefreshTests.setUp
+    tearDown = RefreshTests.tearDown
+    repair_fixture = RefreshTests.repair_fixture
+    _refresh_mod = RefreshTests._refresh_mod
+
+    def snapshot(self, repo=None):
+        repo = repo or self.target
+        return (run_git(repo, "rev-parse", "HEAD"), run_git(repo, "write-tree"),
+                {p.relative_to(repo).as_posix(): p.read_bytes()
+                 for p in repo.rglob("*") if p.is_file() and ".git" not in p.parts})
+
+    def record(self, *args, target=None):
+        path = self.root / "approved.json"
+        proc = refresh(self.toolkit, target or self.target, "--plan-json", str(path), *args)
+        self.assertEqual(0, proc.returncode, proc.stderr)
+        return path, json.loads(path.read_text())
+
+    def assert_refused_unchanged(self, path, *args, target=None):
+        target = target or self.target
+        before = self.snapshot(target)
+        proc = refresh(self.toolkit, target, "--apply", str(path), *args)
+        self.assertNotEqual(0, proc.returncode, proc.stdout)
+        self.assertEqual(before, self.snapshot(target), proc.stderr)
+        return proc
+
+    def test_all_repairs_are_approved_and_applied_in_each_mode(self):
+        self.repair_fixture()
+        for mode in ("plain", "stage", "apply"):
+            with self.subTest(mode=mode):
+                target = self.root / mode
+                run_git(self.root, "clone", "-q", str(self.target), str(target))
+                run_git(target, "config", "user.name", "Test")
+                run_git(target, "config", "user.email", "test@example.invalid")
+                (target / "unrelated.txt").write_text("owner staged work\n")
+                run_git(target, "add", "--", "unrelated.txt")
+                before = self.snapshot(target)
+                path, rec = self.record(target=target)
+                self.assertEqual(before, self.snapshot(target))
+                repairs = {r["target"]: r for r in rec.get("repairs", [])}
+                self.assertEqual({".agents/state.md", ".agents/decisions.md",
+                                  "docs/history/decisions-archive.md"}, set(repairs))
+                self.assertEqual(2, len(repairs[".agents/state.md"]["actions"]))
+                self.assertIsNone(repairs["docs/history/decisions-archive.md"]["input_sha256"])
+                self.assertIn("- unpushed work", repairs[".agents/state.md"]["diff"])
+                self.assertEqual(len(rec["staged_paths"]), len(set(rec["staged_paths"])))
+                args = (["--apply", str(path)] if mode == "apply" else
+                        ["--stage-only"] if mode == "stage" else [])
+                proc = refresh(self.toolkit, target, *args)
+                self.assertEqual(0, proc.returncode, proc.stderr)
+                for rel, r in repairs.items():
+                    self.assertEqual(r["output_sha256"], hashlib.sha256((target / rel).read_bytes()).hexdigest())
+                self.assertNotIn("unpushed", (target / ".agents/state.md").read_text())
+                self.assertIn("docs/new.md", (target / "docs/history/decisions-archive.md").read_text())
+                staged = set(run_git(target, "diff", "--cached", "--name-only").splitlines())
+                if mode == "stage":
+                    self.assertEqual(set(rec["staged_paths"]) | {"unrelated.txt"}, staged)
+                    self.assertEqual(before[0], run_git(target, "rev-parse", "HEAD"))
+                else:
+                    self.assertEqual({"unrelated.txt"}, staged)
+                    committed = set(run_git(target, "show", "--format=", "--name-only", "--no-renames", "HEAD").splitlines())
+                    self.assertEqual(set(rec["staged_paths"]), committed)
+
+    def test_existing_archive_and_recorded_date_are_deterministic(self):
+        self.repair_fixture()
+        archive = self.target / "docs/history/decisions-archive.md"
+        archive.parent.mkdir()
+        archive.write_text("# Prior archive\n\nKeep prior text.\n")
+        commit_all(self.target)
+        path, rec = self.record()
+        _, again = self.record()
+        self.assertEqual(rec, again)
+        # Pin a historical date; recomputation must use it, not today's clock.
+        mod = self._refresh_mod()
+        plan = mod.classify(self.target, self.toolkit, mod.load_shipped_set(self.toolkit))
+        mod.check_committability(self.target, plan, mod.load_shipped_set(self.toolkit))
+        mod.plan_mechanical_repairs(self.target, plan, "2001-02-03")
+        rec = mod.build_record(self.toolkit, self.target, plan)
+        path.write_text(json.dumps(rec))
+        proc = refresh(self.toolkit, self.target, "--apply", str(path))
+        self.assertEqual(0, proc.returncode, proc.stderr)
+        self.assertIn("Keep prior text.", archive.read_text())
+        self.assertIn("Archived 2001-02-03", archive.read_text())
+
+    def test_changed_repair_input_or_eligibility_refuses_before_any_write(self):
+        self.repair_fixture()
+        path, _ = self.record()
+        state = self.target / ".agents/state.md"
+        state.write_text(state.read_text() + "owner edit\n")
+        proc = self.assert_refused_unchanged(path)
+        self.assertIn("repairs", proc.stderr)
+        self.assertFalse((self.target / "AGENTS.md").exists())
+
+    def test_ignored_archive_refuses_before_install_or_decision_removal(self):
+        self.repair_fixture()
+        (self.target / ".gitignore").write_text("/docs/history/\n")
+        commit_all(self.target)
+        before = self.snapshot()
+        for args in ([], ["--stage-only"], ["--plan-json", str(self.root / "plan.json")]):
+            with self.subTest(args=args):
+                proc = refresh(self.toolkit, self.target, *args)
+                self.assertEqual(4, proc.returncode, proc.stderr)
+                self.assertIn("repair destination ignored", proc.stderr)
+                self.assertEqual(before, self.snapshot())
+
+    def test_unsafe_repair_destination_refuses_before_other_writes(self):
+        self.repair_fixture()
+        outside = self.root / "outside"
+        outside.mkdir()
+        (self.target / "docs/history").symlink_to(outside, target_is_directory=True)
+        before = self.snapshot()
+        proc = refresh(self.toolkit, self.target)
+        self.assertEqual(4, proc.returncode, proc.stderr)
+        self.assertIn("symlink", proc.stderr)
+        self.assertEqual(before, self.snapshot())
+        self.assertEqual([], list(outside.iterdir()))
+
+    def test_drafts_and_banners_survive_standard_bootstrap(self):
+        self.repair_fixture()
+        path, rec = self.record("--draft-path", "./.agents/state.md", "--draft-path", ".agents/state.md",
+                                "--draft-path", ".agents/decisions.md")
+        self.assertEqual([".agents/decisions.md", ".agents/state.md"], rec["draft_paths"])
+        self.assertEqual([], rec["repairs"])
+        state = self.target / ".agents/state.md"
+        decisions = self.target / ".agents/decisions.md"
+        state.write_text("# Approved draft\n\n## Now\nOwner's push-status wording.\n")
+        decisions.write_text("Superseded: retained original below\n" + decisions.read_text())
+        drafted = state.read_bytes(), decisions.read_bytes()
+        proc = refresh(self.toolkit, self.target, "--apply", str(path), "--stage-only")
+        self.assertEqual(0, proc.returncode, proc.stderr)
+        self.assertEqual(drafted, (state.read_bytes(), decisions.read_bytes()))
+        self.assertFalse((self.target / "docs/history/decisions-archive.md").exists())
+
+    def test_reserved_archive_skips_pair_but_keeps_independent_repairs(self):
+        self.repair_fixture()
+        path, rec = self.record("--draft-path", "docs/history/decisions-archive.md")
+        self.assertNotIn("docs/history/decisions-archive.md", rec["staged_paths"])
+        self.assertIn(".agents/state.md", rec["staged_paths"])
+        proc = refresh(self.toolkit, self.target, "--apply", str(path))
+        self.assertEqual(0, proc.returncode, proc.stderr)
+        self.assertIn("Closed", (self.target / ".agents/decisions.md").read_text())
+
+    def test_invalid_or_changed_draft_exclusions_and_date_refuse(self):
+        self.repair_fixture()
+        for rel in ("../escape", "/absolute", "C:\\escape", ".git/config", "."):
+            with self.subTest(rel=rel):
+                before = self.snapshot()
+                proc = refresh(self.toolkit, self.target, "--plan-json", "-", "--draft-path", rel)
+                self.assertNotEqual(0, proc.returncode)
+                self.assertEqual(before, self.snapshot())
+        path, rec = self.record("--draft-path", ".agents/state.md")
+        self.assertIn("conflict", self.assert_refused_unchanged(path, "--draft-path", ".agents/decisions.md").stderr)
+        mod = self._refresh_mod()
+        for change in ({"draft_paths": ["../escape"]}, {"draft_paths": [".agents/state.md"] * 2},
+                       {"repair_date": "2026-99-01"}, {"schema": 2}):
+            with self.subTest(change=change):
+                bad = dict(rec, **change)
+                bad["digest"] = mod.record_digest(bad)
+                path.write_text(json.dumps(bad))
+                refused = self.assert_refused_unchanged(path)
+                if change.get("schema") == 2:
+                    self.assertIn("regenerate", refused.stderr)
+                    self.assertIn("approval", refused.stderr)
+
+    def test_reserved_missing_seed_is_supplied_by_draft(self):
+        seed = ".agents/push-policy.md"
+        (self.toolkit / "templates/policy.md").write_text("default\n")
+        mutate_manifest(self.toolkit, lambda d: d.update(seeded=[{
+            "target": seed, "source": "templates/policy.md"}]))
+        commit_all(self.toolkit)
+        _, ordinary = self.record()
+        self.assertIn(seed, ordinary["staged_paths"])
+        path, rec = self.record("--draft-path", seed, "--draft-path", "AGENTS.md")
+        self.assertNotIn(seed, rec["staged_paths"])
+        self.assertIn("AGENTS.md", rec["staged_paths"])
+        dest = self.target / seed
+        dest.parent.mkdir()
+        dest.write_text("<!-- push-policy: ask -->\nAsk before pushing.\n")
+        proc = refresh(self.toolkit, self.target, "--apply", str(path), "--stage-only")
+        self.assertEqual(0, proc.returncode, proc.stderr)
+        self.assertIn("Ask before pushing", dest.read_text())
+
+    def carveout_fixture(self):
+        (self.target / "AGENTS.md").write_text("foreign legacy instructions\n")
+        commit_all(self.target, "legacy base")
+        base = run_git(self.target, "rev-parse", "HEAD").strip()
+        real = self.root / "real"
+        run_git(self.root, "clone", "-q", str(self.target), str(real))
+        run_git(real, "config", "user.name", "Other metadata")
+        run_git(real, "config", "user.email", "other@example.invalid")
+        for repo, message in ((self.target, "rehearsal"), (real, "actual approved carve-out")):
+            (repo / ".agents").mkdir()
+            (repo / ".agents/decisions.md").write_text("# Decisions\n\n## Decisions\n\n### Closed\nStatus: Adopted\nRetain.\n")
+            (repo / ".agents/push-policy.md").write_text("<!-- push-policy: ask -->\nAsk before pushing.\n")
+            (repo / ".claude/commands").mkdir(parents=True)
+            (repo / ".claude/commands/tool.md").write_text("legacy wrapper to reconcile\n")
+            (repo / "AGENTS.md").unlink()
+            commit_all(repo, message)
+        return base, real
+
+    def test_carveout_tree_pin_accepts_metadata_difference_and_commits_repairs(self):
+        base, real = self.carveout_fixture()
+        path, rec = self.record("--carve-out-base", base)
+        self.assertNotEqual(run_git(real, "rev-parse", "HEAD"), run_git(self.target, "rev-parse", "HEAD"))
+        self.assertEqual("carve-out", rec["target_pin"]["mode"])
+        self.assertIn("docs/history/decisions-archive.md", rec["staged_paths"])
+        for repo in (self.target, real):
+            proc = refresh(self.toolkit, repo, "--apply", str(path))
+            self.assertEqual(0, proc.returncode, proc.stderr)
+            for repair in rec["repairs"]:
+                self.assertEqual(repair["output_sha256"], hashlib.sha256((repo / repair["target"]).read_bytes()).hexdigest())
+            self.assertIn("Ask before pushing", (repo / ".agents/push-policy.md").read_text())
+            self.assertNotIn("Closed", (repo / ".agents/decisions.md").read_text())
+        self.assertEqual(run_git(real, "rev-parse", "HEAD^{tree}"), run_git(self.target, "rev-parse", "HEAD^{tree}"))
+
+    def test_carveout_parent_tree_and_inputs_drift_refuse(self):
+        base, real = self.carveout_fixture()
+        path, _ = self.record("--carve-out-base", base)
+        # Dirty repair input changes eligibility, even with unchanged commit tree.
+        decisions = real / ".agents/decisions.md"
+        original = decisions.read_bytes()
+        decisions.write_bytes(original + b"owner edits\n")
+        self.assert_refused_unchanged(path, target=real)
+        decisions.write_bytes(original)
+        # Different tree, same required parent: create a commit without rewrite.
+        (real / "extra.txt").write_text("unapproved file\n")
+        run_git(real, "add", "--", "extra.txt")
+        tree = run_git(real, "write-tree").strip()
+        different = run_git(real, "commit-tree", tree, "-p", base, "-m", "different tree").strip()
+        run_git(real, "checkout", "-q", different)
+        self.assertIn("target_pin", self.assert_refused_unchanged(path, target=real).stderr)
+        # A subsequent commit has the wrong parent, regardless of content.
+        run_git(real, "commit", "--allow-empty", "-q", "-m", "unexpected intermediate commit")
+        self.assertIn("sole parent", self.assert_refused_unchanged(path, target=real).stderr)
+        proc = refresh(self.toolkit, real, "--plan-json", "-", "--carve-out-base", base)
+        self.assertEqual(4, proc.returncode)
+        self.assertIn("sole parent", proc.stderr)
+
+    def test_carveout_toolkit_drift_refuses(self):
+        base, real = self.carveout_fixture()
+        path, _ = self.record("--carve-out-base", base)
+        (self.toolkit / "templates/AGENTS.template.md").write_text("new toolkit\n")
+        commit_all(self.toolkit, "toolkit moved")
+        self.assertIn("toolkit_sha", self.assert_refused_unchanged(path, target=real).stderr)
+
+    def test_reserved_foreign_core_keeps_custody_guard(self):
+        (self.target / "AGENTS.md").write_text("foreign owner instructions\n")
+        commit_all(self.target)
+        proc = refresh(self.toolkit, self.target, "--plan-json", "-", "--draft-path", "AGENTS.md")
+        self.assertEqual(0, proc.returncode, proc.stderr)
+        self.assertIn("foreign", proc.stdout)
+        self.assertIn("FLAG", proc.stdout)
+        self.assertEqual("foreign owner instructions\n", (self.target / "AGENTS.md").read_text())
+
+    def test_last_preflight_detects_repair_input_change_before_any_write(self):
+        self.repair_fixture()
+        mod = self._refresh_mod()
+        plan = mod.classify(self.target, self.toolkit, mod.load_shipped_set(self.toolkit))
+        mod.plan_mechanical_repairs(self.target, plan)
+        (self.target / ".agents/state.md").write_text("intervening edit\n")
+        before = self.snapshot()
+        with self.assertRaisesRegex(RuntimeError, "repair input changed"):
+            mod.apply_plan(self.target, plan)
+        self.assertEqual(before, self.snapshot())
 
 
 class RealManifestEquivalenceTests(unittest.TestCase):
